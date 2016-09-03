@@ -1,0 +1,6 @@
+framework module Pods_BlobjotTests {
+  umbrella header "Pods-BlobjotTests-umbrella.h"
+
+  export *
+  module * { export * }
+}

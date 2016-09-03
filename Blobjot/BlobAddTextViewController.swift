@@ -1,0 +1,61 @@
+//
+//  BlobAddTextViewController.swift
+//  Blobjot
+//
+//  Created by Sean Hart on 7/30/16.
+//  Copyright © 2016 tangojlabs. All rights reserved.
+//
+
+import UIKit
+
+
+class BlobAddTextViewController: UIViewController, UITextViewDelegate {
+    
+    // Declare the view components
+    var viewContainer: UIView!
+    var textViewContainer: UIView!
+    var blobTextView: UITextView!
+    var blobTextViewDefaultText: UILabel!
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        // Add the view container to hold all other views (decrease size to match pageViewController)
+        viewContainer = UIView(frame: CGRect(x: 0, y: 0, width: self.view.frame.width, height: self.view.frame.height - 74 - self.view.frame.width))
+        self.view.addSubview(viewContainer)
+        
+        // The Blob text view should be centered within the page view and extend the entire width and height, except for a margin
+        textViewContainer = UIView(frame: CGRect(x: 5, y: 5, width: viewContainer.frame.width - 10, height: viewContainer.frame.height - 10))
+        textViewContainer.layer.borderWidth = 2.0
+        textViewContainer.layer.borderColor = UIColor.lightGrayColor().CGColor
+        textViewContainer.layer.cornerRadius = 10.0
+        viewContainer.addSubview(textViewContainer)
+        
+        blobTextView = UITextView(frame: CGRect(x: 5, y: 5, width: textViewContainer.frame.width - 10, height: textViewContainer.frame.height - 10))
+        blobTextView.backgroundColor = UIColor.clearColor()
+        blobTextView.delegate = self
+        blobTextView.editable = true
+        blobTextView.scrollEnabled = true
+        blobTextView.font = UIFont(name: Constants.Strings.fontRegular, size: 18)
+//        blobTextView.text = "Add a message."
+        textViewContainer.addSubview(blobTextView)
+        
+        blobTextViewDefaultText = UILabel(frame: CGRect(x: 2, y: 5, width: blobTextView.frame.width, height: 20))
+        blobTextViewDefaultText.font = UIFont(name: Constants.Strings.fontRegular, size: 18)
+        blobTextViewDefaultText.text = "Add a message."
+        blobTextView.addSubview(blobTextViewDefaultText)
+    }
+
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+    }
+    
+    func textViewShouldBeginEditing(textView: UITextView) -> Bool {
+        print("ADD BLOB TEXT - SHOULD BEGIN EDITING")
+        blobTextViewDefaultText.removeFromSuperview()
+        
+        return true
+    }
+
+}
