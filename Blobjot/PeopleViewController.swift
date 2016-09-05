@@ -14,7 +14,7 @@ import UIKit
 protocol PeopleViewControllerDelegate {
     
     // When called, the parent View Controller is alerted that the global User Object list has been updated
-    func userObjectListUpdatedWithLoggedInUser()
+    func userObjectListUpdatedWithCurrentUser()
 }
 
 class PeopleViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UISearchResultsUpdating, UISearchBarDelegate {
@@ -340,7 +340,7 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
             for addPerson in Constants.Data.userObjects {
                 
                 // Ensure the person is not the currently logged in user
-                if addPerson.userID != Constants.Data.loggedInUser {
+                if addPerson.userID != Constants.Data.currentUser {
                     self.peopleList.append(addPerson)
                 }
             }
@@ -355,7 +355,7 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
                     print("UserName Contains: \(searchText)")
                     
                     // Ensure the person is not the currently logged in user
-                    if userObject.userID != Constants.Data.loggedInUser {
+                    if userObject.userID != Constants.Data.currentUser {
                         self.peopleList.append(userObject)
                     }
                 }
@@ -462,7 +462,7 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
         }
         
         // Add a user connection action in AWS
-        self.addUserConnectionAction(Constants.Data.loggedInUser, connectionUserID: counterpartUserID, actionType: actionType)
+        self.addUserConnectionAction(Constants.Data.currentUser, connectionUserID: counterpartUserID, actionType: actionType)
     }
     
     func refreshTableView() {
@@ -529,7 +529,7 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
         print("PVC - \(self.printCheck): REQUESTING GUC")
         
         // Create some JSON to send the logged in userID
-        let json: NSDictionary = ["user_id" : Constants.Data.loggedInUser, "print_check" : self.printCheck]
+        let json: NSDictionary = ["user_id" : Constants.Data.currentUser, "print_check" : self.printCheck]
         
         let lambdaInvoker = AWSLambdaInvoker.defaultLambdaInvoker()
         lambdaInvoker.invokeFunction("Blobjot-GetUserConnections", JSONObject: json, completionHandler: { (response, err) -> Void in
@@ -590,11 +590,11 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
                                 }
                                 
                                 //Alert the parent view controller (if needed) that the logged in user should be in the global array
-                                if addUser.userID == Constants.Data.loggedInUser {
+                                if addUser.userID == Constants.Data.currentUser {
                                     
                                     // Call the parent VC to alert that the logged in user has been added to the global user list
                                     if let parentVC = self.peopleViewDelegate {
-                                        parentVC.userObjectListUpdatedWithLoggedInUser()
+                                        parentVC.userObjectListUpdatedWithCurrentUser()
                                         print("FOUND LOGGED IN USER \(addUser.userName)")
                                     }
                                 }
@@ -615,7 +615,7 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
                                     
                                     // Add the User Object to the local list only if it is not the currently logged in user
                                     // If it is the logged in user, assign the userName to the displayUserTextField
-                                    if addUser.userID != Constants.Data.loggedInUser {
+                                    if addUser.userID != Constants.Data.currentUser {
                                         
                                         self.peopleList.append(addUser)
                                         print("PVC - \(self.printCheck): ADDED USER \(addUser.userName) TO PEOPLE LIST")

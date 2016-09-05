@@ -582,7 +582,7 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
                 // If the media file was successfully updated, save the Blob data to AWS
                 if bucket == Constants.Strings.S3BucketMedia {
                     // Upload the Blob data to Lamda and then DynamoDB
-                    self.uploadBlobData(mediaID, blobLat: self.blobCoords.latitude, blobLong: self.blobCoords.longitude, blobMediaID: uploadKey, blobMediaType: self.blobMediaType, blobRadius: self.blobRadius, blobText: self.vc2.blobTextView.text, blobThumbnailID: mediaID + ".png", blobTimestamp: currentTime, blobType: self.blobType.rawValue, blobTaggedUsers: taggedUsers, blobUserID: Constants.Data.loggedInUser)
+                    self.uploadBlobData(mediaID, blobLat: self.blobCoords.latitude, blobLong: self.blobCoords.longitude, blobMediaID: uploadKey, blobMediaType: self.blobMediaType, blobRadius: self.blobRadius, blobText: self.vc2.blobTextView.text, blobThumbnailID: mediaID + ".png", blobTimestamp: currentTime, blobType: self.blobType.rawValue, blobTaggedUsers: taggedUsers, blobUserID: Constants.Data.currentUser)
                 }
                 
                 // If the file was flagged for deletion, delete it
@@ -606,14 +606,14 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
                 newBlob.blobLong = self.blobCoords.longitude
                 newBlob.blobRadius = self.blobRadius
                 newBlob.blobType = self.blobType
-                newBlob.blobUserID = Constants.Data.loggedInUser
+                newBlob.blobUserID = Constants.Data.currentUser
                 Constants.Data.userBlobs.append(newBlob)
                 
                 // Check to see if the logged in user was tagged
                 loopTaggedUsers: for person in taggedUsers {
                     print("CHECKING TAGGED USERS: \(person)")
                     // If the logged in user was tagged, add the Blob to the mapBlobs so that it shows on the Map View
-                    if person == Constants.Data.loggedInUser {
+                    if person == Constants.Data.currentUser {
                         print("ADDING TO MAP BLOBS")
                         Constants.Data.mapBlobs.append(newBlob)
                         

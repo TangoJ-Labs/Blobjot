@@ -333,7 +333,7 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
         print("BAP - REQUESTING GUC")
         
         // Create some JSON to send the logged in userID
-        let json: NSDictionary = ["user_id" : Constants.Data.loggedInUser, "print_check" : "BAP"]
+        let json: NSDictionary = ["user_id" : Constants.Data.currentUser, "print_check" : "BAP"]
         
         let lambdaInvoker = AWSLambdaInvoker.defaultLambdaInvoker()
         lambdaInvoker.invokeFunction("Blobjot-GetUserConnections", JSONObject: json, completionHandler: { (response, err) -> Void in

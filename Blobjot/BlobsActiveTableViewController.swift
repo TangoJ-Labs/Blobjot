@@ -217,7 +217,7 @@ class BlobsActiveTableViewController: UIViewController, UITableViewDataSource, U
             self.blobsActiveTableView.performSelectorOnMainThread(#selector(UITableView.reloadData), withObject: nil, waitUntilDone: true)
             
             // Record the Blob hide in AWS so that the Blob no longer is downloaded for this user
-            self.hideBlob(actionBlob.blobID, userID: Constants.Data.loggedInUser)
+            self.hideBlob(actionBlob.blobID, userID: Constants.Data.currentUser)
             
             // Remove the Blob from the map Blobs
             loopMapBlobsCheck: for (bIndex, blob) in Constants.Data.mapBlobs.enumerate() {

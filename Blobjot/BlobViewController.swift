@@ -159,7 +159,7 @@ class BlobViewController: UIViewController {
         
         // Call the AWS Function and send data to Lambda to record that the use viewed this Blob
         // If this Blob is not permanent, the user will not be able to see the Blob again after closing this view
-        addBlobView(blob.blobID, userID: Constants.Data.loggedInUser)
+        addBlobView(blob.blobID, userID: Constants.Data.currentUser)
         
     }
 
@@ -174,6 +174,19 @@ class BlobViewController: UIViewController {
     
     // Add a record that this Blob was viewed by the logged in user
     func addBlobView(blobID: String, userID: String) {
+        
+        // Save a Blob notification in Core Data (so that the user is not notified of the viewed Blob)
+        // Because the Blob notification is not checked for already existing, multiple entries with the same blobID may exist
+        let moc = DataController().managedObjectContext
+        let entity = NSEntityDescription.insertNewObjectForEntityForName("BlobNotification", inManagedObjectContext: moc) as! BlobNotification
+        entity.setValue(blobID, forKey: "blobID")
+        // Save the Entity
+        do {
+            try moc.save()
+        } catch {
+            fatalError("Failure to save context: \(error)")
+        }
+        
         print("ADDING BLOB VIEW: \(blobID), \(userID), \(NSDate().timeIntervalSince1970)")
         let json: NSDictionary = [
             "blob_id"       : blobID

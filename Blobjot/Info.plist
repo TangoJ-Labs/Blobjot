@@ -30,8 +30,6 @@
 	<string>pk.eyJ1IjoidGFuZ29qbGFicyIsImEiOiJjaXF3YWJybXcwMGQ0ZnhrcXRyYzlmcXhiIn0.ktL0M4BXHYLUSTWgZZtsvA</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>Blobjot shows your location on the map and detects nearby features.</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Blobjot shows your location on the map and detects nearby features.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>location</string>

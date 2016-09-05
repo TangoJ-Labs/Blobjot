@@ -6,7 +6,7 @@
 //  Copyright © 2016 blobjot. All rights reserved.
 //
 
-import Foundation
+import AWSCore
 import GoogleMaps
 import UIKit
 
@@ -14,6 +14,11 @@ struct Constants {
     
     static var inBackground = false
     static var appDelegateLocationManager = CLLocationManager()
+    
+    static var credentialsProvider = AWSCognitoCredentialsProvider(
+        regionType: Constants.Strings.aws_region
+        , identityPoolId: Constants.Strings.aws_cognitoIdentityPoolId
+    )
     
     enum BlobTypes: Int {
         case Temporary = 1
@@ -116,7 +121,11 @@ struct Constants {
     
     struct Data {
         
-        static var loggedInUser: String = "MY9QP9I8HW6ZDMWA" //DON_QUIXOTE: MY9QP9I8HW6ZDMWA || THE_LADY_WITH_COFFEE: 70X4ODWM6D4AL2H4 || TEST_USER: NOLFGJEJ5KX6AIE2
+        static var attemptedLogin: Bool = false
+        
+        static var currentUser: String = "" //DON_QUIXOTE: MY9QP9I8HW6ZDMWA || THE_LADY_WITH_COFFEE: 70X4ODWM6D4AL2H4 || TEST_USER: NOLFGJEJ5KX6AIE2 // THE LOGGED IN USER
+        static var currentUserName: String?
+        static var currentUserImage: UIImage?
         
         static var mapBlobs = [Blob]()
         static var userBlobs = [Blob]()
@@ -203,13 +212,17 @@ struct Constants {
         static let imageStringStarHalfFilled = "star_clear.png"
         static let imageStringStarEmpty = "star_clear.png"
         
+        static let aws_region = AWSRegionType.USEast1
+        static let aws_cognitoIdentityPoolId = "us-east-1:6db4d1c8-f3f5-4466-b135-535279ff6077"
+        
     }
     
     struct Settings {
         
         static let gKey = "AIzaSyBdwjW6jYuPjZP7oW8NsqHkZQyMxFq_j0w"
         static let mapStyleUrl = NSURL(string: "mapbox://styles/tangojlabs/ciqwaddsl0005b7m0xwctftow")
-        static let locationAccuracyMax: Double = 100 // In meters
+        static let locationAccuracyMax: Double = 30 // In meters
+        static let locationAccuracyMaxBackground: Double = 100 // In meters
         
     }
     

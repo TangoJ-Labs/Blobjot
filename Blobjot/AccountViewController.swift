@@ -12,7 +12,22 @@ import FBSDKLoginKit
 import GoogleMaps
 import UIKit
 
+
+// Create a protocol with functions declared in other View Controllers implementing this protocol (delegate)
+protocol AccountViewControllerDelegate {
+    
+    // When called, the parent View Controller checks for changes to the logged in user
+    func checkForUser()
+    
+    // When called, fire the parent popViewController
+    func popViewController()
+}
+
 class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, PeopleViewControllerDelegate {
+    
+    // Add a delegate variable which the parent view controller can pass its own delegate instance to and have access to the protocol
+    // (and have its own functions called that are listed in the protocol)
+    var accountViewDelegate: AccountViewControllerDelegate?
 
     var screenSize: CGRect!
     var statusBarHeight: CGFloat!
@@ -50,7 +65,7 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
     var editNameSaveButtonTapGesture: UITapGestureRecognizer!
     var viewScreenTapGesture: UITapGestureRecognizer!
     
-    var currentLoggedInUserName: String = ""
+    var currentUserName: String = ""
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -119,7 +134,7 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
         logoutButtonLabel.text = "Log Out"
         logoutButton.addSubview(logoutButtonLabel)
         
-        if Constants.Data.loggedInUser != "" {
+        if Constants.Data.currentUser != "" {
             displayUserContainer.addSubview(displayUserLabel)
             displayUserContainer.addSubview(displayUserTextFieldActivityIndicator)
             displayUserTextFieldActivityIndicator.startAnimating()
@@ -246,14 +261,14 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
     
     // Reveal the popup screen to edit the userName
     func userNameTapGesture(sender: UITapGestureRecognizer) {
-        print("EDIT USER NAME: \(currentLoggedInUserName)")
+        print("EDIT USER NAME: \(currentUserName)")
         
         // Show the gray screen to highlight the name editor popup
         self.viewContainer.addSubview(viewScreen)
         self.viewContainer.addSubview(displayUserEditNameView)
         
         dispatch_async(dispatch_get_main_queue(), {
-            self.editNameCurrentName.text = "Current User Name:\n " + self.currentLoggedInUserName
+            self.editNameCurrentName.text = "Current User Name:\n " + self.currentUserName
         });
         
         // Add an animation to bring the edit user name screen into view
@@ -271,7 +286,7 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
         loginManager.logOut()
         
         // Log out the user from the app
-        Constants.Data.loggedInUser = ""
+        Constants.Data.currentUser = ""
         
         // Clear the data from the app
         Constants.Data.mapBlobs = [Blob]()
@@ -285,8 +300,14 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
         }
         Constants.Data.mapCircles = [GMSCircle]()
         
-        // Load the Map View and show the login screen
-        self.popViewController()
+        // Call the parent VC to remove the current VC from the stack
+        if let parentVC = self.accountViewDelegate {
+            parentVC.checkForUser()
+            parentVC.popViewController()
+        }
+        
+//        // Load the Map View and show the login screen
+//        self.popViewController()
     }
     
     // Save the newly typed user name
@@ -307,11 +328,11 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
                 self.displayUserLabel.text = newUserName
                 
                 // Upload the new username to AWS
-                editUserName(Constants.Data.loggedInUser, userName: newUserName)
+                editUserName(Constants.Data.currentUser, userName: newUserName)
                 
                 // Edit the logged in user's userName in the global list
                 userLoop: for userObject in Constants.Data.userObjects {
-                    if userObject.userID == Constants.Data.loggedInUser {
+                    if userObject.userID == Constants.Data.currentUser {
                         userObject.userName = newUserName
                         break userLoop
                     }
@@ -370,22 +391,17 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
     }
     
     // The Child View Controller will call this function when the logged in user has been added to the global user list
-    func userObjectListUpdatedWithLoggedInUser() {
+    func userObjectListUpdatedWithCurrentUser() {
         
         // Find the logged in User Object in the global User list and use the data to fill out the user display views
         userLoop: for userObject in Constants.Data.userObjects {
             print("GLOBAL LIST USER CHECK: \(userObject.userName)")
             
-            if userObject.userID == Constants.Data.loggedInUser {
-                print("IN PARENT - GOT LOGGED IN USER: \(userObject.userName)")
-                
-                let dateFormatter = NSDateFormatter()
-                dateFormatter.dateFormat = "EEE, dd MMM yyy hh:mm:ss"
-                let dateObj = NSDate()
-                print("CURRENT DATETIME: \(dateFormatter.stringFromDate(dateObj))")
+            if userObject.userID == Constants.Data.currentUser {
+                print("IN PARENT - GOT CURRENT USER: \(userObject.userName)")
                 
                 // Show the logged in user's username in the display user label
-                currentLoggedInUserName  = userObject.userName
+                currentUserName  = userObject.userName
                 displayUserLabel.text = userObject.userName
                 displayUserTextFieldActivityIndicator.stopAnimating()
                 
@@ -468,7 +484,7 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
                     data.writeToFile(filePath, atomically: true)
                     
                     var uploadMetadata = [String : String]()
-                    uploadMetadata["user_id"] = Constants.Data.loggedInUser
+                    uploadMetadata["user_id"] = Constants.Data.currentUser
                     print("UUI: METADATA: \(uploadMetadata)")
                     
                     let uploadRequest = AWSS3TransferManagerUploadRequest()

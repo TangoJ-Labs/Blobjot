@@ -188,7 +188,7 @@ class BlobsUserTableViewController: UIViewController, UITableViewDataSource, UIT
                 self.blobsUserTableView.performSelectorOnMainThread(#selector(UITableView.reloadData), withObject: nil, waitUntilDone: true)
                 
                 // Record the Blob deletion in AWS so that the Blob no longer is downloaded for anyone
-                self.deleteBlob(cellBlob.blobID, userID: Constants.Data.loggedInUser)
+                self.deleteBlob(cellBlob.blobID, userID: Constants.Data.currentUser)
                 
                 // Remove the Circle for this Blob from the map Circles so that it no longer shows on the Map View
                 loopMapCirclesCheck: for (cIndex, circle) in Constants.Data.mapCircles.enumerate() {
@@ -344,7 +344,7 @@ class BlobsUserTableViewController: UIViewController, UITableViewDataSource, UIT
         blobUserActivityIndicator.startAnimating()
         
         // Create some JSON to send the logged in userID
-        let json: NSDictionary = ["user_id" : Constants.Data.loggedInUser]
+        let json: NSDictionary = ["user_id" : Constants.Data.currentUser]
         
         let lambdaInvoker = AWSLambdaInvoker.defaultLambdaInvoker()
         lambdaInvoker.invokeFunction("Blobjot-GetUserBlobs", JSONObject: json, completionHandler: { (response, err) -> Void in
@@ -414,6 +414,9 @@ class BlobsUserTableViewController: UIViewController, UITableViewDataSource, UIT
                                 print("APPENDED BLOB: \(addBlob.blobID)")
                             }
                         }
+                        // Sort the User Blobs from newest to oldest
+                        self.userBlobs.sortInPlace({$0.blobDatetime.timeIntervalSince1970 >  $1.blobDatetime.timeIntervalSince1970})
+                        
                         // Refresh the Table View
                         self.blobsUserTableView.performSelectorOnMainThread(#selector(UITableView.reloadData), withObject: nil, waitUntilDone: true)
                     }

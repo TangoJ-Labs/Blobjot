@@ -15,7 +15,7 @@ import GooglePlacePicker
 import UIKit
 
 
-class MapViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, GMSMapViewDelegate, BlobAddViewControllerDelegate, GMSAutocompleteResultsViewControllerDelegate, AWSMethodsDelegate, FBSDKLoginButtonDelegate {
+class MapViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, GMSMapViewDelegate, BlobAddViewControllerDelegate, GMSAutocompleteResultsViewControllerDelegate, AWSMethodsDelegate, FBSDKLoginButtonDelegate, AccountViewControllerDelegate {
     
     // Save device settings to adjust view if needed
     var screenSize: CGRect!
@@ -75,7 +75,10 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     
     var accuracyLabel: UILabel!
     var loginScreen: UIView!
+    var loginBox: UIView!
     var fbLoginButton: FBSDKLoginButton!
+    var loginActivityIndicator: UIActivityIndicatorView!
+    var loginProcessLabel: UILabel!
     
     // The tap gestures for buttons and other interactive components
     var searchExitTapGesture: UITapGestureRecognizer!
@@ -184,15 +187,32 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         self.view.addSubview(viewContainer)
         print("**************** VIEW CONTAINER FRAME Y: \(viewContainer.frame.minY)")
         
+        // Create the login screen, login box, and facebook login button
         // Create the login screen and facebook login button
         loginScreen = UIView(frame: CGRect(x: 0, y: 0, width: viewContainer.frame.width, height: viewContainer.frame.height))
-        loginScreen.backgroundColor = Constants.Colors.standardBackground
+        loginScreen.backgroundColor = Constants.Colors.standardBackgroundGrayTransparent
+        
+        loginBox = UIView(frame: CGRect(x: (loginScreen.frame.width / 2) - 140, y: (loginScreen.frame.height / 2) - 40, width: 280, height: 120))
+        loginBox.layer.cornerRadius = 5
+        loginBox.backgroundColor = Constants.Colors.standardBackground
         
         fbLoginButton = FBSDKLoginButton()
-        fbLoginButton.center = loginScreen.center
+        fbLoginButton.center = CGPointMake(loginBox.frame.width / 2, loginBox.frame.height / 2)
         fbLoginButton.readPermissions = ["public_profile", "email"]
         fbLoginButton.delegate = self
-        loginScreen.addSubview(fbLoginButton)
+        loginBox.addSubview(fbLoginButton)
+        
+        // Add a loading indicator for the pause showing the "Log out" button after the FBSDK is logged in and before the Account VC loads
+        loginActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: 0, y: loginBox.frame.height / 2 + 15, width: loginBox.frame.width, height: 30))
+        loginActivityIndicator.color = UIColor.blackColor()
+        loginBox.addSubview(loginActivityIndicator)
+        
+        loginProcessLabel = UILabel(frame: CGRect(x: 0, y: loginBox.frame.height - 15, width: loginBox.frame.width, height: 14))
+        loginProcessLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 12)
+        loginProcessLabel.text = "Logging you in..."
+        loginProcessLabel.textColor = UIColor.blackColor()
+        loginProcessLabel.textAlignment = .Center
+        
         
         // Create a camera with the default location (if location services are used, this should not be shown for long)
         let camera = GMSCameraPosition.cameraWithLatitude(29.758624, longitude: -95.366795, zoom: 10)
@@ -546,13 +566,14 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         mapView.addObserver(self, forKeyPath: "camera", options:NSKeyValueObservingOptions(), context: nil)
         
         self.checkForUser()
-        refreshMap()
+//        refreshMap()
     }
     
     override func viewWillAppear(animated: Bool) {
         print("VIEW WILL APPEAR")
         
-        self.checkForUser()
+//        self.checkForUser()
+        refreshMap()
     }
     
     override func didReceiveMemoryWarning() {
@@ -567,29 +588,31 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // Check if a user is logged in
     func checkForUser() {
         print("FBSDK - CHECK FOR USER")
-        print("LOGGED IN USER: \(Constants.Data.loggedInUser)")
+        print("LOGGED IN USER: \(Constants.Data.currentUser)")
         
         // Show the login screen if no user is logged in
-        if Constants.Data.loggedInUser == "" {
+        if Constants.Data.currentUser == "" {
             
             // Check to see if the facebook user id is already in the FBSDK
             if let facebookToken = FBSDKAccessToken.currentAccessToken() {
                 
                 print("FBSDK USER ID: \(facebookToken.userID)")
+                fbGraphRequest(facebookToken.userID)
                 
-                // Recall the extra facebook user info and log in the user
-                var facebookID: NSNumber!
-                if let number = Int(facebookToken.userID) {
-                    print("FBSDK FACEBOOK ID INT: \(number)")
-                    facebookID = NSNumber(integer:number)
-                }
-                
-                if facebookID != nil {
-                    print("FBSDK FACEBOOK ID NSNUMBER: \(facebookID)")
-                    fbGraphRequest(facebookID)
-                }
+//                // Recall the extra facebook user info and log in the user
+//                var facebookID: NSNumber!
+//                if let number = Int(facebookToken.userID) {
+//                    print("FBSDK FACEBOOK ID INT: \(number)")
+//                    facebookID = NSNumber(integer:number)
+//                }
+//                
+//                if facebookID != nil {
+//                    print("FBSDK FACEBOOK ID NSNUMBER: \(facebookID)")
+//                    
+//                }
             } else {
                 viewContainer.addSubview(loginScreen)
+                loginScreen.addSubview(loginBox)
             }
         }
     }
@@ -851,12 +874,14 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         let navController = UINavigationController(rootViewController: accountVC)
         accountVC.navigationItem.setLeftBarButtonItem(backButtonItem, animated: true)
         accountVC.navigationItem.titleView = ncTitle
+        accountVC.accountViewDelegate = self
         
         // Change the Nav Bar color and present the view
         navController.navigationBar.barTintColor = Constants.Colors.colorStatusBar
         self.presentViewController(navController, animated: true, completion: {
             
             // Remove the loginScreen (in case it is showing) so that it does not show when the user returns to the map
+            self.loginBox.removeFromSuperview()
             self.loginScreen.removeFromSuperview()
             
             // Since the first attempt to download the map data would have failed if the user was not logged in, refresh it again
@@ -1175,6 +1200,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                         }
                     }
                 }
+//                print("SORTING LOCATION BLOBS")
+//                // Sort the Location Blobs from newest to oldest
+//                Constants.Data.locationBlobs.sortInPlace({$0.blobDatetime.timeIntervalSince1970 >  $1.blobDatetime.timeIntervalSince1970})
                 
                 // Reload the Collection View
                 self.locationBlobsCollectionView.performSelectorOnMainThread(#selector(UICollectionView.reloadData), withObject: nil, waitUntilDone: true)
@@ -1183,7 +1211,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 
                 // Show a notification that the user's location is too inaccurate to update data
                 if !locationInaccurate {
-                    createAlertOkView("Bad Signal!", message: "Your location is too inaccurate to gather data.  Try moving to an area with better reception.")
+                    if Constants.Data.currentUser != "" {
+                        createAlertOkView("Bad Signal!", message: "Your location is too inaccurate to gather data.  Try moving to an area with better reception.")
+                    }
                 }
                 
                 // Record that the user's location is inaccurate
@@ -1356,6 +1386,11 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         }
     }
     
+    // Manually set the mapView camera
+    func setMapCamera(coords: CLLocationCoordinate2D) {
+        self.mapView.camera = GMSCameraPosition(target: coords, zoom: 18, bearing: CLLocationDirection(0), viewingAngle: mapView.camera.viewingAngle)
+    }
+    
     
     // MARK: SLIDER LISTENERS
     // This is the listener for the slider used in the Add Blob process
@@ -1516,24 +1551,49 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             print("FBSDK COMPLETED WITH PERMISSIONS: \(result.grantedPermissions)")
             print("FBSDK USER ID: \(result.token.userID)")
             
+            // Show the logging in indicator and label
+            loginActivityIndicator.startAnimating()
+            loginBox.addSubview(loginProcessLabel)
+            
             // Set the new login indicator for certain settings
             self.newLogin = true
             
-            var facebookID: NSNumber!
-            if let number = Int(result.token.userID) {
-                facebookID = NSNumber(integer:number)
-            }
+            // Authenticate the user in AWS Cognito
+//            Constants.credentialsProvider.logins = [AWSIdentityProviderFacebook: result.token.tokenString]
             
-            if facebookID != nil {
-                print("FBSDK - REQUESTING ADDITIONAL USER INFO")
-                fbGraphRequest(facebookID)
+            let customProviderManager = CustomIdentityProvider(tokens: [AWSIdentityProviderFacebook: result.token.tokenString])
+            Constants.credentialsProvider = AWSCognitoCredentialsProvider(
+                regionType: Constants.Strings.aws_region
+                , identityPoolId: Constants.Strings.aws_cognitoIdentityPoolId
+                , identityProviderManager: customProviderManager
+            )
+            
+            
+            // Retrieve your Amazon Cognito ID
+            Constants.credentialsProvider.getIdentityId().continueWithBlock { (task: AWSTask!) -> AnyObject! in
+                if (task.error != nil) {
+                    print("AWS COGNITO GET IDENTITY ID - ERROR: " + task.error!.localizedDescription)
+                } else {
+                    // the task result will contain the identity id
+                    let cognitoId = task.result
+                    print("AWS COGNITO GET IDENTITY ID - AWS COGNITO ID: \(cognitoId)")
+                    print("AWS COGNITO GET IDENTITY ID - CHECK IDENTITY ID: \(Constants.credentialsProvider.identityId)")
+                    
+                    // Request extra facebook data for the user ON THE MAIN THREAD
+                    dispatch_async(dispatch_get_main_queue(), {
+                        self.fbGraphRequest(result.token.userID)
+                        print("FBSDK - REQUESTED ADDITIONAL USER INFO")
+                    });
+                }
+                return nil
             }
         }
     }
     
-    func fbGraphRequest(facebookID: NSNumber) {
+    func fbGraphRequest(facebookID: String) {
         print("FBSDK - MAKING GRAPH REQUEST")
-        let fbRequest = FBSDKGraphRequest(graphPath: "me", parameters: ["fields": "id,email,name,picture"])
+        let fbRequest = FBSDKGraphRequest(graphPath: "me", parameters: ["fields": "id, email, name, picture"]) //parameters: ["fields": "id,email,name,picture"])
+        print("FBSDK - MAKING GRAPH CALL")
         fbRequest.startWithCompletionHandler { (connection : FBSDKGraphRequestConnection!, result : AnyObject!, error : NSError!) -> Void in
             
             if error != nil {
@@ -1548,16 +1608,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                     print("FBSDK - FACEBOOK NAME: \(facebookName)")
                     
                     var facebookImageUrl = "none"
-//                    if let fPicture = result["picture"] as? AnyObject {
-//                        print("GOT fPICTURE")
-//                        if let fData = fPicture["data"] as? AnyObject {
-//                            print("GOT fDATA")
-//                            if let fUrl = fData["url"] {
-//                                print("GOT fURL")
-//                                facebookImageUrl = fUrl!
-//                            }
-//                        }
-//                    }
                     if let fUrl = result["picture"]?["data"]?["url"] {
                         print("FBSDK - GOT fURL")
                         facebookImageUrl = fUrl!
@@ -1968,7 +2018,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // MARK: AWS METHODS
     
     // Log in the user or create a new user
-    func loginUser(facebookID: NSNumber, facebookName: String, facebookThumbnailUrl: String) {
+    func loginUser(facebookID: String, facebookName: String, facebookThumbnailUrl: String) {
         let json: NSDictionary = ["facebook_id" : facebookID, "facebook_name": facebookName, "facebook_thumbnail_url": facebookThumbnailUrl]
         print("USER LOGIN DATA: \(json)")
         
@@ -1976,18 +2026,22 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         lambdaInvoker.invokeFunction("Blobjot-LoginUser", JSONObject: json, completionHandler: { (responseData, err) -> Void in
             
             if (err != nil) {
-                print("Error: \(err)")
+                print("LOGIN - ERROR: \(err)")
             } else if (responseData != nil) {
-                print("LOGIN USER RESPONSE: \(responseData)")
+                print("LOGIN - USER RESPONSE: \(responseData)")
                 
                 // The response will be the userID associated with the facebookID used, save the userID globally
-                Constants.Data.loggedInUser = responseData as! String
+                Constants.Data.currentUser = responseData as! String
                 
                 if self.newLogin {
                     
                     // Load the account view to show the logged in user
                     self.tapButtonAccount()
                     print("LOGIN - CALLED TAP ACCOUNT")
+                    
+                    // Hide the logging in indicator and label
+                    self.loginActivityIndicator.stopAnimating()
+                    self.loginProcessLabel.removeFromSuperview()
                 } else {
                     
                     // Since the first attempt to download the map data would have failed if the user was not logged in, refresh it again
@@ -2005,7 +2059,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         Constants.Data.mapBlobs = [Blob]()
         
         // Create some JSON to send the logged in userID
-        let json: NSDictionary = ["user_id" : Constants.Data.loggedInUser]
+        let json: NSDictionary = ["user_id" : Constants.Data.currentUser]
         
         let lambdaInvoker = AWSLambdaInvoker.defaultLambdaInvoker()
         lambdaInvoker.invokeFunction("Blobjot-GetMapData", JSONObject: json, completionHandler: { (response, err) -> Void in
@@ -2015,7 +2069,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 print("GET MAP DATA ERROR CODE: \(err!.code)")
                 
                 // Process the error codes and alert the user if needed
-                if err!.code == 1 && Constants.Data.loggedInUser != "" {
+                if err!.code == 1 && Constants.Data.currentUser != "" {
                     self.createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please refresh the map to try again.")
                 }
                 

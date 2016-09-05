@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="10174" systemVersion="15F34" minimumToolsVersion="Automatic">
+<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="10174" systemVersion="15G31" minimumToolsVersion="Automatic">
     <entity name="Blob" syncable="YES">
         <attribute name="blobDatetime" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="blobID" optional="YES" attributeType="String" syncable="YES"/>
@@ -13,6 +13,16 @@
         <attribute name="blobType" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
         <attribute name="blobUserID" optional="YES" attributeType="String" syncable="YES"/>
     </entity>
+    <entity name="BlobNotifications" syncable="YES">
+        <attribute name="blobID" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
+    <entity name="CurrentUser" syncable="YES">
+        <attribute name="currentUserFacebookID" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="currentUserID" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="currentUserImage" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="currentUserImageKey" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="currentUserName" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
     <entity name="User" syncable="YES">
         <attribute name="userBlocked" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="userConnect" optional="YES" attributeType="Integer 16" syncable="YES"/>
@@ -23,5 +33,7 @@
     <elements>
         <element name="Blob" positionX="-63" positionY="-18" width="128" height="210"/>
         <element name="User" positionX="-54" positionY="72" width="128" height="120"/>
+        <element name="CurrentUser" positionX="-54" positionY="63" width="128" height="120"/>
+        <element name="BlobNotifications" positionX="-45" positionY="72" width="128" height="60"/>
     </elements>
 </model>
