@@ -1041,7 +1041,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     
     // KEY-VALUE OBSERVER HANDLERS
     override func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
-        print("Change at keyPath = \(keyPath) for \(object)")
+        print("Change at keyPath = \(keyPath)")
         
         // Detect if the user's location has changed
         if keyPath == "myLocation" {
@@ -1559,18 +1559,18 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             self.newLogin = true
             
             // Authenticate the user in AWS Cognito
-//            Constants.credentialsProvider.logins = [AWSIdentityProviderFacebook: result.token.tokenString]
+            Constants.credentialsProvider.logins = [AWSIdentityProviderFacebook: result.token.tokenString]
             
-            let customProviderManager = CustomIdentityProvider(tokens: [AWSIdentityProviderFacebook: result.token.tokenString])
-            Constants.credentialsProvider = AWSCognitoCredentialsProvider(
-                regionType: Constants.Strings.aws_region
-                , identityPoolId: Constants.Strings.aws_cognitoIdentityPoolId
-                , identityProviderManager: customProviderManager
-            )
+//            let customProviderManager = CustomIdentityProvider(tokens: [AWSIdentityProviderFacebook: result.token.tokenString])
+//            Constants.credentialsProvider = AWSCognitoCredentialsProvider(
+//                regionType: Constants.Strings.aws_region
+//                , identityPoolId: Constants.Strings.aws_cognitoIdentityPoolId
+//                , identityProviderManager: customProviderManager
+//            )
             
             
             // Retrieve your Amazon Cognito ID
-            Constants.credentialsProvider.getIdentityId().continueWithBlock { (task: AWSTask!) -> AnyObject! in
+            Constants.credentialsProvider.getIdentityId().continueWithBlock {(task: AWSTask!) -> AnyObject! in
                 if (task.error != nil) {
                     print("AWS COGNITO GET IDENTITY ID - ERROR: " + task.error!.localizedDescription)
                 } else {
@@ -1594,7 +1594,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         print("FBSDK - MAKING GRAPH REQUEST")
         let fbRequest = FBSDKGraphRequest(graphPath: "me", parameters: ["fields": "id, email, name, picture"]) //parameters: ["fields": "id,email,name,picture"])
         print("FBSDK - MAKING GRAPH CALL")
-        fbRequest.startWithCompletionHandler { (connection : FBSDKGraphRequestConnection!, result : AnyObject!, error : NSError!) -> Void in
+        fbRequest.startWithCompletionHandler {(connection : FBSDKGraphRequestConnection!, result : AnyObject!, error : NSError!) -> Void in
             
             if error != nil {
                 print("FBSDK - Error Getting Info \(error)")
@@ -1627,6 +1627,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     
     func loginButtonDidLogOut(loginButton: FBSDKLoginButton!) {
         print("FBSDK DID LOG OUT: \(loginButton)")
+        
+        Constants.credentialsProvider.clearCredentials()
+        Constants.credentialsProvider.clearKeychain()
     }
     
     
@@ -2027,6 +2030,16 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             
             if (err != nil) {
                 print("LOGIN - ERROR: \(err)")
+                
+                dispatch_async(dispatch_get_main_queue(), {
+                    // Hide the logging in indicator and label
+                    self.loginActivityIndicator.stopAnimating()
+                    self.loginProcessLabel.removeFromSuperview()
+                    
+                    // Show the error message
+                    self.createAlertOkView("Login Error", message: "We're sorry, but we seem to have an issue logging you in.  Please tap the \"Log out\" button and try logging in again.")
+                })
+                
             } else if (responseData != nil) {
                 print("LOGIN - USER RESPONSE: \(responseData)")
                 

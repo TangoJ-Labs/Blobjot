@@ -136,10 +136,10 @@
 		B88131921D510EEE00021C4B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B881319C1D510EEE00021C4B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B88131A11D510EEE00021C4B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = Blobjot/Info.plist; sourceTree = "<group>"; };
-		B88131A61D510EEF00021C4B /* BlobjotTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BlobjotTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B88131A61D510EEF00021C4B /* Blobjot.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Blobjot.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B88131AA1D510EEF00021C4B /* BlobjotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlobjotTests.swift; sourceTree = "<group>"; };
 		B88131AC1D510EEF00021C4B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		B88131B11D510EEF00021C4B /* BlobjotUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BlobjotUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B88131B11D510EEF00021C4B /* Blobjot.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Blobjot.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B88131B51D510EEF00021C4B /* BlobjotUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlobjotUITests.swift; sourceTree = "<group>"; };
 		B88131B71D510EEF00021C4B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B88883FF1D52D824001EE249 /* FBSDKLoginKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = FBSDKLoginKit.framework; sourceTree = "<group>"; };
@@ -267,8 +267,8 @@
 			isa = PBXGroup;
 			children = (
 				B881318F1D510EEE00021C4B /* Blobjot.app */,
-				B88131A61D510EEF00021C4B /* BlobjotTests.xctest */,
-				B88131B11D510EEF00021C4B /* BlobjotUITests.xctest */,
+				B88131A61D510EEF00021C4B /* Blobjot.xctest */,
+				B88131B11D510EEF00021C4B /* Blobjot.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -371,7 +371,7 @@
 			);
 			name = BlobjotTests;
 			productName = BlobjotTests;
-			productReference = B88131A61D510EEF00021C4B /* BlobjotTests.xctest */;
+			productReference = B88131A61D510EEF00021C4B /* Blobjot.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		B88131B01D510EEF00021C4B /* BlobjotUITests */ = {
@@ -391,7 +391,7 @@
 			);
 			name = BlobjotUITests;
 			productName = BlobjotUITests;
-			productReference = B88131B11D510EEF00021C4B /* BlobjotUITests.xctest */;
+			productReference = B88131B11D510EEF00021C4B /* Blobjot.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
@@ -406,6 +406,12 @@
 				TargetAttributes = {
 					B881318E1D510EEE00021C4B = {
 						CreatedOnToolsVersion = 7.3.1;
+						DevelopmentTeam = 76TL7JRK9R;
+						SystemCapabilities = {
+							com.apple.Push = {
+								enabled = 1;
+							};
+						};
 					};
 					B88131A51D510EEF00021C4B = {
 						CreatedOnToolsVersion = 7.3.1;
@@ -683,7 +689,8 @@
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -705,6 +712,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -744,6 +752,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
 				MTL_ENABLE_DEBUG_INFO = NO;
+				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
@@ -755,6 +764,7 @@
 			baseConfigurationReference = A5145EC0D2F396CEDC3D1CE7 /* Pods-Blobjot.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
@@ -763,7 +773,8 @@
 				INFOPLIST_FILE = Blobjot/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.blobjot.Blobjot;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = Blobjot;
+				PROVISIONING_PROFILE = "";
 			};
 			name = Debug;
 		};
@@ -772,6 +783,7 @@
 			baseConfigurationReference = ECCEA997791A35BA1BCB3413 /* Pods-Blobjot.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
@@ -780,7 +792,8 @@
 				INFOPLIST_FILE = Blobjot/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.blobjot.Blobjot;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = Blobjot;
+				PROVISIONING_PROFILE = "";
 			};
 			name = Release;
 		};
@@ -792,7 +805,7 @@
 				INFOPLIST_FILE = BlobjotTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.blobjot.BlobjotTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = Blobjot;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Blobjot.app/Blobjot";
 			};
 			name = Debug;
@@ -805,7 +818,7 @@
 				INFOPLIST_FILE = BlobjotTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.blobjot.BlobjotTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = Blobjot;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Blobjot.app/Blobjot";
 			};
 			name = Release;
@@ -817,7 +830,7 @@
 				INFOPLIST_FILE = BlobjotUITests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.blobjot.BlobjotUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = Blobjot;
 				TEST_TARGET_NAME = Blobjot;
 			};
 			name = Debug;
@@ -829,7 +842,7 @@
 				INFOPLIST_FILE = BlobjotUITests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.blobjot.BlobjotUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = Blobjot;
 				TEST_TARGET_NAME = Blobjot;
 			};
 			name = Release;

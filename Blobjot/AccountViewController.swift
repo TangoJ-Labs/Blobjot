@@ -368,6 +368,15 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
             // Assign the new image to the local userImage view
             displayUserImage.image = pickedImage
             
+            // Update the global userObject with the new image
+            loopUserObjectCheck: for userObject in Constants.Data.userObjects {
+                if userObject.userID == Constants.Data.currentUser {
+                    userObject.userImage = pickedImage
+                    
+                    break loopUserObjectCheck
+                }
+            }
+            
             // Upload the new user image to AWS and update the userImageKey
             updateUserImage(pickedImage)
         }
@@ -405,9 +414,39 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
                 displayUserLabel.text = userObject.userName
                 displayUserTextFieldActivityIndicator.stopAnimating()
                 
-                // Download the user's userImage and display in the display user image view
-                getUserImage(userObject.userID, imageKey: userObject.userImageKey)
-                displayUserImageActivityIndicator.stopAnimating()
+                // Check to see if the current user data is already in Core Data
+                // Access Core Data
+                // Retrieve the Current User Blob data from Core Data
+                let moc = DataController().managedObjectContext
+                let currentUserFetch = NSFetchRequest(entityName: "CurrentUser")
+                
+                // Create an empty blobNotifications list in case the Core Data request fails
+                var currentUser = [CurrentUser]()
+                do {
+                    currentUser = try moc.executeFetchRequest(currentUserFetch) as! [CurrentUser]
+                } catch {
+                    fatalError("Failed to fetch frames: \(error)")
+                }
+                
+                print("CHECKING CORE DATA - CURRENT USER COUNT: \(currentUser.count)")
+                
+                // If the return has no content, the current user has not yet been saved
+                if currentUser.count == 0 {
+                    print("CHECKING CORE DATA - NO CURRENT USER DATA - CALLING GET USER DATA")
+                    
+                    // Download the user's userImage and display in the display user image view
+                    getUserImage(userObject.userID, imageKey: userObject.userImageKey)
+                    
+                } else {
+                    print("CHECKING CORE DATA - USE PREVIOUS IMAGE DATA")
+                    
+                    // Else use the saved current user data until the data is updated
+                    if let imageData = currentUser[0].userImage {
+                        print("CHECKING CORE DATA - PREVIOUS IMAGE DATA EXISTS")
+                        self.displayUserImage.image = UIImage(data: imageData)
+                        self.displayUserImageActivityIndicator.stopAnimating()
+                    }
+                }
                 
                 break userLoop
             }
@@ -576,8 +615,59 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
                             print("GET IMAGE - CHECK 1")
                             
                             self.displayUserImage.image = UIImage(data: tData)
-                            
+                            self.displayUserImageActivityIndicator.stopAnimating()
                             print("ADDED IMAGE TO DISPLAY USER IMAGE: \(imageKey))")
+                            
+                            // Save the logged in user data to Core Data for quicker access
+                            loopUserObjectCheck: for userObject in Constants.Data.userObjects {
+                                if userObject.userID == Constants.Data.currentUser {
+                                    
+                                    // Access Core Data
+                                    // Retrieve the Current User Blob data from Core Data
+                                    let moc = DataController().managedObjectContext
+                                    let currentUserFetch = NSFetchRequest(entityName: "CurrentUser")
+                                    
+                                    // Create an empty blobNotifications list in case the Core Data request fails
+                                    var currentUser = [CurrentUser]()
+                                    do {
+                                        currentUser = try moc.executeFetchRequest(currentUserFetch) as! [CurrentUser]
+                                    } catch {
+                                        fatalError("Failed to fetch frames: \(error)")
+                                    }
+                                    
+                                    print("CORE DATA - CURRENT USER COUNT: \(currentUser.count)")
+                                    
+                                    // If the return has no content, the current user has not yet been saved
+                                    if currentUser.count == 0 {
+                                        print("CORE DATA - CURRENT USER - SAVING NEW DATA")
+                                        
+                                        // Save the current user data in Core Data
+                                        let entity = NSEntityDescription.insertNewObjectForEntityForName("CurrentUser", inManagedObjectContext: moc) as! CurrentUser
+                                        entity.setValue(userObject.userID, forKey: "userID")
+                                        entity.setValue(userObject.userName, forKey: "userName")
+                                        entity.setValue(userObject.userImageKey, forKey: "userImageKey")
+                                        entity.setValue(tData, forKey: "userImage")
+                                        
+                                    } else {
+                                        print("CORE DATA - CURRENT USER - MODIFYING DATA")
+                                        
+                                        // Replace the current user data to ensure that the latest data is used
+                                        currentUser[0].userID = userObject.userID
+                                        currentUser[0].userName = userObject.userName
+                                        currentUser[0].userImageKey = userObject.userImageKey
+                                        currentUser[0].userImage = tData
+                                    }
+                                    
+                                    // Save the Entity
+                                    do {
+                                        try moc.save()
+                                    } catch {
+                                        fatalError("Failure to save context: \(error)")
+                                    }
+                                    
+                                    break loopUserObjectCheck
+                                }
+                            }
                         }
                         
                     } else {

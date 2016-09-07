@@ -213,7 +213,8 @@ struct Constants {
         static let imageStringStarEmpty = "star_clear.png"
         
         static let aws_region = AWSRegionType.USEast1
-        static let aws_cognitoIdentityPoolId = "us-east-1:6db4d1c8-f3f5-4466-b135-535279ff6077"
+//        static let aws_cognitoIdentityPoolId = "us-east-1:6db4d1c8-f3f5-4466-b135-535279ff6077"
+        static let aws_cognitoIdentityPoolId = "us-east-1:c24cf3db-0349-4163-87ad-3572319324e7"
         
     }
     

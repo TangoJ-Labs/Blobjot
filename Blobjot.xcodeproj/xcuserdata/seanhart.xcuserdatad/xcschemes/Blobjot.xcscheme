@@ -33,7 +33,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "B88131A51D510EEF00021C4B"
-               BuildableName = "BlobjotTests.xctest"
+               BuildableName = "Blobjot.xctest"
                BlueprintName = "BlobjotTests"
                ReferencedContainer = "container:Blobjot.xcodeproj">
             </BuildableReference>
@@ -43,7 +43,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "B88131B01D510EEF00021C4B"
-               BuildableName = "BlobjotUITests.xctest"
+               BuildableName = "Blobjot.xctest"
                BlueprintName = "BlobjotUITests"
                ReferencedContainer = "container:Blobjot.xcodeproj">
             </BuildableReference>
