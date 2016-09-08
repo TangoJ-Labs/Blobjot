@@ -72,7 +72,10 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     var buttonTrackUserImage: UILabel!
     var buttonRefreshMap: UIView!
     var buttonRefreshMapImage: UILabel!
+    var buttonRefreshMapActivityIndicator: UIActivityIndicatorView!
     
+    var lowAccuracyView: UIView!
+    var lowAccuracyLabel: UILabel!
     var accuracyLabel: UILabel!
     var loginScreen: UIView!
     var loginBox: UIView!
@@ -91,6 +94,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     var buttonTrackUserTapGesture: UITapGestureRecognizer!
     var buttonRefreshMapTapGesture: UITapGestureRecognizer!
     
+    var lowAccuracyViewTapGesture: UITapGestureRecognizer!
     var previewUserTapGesture: UITapGestureRecognizer!
     var previewContentTapGesture: UITapGestureRecognizer!
     var guideSwipeGestureRight: UISwipeGestureRecognizer!
@@ -333,6 +337,11 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         buttonRefreshMapImage.textAlignment = .Center
         buttonRefreshMap.addSubview(buttonRefreshMapImage)
         
+        // Show a loading indicator for when the Map is refreshing
+        buttonRefreshMapActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: 0, y: 0, width: buttonRefreshMap.frame.width, height: buttonRefreshMap.frame.height))
+        buttonRefreshMapActivityIndicator.color = UIColor.whiteColor()
+        buttonRefreshMap.addSubview(buttonRefreshMapActivityIndicator)
+        
         // The Search Button
         buttonSearchView = UIView(frame: CGRect(x: viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonSearchSize, y: 5, width: Constants.Dim.mapViewButtonSearchSize, height: Constants.Dim.mapViewButtonSearchSize))
         buttonSearchView.layer.cornerRadius = Constants.Dim.mapViewButtonSearchSize / 2
@@ -364,6 +373,21 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         buttonListViewImage.textColor = UIColor.whiteColor()
         buttonListViewImage.textAlignment = .Center
         buttonListView.addSubview(buttonListViewImage)
+        
+        // The small icon that indicates that the current user location accuracy is too low to enable Blob viewing
+        let lavSize: CGFloat = 20
+        lowAccuracyView = UIView(frame: CGRect(x: viewContainer.frame.width - 5 - lavSize, y: (viewContainer.frame.height / 2) - (lavSize / 2), width: lavSize, height: lavSize))
+        lowAccuracyView.layer.cornerRadius = lavSize / 2
+        lowAccuracyView.backgroundColor = UIColor.clearColor()
+        lowAccuracyView.layer.borderWidth = 2
+        lowAccuracyView.layer.borderColor = UIColor.redColor().CGColor
+        
+        lowAccuracyLabel = UILabel(frame: CGRect(x: 0, y: 0, width: lavSize, height: lavSize))
+        lowAccuracyLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 18)
+        lowAccuracyLabel.text = "!"
+        lowAccuracyLabel.textColor = UIColor.redColor()
+        lowAccuracyLabel.textAlignment = .Center
+        lowAccuracyView.addSubview(lowAccuracyLabel)
         
         // Add the Current Location Collection View Container in the top left corner, under the status bar
         // Give it a clear background, and initialize with a height of 0 - the height will be adjusted to the number of cells
@@ -548,6 +572,10 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         buttonCancelAddTapGesture.numberOfTapsRequired = 1  // add single tap
         buttonCancelAdd.addGestureRecognizer(buttonCancelAddTapGesture)
         
+        lowAccuracyViewTapGesture = UITapGestureRecognizer(target: self, action: #selector(MapViewController.tapLowAccuracyView(_:)))
+        lowAccuracyViewTapGesture.numberOfTapsRequired = 1  // add single tap
+        lowAccuracyView.addGestureRecognizer(lowAccuracyViewTapGesture)
+        
         // Add the Tap Gesture Recognizers for the Preview Box tap gestures
         previewUserTapGesture = UITapGestureRecognizer(target: self, action: #selector(MapViewController.previewUserTap(_:)))
         previewUserTapGesture.numberOfTapsRequired = 1  // add single tap
@@ -589,6 +617,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     func checkForUser() {
         print("FBSDK - CHECK FOR USER")
         print("LOGGED IN USER: \(Constants.Data.currentUser)")
+        print("AWS COGNITO CREDENTIALS: \(Constants.credentialsProvider.identityId)")
         
         // Show the login screen if no user is logged in
         if Constants.Data.currentUser == "" {
@@ -596,20 +625,15 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             // Check to see if the facebook user id is already in the FBSDK
             if let facebookToken = FBSDKAccessToken.currentAccessToken() {
                 
-                print("FBSDK USER ID: \(facebookToken.userID)")
-                fbGraphRequest(facebookToken.userID)
+                // If the Cognito credentials are still valid, retrieve the user data
+                if Constants.credentialsProvider.identityId != nil {
+                    print("FBSDK USER ID: \(facebookToken.userID)")
+                    fbGraphRequest(facebookToken.userID)
+                } else {
+                    // Else if the Cognito credentials have expired, request the credentials again (Cognito Identity ID) and use the current Facebook info
+                    self.getCognitoIdentityID(facebookToken)
+                }
                 
-//                // Recall the extra facebook user info and log in the user
-//                var facebookID: NSNumber!
-//                if let number = Int(facebookToken.userID) {
-//                    print("FBSDK FACEBOOK ID INT: \(number)")
-//                    facebookID = NSNumber(integer:number)
-//                }
-//                
-//                if facebookID != nil {
-//                    print("FBSDK FACEBOOK ID NSNUMBER: \(facebookID)")
-//                    
-//                }
             } else {
                 viewContainer.addSubview(loginScreen)
                 loginScreen.addSubview(loginBox)
@@ -663,6 +687,13 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     
     
     // MARK: TAP GESTURE METHODS
+    
+    // If the low accuracy alert view is showing, tapping it will display the popup explaining that the user's current location range is too high
+    func tapLowAccuracyView(gesture: UITapGestureRecognizer) {
+        
+        // Show a notification that the user's location is too inaccurate to update data
+        createAlertOkView("Bad Signal!", message: "Your location is too inaccurate to gather data.  Try moving to an area with better reception.")
+    }
     
     // When the Search Button is tapped, check to see if the search bar is visible
     // If it is not visible, and add it to the view and animate in down into view
@@ -937,6 +968,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     
     // Reset the MapView and re-download the Blob data
     func refreshMap(gesture: UITapGestureRecognizer? = nil) {
+        // Show the Map refreshing indicator
+        self.buttonRefreshMapActivityIndicator.startAnimating()
+        
         // PREPARE DATA
         // Request the Map Data for the logged in user
         getMapData()
@@ -1082,6 +1116,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 // Reset the accuracy indicator
                 locationInaccurate = false
                 
+                // Hide the low accuracy view
+                self.lowAccuracyView.removeFromSuperview()
+                
                 // Clear the array of current location Blobs and add the default Blob as the first element
                 Constants.Data.locationBlobs = [Constants.Data.defaultBlob]
                 
@@ -1209,15 +1246,18 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 print("BLOB REFRESH - RELOADED COLLECTION VIEW")
             } else {
                 
-                // Show a notification that the user's location is too inaccurate to update data
-                if !locationInaccurate {
-                    if Constants.Data.currentUser != "" {
-                        createAlertOkView("Bad Signal!", message: "Your location is too inaccurate to gather data.  Try moving to an area with better reception.")
-                    }
-                }
+//                // Show a notification that the user's location is too inaccurate to update data
+//                if !locationInaccurate {
+//                    if Constants.Data.currentUser != "" {
+//                        createAlertOkView("Bad Signal!", message: "Your location is too inaccurate to gather data.  Try moving to an area with better reception.")
+//                    }
+//                }
+                
+                // Show the low accuracy view
+                self.viewContainer.addSubview(lowAccuracyView)
                 
                 // Record that the user's location is inaccurate
-                locationInaccurate = true
+                self.locationInaccurate = true
             }
             
 //******************** GMSCameraUpdate methods not being recognized ***********************
@@ -1227,6 +1267,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
 //                    mapView.animateWithCameraUpdate(cameraUpdate)
             }
         }
+        
+        // Stop the refresh Map button indicator if it is running
+        self.buttonRefreshMapActivityIndicator.stopAnimating()
     }
     
     
@@ -1410,7 +1453,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     
     // Number of cells to make in CollectionView
     func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        print("Cell Count: \(Constants.Data.locationBlobs.count)")
+        print("MV - Cell Count: \(Constants.Data.locationBlobs.count)")
         
         // Resize the Location Blobs Collection View so that it only is tall enough to show all the Blobs
         // Otherwise, the Map View would be blocked by the Collection View and not allow touch responses
@@ -1558,35 +1601,8 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             // Set the new login indicator for certain settings
             self.newLogin = true
             
-            // Authenticate the user in AWS Cognito
-            Constants.credentialsProvider.logins = [AWSIdentityProviderFacebook: result.token.tokenString]
-            
-//            let customProviderManager = CustomIdentityProvider(tokens: [AWSIdentityProviderFacebook: result.token.tokenString])
-//            Constants.credentialsProvider = AWSCognitoCredentialsProvider(
-//                regionType: Constants.Strings.aws_region
-//                , identityPoolId: Constants.Strings.aws_cognitoIdentityPoolId
-//                , identityProviderManager: customProviderManager
-//            )
-            
-            
-            // Retrieve your Amazon Cognito ID
-            Constants.credentialsProvider.getIdentityId().continueWithBlock {(task: AWSTask!) -> AnyObject! in
-                if (task.error != nil) {
-                    print("AWS COGNITO GET IDENTITY ID - ERROR: " + task.error!.localizedDescription)
-                } else {
-                    // the task result will contain the identity id
-                    let cognitoId = task.result
-                    print("AWS COGNITO GET IDENTITY ID - AWS COGNITO ID: \(cognitoId)")
-                    print("AWS COGNITO GET IDENTITY ID - CHECK IDENTITY ID: \(Constants.credentialsProvider.identityId)")
-                    
-                    // Request extra facebook data for the user ON THE MAIN THREAD
-                    dispatch_async(dispatch_get_main_queue(), {
-                        self.fbGraphRequest(result.token.userID)
-                        print("FBSDK - REQUESTED ADDITIONAL USER INFO")
-                    });
-                }
-                return nil
-            }
+            // Now that the Facebook token has been retrieved, get the Cognito IdentityID
+            getCognitoIdentityID(result.token)
         }
     }
     
@@ -1634,6 +1650,39 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     
     
     // MARK: CUSTOM FUNCTIONS
+    
+    // Once the Facebook token is gained, request a Cognito Identity ID
+    func getCognitoIdentityID(token: FBSDKAccessToken) {
+        
+        // Authenticate the user in AWS Cognito
+        Constants.credentialsProvider.logins = [AWSIdentityProviderFacebook: token.tokenString]
+        
+//        let customProviderManager = CustomIdentityProvider(tokens: [AWSIdentityProviderFacebook: token.tokenString])
+//        Constants.credentialsProvider = AWSCognitoCredentialsProvider(
+//            regionType: Constants.Strings.aws_region
+//            , identityPoolId: Constants.Strings.aws_cognitoIdentityPoolId
+//            , identityProviderManager: customProviderManager
+//        )
+        
+        // Retrieve your Amazon Cognito ID
+        Constants.credentialsProvider.getIdentityId().continueWithBlock {(task: AWSTask!) -> AnyObject! in
+            if (task.error != nil) {
+                print("AWS COGNITO GET IDENTITY ID - ERROR: " + task.error!.localizedDescription)
+            } else {
+                // the task result will contain the identity id
+                let cognitoId = task.result
+                print("AWS COGNITO GET IDENTITY ID - AWS COGNITO ID: \(cognitoId)")
+                print("AWS COGNITO GET IDENTITY ID - CHECK IDENTITY ID: \(Constants.credentialsProvider.identityId)")
+                
+                // Request extra facebook data for the user ON THE MAIN THREAD
+                dispatch_async(dispatch_get_main_queue(), {
+                    self.fbGraphRequest(token.userID)
+                    print("FBSDK - REQUESTED ADDITIONAL USER INFO")
+                });
+            }
+            return nil
+        }
+    }
     
     // Check to see if the Search Bar is visible, and if so animate the container to hide it behind the Status Bar
     // Once the animation completes, remove the Search Bar Container from the view container
@@ -1724,9 +1773,20 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         // If Blob extra data has been requested, the Blob is in range, so download the Thumbnail,
         // otherwise, move the Blob age and text all the way to the right side of the Preview Box
         if blob.blobExtraRequested {
-            print("BLOB EXTRA REQUESTED - CALLING SET THUMBNAIL")
-            // Request and set the thumbnail image
-            setPreviewThumbnail()
+            print("BLOB EXTRA REQUESTED")
+            
+            // Check whether the Blob has media - if not, do not show the Thumbnail box
+            if blob.blobMediaType != nil && blob.blobMediaType == 0 {
+                //Stop animating the activity indicator (if not already stopped)
+                self.previewThumbnailActivityIndicator.stopAnimating()
+                
+                self.previewTimeLabel.frame = CGRect(x: previewContainer.frame.width - 5 - self.previewTimeLabelWidth, y: 5, width: self.previewTimeLabelWidth, height: 15)
+                self.previewTextBox.frame = CGRect(x: 50, y: 10 + previewUserNameLabel.frame.height, width: previewContainer.frame.width - 65, height: 15)
+            } else {
+                print("BLOB EXTRA REQUESTED - CALLING SET THUMBNAIL")
+                // Request and set the thumbnail image
+                setPreviewThumbnail()
+            }
         } else {
             print("BLOB EXTRA NOT REQUESTED")
             //Stop animating the activity indicator (if not already stopped)
@@ -2038,6 +2098,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                     
                     // Show the error message
                     self.createAlertOkView("Login Error", message: "We're sorry, but we seem to have an issue logging you in.  Please tap the \"Log out\" button and try logging in again.")
+                    
+                    // Try again
+                    self.checkForUser()
                 })
                 
             } else if (responseData != nil) {

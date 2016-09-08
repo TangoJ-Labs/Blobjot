@@ -35,6 +35,8 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
     var searchExitLabel: UILabel!
     var peopleTableViewActivityIndicator: UIActivityIndicatorView!
     var peopleTableView: UITableView!
+    lazy var refreshControl: UIRefreshControl = UIRefreshControl()
+    var refreshView: UIView!
     
     var cellPeopleTableViewTapGesture: UITapGestureRecognizer!
     var searchExitTapGesture: UITapGestureRecognizer!
@@ -104,11 +106,11 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
         searchExitLabel.textColor = UIColor.whiteColor()
         searchExitView.addSubview(searchExitLabel)
         
-        // Add a loading indicator while downloading the logged in user image
-        peopleTableViewActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: 0, y: searchBarContainer.frame.height, width: viewContainer.frame.width, height: Constants.Dim.peopleTableViewCellHeight))
-        peopleTableViewActivityIndicator.color = UIColor.blackColor()
-        viewContainer.addSubview(peopleTableViewActivityIndicator)
-        peopleTableViewActivityIndicator.startAnimating()
+//        // Add a loading indicator while downloading the logged in user image
+//        peopleTableViewActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: 0, y: searchBarContainer.frame.height, width: viewContainer.frame.width, height: Constants.Dim.peopleTableViewCellHeight))
+//        peopleTableViewActivityIndicator.color = UIColor.blackColor()
+//        viewContainer.addSubview(peopleTableViewActivityIndicator)
+//        peopleTableViewActivityIndicator.startAnimating()
         
         peopleTableView = UITableView(frame: CGRect(x: 0, y: searchBarContainer.frame.height, width: viewContainer.frame.width, height: viewContainer.frame.height - searchBarContainer.frame.height))
         peopleTableView.dataSource = self
@@ -120,6 +122,16 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
         peopleTableView.alwaysBounceVertical = true
         peopleTableView.showsVerticalScrollIndicator = false
         viewContainer.addSubview(peopleTableView)
+        
+        // Create a refresh control for the CollectionView and add a subview to move the refresh control where needed
+//        refreshView = UIView(frame: CGRect(x: 0, y: 0, width: viewContainer.frame.width, height: 40))
+//        peopleTableView.addSubview(refreshView)
+        refreshControl = UIRefreshControl()
+        refreshControl.attributedTitle = NSAttributedString(string: "")
+        refreshControl.addTarget(self, action: #selector(PeopleViewController.refreshDataManually), forControlEvents: UIControlEvents.ValueChanged)
+        peopleTableView.addSubview(refreshControl)
+        peopleTableView.contentOffset = CGPointMake(0, -self.refreshControl.frame.size.height)
+        refreshControl.beginRefreshing()
         
         cellPeopleTableViewTapGesture = UITapGestureRecognizer(target: self, action: #selector(PeopleViewController.tapPeopleTableView(_:)))
         cellPeopleTableViewTapGesture.numberOfTapsRequired = 1  // add single tap
@@ -165,6 +177,10 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
         let cell = tableView.dequeueReusableCellWithIdentifier(Constants.Strings.peopleTableViewCellReuseIdentifier, forIndexPath: indexPath) as! PeopleTableViewCell
         print("CELL \(indexPath.row): \(cell)")
         
+        cell.cellUserName.text = ""
+        cell.cellUserImage.image = nil
+        cell.cellConnectStar.image = UIImage(named: Constants.Strings.imageStringStarEmpty)
+        cell.cellActionMessage.text = ""
         cell.cellUserImageActivityIndicator.startAnimating()
         
         // Add a clear background for the selectedBackgroundView so that the row is not highlighted when selected
@@ -327,6 +343,20 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
         return returnActions
     }
     
+    // The user swiped down on the Table View - delete all data and re-download
+    func refreshDataManually(sender: AnyObject) {
+        print("PVC - MANUALLY REFRESH TABLE")
+        // Clear the current peopleList and any selections
+        self.peopleList = [User]()
+        self.selectedPeopleList = [User]()
+        
+        // Clear the Table View
+        self.refreshTableViewAndEndSpinner(false)
+        
+        // Recall the data
+        self.getUserConnections()
+    }
+    
     
     // MARK:  UISearchBarDelegate protocol
     
@@ -361,7 +391,7 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
                 }
             }
         }
-        refreshTableView()
+        self.refreshTableViewAndEndSpinner(true)
     }
     
     func updateSearchResultsForSearchController(searchController: UISearchController) {
@@ -424,7 +454,7 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
             
             print("PEOPLE TABLE VIEW: RELOADING TABLE VIEW")
             // Reload the Table View
-            self.peopleTableView.performSelectorOnMainThread(#selector(UITableView.reloadData), withObject: nil, waitUntilDone: true)
+            self.refreshTableViewAndEndSpinner(false)
             
 // *COMPLETE******** ADD UPLOAD & DATA METHODS TO UPDATE CONNECTED USERS
 
@@ -443,7 +473,7 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
     func updateUserStatusType(counterpartUserID: String, peopleListIndex: Int, userStatus: Constants.UserStatusTypes) {
         // Update the associated user's userStatus locally and refresh the Table View
         self.peopleList[peopleListIndex].userStatus = userStatus
-        self.refreshTableView()
+        self.refreshTableViewAndEndSpinner(true)
         
         // Update the associated user's userStatus globally
         loopUserObjectUpdate: for userObject in Constants.Data.userObjects {
@@ -465,17 +495,23 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
         self.addUserConnectionAction(Constants.Data.currentUser, connectionUserID: counterpartUserID, actionType: actionType)
     }
     
-    func refreshTableView() {
+    func refreshTableViewAndEndSpinner(endSpinner: Bool) {
         // Sort the list in case the userStatuses were changed
 //        self.peopleList.sortInPlace({$0.userStatus.rawValue <  $1.userStatus.rawValue})
         
         // Reload the Table View
         print("GET DATA - RELOAD TABLE VIEW")
         self.peopleTableView.performSelectorOnMainThread(#selector(UITableView.reloadData), withObject: nil, waitUntilDone: true)
+        
+        if endSpinner {
+            print("RELOAD TABLE VIEW - END REFRESHING")
+            self.refreshControl.endRefreshing()
+//            self.peopleTableViewActivityIndicator.stopAnimating()
+//            self.peopleTableViewActivityIndicator.removeFromSuperview()
+        }
     }
     
     func bringTopPersonToFrontOfPeopleList() {
-// *COMPLETE***********CORRECT FOR ARRAY OF PERSON OBJECTS, NOT ARRAY OF STRINGS
         
         // Ensure that the person was assigned
         if self.peopleListTopPerson != nil {
@@ -488,6 +524,9 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
                 }
             }
         }
+        
+        // Reload the Table View
+        self.refreshTableViewAndEndSpinner(true)
     }
     
     // Create a solid color UIImage
@@ -619,6 +658,7 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
                                         
                                         self.peopleList.append(addUser)
                                         print("PVC - \(self.printCheck): ADDED USER \(addUser.userName) TO PEOPLE LIST")
+                                        
                                     }
                                 }
                                 print("PVC - \(self.printCheck): PEOPLE LIST COUNT: \(self.peopleList.count)")
@@ -628,9 +668,8 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
                     // Find the passed person, remove them from their position in the list and place them at the top (index: 0) position
                     self.bringTopPersonToFrontOfPeopleList()
                     
-                    // Reload the Table View
-                    print("GET DATA - RELOAD TABLE VIEW")
-                    self.peopleTableView.performSelectorOnMainThread(#selector(UITableView.reloadData), withObject: nil, waitUntilDone: true)
+//                    // Reload the Table View
+//                    self.refreshTableViewAndEndSpinner(true)
                 }
             }
         })
@@ -692,8 +731,7 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
                             print("ADDED IMAGE: \(imageKey))")
                             
                             // Reload the Table View
-                            print("GET IMAGE - RELOAD TABLE VIEW")
-                            self.peopleTableView.performSelectorOnMainThread(#selector(UITableView.reloadData), withObject: nil, waitUntilDone: true)
+                            self.refreshTableViewAndEndSpinner(false)
                         }
                         
                     } else {

@@ -31,6 +31,8 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
     // (and have its own functions called that are listed in the protocol)
     var blobAddViewDelegate: BlobAddViewControllerDelegate?
     
+    var rightButtonItem: UIBarButtonItem!
+    
     // Save device settings to adjust view if needed
     var screenSize: CGRect!
     var statusBarHeight: CGFloat!
@@ -66,7 +68,7 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
     var blobThumbnail: UIImage?
     var blobImage: UIImage?
 //    var blobUserTags = [String]()
-    var blobMediaType = 1
+    var blobMediaType = 0
     
     var randomMediaID: String?
     var uploadImageFilePath: String?
@@ -75,6 +77,7 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
     var uploadVideoFilePath: String?
     var uploadThumbnailFilePath: String!
     
+    var selectedOneOrMorePeople: Bool = false
     var sendAttempted: Bool = false
 
     override func viewDidLoad() {
@@ -82,11 +85,11 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
         
         // Create and set the Nav Bar right button here, and not in the parent VC because this View Controller needs
         // to call this method so that it can pass local variables
-        let rightButtonItem = UIBarButtonItem(title: "Send",
+        rightButtonItem = UIBarButtonItem(title: "Send",
                                               style: UIBarButtonItemStyle.Plain,
                                               target: self,
                                               action: #selector(self.sendBlobAndPopViewController(_:)))
-        rightButtonItem.tintColor = UIColor.whiteColor()
+        rightButtonItem.tintColor = UIColor.lightGrayColor()
         self.navigationItem.setRightBarButtonItem(rightButtonItem, animated: true)
         
         // Instantiate and assign delegates for the Page Viewer View Controllers
@@ -446,15 +449,31 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
         addCircle.strokeColor = color
     }
     
+    // Functions from the BlobAddPeopleVC indicating the number of people selected
+    // Store the person selected indicator (to allow a user to send or not) and
+    // change the color of the "Send" button to show that the Blob can be sent
+    func selectedPerson() {
+        print("SELECTED PERSON - SET SEND BUTTON COLOR")
+        self.selectedOneOrMorePeople = true
+        rightButtonItem.tintColor = UIColor.whiteColor()
+    }
+    func deselectedAllPeople() {
+        print("DESELECTED ALL PEOPLE - SET SEND BUTTON COLOR")
+        self.selectedOneOrMorePeople = false
+        rightButtonItem.tintColor = UIColor.lightGrayColor()
+    }
     
     // The function called by the "Send" button on the Nav Bar
     // Upload the new Blob data to the server and then dismiss the BlobAdd VC from the parent VC (the Map View)
     func sendBlobAndPopViewController(sender: UIBarButtonItem) {
         print("SEND FILES TO S3 AND DATA TO LAMBDA AND POP VC")
         print("RANDOM ID: \(self.randomMediaID)")
+        print("SEND ALREADY ATTEMPTED?: \(self.sendAttempted)")
+        print("PEOPLE SELECTED?: \(self.selectedOneOrMorePeople)")
         
         // Ensure that this is the first time the Blob send has been attempted
-        if !self.sendAttempted {
+        // and that at least one person has been selected
+        if !self.sendAttempted && self.selectedOneOrMorePeople {
             self.sendAttempted = true
             
             // Show the view screen to indicate that the app is working
@@ -465,6 +484,7 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
             // Prepare the media and urls for upload
             if let randomMediaID = self.randomMediaID {
                 print("SENDING FILES")
+                print("BLOB MEDIA TYPE: \(self.blobMediaType)")
                 
                 // Calculate the current time to use in dating the Blob
                 let nowTime = NSDate().timeIntervalSince1970
@@ -472,15 +492,25 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
                 // Set the media key to an image by default - it will change to an .mp4 if it is a video
                 let uploadMediaKey = randomMediaID + ".png"
                 
-                // If the media is an image, upload using temporary image and delete the temporary image
-                if self.blobMediaType == 1 {
+                // Process the Blob based on its media type
+                if self.blobMediaType == 0 {
+                    print("PROCESSING NON-MEDIA BLOB")
                     
+                    // NO MEDIA WAS ATTACHED
+                    processBlobData(randomMediaID, uploadKey: uploadMediaKey, currentTime: nowTime)
+                    
+                } else if self.blobMediaType == 1 {
+                    print("PROCESSING PHOTO BLOB")
+                    // THE MEDIA IS A PHOTO
+                    
+                    // If the media is an image, upload using temporary image and delete the temporary image
                     // Upload the image to AWS, and upload the Blob data after the file is successfully uploaded
                     if let imageFilePath = self.uploadImageFilePath {
                         self.uploadMediaToBucket(Constants.Strings.S3BucketMedia, uploadMediaFilePath: imageFilePath, mediaID: randomMediaID, uploadKey: uploadMediaKey, currentTime: nowTime, deleteWhenFinished: true)
                     }
                     
                 } else if self.blobMediaType == 2 {
+                    // THE MEDIA IS A VIDEO
                     print("VIDEOS ARE NOT ALLOWED AT THIS TIME")
                     
 //                    // Else if the media is a video, change the file path to .mp4 and upload using the selected file path from the picker
@@ -506,10 +536,55 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
                 
                 // Upload the Thumbnail to AWS
                 if let thumbnailFilePath = self.uploadThumbnailFilePath {
-                    self.uploadMediaToBucket(Constants.Strings.S3BucketThumbnails, uploadMediaFilePath: thumbnailFilePath, mediaID: randomMediaID, uploadKey: randomMediaID + ".png", currentTime: nowTime, deleteWhenFinished: true)
+                    self.uploadMediaToBucket(Constants.Strings.S3BucketThumbnails, uploadMediaFilePath: thumbnailFilePath, mediaID: randomMediaID, uploadKey: uploadMediaKey, currentTime: nowTime, deleteWhenFinished: true)
                 }
             }
         }
+    }
+    
+    func processBlobData(mediaID: String, uploadKey: String, currentTime: Double) {
+        print("PROCESSING BLOB DATA")
+        
+        // Save the list of tagged users
+        var taggedUsers = [String]()
+        for selectUser in self.vc4.peopleListSelected {
+            taggedUsers.append(selectUser.userID)
+        }
+        
+        // Upload the Blob data to Lamda and then DynamoDB
+        self.uploadBlobData(mediaID, blobLat: self.blobCoords.latitude, blobLong: self.blobCoords.longitude, blobMediaID: uploadKey, blobMediaType: self.blobMediaType, blobRadius: self.blobRadius, blobText: self.vc2.blobTextView.text, blobThumbnailID: mediaID + ".png", blobTimestamp: currentTime, blobType: self.blobType.rawValue, blobTaggedUsers: taggedUsers, blobUserID: Constants.Data.currentUser)
+        
+        print("MAP BLOBS COUNT 1: \(Constants.Data.mapBlobs.count)")
+        
+        // Create a new Blob locally so that the Circle can immediately be added to the map
+        let newBlob = Blob()
+        newBlob.blobID = mediaID
+        newBlob.blobDatetime = NSDate(timeIntervalSince1970: currentTime)
+        newBlob.blobLat = self.blobCoords.latitude
+        newBlob.blobLong = self.blobCoords.longitude
+        newBlob.blobRadius = self.blobRadius
+        newBlob.blobType = self.blobType
+        newBlob.blobUserID = Constants.Data.currentUser
+        Constants.Data.userBlobs.append(newBlob)
+        
+        // Check to see if the logged in user was tagged
+        loopTaggedUsers: for person in taggedUsers {
+            print("CHECKING TAGGED USERS: \(person)")
+            // If the logged in user was tagged, add the Blob to the mapBlobs so that it shows on the Map View
+            if person == Constants.Data.currentUser {
+                print("ADDING TO MAP BLOBS")
+                Constants.Data.mapBlobs.append(newBlob)
+                
+                // Call the parent VC to add the new Blob to the map of the Map View
+                if let parentVC = self.blobAddViewDelegate {
+                    parentVC.createBlobOnMap(CLLocationCoordinate2DMake(self.blobCoords.latitude, self.blobCoords.longitude), blobRadius: self.blobRadius, blobType: self.blobType, blobTitle: mediaID)
+                }
+                break loopTaggedUsers
+            }
+        }
+        
+        print("MAP BLOBS COUNT 2: \(Constants.Data.mapBlobs.count)")
+        print("USER BLOBS COUNT: \(Constants.Data.userBlobs.count)")
     }
     
     // Create an alert screen with only an acknowledgment option (an "OK" button)
@@ -520,6 +595,13 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
         }
         alertController.addAction(okAction)
         self.presentViewController(alertController, animated: true, completion: nil)
+    }
+    
+    func popVC() {
+        // Call the parent VC to remove the current VC from the stack
+        if let parentVC = self.blobAddViewDelegate {
+            parentVC.popViewController()
+        }
     }
     
     
@@ -567,22 +649,24 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
                 } else {
                     print("Upload failed: [\(error)]")
                     self.createAlertOkView("On no!", message: "We had a problem uploading your Blob.  Please try again.")
+                    
+                    // Reset the upload view settings to allow another upload attempt
+                    self.viewScreen.removeFromSuperview()
+                    self.viewScreenActivityIndicator.removeFromSuperview()
+                    self.viewScreenActivityIndicator.stopAnimating()
+                    self.sendAttempted = false
                 }
             } else if let exception = task.exception {
                 print("Upload failed: [\(exception)]")
             } else {
                 print("Upload succeeded")
                 
-                // Save the list of tagged users
-                var taggedUsers = [String]()
-                for selectUser in self.vc4.peopleListSelected {
-                    taggedUsers.append(selectUser.userID)
-                }
-                
                 // If the media file was successfully updated, save the Blob data to AWS
+                // and then add the Blob locally (into User Blobs and Map Blobs, if the current user was tagged)
+                // Do this inside this if statement otherwise the Blob will be added twice (the upload Media method
+                // is used for the thumbnail too
                 if bucket == Constants.Strings.S3BucketMedia {
-                    // Upload the Blob data to Lamda and then DynamoDB
-                    self.uploadBlobData(mediaID, blobLat: self.blobCoords.latitude, blobLong: self.blobCoords.longitude, blobMediaID: uploadKey, blobMediaType: self.blobMediaType, blobRadius: self.blobRadius, blobText: self.vc2.blobTextView.text, blobThumbnailID: mediaID + ".png", blobTimestamp: currentTime, blobType: self.blobType.rawValue, blobTaggedUsers: taggedUsers, blobUserID: Constants.Data.currentUser)
+                    self.processBlobData(mediaID, uploadKey: uploadKey, currentTime: currentTime)
                 }
                 
                 // If the file was flagged for deletion, delete it
@@ -596,42 +680,6 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
                     }
                 }
                 
-                print("MAP BLOBS COUNT 1: \(Constants.Data.mapBlobs.count)")
-                
-                // Create a new Blob locally so that the Circle can immediately be added to the map
-                let newBlob = Blob()
-                newBlob.blobID = mediaID
-                newBlob.blobDatetime = NSDate(timeIntervalSince1970: currentTime)
-                newBlob.blobLat = self.blobCoords.latitude
-                newBlob.blobLong = self.blobCoords.longitude
-                newBlob.blobRadius = self.blobRadius
-                newBlob.blobType = self.blobType
-                newBlob.blobUserID = Constants.Data.currentUser
-                Constants.Data.userBlobs.append(newBlob)
-                
-                // Check to see if the logged in user was tagged
-                loopTaggedUsers: for person in taggedUsers {
-                    print("CHECKING TAGGED USERS: \(person)")
-                    // If the logged in user was tagged, add the Blob to the mapBlobs so that it shows on the Map View
-                    if person == Constants.Data.currentUser {
-                        print("ADDING TO MAP BLOBS")
-                        Constants.Data.mapBlobs.append(newBlob)
-                        
-                        // Call the parent VC to add the new Blob to the map of the Map View
-                        if let parentVC = self.blobAddViewDelegate {
-                            parentVC.createBlobOnMap(CLLocationCoordinate2DMake(self.blobCoords.latitude, self.blobCoords.longitude), blobRadius: self.blobRadius, blobType: self.blobType, blobTitle: mediaID)
-                        }
-                        break loopTaggedUsers
-                    }
-                }
-                
-                print("MAP BLOBS COUNT 2: \(Constants.Data.mapBlobs.count)")
-                print("USER BLOBS COUNT: \(Constants.Data.userBlobs.count)")
-                
-                // Call the parent VC to remove the current VC from the stack
-                if let parentVC = self.blobAddViewDelegate {
-                    parentVC.popViewController()
-                }
             }
             return nil
         })
@@ -662,8 +710,18 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
             
             if (err != nil) {
                 print("SENDING DATA TO LAMBDA ERROR: \(err)")
+                self.createAlertOkView("On no!", message: "We had a problem uploading your Blob.  Please try again.")
+                
+                // Reset the upload view settings to allow another upload attempt
+                self.viewScreen.removeFromSuperview()
+                self.viewScreenActivityIndicator.removeFromSuperview()
+                self.viewScreenActivityIndicator.stopAnimating()
+                self.sendAttempted = false
+                
             } else if (response != nil) {
                 print("SENDING DATA TO LAMDA RESPONSE: \(response)")
+                
+                self.popVC()
             }
             
         })

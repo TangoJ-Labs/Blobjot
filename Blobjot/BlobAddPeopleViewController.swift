@@ -16,6 +16,10 @@ protocol BlobAddPeopleViewControllerDelegate {
     
     // When called, the parent View Controller changes the type of Blob to add
     func changeMapCircleType(type: Constants.BlobTypes)
+    
+    // Pass to the parent VC an indicator whether a person has been selected
+    func selectedPerson()
+    func deselectedAllPeople()
 }
 
 class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate {
@@ -122,7 +126,7 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
 //        peopleViewController.useBarHeights = false
 //        peopleViewController.printCheck = "CHILD"
 //        addChildViewController(peopleViewController)
-//        print("BAP - PEOPLE VIEW CONTAINER: \(peopleViewContainer.frame)")
+//        print("BAPVC - PEOPLE VIEW CONTAINER: \(peopleViewContainer.frame)")
 //        peopleViewController.view.frame = CGRect(x: 0, y: 0, width: peopleViewContainer.frame.width, height: peopleViewContainer.frame.height)
 //        peopleViewContainer.addSubview(peopleViewController.view)
 //        peopleViewController.didMoveToParentViewController(self)
@@ -158,6 +162,7 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
     
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
+        print("BAPVC - PEOPLE COUNT: \(peopleListUse.count)")
         return peopleListUse.count
     }
     
@@ -167,7 +172,7 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCellWithIdentifier(Constants.Strings.blobAddPeopleTableViewCellReuseIdentifier, forIndexPath: indexPath) as! BlobAddPeopleTableViewCell
-        print("CELL \(indexPath.row): \(cell)")
+        print("BAPVC - CELL \(indexPath.row): \(cell)")
         
         cell.cellUserImageActivityIndicator.startAnimating()
         
@@ -177,7 +182,7 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
         cell.selectedBackgroundView = sbv
         
         let cellUserObject = self.peopleListUse[indexPath.row]
-        print("USER NAME: \(cellUserObject.userName) FOR CELL: \(indexPath.row)")
+        print("BAPVC - USER NAME: \(cellUserObject.userName) FOR CELL: \(indexPath.row)")
         
         // Get the User Object from the list and assign data to the cell
         cell.cellUserName.text = cellUserObject.userName
@@ -207,6 +212,18 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
             peopleListSelected.append(peopleListUse[indexPath.row])
         }
         
+        print("PEOPLE SELECTED COUNT: \(peopleListSelected.count)")
+        // Check the number of people selected
+        if peopleListSelected.count > 0 {
+            if let parentVC = self.blobAddPeopleDelegate {
+                parentVC.selectedPerson()
+            }
+        } else {
+            if let parentVC = self.blobAddPeopleDelegate {
+                parentVC.deselectedAllPeople()
+            }
+        }
+        
         // SELECTED PEOPLE CHECK
         for person in peopleListSelected {
             print("PERSON SELECTED: \(person.userName)")
@@ -220,6 +237,18 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
             if person.userID == peopleListUse[indexPath.row].userID {
                 peopleListSelected.removeAtIndex(index)
                 break loopPeopleListSelected
+            }
+        }
+        
+        print("PEOPLE SELECTED COUNT: \(peopleListSelected.count)")
+        // Check the number of people selected
+        if peopleListSelected.count > 0 {
+            if let parentVC = self.blobAddPeopleDelegate {
+                parentVC.selectedPerson()
+            }
+        } else {
+            if let parentVC = self.blobAddPeopleDelegate {
+                parentVC.deselectedAllPeople()
             }
         }
         
@@ -247,7 +276,7 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
     
     // Edit the peopleList based on the search text filter
     func searchBar(searchBar: UISearchBar, textDidChange searchText: String) {
-        print("Search Text: \(searchText)")
+        print("BAPVC - Search Text: \(searchText)")
         
         // If the search bar is cleared, clear the peopleList and add all users
         self.peopleListUse = [User]()
@@ -261,28 +290,15 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
             for userObject in self.peopleList {
                 // Convert the strings to lowercase for better matching
                 if userObject.userName.lowercaseString.containsString(searchText.lowercaseString) {
-                    print("UserName Contains: \(searchText)")
+                    print("BAPVC - UserName Contains: \(searchText)")
                     
                     self.peopleListUse.append(userObject)
                 }
             }
         }
         
-        // Reload the Table View
-        print("BAP - SEARCH BAR - RELOAD TABLE VIEW")
-        self.peopleTableView.performSelectorOnMainThread(#selector(UITableView.reloadData), withObject: nil, waitUntilDone: true)
-        
-        // Loop through the Selected People list and highlight the associated people in the Use People list
-        for selectedPerson in peopleListSelected {
-            loopUsePeopleList: for (useIndex, usePerson) in self.peopleListUse.enumerate() {
-                if usePerson.userID == selectedPerson.userID {
-                    
-                    // Highlight that person in the table view
-                    self.peopleTableView.selectRowAtIndexPath(NSIndexPath(forRow: useIndex, inSection: 0), animated: false, scrollPosition: UITableViewScrollPosition.None)
-                    break loopUsePeopleList
-                }
-            }
-        }
+        // Refresh the Table
+        refreshTableAndHighlights()
     }
     
     
@@ -299,6 +315,11 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
                 parentVC.changeMapCircleType(Constants.BlobTypes.Temporary)
             }
             
+            // Toggle the Send button
+            if let parentVC = self.blobAddPeopleDelegate {
+                parentVC.deselectedAllPeople()
+            }
+            
         } else {
             selectAll = true
             selectAllBox.text = "\u{2713}"
@@ -308,11 +329,36 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
             if let parentVC = self.blobAddPeopleDelegate {
                 parentVC.changeMapCircleType(Constants.BlobTypes.Public)
             }
+            
+            // Toggle the Send button
+            if let parentVC = self.blobAddPeopleDelegate {
+                parentVC.selectedPerson()
+            }
         }
     }
     
     
     // MARK: CUSTOM FUNCTIONS
+    
+    // Refresh the collectionView and highlight any users that were previously highlighted
+    func refreshTableAndHighlights() {
+        
+        // Reload the Table View
+        print("BAPVC - REFRESH TABLE AND HIGHLIGHTS - RELOAD TABLE VIEW")
+        self.peopleTableView.performSelectorOnMainThread(#selector(UITableView.reloadData), withObject: nil, waitUntilDone: true)
+        
+        // Loop through the Selected People list and highlight the associated people in the Use People list
+        for selectedPerson in peopleListSelected {
+            loopUsePeopleList: for (useIndex, usePerson) in self.peopleListUse.enumerate() {
+                if usePerson.userID == selectedPerson.userID {
+                    
+                    // Highlight that person in the table view
+                    self.peopleTableView.selectRowAtIndexPath(NSIndexPath(forRow: useIndex, inSection: 0), animated: false, scrollPosition: UITableViewScrollPosition.None)
+                    break loopUsePeopleList
+                }
+            }
+        }
+    }
     
     // Create a solid color UIImage
     func getImageWithColor(color: UIColor, size: CGSize) -> UIImage {
@@ -330,7 +376,7 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
     
     // The initial request for Map Blob data - called when the View Controller is instantiated
     func getUserConnections() {
-        print("BAP - REQUESTING GUC")
+        print("BAPVC - REQUESTING GUC")
         
         // Create some JSON to send the logged in userID
         let json: NSDictionary = ["user_id" : Constants.Data.currentUser, "print_check" : "BAP"]
@@ -339,7 +385,7 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
         lambdaInvoker.invokeFunction("Blobjot-GetUserConnections", JSONObject: json, completionHandler: { (response, err) -> Void in
             
             if (err != nil) {
-                print("BAP - GET USER CONNECTIONS DATA ERROR: \(err)")
+                print("BAPVC - GET USER CONNECTIONS DATA ERROR: \(err)")
             } else if (response != nil) {
                 
                 // Convert the response to an array of arrays
@@ -347,15 +393,15 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
                     
                     // Loop through the arrays and add each user - the arrays should be in the proper order by user type
                     for (arrayIndex, userArray) in userConnectionArrays.enumerate() {
-                        print("PVC-GUC: array: \(arrayIndex): jsonData: \(userArray)")
-                        print("BAP - USER COUNT: \(userArray.count)")
+                        print("BAPVC - array: \(arrayIndex): jsonData: \(userArray)")
+                        print("BAPVC - USER COUNT: \(userArray.count)")
                         
                         // Stop the table loading spinner before adding data so that it does not show up in front of the user list
                         //                        self.accountTableActivityIndicator.stopAnimating()
                         
                         // Loop through each AnyObject (User) in the array
                         for user in userArray {
-                            print("BAP - USER: \(user)")
+                            print("BAPVC - USER: \(user)")
                             
                             // Convert the AnyObject to JSON with keys and AnyObject values
                             // Then convert the AnyObject values to Strings or Numbers depending on their key
@@ -363,9 +409,9 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
                                 let userID = checkUser["user_id"] as! String
                                 let userName = checkUser["user_name"] as! String
                                 let userImageKey = checkUser["user_image_key"] as! String
-                                print("BAP - USER ID: \(userID)")
-                                print("BAP - USER NAME: \(userName)")
-                                print("BAP - USER IMAGE KEY: \(userImageKey)")
+                                print("BAPVC - USER ID: \(userID)")
+                                print("BAPVC - USER NAME: \(userName)")
+                                print("BAPVC - USER IMAGE KEY: \(userImageKey)")
                                 
                                 // Create a User Object and add it to the global User array
                                 let addUser = User()
@@ -374,7 +420,7 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
                                 addUser.userImageKey = userImageKey
                                 addUser.userStatus = Constants.UserStatusTypes(rawValue: arrayIndex)
                                 
-                                print("BAP - TRYING TO ADD DOWNLOADED USER: \(userName)")
+                                print("BAPVC - TRYING TO ADD DOWNLOADED USER: \(userName)")
                                 
                                 // Check to ensure the user does not already exist in the local User array
                                 var personExists = false
@@ -393,10 +439,10 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
                                     // Add the User Object to the local list if they are a connection
                                     if addUser.userStatus == Constants.UserStatusTypes.Connected {
                                         self.peopleList.append(addUser)
-                                        print("BAP - ADDED CONNECTED USER \(addUser.userName) TO PEOPLE LIST")
+                                        print("BAPVC - ADDED CONNECTED USER \(addUser.userName) TO PEOPLE LIST")
                                     }
                                 }
-                                print("BAP - PEOPLE LIST COUNT: \(self.peopleList.count)")
+                                print("BAPVC - PEOPLE LIST COUNT: \(self.peopleList.count)")
                             }
                         }
                     }
@@ -406,8 +452,7 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
                     self.peopleListUse = self.peopleList
                     
                     // Reload the Table View
-                    print("BAP - GET DATA - RELOAD TABLE VIEW")
-                    self.peopleTableView.performSelectorOnMainThread(#selector(UITableView.reloadData), withObject: nil, waitUntilDone: true)
+                    self.refreshTableAndHighlights()
                 }
             }
         })
@@ -415,7 +460,7 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
     
     // Download User Image
     func getUserImage(userID: String, imageKey: String) {
-        print("BAP - GETTING IMAGE FOR: \(imageKey)")
+        print("BAPVC - GETTING IMAGE FOR: \(imageKey)")
         
         let downloadingFilePath = NSTemporaryDirectory().stringByAppendingString(imageKey) // + Constants.Settings.frameImageFileType)
         let downloadingFileURL = NSURL(fileURLWithPath: downloadingFilePath)
@@ -431,23 +476,23 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
             if let error = task.error {
                 if error.domain == AWSS3TransferManagerErrorDomain as String
                     && AWSS3TransferManagerErrorType(rawValue: error.code) == AWSS3TransferManagerErrorType.Paused {
-                    print("BAP - DOWNLOAD PAUSED")
+                    print("BAPVC - DOWNLOAD PAUSED")
                 } else {
-                    print("BAP - DOWNLOAD FAILED: [\(error)]")
+                    print("BAPVC - DOWNLOAD FAILED: [\(error)]")
                 }
             } else if let exception = task.exception {
-                print("BAP - DOWNLOAD FAILED: [\(exception)]")
+                print("BAPVC - DOWNLOAD FAILED: [\(exception)]")
             } else {
-                print("BAP - DOWNLOAD SUCCEEDED")
+                print("BAPVC - DOWNLOAD SUCCEEDED")
                 dispatch_async(dispatch_get_main_queue(), { () -> Void in
                     // Assign the image to the Preview Image View
                     if NSFileManager().fileExistsAtPath(downloadingFilePath) {
-                        print("BAP - IMAGE FILE AVAILABLE")
+                        print("BAPVC - IMAGE FILE AVAILABLE")
                         let thumbnailData = NSData(contentsOfFile: downloadingFilePath)
                         
                         // Ensure the Thumbnail Data is not null
                         if let tData = thumbnailData {
-                            print("BAP - GET IMAGE - CHECK 1")
+                            print("BAPVC - GET IMAGE - CHECK 1")
                             
                             // Find the correct User Object in the local list and assign the newly downloaded Image
                             loopUserObjectCheckLocal: for userObjectLocal in self.peopleList {
@@ -458,15 +503,14 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
                                 }
                             }
                             
-                            print("ADDED IMAGE: \(imageKey))")
+                            print("BAPVC - ADDED IMAGE: \(imageKey))")
                             
                             // Reload the Table View
-                            print("BAP - GET IMAGE - RELOAD TABLE VIEW")
-                            self.peopleTableView.performSelectorOnMainThread(#selector(UITableView.reloadData), withObject: nil, waitUntilDone: true)
+                            self.refreshTableAndHighlights()
                         }
                         
                     } else {
-                        print("BAP - FRAME FILE NOT AVAILABLE")
+                        print("BAPVC - FRAME FILE NOT AVAILABLE")
                     }
                 })
             }
