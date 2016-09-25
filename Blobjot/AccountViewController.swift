@@ -17,13 +17,13 @@ import UIKit
 protocol AccountViewControllerDelegate {
     
     // When called, the parent View Controller checks for changes to the logged in user
-    func checkForUser()
+    func logoutUser()
     
     // When called, fire the parent popViewController
     func popViewController()
 }
 
-class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, PeopleViewControllerDelegate {
+class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, PeopleViewControllerDelegate, AWSRequestDelegate {
     
     // Add a delegate variable which the parent view controller can pass its own delegate instance to and have access to the protocol
     // (and have its own functions called that are listed in the protocol)
@@ -71,14 +71,14 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
         super.viewDidLoad()
         
         // Status Bar Settings
-        UIApplication.sharedApplication().statusBarHidden = false
-        UIApplication.sharedApplication().statusBarStyle = UIStatusBarStyle.LightContent
-        statusBarHeight = UIApplication.sharedApplication().statusBarFrame.size.height
+        UIApplication.shared.isStatusBarHidden = false
+        UIApplication.shared.statusBarStyle = UIStatusBarStyle.lightContent
+        statusBarHeight = UIApplication.shared.statusBarFrame.size.height
         navBarHeight = self.navigationController?.navigationBar.frame.height
         print("**************** AVC - NAV BAR HEIGHT: \(navBarHeight)")
         viewFrameY = self.view.frame.minY
         print("**************** AVC - VIEW FRAME Y: \(viewFrameY)")
-        screenSize = UIScreen.mainScreen().bounds
+        screenSize = UIScreen.main.bounds
         print("**************** AVC - SCREEN HEIGHT: \(screenSize.height)")
         print("**************** AVC - VIEW HEIGHT: \(self.view.frame.height)")
         
@@ -89,36 +89,36 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
         
         // Add the display User container to show above the people list and search bar
         displayUserContainer = UIView(frame: CGRect(x: 0, y: 0, width: viewContainer.frame.width, height: Constants.Dim.accountProfileBoxHeight))
-        displayUserContainer.backgroundColor = UIColor.clearColor()
+        displayUserContainer.backgroundColor = UIColor.clear
         viewContainer.addSubview(displayUserContainer)
         
         // Local User Account Box
         displayUserLabel = UILabel(frame: CGRect(x: 0, y: 95, width: viewContainer.frame.width / 2, height: 20))
         displayUserLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 16)
         displayUserLabel.textColor = Constants.Colors.colorTextGray
-        displayUserLabel.textAlignment = NSTextAlignment.Center
-        displayUserLabel.userInteractionEnabled = true
+        displayUserLabel.textAlignment = NSTextAlignment.center
+        displayUserLabel.isUserInteractionEnabled = true
 //        displayUserTextField.returnKeyType = UIReturnKeyType.Done
 //        displayUserTextField.delegate = self
         
         // Add a loading indicator while downloading the logged in user name
         displayUserTextFieldActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: 0, y: 90, width: viewContainer.frame.width / 2, height: 30))
-        displayUserTextFieldActivityIndicator.color = UIColor.blackColor()
+        displayUserTextFieldActivityIndicator.color = UIColor.black
         
         displayUserImageContainer = UIView(frame: CGRect(x: (viewContainer.frame.width / 4) - 40, y: 5, width: 80, height: 80))
         displayUserImageContainer.layer.cornerRadius = displayUserImageContainer.frame.width / 2
-        displayUserImageContainer.backgroundColor = UIColor.whiteColor()
-        displayUserImageContainer.layer.shadowOffset = CGSizeMake(0.5, 2)
+        displayUserImageContainer.backgroundColor = UIColor.white
+        displayUserImageContainer.layer.shadowOffset = CGSize(width: 0.5, height: 2)
         displayUserImageContainer.layer.shadowOpacity = 0.5
         displayUserImageContainer.layer.shadowRadius = 1.0
         
         // Add a loading indicator while downloading the logged in user image
         displayUserImageActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: 0, y: 0, width: displayUserImageContainer.frame.width, height: displayUserImageContainer.frame.height))
-        displayUserImageActivityIndicator.color = UIColor.blackColor()
+        displayUserImageActivityIndicator.color = UIColor.black
         
         displayUserImage = UIImageView(frame: CGRect(x: 0, y: 0, width: displayUserImageContainer.frame.width, height: displayUserImageContainer.frame.height))
         displayUserImage.layer.cornerRadius = displayUserImageContainer.frame.width / 2
-        displayUserImage.contentMode = UIViewContentMode.ScaleAspectFill
+        displayUserImage.contentMode = UIViewContentMode.scaleAspectFill
         displayUserImage.clipsToBounds = true
         displayUserImageContainer.addSubview(displayUserImage)
         
@@ -130,7 +130,7 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
         logoutButtonLabel = UILabel(frame: CGRect(x: 0, y: 0, width: logoutButton.frame.width, height: logoutButton.frame.height))
         logoutButtonLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 16)
         logoutButtonLabel.textColor = Constants.Colors.standardBackground
-        logoutButtonLabel.textAlignment = NSTextAlignment.Center
+        logoutButtonLabel.textAlignment = NSTextAlignment.center
         logoutButtonLabel.text = "Log Out"
         logoutButton.addSubview(logoutButtonLabel)
         
@@ -155,7 +155,7 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
         print("AVC - PEOPLE VIEW CONTAINER: \(peopleViewContainer.frame)")
         peopleViewController.view.frame = CGRect(x: 0, y: 0, width: peopleViewContainer.frame.width, height: peopleViewContainer.frame.height)
         peopleViewContainer.addSubview(peopleViewController.view)
-        peopleViewController.didMoveToParentViewController(self)
+        peopleViewController.didMove(toParentViewController: self)
         
         viewScreen = UIView(frame: CGRect(x: 0, y: 0, width: viewContainer.frame.width, height: viewContainer.frame.height))
         viewScreen.backgroundColor = Constants.Colors.standardBackgroundGrayTransparent
@@ -163,7 +163,7 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
         displayUserEditNameView = UIView(frame: CGRect(x: 50, y: viewContainer.frame.height, width: viewContainer.frame.width - 100, height: 200))
         displayUserEditNameView.layer.cornerRadius = 5
         displayUserEditNameView.backgroundColor = Constants.Colors.standardBackground
-        displayUserEditNameView.layer.shadowOffset = CGSizeMake(0.5, 2)
+        displayUserEditNameView.layer.shadowOffset = CGSize(width: 0.5, height: 2)
         displayUserEditNameView.layer.shadowOpacity = 0.5
         displayUserEditNameView.layer.shadowRadius = 1.0
         
@@ -171,26 +171,26 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
         editNameCurrentName.font = UIFont(name: Constants.Strings.fontRegular, size: 16)
         editNameCurrentName.text = "Current User Name:"
         editNameCurrentName.textColor = Constants.Colors.colorTextGray
-        editNameCurrentName.textAlignment = NSTextAlignment.Center
-        editNameCurrentName.userInteractionEnabled = false
+        editNameCurrentName.textAlignment = NSTextAlignment.center
+        editNameCurrentName.isUserInteractionEnabled = false
         displayUserEditNameView.addSubview(editNameCurrentName)
         
         editNameNewNameLabel = UILabel(frame: CGRect(x: 10, y: 75, width: displayUserEditNameView.frame.width - 20, height: 20))
         editNameNewNameLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 16)
         editNameNewNameLabel.text = "New Name:"
         editNameNewNameLabel.textColor = Constants.Colors.colorTextGray
-        editNameNewNameLabel.textAlignment = NSTextAlignment.Center
+        editNameNewNameLabel.textAlignment = NSTextAlignment.center
         displayUserEditNameView.addSubview(editNameNewNameLabel)
         
         editNameNewName = UITextView(frame: CGRect(x: 10, y: 100, width: displayUserEditNameView.frame.width - 20, height: 26))
         editNameNewName.layer.borderWidth = 2
-        editNameNewName.layer.borderColor = Constants.Colors.standardBackgroundGray.CGColor
+        editNameNewName.layer.borderColor = Constants.Colors.standardBackgroundGray.cgColor
         editNameNewName.font = UIFont(name: Constants.Strings.fontRegular, size: 16)
         editNameNewName.textColor = Constants.Colors.colorTextGray
         editNameNewName.text = ""
-        editNameNewName.textAlignment = NSTextAlignment.Center
-        editNameNewName.userInteractionEnabled = true
-        editNameNewName.returnKeyType = UIReturnKeyType.Done
+        editNameNewName.textAlignment = NSTextAlignment.center
+        editNameNewName.isUserInteractionEnabled = true
+        editNameNewName.returnKeyType = UIReturnKeyType.done
         editNameNewName.delegate = self
         displayUserEditNameView.addSubview(editNameNewName)
         
@@ -199,7 +199,7 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
         let cornerShape = CAShapeLayer()
         cornerShape.bounds = editNameSaveButton.frame
         cornerShape.position = editNameSaveButton.center
-        cornerShape.path = UIBezierPath(roundedRect: editNameSaveButton.bounds, byRoundingCorners: [UIRectCorner.BottomLeft , UIRectCorner.BottomRight], cornerRadii: CGSize(width: 5, height: 5)).CGPath
+        cornerShape.path = UIBezierPath(roundedRect: editNameSaveButton.bounds, byRoundingCorners: [UIRectCorner.bottomLeft , UIRectCorner.bottomRight], cornerRadii: CGSize(width: 5, height: 5)).cgPath
         editNameSaveButton.layer.mask = cornerShape
         editNameSaveButton.backgroundColor = Constants.Colors.blobPurpleOpaque
         displayUserEditNameView.addSubview(editNameSaveButton)
@@ -207,8 +207,8 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
         editNameSaveButtonLabel = UILabel(frame: CGRect(x: 0, y: 0, width: editNameSaveButton.frame.width, height: editNameSaveButtonHeight))
         editNameSaveButtonLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 16)
         editNameSaveButtonLabel.text = "SAVE"
-        editNameSaveButtonLabel.textColor = UIColor.whiteColor()
-        editNameSaveButtonLabel.textAlignment = NSTextAlignment.Center
+        editNameSaveButtonLabel.textColor = UIColor.white
+        editNameSaveButtonLabel.textAlignment = NSTextAlignment.center
         editNameSaveButton.addSubview(editNameSaveButtonLabel)
         
         userImageTapGesture = UITapGestureRecognizer(target: self, action: #selector(AccountViewController.imageTapGesture(_:)))
@@ -241,7 +241,7 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
     // MARK: GESTURE RECOGNIZERS
     
     // Reveal the popup screen to edit the userName
-    func viewScreenTapGesture(sender: UITapGestureRecognizer) {
+    func viewScreenTapGesture(_ sender: UITapGestureRecognizer) {
         print("VIEW SCREEN TAPPED - REMOVE SCREEN")
         
         hideScreenAndEditNameBox()
@@ -252,7 +252,7 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
         self.viewScreen.removeFromSuperview()
         
         // Animate the user name edit popup out of view
-        UIView.animateWithDuration(0.2, animations: {
+        UIView.animate(withDuration: 0.2, animations: {
             self.displayUserEditNameView.frame = CGRect(x: 50, y: self.viewContainer.frame.height, width: self.viewContainer.frame.width - 100, height: self.viewContainer.frame.width - 50)
             }, completion: { (finished: Bool) -> Void in
                 self.displayUserEditNameView.removeFromSuperview()
@@ -260,25 +260,25 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
     }
     
     // Reveal the popup screen to edit the userName
-    func userNameTapGesture(sender: UITapGestureRecognizer) {
+    func userNameTapGesture(_ sender: UITapGestureRecognizer) {
         print("EDIT USER NAME: \(currentUserName)")
         
         // Show the gray screen to highlight the name editor popup
         self.viewContainer.addSubview(viewScreen)
         self.viewContainer.addSubview(displayUserEditNameView)
         
-        dispatch_async(dispatch_get_main_queue(), {
+        DispatchQueue.main.async(execute: {
             self.editNameCurrentName.text = "Current User Name:\n " + self.currentUserName
         });
         
         // Add an animation to bring the edit user name screen into view
-        UIView.animateWithDuration(0.2, animations: {
+        UIView.animate(withDuration: 0.2, animations: {
             self.displayUserEditNameView.frame = CGRect(x: 50, y: 50, width: self.viewContainer.frame.width - 100, height: 200)
             }, completion: nil)
     }
     
     // Log out the user from the app and facebook
-    func logoutButtonTapGesture(sender: UITapGestureRecognizer) {
+    func logoutButtonTapGesture(_ sender: UITapGestureRecognizer) {
         print("TRYING TO LOG OUT THE USER")
         
         // Log out the user from Facebook
@@ -302,8 +302,8 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
         
         // Call the parent VC to remove the current VC from the stack
         if let parentVC = self.accountViewDelegate {
-            parentVC.checkForUser()
             parentVC.popViewController()
+            parentVC.logoutUser()
         }
         
 //        // Load the Map View and show the login screen
@@ -311,7 +311,7 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
     }
     
     // Save the newly typed user name
-    func editNameSaveButtonTapGesture(sender: UITapGestureRecognizer) {
+    func editNameSaveButtonTapGesture(_ sender: UITapGestureRecognizer) {
         print("TRYING TO SAVE NEW USER NAME")
         
         // Save the userName to AWS and show in the display user label
@@ -328,7 +328,7 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
                 self.displayUserLabel.text = newUserName
                 
                 // Upload the new username to AWS
-                editUserName(Constants.Data.currentUser, userName: newUserName)
+                AWSPrepRequest(requestToCall: AWSEditUserName(userID: Constants.Data.currentUser, newUserName: newUserName), delegate: self as AWSRequestDelegate).prepRequest()
                 
                 // Edit the logged in user's userName in the global list
                 userLoop: for userObject in Constants.Data.userObjects {
@@ -342,7 +342,7 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
     }
     
     // Update the User Image using a media picker
-    func imageTapGesture(sender: UITapGestureRecognizer) {
+    func imageTapGesture(_ sender: UITapGestureRecognizer) {
         print("LOAD IMAGE SELECTOR VC")
         
         // Show the gray screen to indicate that the picker is loading
@@ -351,12 +351,12 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
         // Load the image picker - allow only photos
         let imagePicker = UIImagePickerController()
         imagePicker.delegate = self
-        imagePicker.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
-        self.presentViewController(imagePicker, animated: true, completion: nil)
+        imagePicker.sourceType = UIImagePickerControllerSourceType.photoLibrary
+        self.present(imagePicker, animated: true, completion: nil)
     }
     
     // ImagePicker Delegate Methods
-    func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]) {
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
         print("you picked: \(info)")
         
         // Remove the gray screen
@@ -380,22 +380,22 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
             // Upload the new user image to AWS and update the userImageKey
             updateUserImage(pickedImage)
         }
-        self.dismissViewControllerAnimated(true, completion: nil)
+        self.dismiss(animated: true, completion: nil)
     }
-    func imagePickerControllerDidCancel(picker: UIImagePickerController) {
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         
         // Remove the gray screen
         self.viewScreen.removeFromSuperview()
         
-        self.dismissViewControllerAnimated(true, completion: nil)
+        self.dismiss(animated: true, completion: nil)
     }
     
     
     // MARK: CUSTOM FUNCTIONS
     
-    func popViewController(sender: UIBarButtonItem? = nil) {
+    func popViewController(_ sender: UIBarButtonItem? = nil) {
         print("pop Back to Map View")
-        self.dismissViewControllerAnimated(true, completion: {
+        self.dismiss(animated: true, completion: {
         })
     }
     
@@ -418,12 +418,12 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
                 // Access Core Data
                 // Retrieve the Current User Blob data from Core Data
                 let moc = DataController().managedObjectContext
-                let currentUserFetch = NSFetchRequest(entityName: "CurrentUser")
+                let currentUserFetch = NSFetchRequest<NSFetchRequestResult>(entityName: "CurrentUser")
                 
                 // Create an empty blobNotifications list in case the Core Data request fails
                 var currentUser = [CurrentUser]()
                 do {
-                    currentUser = try moc.executeFetchRequest(currentUserFetch) as! [CurrentUser]
+                    currentUser = try moc.fetch(currentUserFetch) as! [CurrentUser]
                 } catch {
                     fatalError("Failed to fetch frames: \(error)")
                 }
@@ -443,7 +443,7 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
                     // Else use the saved current user data until the data is updated
                     if let imageData = currentUser[0].userImage {
                         print("CHECKING CORE DATA - PREVIOUS IMAGE DATA EXISTS")
-                        self.displayUserImage.image = UIImage(data: imageData)
+                        self.displayUserImage.image = UIImage(data: imageData as Data)
                         self.displayUserImageActivityIndicator.stopAnimating()
                     }
                 }
@@ -454,7 +454,7 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
     }
     
     // Create a thumbnail-sized image from a large image
-    func resizeImage(image: UIImage, targetSize: CGSize) -> UIImage {
+    func resizeImage(_ image: UIImage, targetSize: CGSize) -> UIImage {
         let size = image.size
         
         let widthRatio  = targetSize.width  / image.size.width
@@ -463,49 +463,57 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
         // Figure out what our orientation is, and use that to form the rectangle
         var newSize: CGSize
         if(widthRatio > heightRatio) {
-            newSize = CGSizeMake(size.width * heightRatio, size.height * heightRatio)
+            newSize = CGSize(width: size.width * heightRatio, height: size.height * heightRatio)
         } else {
-            newSize = CGSizeMake(size.width * widthRatio,  size.height * widthRatio)
+            newSize = CGSize(width: size.width * widthRatio,  height: size.height * widthRatio)
         }
         
         // This is the rect that we've calculated out and this is what is actually used below
-        let rect = CGRectMake(0, 0, newSize.width, newSize.height)
+        let rect = CGRect(x: 0, y: 0, width: newSize.width, height: newSize.height)
         
         // Actually do the resizing to the rect using the ImageContext stuff
         UIGraphicsBeginImageContextWithOptions(newSize, false, 1.0)
-        image.drawInRect(rect)
+        image.draw(in: rect)
         let newImage = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
         
-        return newImage
+        return newImage!
     }
     
+    
+    // MARK: AWS DELEGATE METHODS
+    
+    func showLoginScreen() {
+        print("AD - SHOW LOGIN SCREEN")
+    }
+    
+    func processAwsReturn(_ objectType: AWSRequestObject, success: Bool)
+    {
+        // Process the return data based on the method used
+        switch objectType
+        {
+        case _ as AWSEditUserName:
+            if !success
+            {
+                // Show the error message
+//                self.createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try to update your username again.")
+            }
+        default:
+            print("DEFAULT: THERE WAS AN ISSUE WITH THE DATA RETURNED FROM AWS")
+            
+            // Show the error message
+//            self.createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+        }
+    }
     
     // MARK: AWS METHODS
     
-    // Edit the logged in user's userName
-    func editUserName(userID: String, userName: String) {
-        let json: NSDictionary = ["user_id" : userID, "user_name": userName]
-        print("EDITING USER NAME TO: \(json)")
-        
-        let lambdaInvoker = AWSLambdaInvoker.defaultLambdaInvoker()
-        lambdaInvoker.invokeFunction("Blobjot-EditUserName", JSONObject: json, completionHandler: { (responseData, err) -> Void in
-            
-            if (err != nil) {
-                print("Error: \(err)")
-            } else if (responseData != nil) {
-                print("EDIT USER NAME RESPONSE: \(responseData)")
-            }
-            
-        })
-    }
-    
     // Download the userImage for the indicated user object in the UserObject list
-    func updateUserImage(userImage: UIImage) {
+    func updateUserImage(_ userImage: UIImage) {
         // Get the User Data for the userID
         let json: NSDictionary = ["request" : "random_user_image_id"]
-        let lambdaInvoker = AWSLambdaInvoker.defaultLambdaInvoker()
-        lambdaInvoker.invokeFunction("Blobjot-CreateRandomID", JSONObject: json, completionHandler: { (responseData, err) -> Void in
+        let lambdaInvoker = AWSLambdaInvoker.default()
+        lambdaInvoker.invokeFunction("Blobjot-CreateRandomID", jsonObject: json, completionHandler: { (responseData, err) -> Void in
             
             if (err != nil) {
                 print("UUI: Error: \(err)")
@@ -518,33 +526,33 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
                 if let data = UIImagePNGRepresentation(resizedImage) {
                     print("UUI: INSIDE DATA")
                     
-                    let filePath = NSTemporaryDirectory().stringByAppendingString("userImage" + imageID + ".png")
+                    let filePath = NSTemporaryDirectory() + ("userImage" + imageID + ".png")
                     print("UUI: FILE PATH: \("file:///" + filePath)")
-                    data.writeToFile(filePath, atomically: true)
+                    try? data.write(to: URL(fileURLWithPath: filePath), options: [.atomic])
                     
                     var uploadMetadata = [String : String]()
                     uploadMetadata["user_id"] = Constants.Data.currentUser
                     print("UUI: METADATA: \(uploadMetadata)")
                     
                     let uploadRequest = AWSS3TransferManagerUploadRequest()
-                    uploadRequest.bucket = Constants.Strings.S3BucketUserImages
-                    uploadRequest.metadata = uploadMetadata
-                    uploadRequest.key =  imageID
-                    uploadRequest.body = NSURL(string: "file:///" + filePath)
+                    uploadRequest?.bucket = Constants.Strings.S3BucketUserImages
+                    uploadRequest?.metadata = uploadMetadata
+                    uploadRequest?.key =  imageID
+                    uploadRequest?.body = URL(string: "file:///" + filePath)
                     print("UUI: UPLOAD REQUEST: \(uploadRequest)")
                     
-                    let transferManager = AWSS3TransferManager.defaultS3TransferManager()
-                    transferManager.upload(uploadRequest).continueWithBlock({ (task) -> AnyObject! in
+                    let transferManager = AWSS3TransferManager.default()
+                    transferManager?.upload(uploadRequest).continue({ (task) -> AnyObject! in
                         if let error = task.error {
-                            if error.domain == AWSS3TransferManagerErrorDomain as String
-                                && AWSS3TransferManagerErrorType(rawValue: error.code) == AWSS3TransferManagerErrorType.Paused {
+                            if error._domain == AWSS3TransferManagerErrorDomain as String
+                                && AWSS3TransferManagerErrorType(rawValue: error._code) == AWSS3TransferManagerErrorType.paused {
                                 print("Upload paused.")
                             } else {
                                 print("Upload failed: [\(error)]")
                                 // Delete the user image from temporary memory
                                 do {
                                     print("Deleting image: \(imageID)")
-                                    try NSFileManager.defaultManager().removeItemAtPath(filePath)
+                                    try FileManager.default.removeItem(atPath: filePath)
                                 }
                                 catch let error as NSError {
                                     print("Ooops! Something went wrong: \(error)")
@@ -555,7 +563,7 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
                             // Delete the user image from temporary memory
                             do {
                                 print("Deleting image: \(imageID)")
-                                try NSFileManager.defaultManager().removeItemAtPath(filePath)
+                                try FileManager.default.removeItem(atPath: filePath)
                             }
                             catch let error as NSError {
                                 print("Ooops! Something went wrong: \(error)")
@@ -565,7 +573,7 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
                             // Delete the user image from temporary memory
                             do {
                                 print("Deleting image: \(imageID)")
-                                try NSFileManager.defaultManager().removeItemAtPath(filePath)
+                                try FileManager.default.removeItem(atPath: filePath)
                             }
                             catch let error as NSError {
                                 print("Ooops! Something went wrong: \(error)")
@@ -579,12 +587,12 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
     }
     
     // Download Logged In User Image
-    func getUserImage(userID: String, imageKey: String) {
+    func getUserImage(_ userID: String, imageKey: String) {
         print("AVC - GETTING IMAGE FOR: \(imageKey)")
         
-        let downloadingFilePath = NSTemporaryDirectory().stringByAppendingString(imageKey) // + Constants.Settings.frameImageFileType)
-        let downloadingFileURL = NSURL(fileURLWithPath: downloadingFilePath)
-        let transferManager = AWSS3TransferManager.defaultS3TransferManager()
+        let downloadingFilePath = NSTemporaryDirectory() + imageKey // + Constants.Settings.frameImageFileType)
+        let downloadingFileURL = URL(fileURLWithPath: downloadingFilePath)
+        let transferManager = AWSS3TransferManager.default()
         
         // Download the Frame
         let downloadRequest : AWSS3TransferManagerDownloadRequest = AWSS3TransferManagerDownloadRequest()
@@ -592,10 +600,10 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
         downloadRequest.key =  imageKey
         downloadRequest.downloadingFileURL = downloadingFileURL
         
-        transferManager.download(downloadRequest).continueWithBlock({ (task) -> AnyObject! in
+        transferManager?.download(downloadRequest).continue({ (task) -> AnyObject! in
             if let error = task.error {
-                if error.domain == AWSS3TransferManagerErrorDomain as String
-                    && AWSS3TransferManagerErrorType(rawValue: error.code) == AWSS3TransferManagerErrorType.Paused {
+                if error._domain == AWSS3TransferManagerErrorDomain as String
+                    && AWSS3TransferManagerErrorType(rawValue: error._code) == AWSS3TransferManagerErrorType.paused {
                     print("AVC - DOWNLOAD PAUSED")
                 } else {
                     print("AVC - DOWNLOAD FAILED: [\(error)]")
@@ -604,11 +612,11 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
                 print("AVC - DOWNLOAD FAILED: [\(exception)]")
             } else {
                 print("AVC - DOWNLOAD SUCCEEDED")
-                dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                DispatchQueue.main.async(execute: { () -> Void in
                     // Assign the image to the Preview Image View
-                    if NSFileManager().fileExistsAtPath(downloadingFilePath) {
+                    if FileManager().fileExists(atPath: downloadingFilePath) {
                         print("IMAGE FILE AVAILABLE")
-                        let thumbnailData = NSData(contentsOfFile: downloadingFilePath)
+                        let thumbnailData = try? Data(contentsOf: URL(fileURLWithPath: downloadingFilePath))
                         
                         // Ensure the Thumbnail Data is not null
                         if let tData = thumbnailData {
@@ -625,12 +633,12 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
                                     // Access Core Data
                                     // Retrieve the Current User Blob data from Core Data
                                     let moc = DataController().managedObjectContext
-                                    let currentUserFetch = NSFetchRequest(entityName: "CurrentUser")
+                                    let currentUserFetch = NSFetchRequest<NSFetchRequestResult>(entityName: "CurrentUser")
                                     
                                     // Create an empty blobNotifications list in case the Core Data request fails
                                     var currentUser = [CurrentUser]()
                                     do {
-                                        currentUser = try moc.executeFetchRequest(currentUserFetch) as! [CurrentUser]
+                                        currentUser = try moc.fetch(currentUserFetch) as! [CurrentUser]
                                     } catch {
                                         fatalError("Failed to fetch frames: \(error)")
                                     }
@@ -642,7 +650,7 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
                                         print("CORE DATA - CURRENT USER - SAVING NEW DATA")
                                         
                                         // Save the current user data in Core Data
-                                        let entity = NSEntityDescription.insertNewObjectForEntityForName("CurrentUser", inManagedObjectContext: moc) as! CurrentUser
+                                        let entity = NSEntityDescription.insertNewObject(forEntityName: "CurrentUser", into: moc) as! CurrentUser
                                         entity.setValue(userObject.userID, forKey: "userID")
                                         entity.setValue(userObject.userName, forKey: "userName")
                                         entity.setValue(userObject.userImageKey, forKey: "userImageKey")

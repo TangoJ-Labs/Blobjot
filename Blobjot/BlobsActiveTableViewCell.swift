@@ -36,21 +36,21 @@ class BlobsActiveTableViewCell: UITableViewCell {
         cellUserImageContainer = UIView(frame: CGRect(x: 5, y: 20, width: Constants.Dim.blobsActiveTableViewUserImageSize, height: Constants.Dim.blobsActiveTableViewUserImageSize))
         cellUserImageContainer.backgroundColor = Constants.Colors.standardBackground
         cellUserImageContainer.layer.cornerRadius = Constants.Dim.blobsActiveTableViewUserImageSize / 2
-        cellUserImageContainer.layer.shadowOffset = CGSizeMake(0, 0.2)
+        cellUserImageContainer.layer.shadowOffset = CGSize(width: 0, height: 0.2)
         cellUserImageContainer.layer.shadowOpacity = 0.2
         cellUserImageContainer.layer.shadowRadius = 1.0
         cellContainer.addSubview(cellUserImageContainer)
         
         cellUserImage = UIImageView(frame: CGRect(x: 0, y: 0, width: Constants.Dim.blobsActiveTableViewUserImageSize, height: Constants.Dim.blobsActiveTableViewUserImageSize))
         cellUserImage.layer.cornerRadius = Constants.Dim.blobsActiveTableViewUserImageSize / 2
-        cellUserImage.contentMode = UIViewContentMode.ScaleAspectFill
+        cellUserImage.contentMode = UIViewContentMode.scaleAspectFill
         cellUserImage.clipsToBounds = true
         cellUserImageContainer.addSubview(cellUserImage)
         
         // Add a loading indicator while the User Image is searched for
         // Give it the same size and location as the User Image View
         userImageActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: 5, y: 20, width: Constants.Dim.blobsActiveTableViewUserImageSize, height: Constants.Dim.blobsActiveTableViewUserImageSize))
-        userImageActivityIndicator.color = UIColor.blackColor()
+        userImageActivityIndicator.color = UIColor.black
         cellContainer.addSubview(userImageActivityIndicator)
         
         cellUserName = UILabel(frame: CGRect(x: 10 + Constants.Dim.blobsActiveTableViewUserImageSize, y: 25, width: cellContainer.frame.width - 20 - Constants.Dim.blobsActiveTableViewUserImageSize - Constants.Dim.blobsActiveTableViewContentSize, height: 30))
@@ -64,23 +64,23 @@ class BlobsActiveTableViewCell: UITableViewCell {
         cellText = UILabel(frame: CGRect(x: cellContainer.frame.width - 5 - Constants.Dim.blobsActiveTableViewContentSize, y: 5, width: Constants.Dim.blobsActiveTableViewContentSize, height: Constants.Dim.blobsActiveTableViewContentSize))
         cellText.font = UIFont(name: Constants.Strings.fontRegular, size: 16)
         cellText.numberOfLines = 4
-        cellText.lineBreakMode = NSLineBreakMode.ByWordWrapping
+        cellText.lineBreakMode = NSLineBreakMode.byWordWrapping
         cellContainer.addSubview(cellText)
         
         // Add a loading indicator to display when the user has selected the row
         cellSelectedActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: cellContainer.frame.width - 5 - (Constants.Dim.blobsActiveTableViewContentSize * 2), y: 0, width: Constants.Dim.blobsActiveTableViewContentSize, height: Constants.Dim.blobsActiveTableViewContentSize))
-        cellSelectedActivityIndicator.color = UIColor.blackColor()
+        cellSelectedActivityIndicator.color = UIColor.black
         cellContainer.addSubview(cellSelectedActivityIndicator)
         
         cellThumbnail = UIImageView(frame: CGRect(x: cellContainer.frame.width - 5 - Constants.Dim.blobsActiveTableViewContentSize, y: 5, width: Constants.Dim.blobsActiveTableViewContentSize, height: Constants.Dim.blobsActiveTableViewContentSize))
-        cellThumbnail.contentMode = UIViewContentMode.ScaleAspectFill
+        cellThumbnail.contentMode = UIViewContentMode.scaleAspectFill
         cellThumbnail.clipsToBounds = true
         cellContainer.addSubview(cellThumbnail)
         
         // Add a loading indicator while the Thumbnail is searched for
         // Give it the same size and location as the Thumbnail Image View
         thumbnailActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: cellContainer.frame.width - 5 - Constants.Dim.blobsActiveTableViewContentSize, y: 5, width: cellThumbnail.frame.width, height: cellThumbnail.frame.height))
-        thumbnailActivityIndicator.color = UIColor.blackColor()
+        thumbnailActivityIndicator.color = UIColor.black
         cellContainer.addSubview(thumbnailActivityIndicator)
     }
     
@@ -93,7 +93,7 @@ class BlobsActiveTableViewCell: UITableViewCell {
         // Initialization code
     }
 
-    override func setSelected(selected: Bool, animated: Bool) {
+    override func setSelected(_ selected: Bool, animated: Bool) {
         print("ACTIVE CELL - SET SELECTED")
         // Configure the view for the selected state
         let color = cellBlobTypeIndicator.backgroundColor
@@ -104,7 +104,7 @@ class BlobsActiveTableViewCell: UITableViewCell {
         }
     }
     
-    override func setHighlighted(highlighted: Bool, animated: Bool) {
+    override func setHighlighted(_ highlighted: Bool, animated: Bool) {
         print("ACTIVE CELL - SET HIGHLIGHTED")
         let color = cellBlobTypeIndicator.backgroundColor
         super.setHighlighted(highlighted, animated: animated)

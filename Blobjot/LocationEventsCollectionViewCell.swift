@@ -22,26 +22,26 @@ class LocationBlobsCollectionViewCell: UICollectionViewCell {
         print("Frame Cell frame is: \(frame)")
         
         cellContainer = UIView(frame: CGRect(x: 0, y: 0, width: contentView.frame.width, height: contentView.frame.height))
-        cellContainer.backgroundColor = UIColor.clearColor()
+        cellContainer.backgroundColor = UIColor.clear
         contentView.addSubview(cellContainer)
         print("viewContainer: \(cellContainer.frame)")
         
         // Add a View Container for the User Image
         userImageContainer = UIView(frame: CGRect(x: 5, y: 5, width: Constants.Dim.mapViewLocationBlobsCVItemSize, height: Constants.Dim.mapViewLocationBlobsCVItemSize))
         userImageContainer.layer.cornerRadius = Constants.Dim.mapViewLocationBlobsCVItemSize / 2
-        userImageContainer.backgroundColor = UIColor.whiteColor()
+        userImageContainer.backgroundColor = UIColor.white
         cellContainer.addSubview(userImageContainer)
         
         userImage = UIImageView(frame: CGRect(x: 0, y: 0, width: Constants.Dim.mapViewLocationBlobsCVItemSize, height: Constants.Dim.mapViewLocationBlobsCVItemSize))
         userImage.layer.cornerRadius = Constants.Dim.mapViewLocationBlobsCVItemSize / 2
-        userImage.contentMode = UIViewContentMode.ScaleAspectFill
+        userImage.contentMode = UIViewContentMode.scaleAspectFill
         userImage.clipsToBounds = true
         userImageContainer.addSubview(userImage)
         
         // Add a loading indicator while the Image is downloaded / searched for
         // Give it the same size and location as the Image View
         userImageActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: 0, y: 0, width: Constants.Dim.mapViewLocationBlobsCVItemSize, height: Constants.Dim.mapViewLocationBlobsCVItemSize))
-        userImageActivityIndicator.color = UIColor.blackColor()
+        userImageActivityIndicator.color = UIColor.black
         userImageContainer.addSubview(userImageActivityIndicator)
         
         blobTypeIndicator = UIView(frame: CGRect(x: 2, y: 2, width: Constants.Dim.mapViewLocationBlobsCVIndicatorSize, height: Constants.Dim.mapViewLocationBlobsCVIndicatorSize))

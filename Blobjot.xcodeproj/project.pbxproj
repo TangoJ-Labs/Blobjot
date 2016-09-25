@@ -33,6 +33,9 @@
 		B80C565B1D5116E000C4E683 /* logo.png in Resources */ = {isa = PBXBuildFile; fileRef = B80C56591D5116E000C4E683 /* logo.png */; };
 		B80C565D1D5117C800C4E683 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = B80C565C1D5117C800C4E683 /* Default-568h@2x.png */; };
 		B80C56611D5183B100C4E683 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56601D5183B100C4E683 /* User.swift */; };
+		B80D17751D90E1C90032B0D8 /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80D17741D90E1C90032B0D8 /* LoginViewController.swift */; };
+		B80D17771D922FF20032B0D8 /* AWSClasses.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80D17761D922FF20032B0D8 /* AWSClasses.swift */; };
+		B80D17791D9712C60032B0D8 /* style.json in Resources */ = {isa = PBXBuildFile; fileRef = B80D17781D9712C50032B0D8 /* style.json */; };
 		B81822071D5B98F300B3A2BB /* BlobThumbnailObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = B81822061D5B98F300B3A2BB /* BlobThumbnailObject.swift */; };
 		B85FDE891D7DC2BA002A8FC7 /* CustomIdentityProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B85FDE881D7DC2BA002A8FC7 /* CustomIdentityProvider.swift */; };
 		B86406FD1D71BDCD0084D6EF /* white.png in Resources */ = {isa = PBXBuildFile; fileRef = B86406FC1D71BDCD0084D6EF /* white.png */; };
@@ -120,6 +123,10 @@
 		B80C56591D5116E000C4E683 /* logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = logo.png; sourceTree = "<group>"; };
 		B80C565C1D5117C800C4E683 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		B80C56601D5183B100C4E683 /* User.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
+		B80D17731D8DE21A0032B0D8 /* Blobjot.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = Blobjot.entitlements; path = Blobjot/Blobjot.entitlements; sourceTree = "<group>"; };
+		B80D17741D90E1C90032B0D8 /* LoginViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
+		B80D17761D922FF20032B0D8 /* AWSClasses.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AWSClasses.swift; sourceTree = "<group>"; };
+		B80D17781D9712C50032B0D8 /* style.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = style.json; path = Blobjot/style.json; sourceTree = "<group>"; };
 		B81822061D5B98F300B3A2BB /* BlobThumbnailObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlobThumbnailObject.swift; sourceTree = "<group>"; };
 		B85FDE881D7DC2BA002A8FC7 /* CustomIdentityProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomIdentityProvider.swift; sourceTree = "<group>"; };
 		B86406FC1D71BDCD0084D6EF /* white.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = white.png; sourceTree = "<group>"; };
@@ -235,6 +242,7 @@
 			children = (
 				B80C56321D5112C100C4E683 /* Houston-Downtown.gpx */,
 				B80A84441D5AD2E1003943C3 /* Sugar_Land-Trailbrook_Front.gpx */,
+				B80D17781D9712C50032B0D8 /* style.json */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -242,8 +250,9 @@
 		B80C565F1D5159D300C4E683 /* Settings */ = {
 			isa = PBXGroup;
 			children = (
-				B88131A11D510EEE00021C4B /* Info.plist */,
+				B80D17731D8DE21A0032B0D8 /* Blobjot.entitlements */,
 				B86407061D7B13EB0084D6EF /* DataModel.xcdatamodeld */,
+				B88131A11D510EEE00021C4B /* Info.plist */,
 			);
 			name = Settings;
 			sourceTree = "<group>";
@@ -279,6 +288,7 @@
 				B80C56371D51158000C4E683 /* AccountTableViewCell.swift */,
 				B80C56381D51158000C4E683 /* AccountViewController.swift */,
 				B88131921D510EEE00021C4B /* AppDelegate.swift */,
+				B80D17761D922FF20032B0D8 /* AWSClasses.swift */,
 				B86407021D7677A40084D6EF /* AWSMethods.swift */,
 				B80C56301D51126800C4E683 /* Blob.swift */,
 				B80C56391D51158000C4E683 /* BlobAddMediaViewController.swift */,
@@ -298,11 +308,12 @@
 				B80C56331D5112F100C4E683 /* Constants.swift */,
 				B864070C1D7B14A40084D6EF /* CurrentUser.swift */,
 				B864070B1D7B14A40084D6EF /* CurrentUser+CoreDataProperties.swift */,
+				B85FDE881D7DC2BA002A8FC7 /* CustomIdentityProvider.swift */,
 				B86407041D7B0E710084D6EF /* DataController.swift */,
 				B8C8C59C1D57544C004D773E /* Extensions.swift */,
 				B80C56441D51158000C4E683 /* LocationEventsCollectionViewCell.swift */,
+				B80D17741D90E1C90032B0D8 /* LoginViewController.swift */,
 				B80C56351D5113B900C4E683 /* MapViewController.swift */,
-				B85FDE881D7DC2BA002A8FC7 /* CustomIdentityProvider.swift */,
 				B80C56451D51158000C4E683 /* PeopleTableViewCell.swift */,
 				B80C56461D51158000C4E683 /* PeopleViewController.swift */,
 				B86406FE1D74AD7F0084D6EF /* SearchViewController.swift */,
@@ -401,13 +412,17 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0730;
-				LastUpgradeCheck = 0730;
+				LastUpgradeCheck = 0800;
 				ORGANIZATIONNAME = blobjot;
 				TargetAttributes = {
 					B881318E1D510EEE00021C4B = {
 						CreatedOnToolsVersion = 7.3.1;
 						DevelopmentTeam = 76TL7JRK9R;
+						LastSwiftMigration = 0800;
 						SystemCapabilities = {
+							com.apple.Keychain = {
+								enabled = 1;
+							};
 							com.apple.Push = {
 								enabled = 1;
 							};
@@ -415,10 +430,12 @@
 					};
 					B88131A51D510EEF00021C4B = {
 						CreatedOnToolsVersion = 7.3.1;
+						LastSwiftMigration = 0800;
 						TestTargetID = B881318E1D510EEE00021C4B;
 					};
 					B88131B01D510EEF00021C4B = {
 						CreatedOnToolsVersion = 7.3.1;
+						LastSwiftMigration = 0800;
 						TestTargetID = B881318E1D510EEE00021C4B;
 					};
 				};
@@ -451,6 +468,7 @@
 				B80C565A1D5116E000C4E683 /* defaultMedia.png in Resources */,
 				B80A84451D5AD2E2003943C3 /* Sugar_Land-Trailbrook_Front.gpx in Resources */,
 				B8A729331D64064800FD6E0A /* star_clear.png in Resources */,
+				B80D17791D9712C60032B0D8 /* style.json in Resources */,
 				B80C565D1D5117C800C4E683 /* Default-568h@2x.png in Resources */,
 				B8A729321D64064800FD6E0A /* star_yellow.png in Resources */,
 				B86406FD1D71BDCD0084D6EF /* white.png in Resources */,
@@ -608,6 +626,7 @@
 				B8C8C59D1D57544C004D773E /* Extensions.swift in Sources */,
 				B80C56551D51158000C4E683 /* PeopleTableViewCell.swift in Sources */,
 				B86407101D7B14A40084D6EF /* CurrentUser.swift in Sources */,
+				B80D17771D922FF20032B0D8 /* AWSClasses.swift in Sources */,
 				B86407031D7677A40084D6EF /* AWSMethods.swift in Sources */,
 				B864070E1D7B14A40084D6EF /* BlobNotification.swift in Sources */,
 				B80C56341D5112F100C4E683 /* Constants.swift in Sources */,
@@ -625,6 +644,7 @@
 				B80C56541D51158000C4E683 /* LocationEventsCollectionViewCell.swift in Sources */,
 				B80C56471D51158000C4E683 /* AccountTableViewCell.swift in Sources */,
 				B80C564D1D51158000C4E683 /* BlobAddTypeViewController.swift in Sources */,
+				B80D17751D90E1C90032B0D8 /* LoginViewController.swift in Sources */,
 				B86406FF1D74AD800084D6EF /* SearchViewController.swift in Sources */,
 				B80C564C1D51158000C4E683 /* BlobAddTextViewController.swift in Sources */,
 				B80C56511D51158000C4E683 /* BlobsUserTableViewCell.swift in Sources */,
@@ -685,8 +705,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "";
@@ -733,8 +755,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
@@ -754,6 +778,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 			};
@@ -764,6 +789,7 @@
 			baseConfigurationReference = A5145EC0D2F396CEDC3D1CE7 /* Pods-Blobjot.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Blobjot/Blobjot.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -775,6 +801,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.blobjot.Blobjot;
 				PRODUCT_NAME = Blobjot;
 				PROVISIONING_PROFILE = "";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
 		};
@@ -783,6 +810,7 @@
 			baseConfigurationReference = ECCEA997791A35BA1BCB3413 /* Pods-Blobjot.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Blobjot/Blobjot.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -794,6 +822,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.blobjot.Blobjot;
 				PRODUCT_NAME = Blobjot;
 				PROVISIONING_PROFILE = "";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
 		};
@@ -806,6 +835,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.blobjot.BlobjotTests;
 				PRODUCT_NAME = Blobjot;
+				SWIFT_VERSION = 3.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Blobjot.app/Blobjot";
 			};
 			name = Debug;
@@ -819,6 +849,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.blobjot.BlobjotTests;
 				PRODUCT_NAME = Blobjot;
+				SWIFT_VERSION = 3.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Blobjot.app/Blobjot";
 			};
 			name = Release;
@@ -831,6 +862,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.blobjot.BlobjotUITests;
 				PRODUCT_NAME = Blobjot;
+				SWIFT_VERSION = 3.0;
 				TEST_TARGET_NAME = Blobjot;
 			};
 			name = Debug;
@@ -843,6 +875,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.blobjot.BlobjotUITests;
 				PRODUCT_NAME = Blobjot;
+				SWIFT_VERSION = 3.0;
 				TEST_TARGET_NAME = Blobjot;
 			};
 			name = Release;

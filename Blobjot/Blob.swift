@@ -11,7 +11,7 @@ import UIKit
 class Blob {
     
     var blobID: String!
-    var blobDatetime: NSDate!
+    var blobDatetime: Date!
     var blobLat: Double!
     var blobLong: Double!
     var blobRadius: Double!

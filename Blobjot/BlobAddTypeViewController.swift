@@ -12,7 +12,7 @@ import UIKit
 protocol BlobAddTypeViewControllerDelegate {
     
     // When called, the parent View Controller changes the type of Blob to add
-    func changeMapCircleType(type: Constants.BlobTypes)
+    func changeMapCircleType(_ type: Constants.BlobTypes)
 }
 
 
@@ -61,7 +61,7 @@ class BlobAddTypeViewController: UIViewController {
         typeContainer1Label = UILabel(frame: CGRect(x: 20, y: 0, width: typeContainer1.frame.width * (3/4) - 20, height: typeContainer1.frame.height))
         typeContainer1Label.font = UIFont(name: Constants.Strings.fontRegular, size: 26)
         typeContainer1Label.text = "Single-Use Blob"
-        typeContainer1Label.textAlignment = .Left
+        typeContainer1Label.textAlignment = .left
         typeContainer1Label.textColor = Constants.Colors.colorTextGray
         typeContainer1.addSubview(typeContainer1Label)
         
@@ -73,14 +73,14 @@ class BlobAddTypeViewController: UIViewController {
         typeContainer1CheckLabel = UILabel(frame: CGRect(x: 0, y: 0, width: Constants.Dim.blobAddTypeCircleSize, height: Constants.Dim.blobAddTypeCircleSize))
         typeContainer1CheckLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 26)
         typeContainer1CheckLabel.text = "\u{2713}"
-        typeContainer1CheckLabel.textAlignment = .Center
-        typeContainer1CheckLabel.textColor = UIColor.whiteColor()
+        typeContainer1CheckLabel.textAlignment = .center
+        typeContainer1CheckLabel.textColor = UIColor.white
         typeContainer1Check.addSubview(typeContainer1CheckLabel)
         
         // Include a border at the bottom of each container to separate the containers
         let border1 = CALayer()
         border1.frame = CGRect(x: 10, y: typeContainer1.frame.height - 1, width: typeContainer1.frame.width - 20, height: 1)
-        border1.backgroundColor = Constants.Colors.blobGray.CGColor
+        border1.backgroundColor = Constants.Colors.blobGray.cgColor
         typeContainer1.layer.addSublayer(border1)
         
         // Blob Type 2 Container and Content
@@ -90,7 +90,7 @@ class BlobAddTypeViewController: UIViewController {
         typeContainer2Label = UILabel(frame: CGRect(x: 20, y: 0, width: typeContainer2.frame.width * (3/4) - 20, height: typeContainer2.frame.height))
         typeContainer2Label.font = UIFont(name: Constants.Strings.fontRegular, size: 26)
         typeContainer2Label.text = "Permanent Blob"
-        typeContainer2Label.textAlignment = .Left
+        typeContainer2Label.textAlignment = .left
         typeContainer2Label.textColor = Constants.Colors.colorTextGray
         typeContainer2.addSubview(typeContainer2Label)
         
@@ -102,13 +102,13 @@ class BlobAddTypeViewController: UIViewController {
         typeContainer2CheckLabel = UILabel(frame: CGRect(x: 0, y: 0, width: Constants.Dim.blobAddTypeCircleSize, height: Constants.Dim.blobAddTypeCircleSize))
         typeContainer2CheckLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 26)
         typeContainer2CheckLabel.text = ""
-        typeContainer2CheckLabel.textAlignment = .Center
-        typeContainer2CheckLabel.textColor = UIColor.whiteColor()
+        typeContainer2CheckLabel.textAlignment = .center
+        typeContainer2CheckLabel.textColor = UIColor.white
         typeContainer2Check.addSubview(typeContainer2CheckLabel)
         
         let border2 = CALayer()
         border2.frame = CGRect(x: 10, y: typeContainer2.frame.height - 1, width: typeContainer1.frame.width - 20, height: 1)
-        border2.backgroundColor = Constants.Colors.blobGray.CGColor
+        border2.backgroundColor = Constants.Colors.blobGray.cgColor
         typeContainer2.layer.addSublayer(border2)
         
         // Blob Type 3 Container and Content
@@ -118,7 +118,7 @@ class BlobAddTypeViewController: UIViewController {
         typeContainer3Label = UILabel(frame: CGRect(x: 20, y: 0, width: typeContainer3.frame.width * (3/4) - 20, height: typeContainer3.frame.height))
         typeContainer3Label.font = UIFont(name: Constants.Strings.fontRegular, size: 26)
         typeContainer3Label.text = "Invisible Blob"
-        typeContainer3Label.textAlignment = .Left
+        typeContainer3Label.textAlignment = .left
         typeContainer3Label.textColor = Constants.Colors.colorTextGray
         typeContainer3.addSubview(typeContainer3Label)
         
@@ -130,13 +130,13 @@ class BlobAddTypeViewController: UIViewController {
         typeContainer3CheckLabel = UILabel(frame: CGRect(x: 0, y: 0, width: Constants.Dim.blobAddTypeCircleSize, height: Constants.Dim.blobAddTypeCircleSize))
         typeContainer3CheckLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 26)
         typeContainer3CheckLabel.text = ""
-        typeContainer3CheckLabel.textAlignment = .Center
-        typeContainer3CheckLabel.textColor = UIColor.whiteColor()
+        typeContainer3CheckLabel.textAlignment = .center
+        typeContainer3CheckLabel.textColor = UIColor.white
         typeContainer3Check.addSubview(typeContainer3CheckLabel)
         
         let border3 = CALayer()
         border3.frame = CGRect(x: 10, y: typeContainer3.frame.height - 1, width: typeContainer1.frame.width - 20, height: 1)
-        border3.backgroundColor = Constants.Colors.blobGray.CGColor
+        border3.backgroundColor = Constants.Colors.blobGray.cgColor
         typeContainer3.layer.addSublayer(border3)
         
         
@@ -165,33 +165,33 @@ class BlobAddTypeViewController: UIViewController {
     
     // For a tap on each type of Circle, change the check mark and send the new type to the parent VC
     // The check mark label adjustment is redundant here (also done in "changeMapCircleType", but it is used in case of error with the parent method)
-    func tapCheckLabel1(gesture: UIGestureRecognizer) {
+    func tapCheckLabel1(_ gesture: UIGestureRecognizer) {
         typeContainer1CheckLabel.text = "\u{2713}"
         typeContainer2CheckLabel.text = ""
         typeContainer3CheckLabel.text = ""
         
         if let parentVC = self.blobAddTypeDelegate {
-            parentVC.changeMapCircleType(Constants.BlobTypes.Temporary)
+            parentVC.changeMapCircleType(Constants.BlobTypes.temporary)
         }
     }
     
-    func tapCheckLabel2(gesture: UIGestureRecognizer) {
+    func tapCheckLabel2(_ gesture: UIGestureRecognizer) {
         typeContainer1CheckLabel.text = ""
         typeContainer2CheckLabel.text = "\u{2713}"
         typeContainer3CheckLabel.text = ""
         
         if let parentVC = self.blobAddTypeDelegate {
-            parentVC.changeMapCircleType(Constants.BlobTypes.Permanent)
+            parentVC.changeMapCircleType(Constants.BlobTypes.permanent)
         }
     }
     
-    func tapCheckLabel3(gesture: UIGestureRecognizer) {
+    func tapCheckLabel3(_ gesture: UIGestureRecognizer) {
         typeContainer1CheckLabel.text = ""
         typeContainer2CheckLabel.text = ""
         typeContainer3CheckLabel.text = "\u{2713}"
         
         if let parentVC = self.blobAddTypeDelegate {
-            parentVC.changeMapCircleType(Constants.BlobTypes.Invisible)
+            parentVC.changeMapCircleType(Constants.BlobTypes.invisible)
         }
     }
 

@@ -8,18 +8,22 @@ target 'Blobjot' do
   # Pods for Blobjot
   source 'https://github.com/CocoaPods/Specs.git'
 
-  pod 'AWSCognito'
+  pod 'AWSCognito', '2.4.7'
   # pod 'AWSCognitoIdentityProvider'
   # pod 'AWSDynamoDB'
-  pod 'AWSLambda'
+  pod 'AWSLambda', '2.4.7'
   # pod 'AWSMobileAnalytics'
-  pod 'AWSS3'
+  pod 'AWSS3', '2.4.7'
 
   pod 'Bolts'
-  
+
   pod 'GoogleMaps'
   pod 'GooglePlaces'
   pod 'GooglePlacePicker'
+
+  pod 'FBSDKCoreKit'
+  pod 'FBSDKLoginKit'
+  pod 'FBSDKShareKit'
 
   target 'BlobjotTests' do
     inherit! :search_paths

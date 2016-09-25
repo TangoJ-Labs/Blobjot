@@ -27,15 +27,15 @@ class BlobAddTextViewController: UIViewController, UITextViewDelegate {
         // The Blob text view should be centered within the page view and extend the entire width and height, except for a margin
         textViewContainer = UIView(frame: CGRect(x: 5, y: 5, width: viewContainer.frame.width - 10, height: viewContainer.frame.height - 10))
         textViewContainer.layer.borderWidth = 2.0
-        textViewContainer.layer.borderColor = UIColor.lightGrayColor().CGColor
+        textViewContainer.layer.borderColor = UIColor.lightGray.cgColor
         textViewContainer.layer.cornerRadius = 10.0
         viewContainer.addSubview(textViewContainer)
         
         blobTextView = UITextView(frame: CGRect(x: 5, y: 5, width: textViewContainer.frame.width - 10, height: textViewContainer.frame.height - 10))
-        blobTextView.backgroundColor = UIColor.clearColor()
+        blobTextView.backgroundColor = UIColor.clear
         blobTextView.delegate = self
-        blobTextView.editable = true
-        blobTextView.scrollEnabled = true
+        blobTextView.isEditable = true
+        blobTextView.isScrollEnabled = true
         blobTextView.font = UIFont(name: Constants.Strings.fontRegular, size: 18)
 //        blobTextView.text = "Add a message."
         textViewContainer.addSubview(blobTextView)
@@ -51,7 +51,7 @@ class BlobAddTextViewController: UIViewController, UITextViewDelegate {
         // Dispose of any resources that can be recreated.
     }
     
-    func textViewShouldBeginEditing(textView: UITextView) -> Bool {
+    func textViewShouldBeginEditing(_ textView: UITextView) -> Bool {
         print("ADD BLOB TEXT - SHOULD BEGIN EDITING")
         blobTextViewDefaultText.removeFromSuperview()
         

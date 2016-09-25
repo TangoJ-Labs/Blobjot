@@ -42,12 +42,12 @@ class BlobsUserTableViewCell: UITableViewCell {
         cellText = UILabel(frame: CGRect(x: cellContainer.frame.width - 5 - Constants.Dim.blobsUserTableViewContentSize, y: 5, width: Constants.Dim.blobsUserTableViewContentSize, height: Constants.Dim.blobsUserTableViewContentSize))
         cellText.font = UIFont(name: Constants.Strings.fontRegular, size: 16)
         cellText.numberOfLines = 4
-        cellText.lineBreakMode = NSLineBreakMode.ByWordWrapping
+        cellText.lineBreakMode = NSLineBreakMode.byWordWrapping
         cellContainer.addSubview(cellText)
         
         // Add a loading indicator to display when the user has selected the row
         cellSelectedActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: cellContainer.frame.width - 5 - (Constants.Dim.blobsUserTableViewContentSize * 2), y: 0, width: Constants.Dim.blobsUserTableViewContentSize, height: Constants.Dim.blobsUserTableViewContentSize))
-        cellSelectedActivityIndicator.color = UIColor.blackColor()
+        cellSelectedActivityIndicator.color = UIColor.black
         cellContainer.addSubview(cellSelectedActivityIndicator)
         
 //        cellBlobTypeIndicator = UIView(frame: CGRect(x: cellContainer.frame.width - 5 - Constants.Dim.blobsUserTableViewContentSize - (Constants.Dim.blobsUserTableViewIndicatorSize / 2), y: 10, width: Constants.Dim.blobsUserTableViewIndicatorSize, height: Constants.Dim.blobsUserTableViewIndicatorSize))
@@ -58,7 +58,7 @@ class BlobsUserTableViewCell: UITableViewCell {
 //        cellContainer.addSubview(cellBlobTypeIndicator)
         
         cellThumbnail = UIImageView(frame: CGRect(x: cellContainer.frame.width - 5 - Constants.Dim.blobsUserTableViewContentSize, y: 5, width: Constants.Dim.blobsUserTableViewContentSize, height: Constants.Dim.blobsUserTableViewContentSize))
-        cellThumbnail.contentMode = UIViewContentMode.ScaleAspectFill
+        cellThumbnail.contentMode = UIViewContentMode.scaleAspectFill
         cellThumbnail.clipsToBounds = true
         cellContainer.addSubview(cellThumbnail)
     }
@@ -72,7 +72,7 @@ class BlobsUserTableViewCell: UITableViewCell {
         // Initialization code
     }
     
-    override func setSelected(selected: Bool, animated: Bool) {
+    override func setSelected(_ selected: Bool, animated: Bool) {
         print("USER CELL - SET SELECTED")
         // Configure the view for the selected state
         let color = cellBlobTypeIndicator.backgroundColor
@@ -83,7 +83,7 @@ class BlobsUserTableViewCell: UITableViewCell {
         }
     }
     
-    override func setHighlighted(highlighted: Bool, animated: Bool) {
+    override func setHighlighted(_ highlighted: Bool, animated: Bool) {
         print("USER CELL - SET HIGHLIGHTED")
         let color = cellBlobTypeIndicator.backgroundColor
         super.setHighlighted(highlighted, animated: animated)

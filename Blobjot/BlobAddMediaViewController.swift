@@ -39,12 +39,12 @@ class BlobAddMediaViewController: UIViewController {
         super.viewDidLoad()
         
         // Status Bar Settings
-        statusBarHeight = UIApplication.sharedApplication().statusBarFrame.size.height
+        statusBarHeight = UIApplication.shared.statusBarFrame.size.height
         print("**************** BATVC STATUS BAR HEIGHT: \(statusBarHeight)")
         print("**************** BATVC NAV BAR HEIGHT: \(self.navigationController?.navigationBar.frame.height)")
         viewFrameY = self.view.frame.minY
         print("**************** BATVC VIEW FRAME Y: \(viewFrameY)")
-        screenSize = UIScreen.mainScreen().bounds
+        screenSize = UIScreen.main.bounds
         print("**************** BATVC SCREEN HEIGHT: \(screenSize.height)")
         print("**************** BATVC VIEW HEIGHT: \(self.view.frame.height)")
         
@@ -53,15 +53,15 @@ class BlobAddMediaViewController: UIViewController {
         self.view.addSubview(viewContainer)
         
         mediaPickerImage = UIImageView(frame: CGRect(x: (viewContainer.frame.width / 2) - ((viewContainer.frame.height - 20) / 2), y: 10, width: viewContainer.frame.height - 20, height: viewContainer.frame.height - 20))
-        mediaPickerImage.contentMode = UIViewContentMode.ScaleAspectFill
+        mediaPickerImage.contentMode = UIViewContentMode.scaleAspectFill
         mediaPickerImage.clipsToBounds = true
         mediaPickerImage.image = UIImage(named: "defaultMedia.png")
         viewContainer.addSubview(mediaPickerImage)
         
         videoPlayIndicator = UILabel(frame: CGRect(x: 5, y: 5, width: 25, height: 25))
         videoPlayIndicator.text = ""
-        videoPlayIndicator.textColor = UIColor.whiteColor()
-        videoPlayIndicator.textAlignment = .Center
+        videoPlayIndicator.textColor = UIColor.white
+        videoPlayIndicator.textAlignment = .center
         videoPlayIndicator.font = UIFont(name: Constants.Strings.fontRegular, size: 18)
         mediaPickerImage.addSubview(videoPlayIndicator)
         
@@ -78,7 +78,7 @@ class BlobAddMediaViewController: UIViewController {
     
     // MARK: GESTURE RECOGNIZERS
     
-    func showMediaPicker(gesture: UITapGestureRecognizer) {
+    func showMediaPicker(_ gesture: UITapGestureRecognizer) {
         
         if let parentVC = self.blobAddMediaDelegate {
             print("CALLING PARENT DELEGATE")

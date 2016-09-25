@@ -27,26 +27,26 @@ class PeopleTableViewCell: UITableViewCell {
         print("CELL CONTAINER FRAME: \(cellContainer.frame)")
         
         cellConnectStar = UIImageView(frame: CGRect(x: 10, y: (cellContainer.frame.height - Constants.Dim.peopleConnectStarSize) / 2, width: Constants.Dim.peopleConnectStarSize, height: Constants.Dim.peopleConnectStarSize))
-        cellConnectStar.contentMode = UIViewContentMode.ScaleAspectFill
+        cellConnectStar.contentMode = UIViewContentMode.scaleAspectFill
         cellConnectStar.clipsToBounds = true
         cellContainer.addSubview(cellConnectStar)
         
         let imageSize = cellContainer.frame.height - 10
         cellUserImage = UIImageView(frame: CGRect(x: cellContainer.frame.width - 10 - imageSize, y: 5, width: imageSize, height: imageSize))
         cellUserImage.layer.cornerRadius = imageSize / 2
-        cellUserImage.contentMode = UIViewContentMode.ScaleAspectFill
+        cellUserImage.contentMode = UIViewContentMode.scaleAspectFill
         cellUserImage.clipsToBounds = true
         cellContainer.addSubview(cellUserImage)
         
         // Add a loading indicator while the Image is downloaded / searched for
         // Give it the same size and location as the Image View
         cellUserImageActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: cellContainer.frame.width - 10 - imageSize, y: 5, width: imageSize, height: imageSize))
-        cellUserImageActivityIndicator.color = UIColor.blackColor()
+        cellUserImageActivityIndicator.color = UIColor.black
         cellContainer.addSubview(cellUserImageActivityIndicator)
         
         cellActionMessage = UILabel(frame: CGRect(x: 15 + cellConnectStar.frame.width, y: 5, width: cellContainer.frame.width - 30 - cellConnectStar.frame.width - cellUserImage.frame.width, height: 30))
         cellActionMessage.font = UIFont(name: Constants.Strings.fontRegular, size: 12)
-        cellActionMessage.textAlignment = NSTextAlignment.Left
+        cellActionMessage.textAlignment = NSTextAlignment.left
         cellContainer.addSubview(cellActionMessage)
         
         cellUserName = UILabel(frame: CGRect(x: 15 + cellConnectStar.frame.width, y: 25, width: cellContainer.frame.width - 30 - cellConnectStar.frame.width - cellUserImage.frame.width, height: 30))
@@ -55,7 +55,7 @@ class PeopleTableViewCell: UITableViewCell {
         
         let border1 = CALayer()
         border1.frame = CGRect(x: 10, y: cellContainer.frame.height - 1, width: cellContainer.frame.width - 20, height: 1)
-        border1.backgroundColor = Constants.Colors.blobGray.CGColor
+        border1.backgroundColor = Constants.Colors.blobGray.cgColor
         cellContainer.layer.addSublayer(border1)
     }
     
@@ -68,7 +68,7 @@ class PeopleTableViewCell: UITableViewCell {
         // Initialization code
     }
     
-    override func setSelected(selected: Bool, animated: Bool) {
+    override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
         // Configure the view for the selected state
     }

@@ -15,7 +15,7 @@ import UIKit
 protocol BlobAddPeopleViewControllerDelegate {
     
     // When called, the parent View Controller changes the type of Blob to add
-    func changeMapCircleType(type: Constants.BlobTypes)
+    func changeMapCircleType(_ type: Constants.BlobTypes)
     
     // Pass to the parent VC an indicator whether a person has been selected
     func selectedPerson()
@@ -56,11 +56,11 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
         super.viewDidLoad()
         
         // Status Bar Settings
-        statusBarHeight = UIApplication.sharedApplication().statusBarFrame.size.height
+        statusBarHeight = UIApplication.shared.statusBarFrame.size.height
         print("**************** BAPVC STATUS BAR HEIGHT: \(statusBarHeight)")
         viewFrameY = self.view.frame.minY
         print("**************** BAPVC VIEW FRAME Y: \(viewFrameY)")
-        screenSize = UIScreen.mainScreen().bounds
+        screenSize = UIScreen.main.bounds
         print("**************** BAPVC SCREEN HEIGHT: \(screenSize.height)")
         print("**************** BAPVC VIEW HEIGHT: \(self.view.frame.height)")
         
@@ -80,39 +80,39 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
         selectAllLabel = UILabel(frame: CGRect(x: 5, y: 0, width: selectAllWidth - 15 - selectBoxSize, height: selectAllContainer.frame.height))
         selectAllLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 14)
         selectAllLabel.text = "Select All:"
-        selectAllLabel.textAlignment = .Left
-        selectAllLabel.textColor = UIColor.whiteColor()
+        selectAllLabel.textAlignment = .left
+        selectAllLabel.textColor = UIColor.white
         selectAllContainer.addSubview(selectAllLabel)
         
         selectAllBox = UILabel(frame: CGRect(x: selectAllWidth - 5 - selectBoxSize, y: (selectAllContainer.frame.height - selectBoxSize) / 2, width: selectBoxSize, height: selectBoxSize))
-        selectAllBox.layer.borderColor = UIColor.whiteColor().CGColor
+        selectAllBox.layer.borderColor = UIColor.white.cgColor
         selectAllBox.layer.borderWidth = 1
         selectAllBox.font = UIFont(name: Constants.Strings.fontRegular, size: 18)
         selectAllBox.text = ""
-        selectAllBox.textAlignment = .Center
-        selectAllBox.textColor = UIColor.whiteColor()
+        selectAllBox.textAlignment = .center
+        selectAllBox.textColor = UIColor.white
         selectAllContainer.addSubview(selectAllBox)
         
         searchBar = UISearchBar(frame: CGRect(x: 0, y: 0, width: searchBarContainer.frame.width - selectAllWidth, height: searchBarContainer.frame.height))
         searchBar.delegate = self
-        searchBar.barStyle = .Default
+        searchBar.barStyle = .default
         searchBar.backgroundImage = getImageWithColor(Constants.Colors.colorBlobAddPeopleSearchBar, size: CGSize(width: 5, height: 5))
         searchBar.tintColor = Constants.Colors.colorBlobAddPeopleSearchBar
         searchBarContainer.addSubview(searchBar)
         
         // Add a loading indicator while downloading the logged in user image
         peopleTableViewActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: 0, y: searchBarContainer.frame.height, width: viewContainer.frame.width, height: Constants.Dim.blobAddPeopleTableViewCellHeight))
-        peopleTableViewActivityIndicator.color = UIColor.blackColor()
+        peopleTableViewActivityIndicator.color = UIColor.black
         viewContainer.addSubview(peopleTableViewActivityIndicator)
         peopleTableViewActivityIndicator.startAnimating()
         
         peopleTableView = UITableView(frame: CGRect(x: 0, y: searchBar.frame.height, width: viewContainer.frame.width, height: viewContainer.frame.height - searchBar.frame.height))
         peopleTableView.dataSource = self
         peopleTableView.delegate = self
-        peopleTableView.registerClass(BlobAddPeopleTableViewCell.self, forCellReuseIdentifier: Constants.Strings.blobAddPeopleTableViewCellReuseIdentifier)
-        peopleTableView.separatorStyle = .None
+        peopleTableView.register(BlobAddPeopleTableViewCell.self, forCellReuseIdentifier: Constants.Strings.blobAddPeopleTableViewCellReuseIdentifier)
+        peopleTableView.separatorStyle = .none
         peopleTableView.allowsMultipleSelection = true
-        peopleTableView.backgroundColor = UIColor.clearColor()
+        peopleTableView.backgroundColor = UIColor.clear
         peopleTableView.alwaysBounceVertical = true
         peopleTableView.showsVerticalScrollIndicator = false
         viewContainer.addSubview(peopleTableView)
@@ -133,12 +133,12 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
         
         selectAllMessage = UITextView(frame: CGRect(x: 0, y: searchBar.frame.height, width: viewContainer.frame.width, height: viewContainer.frame.height - searchBar.frame.height))
         selectAllMessage.backgroundColor = Constants.Colors.colorBlobAddPeopleSearchBar
-        selectAllMessage.editable = false
-        selectAllMessage.scrollEnabled = false
+        selectAllMessage.isEditable = false
+        selectAllMessage.isScrollEnabled = false
         selectAllMessage.font = UIFont(name: Constants.Strings.fontRegular, size: 26)
         selectAllMessage.text = "Visible to\nall connections."
-        selectAllMessage.textAlignment = .Center
-        selectAllMessage.textColor = UIColor.whiteColor()
+        selectAllMessage.textAlignment = .center
+        selectAllMessage.textColor = UIColor.white
         
         selectAllTapGesture = UITapGestureRecognizer(target: self, action: #selector(BlobAddPeopleViewController.tapSelectAll(_:)))
         selectAllTapGesture.numberOfTapsRequired = 1  // add single tap
@@ -155,24 +155,24 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
     
     // MARK: - Table view data source
     
-    func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    func numberOfSections(in tableView: UITableView) -> Int {
         // #warning Incomplete implementation, return the number of sections
         return 1
     }
     
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
         print("BAPVC - PEOPLE COUNT: \(peopleListUse.count)")
         return peopleListUse.count
     }
     
-    func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return Constants.Dim.blobAddPeopleTableViewCellHeight
     }
     
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier(Constants.Strings.blobAddPeopleTableViewCellReuseIdentifier, forIndexPath: indexPath) as! BlobAddPeopleTableViewCell
-        print("BAPVC - CELL \(indexPath.row): \(cell)")
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: Constants.Strings.blobAddPeopleTableViewCellReuseIdentifier, for: indexPath) as! BlobAddPeopleTableViewCell
+        print("BAPVC - CELL \((indexPath as NSIndexPath).row): \(cell)")
         
         cell.cellUserImageActivityIndicator.startAnimating()
         
@@ -181,8 +181,8 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
         sbv.backgroundColor = Constants.Colors.colorPurple
         cell.selectedBackgroundView = sbv
         
-        let cellUserObject = self.peopleListUse[indexPath.row]
-        print("BAPVC - USER NAME: \(cellUserObject.userName) FOR CELL: \(indexPath.row)")
+        let cellUserObject = self.peopleListUse[(indexPath as NSIndexPath).row]
+        print("BAPVC - USER NAME: \(cellUserObject.userName) FOR CELL: \((indexPath as NSIndexPath).row)")
         
         // Get the User Object from the list and assign data to the cell
         cell.cellUserName.text = cellUserObject.userName
@@ -197,19 +197,19 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
         return cell
     }
     
-    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        print("DID SELECT ROW: \(indexPath.row)")
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        print("DID SELECT ROW: \((indexPath as NSIndexPath).row)")
         
         // Add the selected person to the selected list if they do not already exist
         var personExists = false
         loopPeopleListSelected: for person in peopleListSelected {
-            if person.userID == peopleListUse[indexPath.row].userID {
+            if person.userID == peopleListUse[(indexPath as NSIndexPath).row].userID {
                 personExists = true
                 break loopPeopleListSelected
             }
         }
         if !personExists {
-            peopleListSelected.append(peopleListUse[indexPath.row])
+            peopleListSelected.append(peopleListUse[(indexPath as NSIndexPath).row])
         }
         
         print("PEOPLE SELECTED COUNT: \(peopleListSelected.count)")
@@ -230,12 +230,12 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
         }
     }
     
-    func tableView(tableView: UITableView, didDeselectRowAtIndexPath indexPath: NSIndexPath) {
-        print("DID DESELECT ROW: \(indexPath.row)")
+    func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
+        print("DID DESELECT ROW: \((indexPath as NSIndexPath).row)")
         
-        loopPeopleListSelected: for (index, person) in peopleListSelected.enumerate() {
-            if person.userID == peopleListUse[indexPath.row].userID {
-                peopleListSelected.removeAtIndex(index)
+        loopPeopleListSelected: for (index, person) in peopleListSelected.enumerated() {
+            if person.userID == peopleListUse[(indexPath as NSIndexPath).row].userID {
+                peopleListSelected.remove(at: index)
                 break loopPeopleListSelected
             }
         }
@@ -258,16 +258,16 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
         }
     }
     
-    func tableView(tableView: UITableView, didHighlightRowAtIndexPath indexPath: NSIndexPath) {
-        print("DID HIGHLIGHT ROW: \(indexPath.row)")
+    func tableView(_ tableView: UITableView, didHighlightRowAt indexPath: IndexPath) {
+        print("DID HIGHLIGHT ROW: \((indexPath as NSIndexPath).row)")
     }
     
-    func tableView(tableView: UITableView, didUnhighlightRowAtIndexPath indexPath: NSIndexPath) {
-        print("DID UNHIGHLIGHT ROW: \(indexPath.row)")
+    func tableView(_ tableView: UITableView, didUnhighlightRowAt indexPath: IndexPath) {
+        print("DID UNHIGHLIGHT ROW: \((indexPath as NSIndexPath).row)")
     }
     
     // Override to support conditional editing of the table view.
-    func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         return false
     }
     
@@ -275,7 +275,7 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
     // MARK:  UISearchBarDelegate protocol
     
     // Edit the peopleList based on the search text filter
-    func searchBar(searchBar: UISearchBar, textDidChange searchText: String) {
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         print("BAPVC - Search Text: \(searchText)")
         
         // If the search bar is cleared, clear the peopleList and add all users
@@ -289,7 +289,7 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
         } else {
             for userObject in self.peopleList {
                 // Convert the strings to lowercase for better matching
-                if userObject.userName.lowercaseString.containsString(searchText.lowercaseString) {
+                if userObject.userName.lowercased().contains(searchText.lowercased()) {
                     print("BAPVC - UserName Contains: \(searchText)")
                     
                     self.peopleListUse.append(userObject)
@@ -304,7 +304,7 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
     
     // MARK: GESTURE METHODS
     
-    func tapSelectAll(gesture: UIGestureRecognizer) {
+    func tapSelectAll(_ gesture: UIGestureRecognizer) {
         if selectAll {
             selectAll = false
             selectAllBox.text = ""
@@ -312,7 +312,7 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
             searchBarContainer.addSubview(searchBar)
             
             if let parentVC = self.blobAddPeopleDelegate {
-                parentVC.changeMapCircleType(Constants.BlobTypes.Temporary)
+                parentVC.changeMapCircleType(Constants.BlobTypes.temporary)
             }
             
             // Toggle the Send button
@@ -327,7 +327,7 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
             searchBar.removeFromSuperview()
             
             if let parentVC = self.blobAddPeopleDelegate {
-                parentVC.changeMapCircleType(Constants.BlobTypes.Public)
+                parentVC.changeMapCircleType(Constants.BlobTypes.public)
             }
             
             // Toggle the Send button
@@ -345,15 +345,15 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
         
         // Reload the Table View
         print("BAPVC - REFRESH TABLE AND HIGHLIGHTS - RELOAD TABLE VIEW")
-        self.peopleTableView.performSelectorOnMainThread(#selector(UITableView.reloadData), withObject: nil, waitUntilDone: true)
+        self.peopleTableView.performSelector(onMainThread: #selector(UITableView.reloadData), with: nil, waitUntilDone: true)
         
         // Loop through the Selected People list and highlight the associated people in the Use People list
         for selectedPerson in peopleListSelected {
-            loopUsePeopleList: for (useIndex, usePerson) in self.peopleListUse.enumerate() {
+            loopUsePeopleList: for (useIndex, usePerson) in self.peopleListUse.enumerated() {
                 if usePerson.userID == selectedPerson.userID {
                     
                     // Highlight that person in the table view
-                    self.peopleTableView.selectRowAtIndexPath(NSIndexPath(forRow: useIndex, inSection: 0), animated: false, scrollPosition: UITableViewScrollPosition.None)
+                    self.peopleTableView.selectRow(at: IndexPath(row: useIndex, section: 0), animated: false, scrollPosition: UITableViewScrollPosition.none)
                     break loopUsePeopleList
                 }
             }
@@ -361,12 +361,12 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
     }
     
     // Create a solid color UIImage
-    func getImageWithColor(color: UIColor, size: CGSize) -> UIImage {
-        let rect = CGRectMake(0, 0, size.width, size.height)
+    func getImageWithColor(_ color: UIColor, size: CGSize) -> UIImage {
+        let rect = CGRect(x: 0, y: 0, width: size.width, height: size.height)
         UIGraphicsBeginImageContextWithOptions(size, false, 0)
         color.setFill()
         UIRectFill(rect)
-        let image: UIImage = UIGraphicsGetImageFromCurrentImageContext()
+        let image: UIImage = UIGraphicsGetImageFromCurrentImageContext()!
         UIGraphicsEndImageContext()
         return image
     }
@@ -381,8 +381,8 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
         // Create some JSON to send the logged in userID
         let json: NSDictionary = ["user_id" : Constants.Data.currentUser, "print_check" : "BAP"]
         
-        let lambdaInvoker = AWSLambdaInvoker.defaultLambdaInvoker()
-        lambdaInvoker.invokeFunction("Blobjot-GetUserConnections", JSONObject: json, completionHandler: { (response, err) -> Void in
+        let lambdaInvoker = AWSLambdaInvoker.default()
+        lambdaInvoker.invokeFunction("Blobjot-GetUserConnections", jsonObject: json, completionHandler: { (response, err) -> Void in
             
             if (err != nil) {
                 print("BAPVC - GET USER CONNECTIONS DATA ERROR: \(err)")
@@ -392,7 +392,7 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
                 if let userConnectionArrays = response as? [[AnyObject]] {
                     
                     // Loop through the arrays and add each user - the arrays should be in the proper order by user type
-                    for (arrayIndex, userArray) in userConnectionArrays.enumerate() {
+                    for (arrayIndex, userArray) in userConnectionArrays.enumerated() {
                         print("BAPVC - array: \(arrayIndex): jsonData: \(userArray)")
                         print("BAPVC - USER COUNT: \(userArray.count)")
                         
@@ -437,7 +437,7 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
                                 if personExists == false {
                                     
                                     // Add the User Object to the local list if they are a connection
-                                    if addUser.userStatus == Constants.UserStatusTypes.Connected {
+                                    if addUser.userStatus == Constants.UserStatusTypes.connected {
                                         self.peopleList.append(addUser)
                                         print("BAPVC - ADDED CONNECTED USER \(addUser.userName) TO PEOPLE LIST")
                                     }
@@ -448,7 +448,7 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
                     }
                     
                     // Sort the list alphabetically and copy the peopleList to the peopleList to use in the table
-                    self.peopleList.sortInPlace({$0.userName <  $1.userName})
+                    self.peopleList.sort(by: {$0.userName <  $1.userName})
                     self.peopleListUse = self.peopleList
                     
                     // Reload the Table View
@@ -459,12 +459,12 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
     }
     
     // Download User Image
-    func getUserImage(userID: String, imageKey: String) {
+    func getUserImage(_ userID: String, imageKey: String) {
         print("BAPVC - GETTING IMAGE FOR: \(imageKey)")
         
-        let downloadingFilePath = NSTemporaryDirectory().stringByAppendingString(imageKey) // + Constants.Settings.frameImageFileType)
-        let downloadingFileURL = NSURL(fileURLWithPath: downloadingFilePath)
-        let transferManager = AWSS3TransferManager.defaultS3TransferManager()
+        let downloadingFilePath = NSTemporaryDirectory() + imageKey // + Constants.Settings.frameImageFileType)
+        let downloadingFileURL = URL(fileURLWithPath: downloadingFilePath)
+        let transferManager = AWSS3TransferManager.default()
         
         // Download the Frame
         let downloadRequest : AWSS3TransferManagerDownloadRequest = AWSS3TransferManagerDownloadRequest()
@@ -472,10 +472,10 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
         downloadRequest.key =  imageKey
         downloadRequest.downloadingFileURL = downloadingFileURL
         
-        transferManager.download(downloadRequest).continueWithBlock({ (task) -> AnyObject! in
+        transferManager?.download(downloadRequest).continue({ (task) -> AnyObject! in
             if let error = task.error {
-                if error.domain == AWSS3TransferManagerErrorDomain as String
-                    && AWSS3TransferManagerErrorType(rawValue: error.code) == AWSS3TransferManagerErrorType.Paused {
+                if error._domain == AWSS3TransferManagerErrorDomain as String
+                    && AWSS3TransferManagerErrorType(rawValue: error._code) == AWSS3TransferManagerErrorType.paused {
                     print("BAPVC - DOWNLOAD PAUSED")
                 } else {
                     print("BAPVC - DOWNLOAD FAILED: [\(error)]")
@@ -484,11 +484,11 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
                 print("BAPVC - DOWNLOAD FAILED: [\(exception)]")
             } else {
                 print("BAPVC - DOWNLOAD SUCCEEDED")
-                dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                DispatchQueue.main.async(execute: { () -> Void in
                     // Assign the image to the Preview Image View
-                    if NSFileManager().fileExistsAtPath(downloadingFilePath) {
+                    if FileManager().fileExists(atPath: downloadingFilePath) {
                         print("BAPVC - IMAGE FILE AVAILABLE")
-                        let thumbnailData = NSData(contentsOfFile: downloadingFilePath)
+                        let thumbnailData = try? Data(contentsOf: URL(fileURLWithPath: downloadingFilePath))
                         
                         // Ensure the Thumbnail Data is not null
                         if let tData = thumbnailData {

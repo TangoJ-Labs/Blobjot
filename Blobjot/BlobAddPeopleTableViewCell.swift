@@ -29,14 +29,14 @@ class BlobAddPeopleTableViewCell: UITableViewCell {
         let imageSize = cellContainer.frame.height - 10
         cellUserImage = UIImageView(frame: CGRect(x: cellContainer.frame.width - 10 - imageSize, y: 5, width: imageSize, height: imageSize))
         cellUserImage.layer.cornerRadius = imageSize / 2
-        cellUserImage.contentMode = UIViewContentMode.ScaleAspectFill
+        cellUserImage.contentMode = UIViewContentMode.scaleAspectFill
         cellUserImage.clipsToBounds = true
         cellContainer.addSubview(cellUserImage)
         
         // Add a loading indicator while the Image is downloaded / searched for
         // Give it the same size and location as the Image View
         cellUserImageActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: cellContainer.frame.width - 10 - imageSize, y: 5, width: imageSize, height: imageSize))
-        cellUserImageActivityIndicator.color = UIColor.blackColor()
+        cellUserImageActivityIndicator.color = UIColor.black
         cellContainer.addSubview(cellUserImageActivityIndicator)
         
         cellUserName = UILabel(frame: CGRect(x: 15, y: 15, width: cellContainer.frame.width - 30 - cellUserImage.frame.width, height: 30))
@@ -45,7 +45,7 @@ class BlobAddPeopleTableViewCell: UITableViewCell {
         
         let border1 = CALayer()
         border1.frame = CGRect(x: 10, y: cellContainer.frame.height - 1, width: cellContainer.frame.width - 20, height: 1)
-        border1.backgroundColor = Constants.Colors.blobGray.CGColor
+        border1.backgroundColor = Constants.Colors.blobGray.cgColor
         cellContainer.layer.addSublayer(border1)
     }
     
@@ -58,7 +58,7 @@ class BlobAddPeopleTableViewCell: UITableViewCell {
         // Initialization code
     }
     
-    override func setSelected(selected: Bool, animated: Bool) {
+    override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
         // Configure the view for the selected state
     }

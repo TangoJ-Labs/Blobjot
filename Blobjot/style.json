@@ -1,0 +1,57 @@
+ [
+  {
+  "featureType": "all",
+  "stylers": [
+              { "color": "#F2F2F2" }
+              ]
+  }
+  ,{
+  "featureType": "all",
+  "elementType": "labels.text",
+  "stylers": [
+              { "color": "#333333" }
+              ]
+  }
+  ,{
+  "featureType": "all",
+  "elementType": "labels.text.fill",
+  "stylers": [
+              { "color": "#333333" }
+              ]
+  }
+  ,{
+  "featureType": "all",
+  "elementType": "labels.text.stroke",
+  "stylers": [
+              { "visibility": "off" }
+              ]
+  }
+  ,{
+  "featureType": "all",
+  "elementType": "labels.icon",
+  "stylers": [
+              { "visibility": "off" }
+              ]
+  }
+  ,{
+  "featureType": "landscape.man_made",
+  "elementType": "geometry",
+  "stylers": [
+              { "color": "#CCCCCC" }
+              ]
+  }
+  ,{
+  "featureType": "road",
+  "elementType": "geometry",
+  "stylers": [
+              { "color": "#999999" }
+              ]
+  }
+  ,{
+  "featureType": "landscape",
+  "elementType": "labels",
+  "stylers": [
+              { "visibility": "off" }
+              ]
+  }
+]

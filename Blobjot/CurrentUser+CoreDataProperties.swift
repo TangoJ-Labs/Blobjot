@@ -18,6 +18,6 @@ extension CurrentUser {
     @NSManaged var userName: String?
     @NSManaged var facebookID: String?
     @NSManaged var userImageKey: String?
-    @NSManaged var userImage: NSData?
+    @NSManaged var userImage: Data?
 
 }

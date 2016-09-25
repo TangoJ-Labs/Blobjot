@@ -16,7 +16,7 @@ import GooglePlaces
 import UIKit
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate, AWSMethodsDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate, AWSRequestDelegate {
 
     var window: UIWindow?
     let navController = UINavigationController()
@@ -24,12 +24,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     
     var badgeNumber = 0
 
-    func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         print("DID FINISH LAUNCHING WITH OPTIONS: \(launchOptions)")
         
         // Push Notifications
-        let notificationTypes: UIUserNotificationType = [UIUserNotificationType.Alert, UIUserNotificationType.Badge, UIUserNotificationType.Sound]
-        let pushNotificationSettings = UIUserNotificationSettings(forTypes: notificationTypes, categories: nil)
+        let notificationTypes: UIUserNotificationType = [UIUserNotificationType.alert, UIUserNotificationType.badge, UIUserNotificationType.sound]
+        let pushNotificationSettings = UIUserNotificationSettings(types: notificationTypes, categories: nil)
         application.registerUserNotificationSettings(pushNotificationSettings)
         application.registerForRemoteNotifications()
         
@@ -39,8 +39,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         
         // AWS Cognito Prep
 //        let credentialsProvider = AWSCognitoCredentialsProvider(regionType: Constants.Strings.aws_region, identityPoolId: Constants.Strings.aws_cognitoIdentityPoolId)
-        let configuration = AWSServiceConfiguration(region: Constants.Strings.aws_region, credentialsProvider: Constants.credentialsProvider)
-        AWSServiceManager.defaultServiceManager().defaultServiceConfiguration = configuration
+        let configuration = AWSServiceConfiguration(region: Constants.Strings.awsRegion, credentialsProvider: Constants.credentialsProvider)
+        AWSServiceManager.default().defaultServiceConfiguration = configuration
         
 //        let pool = AWSCognitoUserPool
         
@@ -49,26 +49,31 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         
         // Change the color of the default background (try to change the color of the background seen when using a flip transition)
         if let window = window {
-            window.layer.backgroundColor = Constants.Colors.colorStatusBar.CGColor
+            window.layer.backgroundColor = Constants.Colors.colorStatusBar.cgColor
         }
         
         // Prepare the root View Controller and make visible
         self.mapViewController = MapViewController()
-        self.window = UIWindow(frame: UIScreen.mainScreen().bounds)
-        self.window!.rootViewController = mapViewController
+        self.navController.pushViewController(mapViewController, animated: false)
+        
+        self.window = UIWindow(frame: UIScreen.main.bounds)
+        self.navController.navigationBar.barTintColor = Constants.Colors.colorStatusBar
+        self.navController.viewControllers = [mapViewController]
+        self.window!.rootViewController = navController
+//        self.window!.rootViewController = mapViewController
         self.window!.makeKeyAndVisible()
         print("!!!!!! ASSIGNED ROOT VIEW CONTROLLER !!!!!!")
         
         // Initialize the notification settings and reset the badge number
-        let settings = UIUserNotificationSettings(forTypes: [.Alert, .Badge , .Sound], categories: nil)
+        let settings = UIUserNotificationSettings(types: [.alert, .badge , .sound], categories: nil)
         application.registerUserNotificationSettings(settings)
         
-        UIApplication.sharedApplication().applicationIconBadgeNumber = badgeNumber
+        UIApplication.shared.applicationIconBadgeNumber = badgeNumber
         
         return true
     }
     
-    func applicationWillResignActive(application: UIApplication) {
+    func applicationWillResignActive(_ application: UIApplication) {
         // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
         // Use this method to pause ongoing tasks, disable timers, and throttle down OpenGL ES frame rates. Games should use this method to pause the game.
         
@@ -79,7 +84,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         self.updateLocationManager()
     }
     
-    func applicationDidEnterBackground(application: UIApplication) {
+    func applicationDidEnterBackground(_ application: UIApplication) {
         print("IN APP DID ENTER BACKGROUND")
         
         Constants.inBackground = true
@@ -87,13 +92,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         self.updateLocationManager()
     }
     
-    func applicationWillEnterForeground(application: UIApplication) {
+    func applicationWillEnterForeground(_ application: UIApplication) {
         // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
         
         Constants.inBackground = false
     }
     
-    func applicationDidBecomeActive(application: UIApplication) {
+    func applicationDidBecomeActive(_ application: UIApplication) {
         print("IN APP DID BECOME ACTIVE")
         // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
         Constants.inBackground = false
@@ -103,13 +108,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         
         // Clear the badges
         self.badgeNumber = 0
-        UIApplication.sharedApplication().applicationIconBadgeNumber = self.badgeNumber
+        UIApplication.shared.applicationIconBadgeNumber = self.badgeNumber
         
         print("STOPPING LOCATION UPDATING")
         Constants.appDelegateLocationManager.stopUpdatingLocation()
     }
     
-    func applicationWillTerminate(application: UIApplication) {
+    func applicationWillTerminate(_ application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
         // Saves changes in the application's managed object context before the application terminates.
         
@@ -132,11 +137,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     // MARK: LOCAL NOTIFICATIONS
     
     // THIS IS NOT FIRING
-    func application(application: UIApplication, handleActionWithIdentifier identifier: String?, forLocalNotification notification: UILocalNotification, completionHandler: () -> Void) {
+    func application(_ application: UIApplication, handleActionWithIdentifier identifier: String?, for notification: UILocalNotification, completionHandler: @escaping () -> Void) {
         print("HANDLE ACTION WITH IDENTIFIER - LOCAL - WITH IDENTIFIER: \(identifier); FOR NOTIFICATION: \(notification)")
     }
     
-    func application(application: UIApplication, didReceiveLocalNotification notification: UILocalNotification) {
+    func application(_ application: UIApplication, didReceive notification: UILocalNotification) {
         print("DID RECEIVE - LOCAL - NOTIFICATION: \(notification.userInfo!["blobID"])")
         
         // Ensure that the notification userInfo is not nil
@@ -160,40 +165,40 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     
     // MARK: REMOTE (PUSH) NOTIFICATIONS
     
-    func application(application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: NSData) {
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         print("AD-RN - DEVICE TOKEN: \(deviceToken)")
     }
     
-    func application(application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: NSError) {
+    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
         print("AD-RN - ERROR: \(error)")
     }
     
-    func application(application: UIApplication, didReceiveRemoteNotification userInfo: [NSObject : AnyObject]) {
+    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any]) {
         print("AD-RN - DID RECEIVE - REMOTE - NOTIFICATION: \(userInfo)")
     }
     
-    func application(application: UIApplication, didReceiveRemoteNotification userInfo: [NSObject : AnyObject], fetchCompletionHandler completionHandler: (UIBackgroundFetchResult) -> Void) {
+    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
         print("AD-RN - DID RECEIVE - REMOTE - NOTIFICATION - BACKGROUND: \(userInfo)")
     }
     
-    func application(application: UIApplication, handleActionWithIdentifier identifier: String?, forRemoteNotification userInfo: [NSObject : AnyObject], completionHandler: () -> Void) {
+    func application(_ application: UIApplication, handleActionWithIdentifier identifier: String?, forRemoteNotification userInfo: [AnyHashable: Any], completionHandler: @escaping () -> Void) {
         print("AD-RN - HANDLE ACTION WITH IDENTIFIER: \(identifier) FOR REMOTE NOTIFICATION: \(userInfo)")
     }
     
     
     // For the FacebookSDK
-    func application(application: UIApplication, openURL url: NSURL, sourceApplication: String?, annotation: AnyObject) -> Bool {
-        return FBSDKApplicationDelegate.sharedInstance().application(application, openURL: url, sourceApplication: sourceApplication, annotation: annotation)
+    func application(_ application: UIApplication, open url: URL, sourceApplication: String?, annotation: Any) -> Bool {
+        return FBSDKApplicationDelegate.sharedInstance().application(application, open: url, sourceApplication: sourceApplication, annotation: annotation)
     }
     
     
     // FUNCTIONS FOR LOCATION DELEGATE
     
-    func locationManager(manager: CLLocationManager, didFailWithError error: NSError) {
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         print("Error while updating location " + error.localizedDescription)
     }
     
-    func locationManager(manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         print("AD - UPDATED LOCATIONS: \(locations)")
         
         if Constants.inBackground {
@@ -221,16 +226,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     }
     
     // Process the new location data passed by the locationManager to create new notifications if needed
-    func processNewLocationDataForNotifications(userLocation: CLLocation) {
+    func processNewLocationDataForNotifications(_ userLocation: CLLocation) {
         
         // Retrieve the Blob notification data from Core Data
         let moc = DataController().managedObjectContext
-        let blobFetch = NSFetchRequest(entityName: "BlobNotification")
+        let blobFetch = NSFetchRequest<NSFetchRequestResult>(entityName: "BlobNotification")
         
         // Create an empty blobNotifications list in case the Core Data request fails
         var blobNotifications = [BlobNotification]()
         do {
-            blobNotifications = try moc.executeFetchRequest(blobFetch) as! [BlobNotification]
+            blobNotifications = try moc.fetch(blobFetch) as! [BlobNotification]
         } catch {
             fatalError("Failed to fetch frames: \(error)")
         }
@@ -252,7 +257,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
                 // Then subtract the user's location range radius to find the distance from the Blob center to the edge of
                 // the user location range circle closest to the Blob
                 let blobLocation = CLLocation(latitude: blob.blobLat, longitude: blob.blobLong)
-                let userDistanceFromBlobCenter = userLocation.distanceFromLocation(blobLocation)
+                let userDistanceFromBlobCenter = userLocation.distance(from: blobLocation)
                 let minUserDistanceFromBlobCenter = userDistanceFromBlobCenter - userRangeRadius
                 
                 // If the minimum distance from the Blob's center to the user is equal to or less than the Blob radius,
@@ -279,9 +284,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
                             print("AD - REQUESTING BLOB EXTRA")
                             
                             // Only request the extra Blob data if it has not already been requested
-                            let awsMethods = AWSMethods()
-                            awsMethods.awsMethodsDelegate = self
-                            awsMethods.getBlobData(blob.blobID)
+//                            let awsMethods = AWSMethods()
+//                            awsMethods.awsMethodsCognitoDelegate = self
+//                            awsMethods.getBlobData(blob.blobID)
+                            AWSPrepRequest(requestToCall: AWSGetBlobData(blob: blob), delegate: self as AWSRequestDelegate).prepRequest()
                             
                             // When downloading Blob data, always request the user data if it does not already exist
                             // Find the correct User Object in the global list
@@ -296,9 +302,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
                             // If the user has not been downloaded, request the user and the userImage and then notify the user
                             if !userExists {
                                 
-                                let awsMethods = AWSMethods()
-                                awsMethods.awsMethodsDelegate = self
-                                awsMethods.getSingleUserData(blob.blobUserID, forPreviewBox: false)
+//                                let awsMethods = AWSMethods()
+//                                awsMethods.awsMethodsCognitoDelegate = self
+//                                awsMethods.getSingleUserData(blob.blobUserID, forPreviewBox: false)
+                                AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: blob.blobUserID, forPreviewBox: false), delegate: self as AWSRequestDelegate).prepRequest()
                             }
                         } else {
                             Constants.Data.locationBlobs.append(blob)
@@ -316,16 +323,44 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     
     // MARK: AWS DELEGATE METHODS
     
-    func refreshCollectionView() {
-    }
-    func updateBlobActionTable() {
-    }
-    func updatePreviewBoxData(user: User) {
-    }
-    func refreshPreviewUserData(user: User) {
+    func showLoginScreen() {
+        print("AD - SHOW LOGIN SCREEN")
     }
     
-    func displayNotification(blob: Blob) {
+    func processAwsReturn(_ objectType: AWSRequestObject, success: Bool)
+    {
+        // Process the return data based on the method used
+        switch objectType
+        {
+        case let awsGetBlobData as AWSGetBlobData:
+            if success
+            {
+                // Show the blob notification if needed
+                self.displayNotification(awsGetBlobData.blob)
+            }
+            else
+            {
+                // Show the error message
+                self.createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+            }
+        case _ as AWSGetSingleUserData:
+            if success
+            {
+            }
+            else
+            {
+                // Show the error message
+                self.createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+            }
+        default:
+            print("DEFAULT: THERE WAS AN ISSUE WITH THE DATA RETURNED FROM AWS")
+            
+            // Show the error message
+            self.createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+        }
+    }
+    
+    func displayNotification(_ blob: Blob) {
         print("SHOWING NOTIFICATION FOR BLOB: \(blob.blobID) WITH TEXT: \(blob.blobText)")
         
         // Find the user for the Blob
@@ -346,14 +381,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
                 notification.hasAction = false
 //                notification.alertTitle = "\(userObject.userName)"
                 notification.userInfo = ["blobID" : blob.blobID]
-                notification.fireDate = NSDate().dateByAddingTimeInterval(0) //Show the notification now
+                notification.fireDate = Date().addingTimeInterval(0) //Show the notification now
                 
-                UIApplication.sharedApplication().scheduleLocalNotification(notification)
+                UIApplication.shared.scheduleLocalNotification(notification)
                 
                 // Add to the number shown on the badge (count of notifications)
                 self.badgeNumber += 1
                 print("BADGE NUMBER: \(self.badgeNumber)")
-                UIApplication.sharedApplication().applicationIconBadgeNumber = self.badgeNumber
+                UIApplication.shared.applicationIconBadgeNumber = self.badgeNumber
                 
                 break loopUserObjectCheck
             }
@@ -361,7 +396,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         
         // Save the Blob notification in Core Data (so that the user is not notified again)
         let moc = DataController().managedObjectContext
-        let entity = NSEntityDescription.insertNewObjectForEntityForName("BlobNotification", inManagedObjectContext: moc) as! BlobNotification
+        let entity = NSEntityDescription.insertNewObject(forEntityName: "BlobNotification", into: moc) as! BlobNotification
         entity.setValue(blob.blobID, forKey: "blobID")
         // Save the Entity
         do {
@@ -370,6 +405,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
             fatalError("Failure to save context: \(error)")
         }
     }
-
+    
+    // Create an alert screen with only an acknowledgment option (an "OK" button)
+    func createAlertOkView(_ title: String, message: String) {
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: UIAlertControllerStyle.alert)
+        let okAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.default) { (result : UIAlertAction) -> Void in
+            print("OK")
+        }
+        alertController.addAction(okAction)
+//        self.present(alertController, animated: true, completion: nil)
+        alertController.show()
+    }
 }
-

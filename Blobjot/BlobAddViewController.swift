@@ -22,7 +22,7 @@ protocol BlobAddViewControllerDelegate {
     func popViewController()
     
     // Used to add the new Blob to the map
-    func createBlobOnMap(blobCenter: CLLocationCoordinate2D, blobRadius: Double, blobType: Constants.BlobTypes, blobTitle: String)
+    func createBlobOnMap(_ blobCenter: CLLocationCoordinate2D, blobRadius: Double, blobType: Constants.BlobTypes, blobTitle: String)
 }
 
 class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, UIPageViewControllerDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, GMSMapViewDelegate, BlobAddTypeViewControllerDelegate, BlobAddMediaViewControllerDelegate, BlobAddPeopleViewControllerDelegate {
@@ -63,7 +63,7 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
     var mapZoom: Float!
     
     // These variables will hold the Blob content created in the Page Views
-    var blobType = Constants.BlobTypes.Temporary
+    var blobType = Constants.BlobTypes.temporary
 //    var blobText: String?
     var blobThumbnail: UIImage?
     var blobImage: UIImage?
@@ -73,7 +73,7 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
     var randomMediaID: String?
     var uploadImageFilePath: String?
     
-    var blobVideoUrl: NSURL?
+    var blobVideoUrl: URL?
     var uploadVideoFilePath: String?
     var uploadThumbnailFilePath: String!
     
@@ -86,11 +86,11 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
         // Create and set the Nav Bar right button here, and not in the parent VC because this View Controller needs
         // to call this method so that it can pass local variables
         rightButtonItem = UIBarButtonItem(title: "Send",
-                                              style: UIBarButtonItemStyle.Plain,
+                                              style: UIBarButtonItemStyle.plain,
                                               target: self,
                                               action: #selector(self.sendBlobAndPopViewController(_:)))
-        rightButtonItem.tintColor = UIColor.lightGrayColor()
-        self.navigationItem.setRightBarButtonItem(rightButtonItem, animated: true)
+        rightButtonItem.tintColor = UIColor.lightGray
+        self.navigationItem.setRightBarButton(rightButtonItem, animated: true)
         
         // Instantiate and assign delegates for the Page Viewer View Controllers
         vc1 = BlobAddTypeViewController()
@@ -103,15 +103,15 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
         viewControllers = [vc1, vc2, vc3, vc4]
 
         // Status Bar Settings
-        UIApplication.sharedApplication().statusBarHidden = false
-        UIApplication.sharedApplication().statusBarStyle = UIStatusBarStyle.LightContent
-        statusBarHeight = UIApplication.sharedApplication().statusBarFrame.size.height
+        UIApplication.shared.isStatusBarHidden = false
+        UIApplication.shared.statusBarStyle = UIStatusBarStyle.lightContent
+        statusBarHeight = UIApplication.shared.statusBarFrame.size.height
 //        navBarHeight = self.navigationController?.navigationBar.frame.height
         navBarHeight = 44
         print("**************** BAVC - NAV BAR HEIGHT: \(navBarHeight)")
         viewFrameY = self.view.frame.minY
         print("**************** BAVC - VIEW FRAME Y: \(viewFrameY)")
-        screenSize = UIScreen.mainScreen().bounds
+        screenSize = UIScreen.main.bounds
         print("**************** BAVC - SCREEN HEIGHT: \(screenSize.height)")
         print("**************** BAVC - VIEW HEIGHT: \(self.view.frame.height)")
         
@@ -124,30 +124,30 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
         pageViewContainer = UIView(frame: CGRect(x: 0, y: 0 - viewFrameY, width: viewContainer.frame.width, height: viewContainer.frame.height - 10 - viewContainer.frame.width))
         viewContainer.addSubview(pageViewContainer)
         
-        pageViewController = UIPageViewController(transitionStyle: .Scroll, navigationOrientation: .Horizontal, options: nil)
+        pageViewController = UIPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal, options: nil)
         pageViewController.dataSource = self
         pageViewController.delegate = self
-        pageViewController.setViewControllers([viewControllers.first!], direction: UIPageViewControllerNavigationDirection.Forward, animated: true, completion: nil)
+        pageViewController.setViewControllers([viewControllers.first!], direction: UIPageViewControllerNavigationDirection.forward, animated: true, completion: nil)
         pageViewContainer.addSubview(pageViewController.view)
         
         // Add a page controller (dots indicating the currently viewed page) under the page viewer
         pageControl = UIPageControl(frame: CGRect(x: 0, y: viewContainer.frame.height - 10 - viewContainer.frame.width, width: viewContainer.frame.width, height: 10))
         pageControl.numberOfPages = viewControllers.count
         pageControl.currentPage = 0
-        pageControl.tintColor = UIColor.lightGrayColor()
-        pageControl.pageIndicatorTintColor = UIColor.lightGrayColor()
+        pageControl.tintColor = UIColor.lightGray
+        pageControl.pageIndicatorTintColor = UIColor.lightGray
         pageControl.currentPageIndicatorTintColor = Constants.Colors.colorPurple
         viewContainer.addSubview(pageControl)
         
         // Add the Map View under the page controller, and extend it to the bottom of the view
         // The Map View should be on the bottom of the view so that if the keyboard is opened, it covers the Map View
         // and not the Page Viewer (which is what needs to use the keyboard)
-        let camera = GMSCameraPosition.cameraWithLatitude(blobCoords.latitude, longitude: blobCoords.longitude, zoom: mapZoom - 1)
-        mapView = GMSMapView.mapWithFrame(CGRect(x: 0, y: viewContainer.frame.height - viewContainer.frame.width, width: viewContainer.frame.width, height: viewContainer.frame.width), camera: camera)
+        let camera = GMSCameraPosition.camera(withLatitude: blobCoords.latitude, longitude: blobCoords.longitude, zoom: mapZoom - 1)
+        mapView = GMSMapView.map(withFrame: CGRect(x: 0, y: viewContainer.frame.height - viewContainer.frame.width, width: viewContainer.frame.width, height: viewContainer.frame.width), camera: camera)
         mapView.delegate = self
         mapView.mapType = kGMSTypeNormal
-        mapView.indoorEnabled = true
-        mapView.myLocationEnabled = true
+        mapView.isIndoorEnabled = true
+        mapView.isMyLocationEnabled = true
         viewContainer.addSubview(mapView)
         
         // Add the viewScreen and loading indicator for use when the Blob is being uploaded
@@ -155,11 +155,11 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
         viewScreen.backgroundColor = Constants.Colors.standardBackgroundGrayTransparent
         
         viewScreenActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: 0, y: 0, width: viewContainer.frame.width, height: viewContainer.frame.height))
-        viewScreenActivityIndicator.color = UIColor.blackColor()
+        viewScreenActivityIndicator.color = UIColor.black
         
         // Set the angle at which the map should be viewed initially
         let desiredAngle = Double(60)
-        mapView.animateToViewingAngle(desiredAngle)
+        mapView.animate(toViewingAngle: desiredAngle)
         
         // Using the data passed from the parent VC (the Map View Controller), create a circle on the map where the user created the new Blob
         addCircle = GMSCircle(position: blobCoords, radius: blobRadius)
@@ -180,10 +180,10 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
     // MARK: PAGE VIEW CONTROLLER - DATA SOURCE METHODS
     
     // The Before and After View Controller delegate methods control the order in which the pages are viewed
-    func pageViewController(pageViewController: UIPageViewController, viewControllerBeforeViewController viewController: UIViewController) -> UIViewController? {
+    func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
         print("PAGE VIEW CONTROLLER - VC BEFORE VC: \(viewController)")
         
-        let index = viewControllers.indexOf(viewController)
+        let index = viewControllers.index(of: viewController)
         if index == nil || index! == 0 {
             return nil
         } else {
@@ -191,10 +191,10 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
         }
     }
     
-    func pageViewController(pageViewController: UIPageViewController, viewControllerAfterViewController viewController: UIViewController) -> UIViewController? {
+    func pageViewController(_ pageViewController: UIPageViewController, viewControllerAfter viewController: UIViewController) -> UIViewController? {
         print("PAGE VIEW CONTROLLER - VC AFTER VC: \(viewController)")
         
-        let index = viewControllers.indexOf(viewController)
+        let index = viewControllers.index(of: viewController)
         if index == nil || index! + 1 == viewControllers.count {
             return nil
         } else {
@@ -203,11 +203,11 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
     }
     
     // Track which page view is about to be viewed and change the Page Control (dots) to highlight the correct dot
-    func pageViewController(pageViewController: UIPageViewController, willTransitionToViewControllers pendingViewControllers: [UIViewController]) {
+    func pageViewController(_ pageViewController: UIPageViewController, willTransitionTo pendingViewControllers: [UIViewController]) {
         print("PAGE VIEW CONTROLLER - PENDING VCs: \(pendingViewControllers)")
         
         if let pendingVC = pendingViewControllers.first {
-            let index = viewControllers.indexOf(pendingVC)
+            let index = viewControllers.index(of: pendingVC)
             print("PENDING INDEX: \(index)")
             pageControl.currentPage = index!
             
@@ -220,11 +220,11 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
     
     // MARK: PAGE VIEW CONTROLLER - DELEGATE METHODS
     // Return how many pages are needed in the Page Viewer
-    func presentationCountForPageViewController(pageViewController: UIPageViewController) -> Int {
+    func presentationCount(for pageViewController: UIPageViewController) -> Int {
         return viewControllers.count
     }
     
-    func presentationIndexForPageViewController(pageViewController: UIPageViewController) -> Int {
+    func presentationIndex(for pageViewController: UIPageViewController) -> Int {
         return 0
     }
     
@@ -237,17 +237,17 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
     func pickMediaPicker() {
         let mediaPicker = UIImagePickerController()
         mediaPicker.delegate = self
-        mediaPicker.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
+        mediaPicker.sourceType = UIImagePickerControllerSourceType.photoLibrary
         mediaPicker.mediaTypes = [kUTTypeImage as String] //, kUTTypeMovie as String]
-        self.presentViewController(mediaPicker, animated: true, completion: nil)
+        self.present(mediaPicker, animated: true, completion: nil)
     }
     
     // Once the media has been selected, dismiss the Media Picker VC, capture the media location, and take a screenshot (for a movie type)
-    func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]) {
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
         print("MEDIA SELECTED IS: \(info.description)")
         
         // Dismiss the Media Picker
-        self.dismissViewControllerAnimated(true, completion: nil)
+        self.dismiss(animated: true, completion: nil)
         
         // Check the media type
         let mediaType = info[UIImagePickerControllerMediaType] as! String
@@ -272,8 +272,8 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
                     // Create and locally save the mediaImage
                     if let data = UIImagePNGRepresentation(pickedImage) {
                         print("CREATED THUMBNAIL")
-                        uploadImageFilePath = NSTemporaryDirectory().stringByAppendingString(randomMediaID + ".png")
-                        data.writeToFile(uploadImageFilePath!, atomically: true)
+                        uploadImageFilePath = NSTemporaryDirectory() + (randomMediaID + ".png")
+                        try? data.write(to: URL(fileURLWithPath: uploadImageFilePath!), options: [.atomic])
                     }
                 }
                 
@@ -356,8 +356,8 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
                 // Create and locally save the thumbnail
                 if let data = UIImagePNGRepresentation(blobThumbnail!) {
                     print("CREATED THUMBNAIL")
-                    uploadThumbnailFilePath = NSTemporaryDirectory().stringByAppendingString(randomMediaID + "_THUMBNAIL_" + ".png")
-                    data.writeToFile(uploadThumbnailFilePath, atomically: true)
+                    uploadThumbnailFilePath = NSTemporaryDirectory() + (randomMediaID + "_THUMBNAIL_" + ".png")
+                    try? data.write(to: URL(fileURLWithPath: uploadThumbnailFilePath), options: [.atomic])
                 }
             }
             
@@ -367,9 +367,9 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
     }
     
     // If the user cancels picking media, dismiss the Media Picker
-    func imagePickerControllerDidCancel(picker: UIImagePickerController) {
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         print("CANCELLED MEDIA PICKER")
-        self.dismissViewControllerAnimated(true, completion: nil)
+        self.dismiss(animated: true, completion: nil)
     }
     
 
@@ -378,21 +378,21 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
     
     // For the delegate methods called in this View Controller, use a centralized function to change 
     // the Circle color on the Map View and pass down the color indicator changes to the BlobAddType (vc1) View Controller
-    func changeMapCircleType(type: Constants.BlobTypes) {
+    func changeMapCircleType(_ type: Constants.BlobTypes) {
         print("BLOB ADD VIEW CHANGE MAP CIRCLE TYPE TO: \(type)")
         
         // Save the lastest type for access when uploading
         self.blobType = type
         
         // Set the settings to default before evaluating the type
-        var color = Constants().blobColor(.Temporary)
+        var color = Constants().blobColor(.temporary)
         var resetSelectAllMessage = false
         
         // Evaluate the type and mark the correct selection with a check mark and change the circle color
         // Be sure to reset the Select All Message on the User Tag Page View if a specific color is selected
         switch type {
-        case .Temporary:
-            color = Constants().blobColor(.Temporary)
+        case .temporary:
+            color = Constants().blobColor(.temporary)
             
             vc1.typeContainer1CheckLabel.text = "\u{2713}"
             vc1.typeContainer2CheckLabel.text = ""
@@ -400,8 +400,8 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
             
             resetSelectAllMessage = true
             
-        case .Permanent:
-            color = Constants().blobColor(.Permanent)
+        case .permanent:
+            color = Constants().blobColor(.permanent)
             
             vc1.typeContainer1CheckLabel.text = ""
             vc1.typeContainer2CheckLabel.text = "\u{2713}"
@@ -409,15 +409,15 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
             
             resetSelectAllMessage = true
             
-        case .Public:
-            color = Constants().blobColor(.Public)
+        case .public:
+            color = Constants().blobColor(.public)
             
             vc1.typeContainer1CheckLabel.text = ""
             vc1.typeContainer2CheckLabel.text = ""
             vc1.typeContainer3CheckLabel.text = ""
             
-        case .Invisible:
-            color = Constants().blobColor(.Invisible)
+        case .invisible:
+            color = Constants().blobColor(.invisible)
             
             vc1.typeContainer1CheckLabel.text = ""
             vc1.typeContainer2CheckLabel.text = ""
@@ -427,7 +427,7 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
         
         // Default to a Temporary Blob in case of an error
         default:
-            color = Constants().blobColor(.Temporary)
+            color = Constants().blobColor(.temporary)
             
             vc1.typeContainer1CheckLabel.text = "\u{2713}"
             vc1.typeContainer2CheckLabel.text = ""
@@ -455,17 +455,17 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
     func selectedPerson() {
         print("SELECTED PERSON - SET SEND BUTTON COLOR")
         self.selectedOneOrMorePeople = true
-        rightButtonItem.tintColor = UIColor.whiteColor()
+        rightButtonItem.tintColor = UIColor.white
     }
     func deselectedAllPeople() {
         print("DESELECTED ALL PEOPLE - SET SEND BUTTON COLOR")
         self.selectedOneOrMorePeople = false
-        rightButtonItem.tintColor = UIColor.lightGrayColor()
+        rightButtonItem.tintColor = UIColor.lightGray
     }
     
     // The function called by the "Send" button on the Nav Bar
     // Upload the new Blob data to the server and then dismiss the BlobAdd VC from the parent VC (the Map View)
-    func sendBlobAndPopViewController(sender: UIBarButtonItem) {
+    func sendBlobAndPopViewController(_ sender: UIBarButtonItem) {
         print("SEND FILES TO S3 AND DATA TO LAMBDA AND POP VC")
         print("RANDOM ID: \(self.randomMediaID)")
         print("SEND ALREADY ATTEMPTED?: \(self.sendAttempted)")
@@ -487,7 +487,7 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
                 print("BLOB MEDIA TYPE: \(self.blobMediaType)")
                 
                 // Calculate the current time to use in dating the Blob
-                let nowTime = NSDate().timeIntervalSince1970
+                let nowTime = Date().timeIntervalSince1970
                 
                 // Set the media key to an image by default - it will change to an .mp4 if it is a video
                 let uploadMediaKey = randomMediaID + ".png"
@@ -542,7 +542,7 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
         }
     }
     
-    func processBlobData(mediaID: String, uploadKey: String, currentTime: Double) {
+    func processBlobData(_ mediaID: String, uploadKey: String, currentTime: Double) {
         print("PROCESSING BLOB DATA")
         
         // Save the list of tagged users
@@ -559,7 +559,7 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
         // Create a new Blob locally so that the Circle can immediately be added to the map
         let newBlob = Blob()
         newBlob.blobID = mediaID
-        newBlob.blobDatetime = NSDate(timeIntervalSince1970: currentTime)
+        newBlob.blobDatetime = Date(timeIntervalSince1970: currentTime)
         newBlob.blobLat = self.blobCoords.latitude
         newBlob.blobLong = self.blobCoords.longitude
         newBlob.blobRadius = self.blobRadius
@@ -588,13 +588,13 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
     }
     
     // Create an alert screen with only an acknowledgment option (an "OK" button)
-    func createAlertOkView(title: String, message: String) {
-        let alertController = UIAlertController(title: title, message: message, preferredStyle: UIAlertControllerStyle.Alert)
-        let okAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.Default) { (result : UIAlertAction) -> Void in
+    func createAlertOkView(_ title: String, message: String) {
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: UIAlertControllerStyle.alert)
+        let okAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.default) { (result : UIAlertAction) -> Void in
             print("OK")
         }
         alertController.addAction(okAction)
-        self.presentViewController(alertController, animated: true, completion: nil)
+        self.present(alertController, animated: true, completion: nil)
     }
     
     func popVC() {
@@ -614,8 +614,8 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
         // Create some JSON to send the logged in userID
         let json: NSDictionary = ["request" : "random_media_id"]
         
-        let lambdaInvoker = AWSLambdaInvoker.defaultLambdaInvoker()
-        lambdaInvoker.invokeFunction("Blobjot-CreateRandomID", JSONObject: json, completionHandler: { (response, err) -> Void in
+        let lambdaInvoker = AWSLambdaInvoker.default()
+        lambdaInvoker.invokeFunction("Blobjot-CreateRandomID", jsonObject: json, completionHandler: { (response, err) -> Void in
             
             if (err != nil) {
                 print("GET RANDOM ID ERROR: \(err)")
@@ -632,19 +632,19 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
     }
     
     // Upload a file to AWS S3
-    func uploadMediaToBucket(bucket: String, uploadMediaFilePath: String, mediaID: String, uploadKey: String, currentTime: Double, deleteWhenFinished: Bool) {
+    func uploadMediaToBucket(_ bucket: String, uploadMediaFilePath: String, mediaID: String, uploadKey: String, currentTime: Double, deleteWhenFinished: Bool) {
         print("UPLOADING FILE: \(uploadKey) TO BUCKET: \(bucket)")
         
         let uploadRequest = AWSS3TransferManagerUploadRequest()
-        uploadRequest.bucket = bucket
-        uploadRequest.key =  uploadKey
-        uploadRequest.body = NSURL(fileURLWithPath: uploadMediaFilePath)
-        let transferManager = AWSS3TransferManager.defaultS3TransferManager()
+        uploadRequest?.bucket = bucket
+        uploadRequest?.key =  uploadKey
+        uploadRequest?.body = URL(fileURLWithPath: uploadMediaFilePath)
+        let transferManager = AWSS3TransferManager.default()
         
-        transferManager.upload(uploadRequest).continueWithBlock({ (task) -> AnyObject! in
+        transferManager?.upload(uploadRequest).continue({ (task) -> AnyObject! in
             if let error = task.error {
-                if error.domain == AWSS3TransferManagerErrorDomain as String
-                    && AWSS3TransferManagerErrorType(rawValue: error.code) == AWSS3TransferManagerErrorType.Paused {
+                if error._domain == AWSS3TransferManagerErrorDomain as String
+                    && AWSS3TransferManagerErrorType(rawValue: error._code) == AWSS3TransferManagerErrorType.paused {
                     print("Upload paused.")
                 } else {
                     print("Upload failed: [\(error)]")
@@ -673,7 +673,7 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
                 if deleteWhenFinished {
                     do {
                         print("Deleting media: \(uploadKey)")
-                        try NSFileManager.defaultManager().removeItemAtPath(uploadMediaFilePath)
+                        try FileManager.default.removeItem(atPath: uploadMediaFilePath)
                     }
                     catch let error as NSError {
                         print("Ooops! Something went wrong: \(error)")
@@ -686,7 +686,7 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
     }
     
     // Upload data to Lambda for transfer to DynamoDB
-    func uploadBlobData(blobID: String, blobLat: Double, blobLong: Double, blobMediaID: String, blobMediaType: Int, blobRadius: Double, blobText: String, blobThumbnailID: String, blobTimestamp: Double, blobType: Int, blobTaggedUsers: [String], blobUserID: String) {
+    func uploadBlobData(_ blobID: String, blobLat: Double, blobLong: Double, blobMediaID: String, blobMediaType: Int, blobRadius: Double, blobText: String, blobThumbnailID: String, blobTimestamp: Double, blobType: Int, blobTaggedUsers: [String], blobUserID: String) {
         print("SENDING DATA TO LAMBDA")
         
         // Create some JSON to send the Blob data
@@ -705,8 +705,8 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
             , "blobUserID"      : blobUserID
         ]
         print("LAMBDA JSON: \(json)")
-        let lambdaInvoker = AWSLambdaInvoker.defaultLambdaInvoker()
-        lambdaInvoker.invokeFunction("Blobjot-CreateBlob", JSONObject: json, completionHandler: { (response, err) -> Void in
+        let lambdaInvoker = AWSLambdaInvoker.default()
+        lambdaInvoker.invokeFunction("Blobjot-CreateBlob", jsonObject: json, completionHandler: { (response, err) -> Void in
             
             if (err != nil) {
                 print("SENDING DATA TO LAMBDA ERROR: \(err)")

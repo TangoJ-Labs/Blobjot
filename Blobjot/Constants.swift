@@ -15,27 +15,36 @@ struct Constants {
     static var inBackground = false
     static var appDelegateLocationManager = CLLocationManager()
     
-    static var credentialsProvider = AWSCognitoCredentialsProvider(
-        regionType: Constants.Strings.aws_region
-        , identityPoolId: Constants.Strings.aws_cognitoIdentityPoolId
-    )
+    static var credentialsProvider = AWSCognitoCredentialsProvider(regionType: Constants.Strings.awsRegion, identityPoolId: Constants.Strings.awsCognitoIdentityPoolID)
     
     enum BlobTypes: Int {
-        case Temporary = 1
-        case Permanent = 2
-        case Public = 3
-        case Invisible = 4
-        case SponsoredTemporary = 5
-        case SponsoredPermanent = 6
+        case temporary = 1
+        case permanent = 2
+        case `public` = 3
+        case invisible = 4
+        case sponsoredTemporary = 5
+        case sponsoredPermanent = 6
     }
     
     enum UserStatusTypes: Int {
-        case Pending = 0
-        case Waiting = 1
-        case Connected = 2
-        case NotConnected = 3
-        case Blocked = 4
+        case pending = 0
+        case waiting = 1
+        case connected = 2
+        case notConnected = 3
+        case blocked = 4
     }
+    
+//    enum AWSMethodTypes: Int
+//    {
+//        case loginUser = 0
+//        case logoutUser = 1
+//        case getMapData = 2
+//        case getBlobData = 3
+//        case getThumbnailImageForThumbnail = 4
+//        case getSingleUserData = 5
+//        case getUserImage = 6
+//        case editUserName = 7
+//    }
     
 //    enum BlobColors: UIColor {
 //        case Temporary = Constants.Colors.blobRed
@@ -44,30 +53,30 @@ struct Constants {
 //        case Invisible = Constants.Colors.blobGray
 //    }
     
-    func blobColor(blobType: Constants.BlobTypes) -> UIColor {
+    func blobColor(_ blobType: Constants.BlobTypes) -> UIColor {
         switch blobType {
-        case .Temporary:
+        case .temporary:
             return Constants.Colors.blobRed
-        case .Permanent:
+        case .permanent:
             return Constants.Colors.blobYellow
-        case .Public:
+        case .public:
             return Constants.Colors.blobPurple
-        case .Invisible:
+        case .invisible:
             return Constants.Colors.blobGray
         default:
             return Constants.Colors.blobRed
         }
     }
     
-    func blobColorOpaque(blobType: Constants.BlobTypes) -> UIColor {
+    func blobColorOpaque(_ blobType: Constants.BlobTypes) -> UIColor {
         switch blobType {
-        case .Temporary:
+        case .temporary:
             return Constants.Colors.blobRedOpaque
-        case .Permanent:
+        case .permanent:
             return Constants.Colors.blobYellowOpaque
-        case .Public:
+        case .public:
             return Constants.Colors.blobPurpleOpaque
-        case .Invisible:
+        case .invisible:
             return Constants.Colors.blobGrayOpaque
         default:
             return Constants.Colors.blobRedOpaque
@@ -76,8 +85,9 @@ struct Constants {
     
     struct Colors {
         
-        static let standardBackground = UIColor.whiteColor()
-        static let standardBackgroundGray = UIColor.grayColor()
+        static let standardBackground = UIColor.white
+        static let standardBackgroundTransparent = UIColor(red: 255/255, green: 255/255, blue: 255/255, alpha: 0.8) //#FFF
+        static let standardBackgroundGray = UIColor.gray
         static let standardBackgroundGrayTransparent = UIColor(red: 0/255, green: 0/255, blue: 0/255, alpha: 0.3) //#000000
         static let colorStatusBar = UIColor(red: 38/255, green: 38/255, blue: 38/255, alpha: 1.0) //#262626
         static let colorTopBar = UIColor(red: 64/255, green: 64/255, blue: 64/255, alpha: 1.0) //#404040
@@ -96,7 +106,7 @@ struct Constants {
         static let blobYellowOpaque = UIColor(red: 253/255, green: 253/255, blue: 150/255, alpha: 1.0) //#FDFD96
         static let blobPurple = UIColor(red: 150/255, green: 111/255, blue: 214/255, alpha: 0.3) //#966FD6
         static let blobPurpleOpaque = UIColor(red: 150/255, green: 111/255, blue: 214/255, alpha: 1.0) //#966FD6
-        static let blobHighlight = UIColor.darkGrayColor()
+        static let blobHighlight = UIColor.darkGray
         
         static let colorPurple = UIColor(red: 153/255, green: 102/255, blue: 255/255, alpha: 1.0) //#9966FF
         static let colorPurpleLight = UIColor(red: 204/255, green: 179/255, blue: 255/255, alpha: 1.0) //#CCB3FF
@@ -108,14 +118,14 @@ struct Constants {
         
         static let colorPink = UIColor(red: 255/255, green: 0/255, blue: 102/255, alpha: 1.0) //#FF0066
         
-        static let colorStarSelected = UIColor.yellowColor()
-        static let colorStarLarge = UIColor.lightGrayColor().colorWithAlphaComponent(0.9)
+        static let colorStarSelected = UIColor.yellow
+        static let colorStarLarge = UIColor.lightGray.withAlphaComponent(0.9)
         
-        static let colorBlobAddPeopleSearchBar = UIColor.grayColor()
-        static let colorPeopleSearchBar = UIColor.grayColor()
+        static let colorBlobAddPeopleSearchBar = UIColor.gray
+        static let colorPeopleSearchBar = UIColor.gray
         
-        static let colorPreviewTextNormal = UIColor.blackColor()
-        static let colorPreviewTextError = UIColor.redColor()
+        static let colorPreviewTextNormal = UIColor.black
+        static let colorPreviewTextError = UIColor.red
         
     }
     
@@ -129,7 +139,7 @@ struct Constants {
         
         static var mapBlobs = [Blob]()
         static var userBlobs = [Blob]()
-        static var defaultBlob = Blob(blobID: "default", blobUserID: "default", blobLat: 0.0, blobLong: 0.0, blobRadius: 0.0, blobType: Constants.BlobTypes.Invisible, blobMediaType: 1, blobText: "For more information about Blobjot, check out Blobjot.com")
+        static var defaultBlob = Blob(blobID: "default", blobUserID: "default", blobLat: 0.0, blobLong: 0.0, blobRadius: 0.0, blobType: Constants.BlobTypes.invisible, blobMediaType: 1, blobText: "For more information about Blobjot, check out Blobjot.com")
         
         static var mapCircles = [GMSCircle]()
         static var locationBlobs = [Blob]()
@@ -142,7 +152,7 @@ struct Constants {
         
         static let statusBarStandardHeight: CGFloat = 20
         
-        static let mapViewButtonAddSize: CGFloat = 68
+        static let mapViewButtonAddSize: CGFloat = 100
         static let mapViewButtonSearchSize: CGFloat = 40
         static let mapViewButtonListSize: CGFloat = 40
         static let mapViewButtonAccountSize: CGFloat = 40
@@ -167,7 +177,7 @@ struct Constants {
         static let blobsUserTableViewContentSize: CGFloat = 90
         
         static let blobViewUserImageSize: CGFloat = 60
-        static let blobViewIndicatorSize: CGFloat = 60
+        static let blobViewIndicatorSize: CGFloat = 120
         
         static let blobAddTypeCircleSize: CGFloat = 40
         
@@ -212,16 +222,16 @@ struct Constants {
         static let imageStringStarHalfFilled = "star_clear.png"
         static let imageStringStarEmpty = "star_clear.png"
         
-        static let aws_region = AWSRegionType.USEast1
-//        static let aws_cognitoIdentityPoolId = "us-east-1:6db4d1c8-f3f5-4466-b135-535279ff6077"
-        static let aws_cognitoIdentityPoolId = "us-east-1:c24cf3db-0349-4163-87ad-3572319324e7"
+        static let awsRegion = AWSRegionType.usEast1
+//        static let awsCognitoIdentityPoolID = "us-east-1:6db4d1c8-f3f5-4466-b135-535279ff6077"
+        static let awsCognitoIdentityPoolID = "us-east-1:c24cf3db-0349-4163-87ad-3572319324e7"
         
     }
     
     struct Settings {
         
         static let gKey = "AIzaSyBdwjW6jYuPjZP7oW8NsqHkZQyMxFq_j0w"
-        static let mapStyleUrl = NSURL(string: "mapbox://styles/tangojlabs/ciqwaddsl0005b7m0xwctftow")
+        static let mapStyleUrl = URL(string: "mapbox://styles/tangojlabs/ciqwaddsl0005b7m0xwctftow")
         static let locationAccuracyMax: Double = 30 // In meters
         static let locationAccuracyMaxBackground: Double = 100 // In meters
         
