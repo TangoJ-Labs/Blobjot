@@ -25,7 +25,7 @@ protocol BlobAddViewControllerDelegate {
     func createBlobOnMap(_ blobCenter: CLLocationCoordinate2D, blobRadius: Double, blobType: Constants.BlobTypes, blobTitle: String)
 }
 
-class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, UIPageViewControllerDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, GMSMapViewDelegate, BlobAddTypeViewControllerDelegate, BlobAddMediaViewControllerDelegate, BlobAddPeopleViewControllerDelegate {
+class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, UIPageViewControllerDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, GMSMapViewDelegate, BlobAddTypeViewControllerDelegate, BlobAddMediaViewControllerDelegate, BlobAddPeopleViewControllerDelegate, AWSRequestDelegate {
     
     // Add a delegate variable which the parent view controller can pass its own delegate instance to and have access to the protocol
     // (and have its own functions called that are listed in the protocol)
@@ -168,7 +168,7 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
         addCircle.strokeWidth = 1
         addCircle.map = mapView
         
-        getRandomID()
+        AWSPrepRequest(requestToCall: AWSGetRandomID(randomIdType: "random_media_id"), delegate: self as AWSRequestDelegate).prepRequest()
     }
 
     override func didReceiveMemoryWarning() {
@@ -506,7 +506,7 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
                     // If the media is an image, upload using temporary image and delete the temporary image
                     // Upload the image to AWS, and upload the Blob data after the file is successfully uploaded
                     if let imageFilePath = self.uploadImageFilePath {
-                        self.uploadMediaToBucket(Constants.Strings.S3BucketMedia, uploadMediaFilePath: imageFilePath, mediaID: randomMediaID, uploadKey: uploadMediaKey, currentTime: nowTime, deleteWhenFinished: true)
+                        AWSPrepRequest(requestToCall: AWSUploadMediaToBucket(bucket: Constants.Strings.S3BucketMedia, uploadMediaFilePath: imageFilePath, mediaID: randomMediaID, uploadKey: uploadMediaKey, currentTime: nowTime, deleteWhenFinished: true), delegate: self as AWSRequestDelegate).prepRequest()
                     }
                     
                 } else if self.blobMediaType == 2 {
@@ -536,7 +536,7 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
                 
                 // Upload the Thumbnail to AWS
                 if let thumbnailFilePath = self.uploadThumbnailFilePath {
-                    self.uploadMediaToBucket(Constants.Strings.S3BucketThumbnails, uploadMediaFilePath: thumbnailFilePath, mediaID: randomMediaID, uploadKey: uploadMediaKey, currentTime: nowTime, deleteWhenFinished: true)
+                    AWSPrepRequest(requestToCall: AWSUploadMediaToBucket(bucket: Constants.Strings.S3BucketThumbnails, uploadMediaFilePath: thumbnailFilePath, mediaID: randomMediaID, uploadKey: uploadMediaKey, currentTime: nowTime, deleteWhenFinished: true), delegate: self as AWSRequestDelegate).prepRequest()
                 }
             }
         }
@@ -552,7 +552,7 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
         }
         
         // Upload the Blob data to Lamda and then DynamoDB
-        self.uploadBlobData(mediaID, blobLat: self.blobCoords.latitude, blobLong: self.blobCoords.longitude, blobMediaID: uploadKey, blobMediaType: self.blobMediaType, blobRadius: self.blobRadius, blobText: self.vc2.blobTextView.text, blobThumbnailID: mediaID + ".png", blobTimestamp: currentTime, blobType: self.blobType.rawValue, blobTaggedUsers: taggedUsers, blobUserID: Constants.Data.currentUser)
+        AWSPrepRequest(requestToCall: AWSUploadBlobData(blobID: mediaID, blobLat: self.blobCoords.latitude, blobLong: self.blobCoords.longitude, blobMediaID: uploadKey, blobMediaType: self.blobMediaType, blobRadius: self.blobRadius, blobText: self.vc2.blobTextView.text, blobThumbnailID: mediaID + ".png", blobTimestamp: currentTime, blobType: self.blobType.rawValue, blobTaggedUsers: taggedUsers, blobUserID: Constants.Data.currentUser), delegate: self as AWSRequestDelegate).prepRequest()
         
         print("MAP BLOBS COUNT 1: \(Constants.Data.mapBlobs.count)")
         
@@ -587,16 +587,6 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
         print("USER BLOBS COUNT: \(Constants.Data.userBlobs.count)")
     }
     
-    // Create an alert screen with only an acknowledgment option (an "OK" button)
-    func createAlertOkView(_ title: String, message: String) {
-        let alertController = UIAlertController(title: title, message: message, preferredStyle: UIAlertControllerStyle.alert)
-        let okAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.default) { (result : UIAlertAction) -> Void in
-            print("OK")
-        }
-        alertController.addAction(okAction)
-        self.present(alertController, animated: true, completion: nil)
-    }
-    
     func popVC() {
         // Call the parent VC to remove the current VC from the stack
         if let parentVC = self.blobAddViewDelegate {
@@ -605,125 +595,81 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
     }
     
     
-    // MARK: AWS FUNCIONS
+    // MARK: AWS DELEGATE METHODS
     
-    // Request a random MediaID
-    func getRandomID() {
-        print("REQUESTING RANDOM ID")
-        
-        // Create some JSON to send the logged in userID
-        let json: NSDictionary = ["request" : "random_media_id"]
-        
-        let lambdaInvoker = AWSLambdaInvoker.default()
-        lambdaInvoker.invokeFunction("Blobjot-CreateRandomID", jsonObject: json, completionHandler: { (response, err) -> Void in
-            
-            if (err != nil) {
-                print("GET RANDOM ID ERROR: \(err)")
-            } else if (response != nil) {
-                
-                // Convert the response to a String
-                if let randomID = response as? String {
-                    print("RANDOM ID IS: \(randomID)")
-                    self.randomMediaID = randomID
-                }
-            }
-            
-        })
+    func showLoginScreen() {
+        print("BAVC - SHOW LOGIN SCREEN")
     }
     
-    // Upload a file to AWS S3
-    func uploadMediaToBucket(_ bucket: String, uploadMediaFilePath: String, mediaID: String, uploadKey: String, currentTime: Double, deleteWhenFinished: Bool) {
-        print("UPLOADING FILE: \(uploadKey) TO BUCKET: \(bucket)")
-        
-        let uploadRequest = AWSS3TransferManagerUploadRequest()
-        uploadRequest?.bucket = bucket
-        uploadRequest?.key =  uploadKey
-        uploadRequest?.body = URL(fileURLWithPath: uploadMediaFilePath)
-        let transferManager = AWSS3TransferManager.default()
-        
-        transferManager?.upload(uploadRequest).continue({ (task) -> AnyObject! in
-            if let error = task.error {
-                if error._domain == AWSS3TransferManagerErrorDomain as String
-                    && AWSS3TransferManagerErrorType(rawValue: error._code) == AWSS3TransferManagerErrorType.paused {
-                    print("Upload paused.")
-                } else {
-                    print("Upload failed: [\(error)]")
-                    self.createAlertOkView("On no!", message: "We had a problem uploading your Blob.  Please try again.")
-                    
-                    // Reset the upload view settings to allow another upload attempt
-                    self.viewScreen.removeFromSuperview()
-                    self.viewScreenActivityIndicator.removeFromSuperview()
-                    self.viewScreenActivityIndicator.stopAnimating()
-                    self.sendAttempted = false
-                }
-            } else if let exception = task.exception {
-                print("Upload failed: [\(exception)]")
-            } else {
-                print("Upload succeeded")
-                
-                // If the media file was successfully updated, save the Blob data to AWS
-                // and then add the Blob locally (into User Blobs and Map Blobs, if the current user was tagged)
-                // Do this inside this if statement otherwise the Blob will be added twice (the upload Media method
-                // is used for the thumbnail too
-                if bucket == Constants.Strings.S3BucketMedia {
-                    self.processBlobData(mediaID, uploadKey: uploadKey, currentTime: currentTime)
-                }
-                
-                // If the file was flagged for deletion, delete it
-                if deleteWhenFinished {
-                    do {
-                        print("Deleting media: \(uploadKey)")
-                        try FileManager.default.removeItem(atPath: uploadMediaFilePath)
+    func processAwsReturn(_ objectType: AWSRequestObject, success: Bool)
+    {
+        DispatchQueue.main.async(execute:
+            {
+                // Process the return data based on the method used
+                switch objectType
+                {
+                case let awsGetRandomID as AWSGetRandomID:
+                    if success
+                    {
+                        // Refresh the user image if it exists
+                        if let randomID = awsGetRandomID.randomID
+                        {
+                            self.randomMediaID = randomID
+                        }
                     }
-                    catch let error as NSError {
-                        print("Ooops! Something went wrong: \(error)")
+                    else
+                    {
+                        // Show the error message
+                        let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                        self.present(alertController, animated: true, completion: nil)
                     }
+                case let awsUploadMediaToBucket as AWSUploadMediaToBucket:
+                    if success
+                    {
+                        // If the media file was successfully updated, save the Blob data to AWS
+                        // and then add the Blob locally (into User Blobs and Map Blobs, if the current user was tagged)
+                        // Do this inside this if statement otherwise the Blob will be added twice (the upload Media method
+                        // is used for the thumbnail too
+                        if awsUploadMediaToBucket.bucket == Constants.Strings.S3BucketMedia {
+                            self.processBlobData(awsUploadMediaToBucket.mediaID, uploadKey: awsUploadMediaToBucket.uploadKey, currentTime: awsUploadMediaToBucket.currentTime)
+                        }
+                    }
+                    else
+                    {
+                        // Show the error message
+                        let alertController = UtilityFunctions().createAlertOkView("On no!", message: "We had a problem uploading your Blob.  Please try again.")
+                        self.present(alertController, animated: true, completion: nil)
+                        
+                        // Reset the upload view settings to allow another upload attempt
+                        self.viewScreen.removeFromSuperview()
+                        self.viewScreenActivityIndicator.removeFromSuperview()
+                        self.viewScreenActivityIndicator.stopAnimating()
+                        self.sendAttempted = false
+                    }
+                case _ as AWSUploadBlobData:
+                    if success
+                    {
+                        // Remove the current View Controller from the stack
+                        self.popVC()
+                    }
+                    else
+                    {
+                        // Show the error message
+                        let alertController = UtilityFunctions().createAlertOkView("On no!", message: "We had a problem uploading your Blob.  Please try again.")
+                        self.present(alertController, animated: true, completion: nil)
+                        
+                        // Reset the upload view settings to allow another upload attempt
+                        self.viewScreen.removeFromSuperview()
+                        self.viewScreenActivityIndicator.removeFromSuperview()
+                        self.viewScreenActivityIndicator.stopAnimating()
+                        self.sendAttempted = false
+                    }
+                default:
+                    print("DEFAULT: THERE WAS AN ISSUE WITH THE DATA RETURNED FROM AWS")
+                    // Show the error message
+                    let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                    self.present(alertController, animated: true, completion: nil)
                 }
-                
-            }
-            return nil
-        })
-    }
-    
-    // Upload data to Lambda for transfer to DynamoDB
-    func uploadBlobData(_ blobID: String, blobLat: Double, blobLong: Double, blobMediaID: String, blobMediaType: Int, blobRadius: Double, blobText: String, blobThumbnailID: String, blobTimestamp: Double, blobType: Int, blobTaggedUsers: [String], blobUserID: String) {
-        print("SENDING DATA TO LAMBDA")
-        
-        // Create some JSON to send the Blob data
-        let json: NSDictionary = [
-            "blobID"            : blobID
-            , "blobLat"         : String(blobLat)
-            , "blobLong"        : String(blobLong)
-            , "blobMediaID"     : blobMediaID
-            , "blobMediaType"   : String(blobMediaType)
-            , "blobRadius"      : String(blobRadius)
-            , "blobText"        : blobText
-            , "blobThumbnailID" : blobThumbnailID
-            , "blobTimestamp"   : String(blobTimestamp)
-            , "blobType"        : String(blobType)
-            , "blobTaggedUsers" : blobTaggedUsers
-            , "blobUserID"      : blobUserID
-        ]
-        print("LAMBDA JSON: \(json)")
-        let lambdaInvoker = AWSLambdaInvoker.default()
-        lambdaInvoker.invokeFunction("Blobjot-CreateBlob", jsonObject: json, completionHandler: { (response, err) -> Void in
-            
-            if (err != nil) {
-                print("SENDING DATA TO LAMBDA ERROR: \(err)")
-                self.createAlertOkView("On no!", message: "We had a problem uploading your Blob.  Please try again.")
-                
-                // Reset the upload view settings to allow another upload attempt
-                self.viewScreen.removeFromSuperview()
-                self.viewScreenActivityIndicator.removeFromSuperview()
-                self.viewScreenActivityIndicator.stopAnimating()
-                self.sendAttempted = false
-                
-            } else if (response != nil) {
-                print("SENDING DATA TO LAMDA RESPONSE: \(response)")
-                
-                self.popVC()
-            }
-            
         })
     }
     

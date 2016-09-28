@@ -10,7 +10,7 @@ import AWSLambda
 import AWSS3
 import UIKit
 
-class BlobsUserTableViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+class BlobsUserTableViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, AWSRequestDelegate {
     
     var screenSize: CGRect!
     var statusBarHeight: CGFloat!
@@ -93,7 +93,9 @@ class BlobsUserTableViewController: UIViewController, UITableViewDataSource, UIT
         statusBarView.backgroundColor = Constants.Colors.colorStatusBar
         self.view.addSubview(statusBarView)
         
-        getUserBlobs()
+        // Request the Blobs that the user has posted
+        blobUserActivityIndicator.startAnimating()
+        AWSPrepRequest(requestToCall: AWSGetUserBlobs(), delegate: self as AWSRequestDelegate).prepRequest()
         
         // Uncomment the following line to preserve selection between presentations
         // self.clearsSelectionOnViewWillAppear = false
@@ -164,8 +166,8 @@ class BlobsUserTableViewController: UIViewController, UITableViewDataSource, UIT
             cell.cellText.text = cellBlob.blobText
             
             // Request the thumbnail image if the thumbnailID exists
-            if let thumbnailID = cellBlob.blobThumbnailID {
-                getThumbnailImage(cellBlob.blobID, imageKey: thumbnailID)
+            if cellBlob.blobThumbnailID != nil {
+                AWSPrepRequest(requestToCall: AWSGetThumbnailImage(blob: cellBlob), delegate: self as AWSRequestDelegate).prepRequest()
             }
         }
         
@@ -195,7 +197,7 @@ class BlobsUserTableViewController: UIViewController, UITableViewDataSource, UIT
                 self.blobsUserTableView.performSelector(onMainThread: #selector(UITableView.reloadData), with: nil, waitUntilDone: true)
                 
                 // Record the Blob deletion in AWS so that the Blob no longer is downloaded for anyone
-                self.deleteBlob(cellBlob.blobID, userID: Constants.Data.currentUser)
+                AWSPrepRequest(requestToCall: AWSDeleteBlob(blobID: cellBlob.blobID, userID: Constants.Data.currentUser), delegate: self as AWSRequestDelegate).prepRequest()
                 
                 // Remove the Circle for this Blob from the map Circles so that it no longer shows on the Map View
                 loopMapCirclesCheck: for (cIndex, circle) in Constants.Data.mapCircles.enumerated() {
@@ -328,177 +330,136 @@ class BlobsUserTableViewController: UIViewController, UITableViewDataSource, UIT
     }
     
     
-    // MARK: AWS METHODS
+    // MARK: AWS DELEGATE METHODS
     
-    // Add a record that this Blob was viewed by the logged in user
-    func deleteBlob(_ blobID: String, userID: String) {
-        print("ADDING BLOB DELETE: \(blobID), \(userID), \(Date().timeIntervalSince1970)")
-        let json: NSDictionary = [
-            "blob_id"       : blobID
-            , "user_id"     : userID
-            , "timestamp"   : String(Date().timeIntervalSince1970)
-            , "action_type" : "delete"
-        ]
-        
-        let lambdaInvoker = AWSLambdaInvoker.default()
-        lambdaInvoker.invokeFunction("Blobjot-AddBlobAction", jsonObject: json, completionHandler: { (response, err) -> Void in
-            
-            if (err != nil) {
-                print("ADD BLOB DELETE ERROR: \(err)")
-            } else if (response != nil) {
-                print("BUT-DB: response: \(response)")
-            }
-        })
+    func showLoginScreen() {
+        print("BUTVC - SHOW LOGIN SCREEN")
     }
     
-    // The initial request for User's Blob data - called when the View Controller is instantiated
-    func getUserBlobs() {
-        print("REQUESTING GUB")
-        blobUserActivityIndicator.startAnimating()
-        
-        // Create some JSON to send the logged in userID
-        let json: NSDictionary = ["user_id" : Constants.Data.currentUser]
-        
-        let lambdaInvoker = AWSLambdaInvoker.default()
-        lambdaInvoker.invokeFunction("Blobjot-GetUserBlobs", jsonObject: json, completionHandler: { (response, err) -> Void in
-            
-            if (err != nil) {
-                print("GET USER BLOBS DATA ERROR: \(err)")
-            } else if (response != nil) {
-                
-                // Convert the response to an array of AnyObjects
-                if let newUserBlobs = response as? [AnyObject] {
-                    print("BUTV-GUB: jsonData: \(newUserBlobs)")
-                    print("BLOB COUNT: \(newUserBlobs.count)")
-                    
-                    if newUserBlobs.count <= 0 {
-                        
-                        // The User has not created any Blobs, so stop the loading animation and show the message
-                        self.blobUserActivityIndicator.stopAnimating()
-                        self.blobsTableViewBackgroundLabel.text = "You have not yet created a Blob.  Tap the add button on the Map Screen to create a new Blob!"
-                        
-                    } else {
-                        
-                        // Loop through each AnyObject (Blob) in the array
-                        for newBlob in newUserBlobs {
-                            print("NEW BLOB: \(newBlob)")
-                            
-                            // Convert the AnyObject to JSON with keys and AnyObject values
-                            // Then convert the AnyObject values to Strings or Numbers depending on their key
-                            if let checkBlob = newBlob as? [String: AnyObject] {
-                                let blobTimestamp = checkBlob["blobTimestamp"] as! Double
-                                let blobDatetime = Date(timeIntervalSince1970: blobTimestamp)
-                                let blobTypeInt = checkBlob["blobType"] as! Int
-                                
-                                // Evaluate the blobType Integer received and convert it to the appropriate BlobType Class
-                                var blobType: Constants.BlobTypes!
-                                switch blobTypeInt {
-                                case 1:
-                                    blobType = Constants.BlobTypes.temporary
-                                case 2:
-                                    blobType = Constants.BlobTypes.permanent
-                                case 3:
-                                    blobType = Constants.BlobTypes.public
-                                case 4:
-                                    blobType = Constants.BlobTypes.invisible
-                                case 5:
-                                    blobType = Constants.BlobTypes.sponsoredTemporary
-                                case 6:
-                                    blobType = Constants.BlobTypes.sponsoredPermanent
-                                default:
-                                    blobType = Constants.BlobTypes.temporary
+    func processAwsReturn(_ objectType: AWSRequestObject, success: Bool)
+    {
+        DispatchQueue.main.async(execute:
+            {
+                // Process the return data based on the method used
+                switch objectType
+                {
+                case _ as AWSDeleteBlob:
+                    if !success
+                    {
+                        // Show the error message
+                        let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                        self.present(alertController, animated: true, completion: nil)
+                    }
+                case let awsGetUserBlobs as AWSGetUserBlobs:
+                    if success
+                    {
+                        if let newUserBlobs = awsGetUserBlobs.newUserBlobs {
+                            if newUserBlobs.count <= 0
+                            {
+                                // The User has not created any Blobs, so stop the loading animation and show the message
+                                self.blobUserActivityIndicator.stopAnimating()
+                                self.blobsTableViewBackgroundLabel.text = "You have not yet created a Blob.  Tap the add button on the Map Screen to create a new Blob!"
+                            }
+                            else
+                            {
+                                // Loop through each AnyObject (Blob) in the array
+                                for newBlob in newUserBlobs
+                                {
+                                    print("NEW BLOB: \(newBlob)")
+                                    
+                                    // Convert the AnyObject to JSON with keys and AnyObject values
+                                    // Then convert the AnyObject values to Strings or Numbers depending on their key
+                                    if let checkBlob = newBlob as? [String: AnyObject]
+                                    {
+                                        let blobTimestamp = checkBlob["blobTimestamp"] as! Double
+                                        let blobDatetime = Date(timeIntervalSince1970: blobTimestamp)
+                                        let blobTypeInt = checkBlob["blobType"] as! Int
+                                        
+                                        // Evaluate the blobType Integer received and convert it to the appropriate BlobType Class
+                                        var blobType: Constants.BlobTypes!
+                                        switch blobTypeInt
+                                        {
+                                        case 1:
+                                            blobType = Constants.BlobTypes.temporary
+                                        case 2:
+                                            blobType = Constants.BlobTypes.permanent
+                                        case 3:
+                                            blobType = Constants.BlobTypes.public
+                                        case 4:
+                                            blobType = Constants.BlobTypes.invisible
+                                        case 5:
+                                            blobType = Constants.BlobTypes.sponsoredTemporary
+                                        case 6:
+                                            blobType = Constants.BlobTypes.sponsoredPermanent
+                                        default:
+                                            blobType = Constants.BlobTypes.temporary
+                                        }
+                                        
+                                        // Finish converting the JSON AnyObjects and assign the data to a new Blob Object
+                                        print("ASSIGNING DATA")
+                                        let addBlob = Blob()
+                                        addBlob.blobID = checkBlob["blobID"] as! String
+                                        addBlob.blobDatetime = blobDatetime
+                                        addBlob.blobLat = checkBlob["blobLat"] as! Double
+                                        addBlob.blobLong = checkBlob["blobLong"] as! Double
+                                        addBlob.blobRadius = checkBlob["blobRadius"] as! Double
+                                        addBlob.blobType = blobType
+                                        addBlob.blobUserID = checkBlob["blobUserID"] as! String
+                                        addBlob.blobText = checkBlob["blobText"] as? String
+                                        addBlob.blobThumbnailID = checkBlob["blobThumbnailID"] as? String
+                                        addBlob.blobMediaType = checkBlob["blobMediaType"] as? Int
+                                        addBlob.blobMediaID = checkBlob["blobMediaID"] as? String
+                                        
+                                        // Append the new Blob Object to the local User Blobs Array
+                                        self.userBlobs.append(addBlob)
+                                        print("APPENDED BLOB: \(addBlob.blobID)")
+                                    }
                                 }
+                                // Sort the User Blobs from newest to oldest
+                                self.userBlobs.sort(by: {$0.blobDatetime.timeIntervalSince1970 >  $1.blobDatetime.timeIntervalSince1970})
                                 
-                                // Finish converting the JSON AnyObjects and assign the data to a new Blob Object
-                                print("ASSIGNING DATA")
-                                let addBlob = Blob()
-                                addBlob.blobID = checkBlob["blobID"] as! String
-                                addBlob.blobDatetime = blobDatetime
-                                addBlob.blobLat = checkBlob["blobLat"] as! Double
-                                addBlob.blobLong = checkBlob["blobLong"] as! Double
-                                addBlob.blobRadius = checkBlob["blobRadius"] as! Double
-                                addBlob.blobType = blobType
-                                addBlob.blobUserID = checkBlob["blobUserID"] as! String
-                                addBlob.blobText = checkBlob["blobText"] as? String
-                                addBlob.blobThumbnailID = checkBlob["blobThumbnailID"] as? String
-                                addBlob.blobMediaType = checkBlob["blobMediaType"] as? Int
-                                addBlob.blobMediaID = checkBlob["blobMediaID"] as? String
-                                
-                                // Append the new Blob Object to the local User Blobs Array
-                                self.userBlobs.append(addBlob)
-                                print("APPENDED BLOB: \(addBlob.blobID)")
+                                // Refresh the Table View
+                                self.blobsUserTableView.performSelector(onMainThread: #selector(UITableView.reloadData), with: nil, waitUntilDone: true)
                             }
                         }
-                        // Sort the User Blobs from newest to oldest
-                        self.userBlobs.sort(by: {$0.blobDatetime.timeIntervalSince1970 >  $1.blobDatetime.timeIntervalSince1970})
+                    }
+                    else
+                    {
+                        // Show the error message
+                        let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                        self.present(alertController, animated: true, completion: nil)
+                    }
+                case let awsGetThumbnailImage as AWSGetThumbnailImage:
+                    if success
+                    {
+                        // Find the correct User Object in the global list and assign the newly downloaded Image
+                        loopUserObjectCheck: for blobObject in self.userBlobs {
+                            if blobObject.blobID == awsGetThumbnailImage.blob.blobID {
+                                blobObject.blobThumbnail = awsGetThumbnailImage.blob.blobThumbnail
+                                
+                                break loopUserObjectCheck
+                            }
+                        }
                         
-                        // Refresh the Table View
+                        print("ADDED IMAGE: \(awsGetThumbnailImage.blob.blobThumbnailID))")
+                        
+                        // Reload the Table View
+                        print("GET IMAGE - RELOAD TABLE VIEW")
                         self.blobsUserTableView.performSelector(onMainThread: #selector(UITableView.reloadData), with: nil, waitUntilDone: true)
                     }
+                    else
+                    {
+                        // Show the error message
+                        let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                        self.present(alertController, animated: true, completion: nil)
+                    }
+                default:
+                    print("DEFAULT: THERE WAS AN ISSUE WITH THE DATA RETURNED FROM AWS")
+                    // Show the error message
+                    let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                    self.present(alertController, animated: true, completion: nil)
                 }
-            }
-            
         })
     }
     
-    // Download Thumbnail Image
-    func getThumbnailImage(_ blobID: String, imageKey: String) {
-        print("GETTING IMAGE FOR: \(imageKey)")
-        
-        let downloadingFilePath = NSTemporaryDirectory() + imageKey // + Constants.Settings.frameImageFileType)
-        let downloadingFileURL = URL(fileURLWithPath: downloadingFilePath)
-        let transferManager = AWSS3TransferManager.default()
-        
-        // Download the Frame
-        let downloadRequest : AWSS3TransferManagerDownloadRequest = AWSS3TransferManagerDownloadRequest()
-        downloadRequest.bucket = Constants.Strings.S3BucketThumbnails
-        downloadRequest.key =  imageKey
-        downloadRequest.downloadingFileURL = downloadingFileURL
-        
-        transferManager?.download(downloadRequest).continue({ (task) -> AnyObject! in
-            if let error = task.error {
-                if error._domain == AWSS3TransferManagerErrorDomain as String
-                    && AWSS3TransferManagerErrorType(rawValue: error._code) == AWSS3TransferManagerErrorType.paused {
-                    print("AVC: DOWNLOAD PAUSED")
-                } else {
-                    print("AVC: DOWNLOAD FAILED: [\(error)]")
-                }
-            } else if let exception = task.exception {
-                print("AVC: DOWNLOAD FAILED: [\(exception)]")
-            } else {
-                print("AVC: DOWNLOAD SUCCEEDED")
-                DispatchQueue.main.async(execute: { () -> Void in
-                    // Assign the image to the Preview Image View
-                    if FileManager().fileExists(atPath: downloadingFilePath) {
-                        print("IMAGE FILE AVAILABLE")
-                        let thumbnailData = try? Data(contentsOf: URL(fileURLWithPath: downloadingFilePath))
-                        
-                        // Ensure the Thumbnail Data is not null
-                        if let tData = thumbnailData {
-                            print("GET IMAGE - CHECK 1")
-                            
-                            // Find the correct User Object in the global list and assign the newly downloaded Image
-                            loopUserObjectCheck: for blobObject in self.userBlobs {
-                                if blobObject.blobID == blobID {
-                                    blobObject.blobThumbnail = UIImage(data: tData)
-                                    
-                                    break loopUserObjectCheck
-                                }
-                            }
-                            
-                            print("ADDED IMAGE: \(imageKey))")
-                            
-                            // Reload the Table View
-                            print("GET IMAGE - RELOAD TABLE VIEW")
-                            self.blobsUserTableView.performSelector(onMainThread: #selector(UITableView.reloadData), with: nil, waitUntilDone: true)
-                        }
-                        
-                    } else {
-                        print("FRAME FILE NOT AVAILABLE")
-                    }
-                })
-            }
-            return nil
-        })
-    }
 }

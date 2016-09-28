@@ -10,7 +10,7 @@ import AWSLambda
 import AWSS3
 import UIKit
 
-class BlobViewController: UIViewController {
+class BlobViewController: UIViewController, AWSRequestDelegate {
     
     // Save device settings to adjust view if needed
     var screenSize: CGRect!
@@ -176,7 +176,7 @@ class BlobViewController: UIViewController {
         self.blobMediaActivityIndicator.startAnimating()
         
         // Request the image
-        self.getImage()
+        AWSPrepRequest(requestToCall: AWSGetBlobImage(blob: self.blob), delegate: self as AWSRequestDelegate).prepRequest()
         
         // RECORD THE VIEW LOCALLY AND IN AWS AND REMOVE THE BLOB LOCALLY IF IT IS NOT A PERMANENT BLOB
         
@@ -186,7 +186,7 @@ class BlobViewController: UIViewController {
         
         // Call the AWS Function and send data to Lambda to record that the use viewed this Blob
         // If this Blob is not permanent, the user will not be able to see the Blob again after closing this view
-        addBlobView(blob.blobID, userID: Constants.Data.currentUser)
+        AWSPrepRequest(requestToCall: AWSAddBlobView(blobID: blob.blobID, userID: Constants.Data.currentUser), delegate: self as AWSRequestDelegate).prepRequest()
         
     }
 
@@ -196,101 +196,53 @@ class BlobViewController: UIViewController {
     }
     
 
+    // MARK: AWS DELEGATE METHODS
     
-    // MARK: AWS METHODS
-    
-    // Add a record that this Blob was viewed by the logged in user
-    func addBlobView(_ blobID: String, userID: String) {
-        
-        // Save a Blob notification in Core Data (so that the user is not notified of the viewed Blob)
-        // Because the Blob notification is not checked for already existing, multiple entries with the same blobID may exist
-        let moc = DataController().managedObjectContext
-        let entity = NSEntityDescription.insertNewObject(forEntityName: "BlobNotification", into: moc) as! BlobNotification
-        entity.setValue(blobID, forKey: "blobID")
-        // Save the Entity
-        do {
-            try moc.save()
-        } catch {
-            fatalError("Failure to save context: \(error)")
-        }
-        
-        print("ADDING BLOB VIEW: \(blobID), \(userID), \(Date().timeIntervalSince1970)")
-        let json: NSDictionary = [
-            "blob_id"       : blobID
-            , "user_id"     : userID
-            , "timestamp"   : String(Date().timeIntervalSince1970)
-            , "action_type" : "view"
-        ]
-        
-        let lambdaInvoker = AWSLambdaInvoker.default()
-        lambdaInvoker.invokeFunction("Blobjot-AddBlobAction", jsonObject: json, completionHandler: { (response, err) -> Void in
-            
-            if (err != nil) {
-                print("ADD BLOB VIEW ERROR: \(err)")
-            } else if (response != nil) {
-                print("MVC-ABV: response: \(response)")
-            }
-        })
+    func showLoginScreen() {
+        print("BAVC - SHOW LOGIN SCREEN")
     }
     
-    // Download Image
-    func getImage() {
-        print("ATTEMPT TO DOWNLOAD IMAGE: \(blob.blobMediaID)")
-        print("BLOB MEDIA TYPE: \(blob.blobMediaType)")
-        // Check to ensure the Preview Blob was assigned
-        if let blob = blob {
-            // Verify the type of Blob (image or video)
-            if blob.blobMediaType == 1 {
-                if let blobMediaID = blob.blobMediaID {
-                    print("DOWNLOADING IMAGE: \(blob.blobMediaID)")
-                    
-                    let downloadingFilePath = NSTemporaryDirectory() + blobMediaID // + Constants.Settings.frameImageFileType)
-                    let downloadingFileURL = URL(fileURLWithPath: downloadingFilePath)
-                    let transferManager = AWSS3TransferManager.default()
-                    
-                    // Download the Frame
-                    let downloadRequest : AWSS3TransferManagerDownloadRequest = AWSS3TransferManagerDownloadRequest()
-                    downloadRequest.bucket = Constants.Strings.S3BucketMedia
-                    downloadRequest.key =  blobMediaID
-                    downloadRequest.downloadingFileURL = downloadingFileURL
-                    
-                    transferManager?.download(downloadRequest).continue({ (task) -> AnyObject! in
-                        if let error = task.error {
-                            if error._domain == AWSS3TransferManagerErrorDomain as String
-                                && AWSS3TransferManagerErrorType(rawValue: error._code) == AWSS3TransferManagerErrorType.paused {
-                                print("3: Download paused.")
-                            } else {
-                                print("3: Download failed: [\(error)]")
-                            }
-                        } else if let exception = task.exception {
-                            print("3: Download failed: [\(exception)]")
-                        } else {
-                            DispatchQueue.main.async(execute: { () -> Void in
-                                // Assign the image to the Preview Image View
-                                if FileManager().fileExists(atPath: downloadingFilePath) {
-                                    print("THUMBNAIL FILE AVAILABLE")
-                                    let imageData = try? Data(contentsOf: URL(fileURLWithPath: downloadingFilePath))
-                                    
-                                    // Setthe Preview Thumbnail image
-                                    self.blobImageView.image = UIImage(data: imageData!)
-                                    
-                                    // Stop animating the activity indicator
-                                    self.blobMediaActivityIndicator.stopAnimating()
-                                    
-                                    print("ADDED THUMBNAIL FOR IMAGE: \(blobMediaID))")
-                                    
-                                } else {
-                                    print("FRAME FILE NOT AVAILABLE")
-                                }
-                            })
+    func processAwsReturn(_ objectType: AWSRequestObject, success: Bool)
+    {
+        DispatchQueue.main.async(execute:
+            {
+                // Process the return data based on the method used
+                switch objectType
+                {
+                case _ as AWSAddBlobView:
+                    if !success
+                    {
+                        // Show the error message
+                        let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                        self.present(alertController, animated: true, completion: nil)
+                    }
+                case let awsGetBlobImage as AWSGetBlobImage:
+                    if success
+                    {
+                        if let blobImage = awsGetBlobImage.blobImage
+                        {
+                            // Setthe Preview Thumbnail image
+                            self.blobImageView.image = blobImage
+                            
+                            // Stop animating the activity indicator
+                            self.blobMediaActivityIndicator.stopAnimating()
+                            
+                            print("BVC - ADDED IMAGE FOR BLOB WITH TEXT: \(awsGetBlobImage.blob.blobText)")
                         }
-                        return nil
-                    })
+                    }
+                    else
+                    {
+                        // Show the error message
+                        let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                        self.present(alertController, animated: true, completion: nil)
+                    }
+                default:
+                    print("DEFAULT: THERE WAS AN ISSUE WITH THE DATA RETURNED FROM AWS")
+                    // Show the error message
+                    let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                    self.present(alertController, animated: true, completion: nil)
                 }
-            } else {
-                print("VIDEO ARE NOT CURRENTLY SUPPORTED")
-            }
-        }
+        })
     }
 
 }

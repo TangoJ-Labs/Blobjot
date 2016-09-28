@@ -9,7 +9,7 @@
 import AWSLambda
 import UIKit
 
-class BlobsActiveTableViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+class BlobsActiveTableViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, AWSRequestDelegate {
     
     var screenSize: CGRect!
     var statusBarHeight: CGFloat!
@@ -217,7 +217,7 @@ class BlobsActiveTableViewController: UIViewController, UITableViewDataSource, U
             self.blobsActiveTableView.performSelector(onMainThread: #selector(UITableView.reloadData), with: nil, waitUntilDone: true)
             
             // Record the Blob hide in AWS so that the Blob no longer is downloaded for this user
-            self.hideBlob(actionBlob.blobID, userID: Constants.Data.currentUser)
+            AWSPrepRequest(requestToCall: AWSHideBlob(blobID: actionBlob.blobID, userID: Constants.Data.currentUser), delegate: self as AWSRequestDelegate).prepRequest()
             
             // Remove the Blob from the map Blobs
             loopMapBlobsCheck: for (bIndex, blob) in Constants.Data.mapBlobs.enumerated() {
@@ -350,26 +350,32 @@ class BlobsActiveTableViewController: UIViewController, UITableViewDataSource, U
     }
     
     
-    // AWS FUNCTIONS
+    // MARK: AWS DELEGATE METHODS
     
-    // Add a record that this Blob was viewed by the logged in user
-    func hideBlob(_ blobID: String, userID: String) {
-        print("ADDING BLOB VIEW: \(blobID), \(userID), \(Date().timeIntervalSince1970)")
-        let json: NSDictionary = [
-            "blob_id"       : blobID
-            , "user_id"     : userID
-            , "timestamp"   : String(Date().timeIntervalSince1970)
-            , "action_type" : "hide"
-        ]
-        
-        let lambdaInvoker = AWSLambdaInvoker.default()
-        lambdaInvoker.invokeFunction("Blobjot-AddBlobAction", jsonObject: json, completionHandler: { (response, err) -> Void in
-            
-            if (err != nil) {
-                print("ADD BLOB VIEW ERROR: \(err)")
-            } else if (response != nil) {
-                print("MVC-ABV: response: \(response)")
-            }
+    func showLoginScreen() {
+        print("BAVC - SHOW LOGIN SCREEN")
+    }
+    
+    func processAwsReturn(_ objectType: AWSRequestObject, success: Bool)
+    {
+        DispatchQueue.main.async(execute:
+            {
+                // Process the return data based on the method used
+                switch objectType
+                {
+                case _ as AWSHideBlob:
+                    if !success
+                    {
+                        // Show the error message
+                        let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                        self.present(alertController, animated: true, completion: nil)
+                    }
+                default:
+                    print("DEFAULT: THERE WAS AN ISSUE WITH THE DATA RETURNED FROM AWS")
+                    // Show the error message
+                    let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                    self.present(alertController, animated: true, completion: nil)
+                }
         })
     }
  

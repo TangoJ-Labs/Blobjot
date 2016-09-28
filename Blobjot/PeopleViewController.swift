@@ -17,7 +17,7 @@ protocol PeopleViewControllerDelegate {
     func userObjectListUpdatedWithCurrentUser()
 }
 
-class PeopleViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UISearchResultsUpdating, UISearchBarDelegate {
+class PeopleViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UISearchResultsUpdating, UISearchBarDelegate, AWSRequestDelegate {
 
     // Add a delegate variable which the parent view controller can pass its own delegate instance to and have access to the protocol
     // (and have its own functions called that are listed in the protocol)
@@ -80,7 +80,7 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
         searchBar = UISearchBar(frame: CGRect(x: 0, y: 0, width: searchBarContainer.frame.width, height: searchBarContainer.frame.height))
         searchBar.delegate = self
         searchBar.barStyle = .default
-        searchBar.backgroundImage = getImageWithColor(Constants.Colors.colorStatusBar, size: CGSize(width: 5, height: 5))
+        searchBar.backgroundImage = UtilityFunctions().getImageWithColor(Constants.Colors.colorStatusBar, size: CGSize(width: 5, height: 5))
         searchBar.tintColor = Constants.Colors.colorStatusBar
         searchBarContainer.addSubview(searchBar)
         
@@ -141,7 +141,7 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
         searchExitTapGesture.numberOfTapsRequired = 1  // add single tap
         searchExitView.addGestureRecognizer(searchExitTapGesture)
         
-        getUserConnections()
+        AWSPrepRequest(requestToCall: AWSGetUserConnections(), delegate: self as AWSRequestDelegate).prepRequest()
     }
     
     override func viewDidLoad() {
@@ -198,7 +198,7 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
             
             cell.cellUserImageActivityIndicator.stopAnimating()
         } else {
-            self.getUserImage(cellUserObject.userID, imageKey: cellUserObject.userImageKey)
+            AWSPrepRequest(requestToCall: AWSGetUserImage(user: cellUserObject), delegate: self as AWSRequestDelegate).prepRequest()
         }
         
         print("USER STATUS: \(cellUserObject.userStatus)")
@@ -354,7 +354,7 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
         self.refreshTableViewAndEndSpinner(false)
         
         // Recall the data
-        self.getUserConnections()
+        AWSPrepRequest(requestToCall: AWSGetUserConnections(), delegate: self as AWSRequestDelegate).prepRequest()
     }
     
     
@@ -492,7 +492,7 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
         }
         
         // Add a user connection action in AWS
-        self.addUserConnectionAction(Constants.Data.currentUser, connectionUserID: counterpartUserID, actionType: actionType)
+        AWSPrepRequest(requestToCall: AWSAddUserConnectionAction(userID: Constants.Data.currentUser, connectionUserID: counterpartUserID, actionType: actionType), delegate: self as AWSRequestDelegate).prepRequest()
     }
     
     func refreshTableViewAndEndSpinner(_ endSpinner: Bool) {
@@ -529,217 +529,159 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
         self.refreshTableViewAndEndSpinner(true)
     }
     
-    // Create a solid color UIImage
-    func getImageWithColor(_ color: UIColor, size: CGSize) -> UIImage {
-        let rect = CGRect(x: 0, y: 0, width: size.width, height: size.height)
-        UIGraphicsBeginImageContextWithOptions(size, false, 0)
-        color.setFill()
-        UIRectFill(rect)
-        let image: UIImage = UIGraphicsGetImageFromCurrentImageContext()!
-        UIGraphicsEndImageContext()
-        return image
+    
+    // MARK: AWS DELEGATE METHODS
+    
+    func showLoginScreen() {
+        print("PVC - SHOW LOGIN SCREEN")
     }
     
-    
-    // MARK: AWS METHODS
-    
-    // Add a record for an action between user connections
-    func addUserConnectionAction(_ userID: String, connectionUserID: String, actionType: String) {
-        print("ADDING CONNECTION ACTION: \(userID), \(connectionUserID), \(actionType)")
-        let json: NSDictionary = [
-            "user_id"               : userID
-            , "connection_user_id"  : connectionUserID
-            , "action_type"         : actionType
-        ]
-        
-        let lambdaInvoker = AWSLambdaInvoker.default()
-        lambdaInvoker.invokeFunction("Blobjot-AddUserConnectionAction", jsonObject: json, completionHandler: { (response, err) -> Void in
-            
-            if (err != nil) {
-                print("ADD CONNECTION ACTION ERROR: \(err)")
-            } else if (response != nil) {
-                print("PVC-ACA: response: \(response)")
-            }
-        })
-    }
-    
-    // The initial request for Map Blob data - called when the View Controller is instantiated
-    func getUserConnections() {
-        print("PVC - \(self.printCheck): REQUESTING GUC")
-        
-        // Create some JSON to send the logged in userID
-        let json: NSDictionary = ["user_id" : Constants.Data.currentUser, "print_check" : self.printCheck]
-        
-        let lambdaInvoker = AWSLambdaInvoker.default()
-        lambdaInvoker.invokeFunction("Blobjot-GetUserConnections", jsonObject: json, completionHandler: { (response, err) -> Void in
-            
-            if (err != nil) {
-                print("PVC - \(self.printCheck): GET USER CONNECTIONS DATA ERROR: \(err)")
-            } else if (response != nil) {
-                
-                // Convert the response to an array of arrays
-                if let userConnectionArrays = response as? [[AnyObject]] {
-                    
-                    // Loop through the arrays and add each user - the arrays should be in the proper order by user type
-                    for (arrayIndex, userArray) in userConnectionArrays.enumerated() {
-                        print("PVC-GUC - \(self.printCheck): array: \(arrayIndex): jsonData: \(userArray)")
-                        print("PVC - \(self.printCheck): USER COUNT: \(userArray.count)")
-                        
-                        // Stop the table loading spinner before adding data so that it does not show up in front of the user list
-                        //                        self.accountTableActivityIndicator.stopAnimating()
-                        
-                        // Loop through each AnyObject (User) in the array
-                        for user in userArray {
-                            print("PVC - \(self.printCheck): USER: \(user)")
+    func processAwsReturn(_ objectType: AWSRequestObject, success: Bool)
+    {
+        DispatchQueue.main.async(execute:
+            {
+                // Process the return data based on the method used
+                switch objectType
+                {
+                case _ as AWSAddUserConnectionAction:
+                    if !success
+                    {
+                        // Show the error message
+                        let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                        self.present(alertController, animated: true, completion: nil)
+                    }
+                case let awsGetUserConnections as AWSGetUserConnections:
+                    if success
+                    {
+                        // Loop through the arrays and add each user - the arrays should be in the proper order by user type
+                        for (arrayIndex, userArray) in awsGetUserConnections.userConnectionArrays.enumerated() {
+                            print("PVC-GUC - \(self.printCheck): array: \(arrayIndex): jsonData: \(userArray)")
+                            print("PVC - \(self.printCheck): USER COUNT: \(userArray.count)")
                             
-                            // Convert the AnyObject to JSON with keys and AnyObject values
-                            // Then convert the AnyObject values to Strings or Numbers depending on their key
-                            if let checkUser = user as? [String: AnyObject] {
-                                let userID = checkUser["user_id"] as! String
-                                let userName = checkUser["user_name"] as! String
-                                let userImageKey = checkUser["user_image_key"] as! String
-                                print("PVC - \(self.printCheck): USER ID: \(userID)")
-                                print("PVC - \(self.printCheck): USER NAME: \(userName)")
-                                print("PVC - \(self.printCheck): USER IMAGE KEY: \(userImageKey)")
+                            // Stop the table loading spinner before adding data so that it does not show up in front of the user list
+                            //                        self.accountTableActivityIndicator.stopAnimating()
+                            
+                            // Loop through each AnyObject (User) in the array
+                            for user in userArray {
+                                print("PVC - \(self.printCheck): USER: \(user)")
                                 
-                                // Create a User Object and add it to the global User array
-                                let addUser = User()
-                                addUser.userID = userID
-                                addUser.userName = userName
-                                addUser.userImageKey = userImageKey
-                                addUser.userStatus = Constants.UserStatusTypes(rawValue: arrayIndex)
-                                
-                                print("PVC - TRYING TO ADD DOWNLOADED USER: \(userName)")
-                                
-                                // Check to ensure the user does not already exist in the global User array
-                                var userObjectExists = false
-                                loopUserObjectCheck: for userObject in Constants.Data.userObjects {
-                                    if userObject.userID == userID {
-                                        userObject.userName = userName
-                                        userObject.userImageKey = userImageKey
-                                        userObject.userStatus = Constants.UserStatusTypes(rawValue: arrayIndex)
-                                        
-                                        userObjectExists = true
-                                        break loopUserObjectCheck
-                                    }
-                                }
-                                if userObjectExists == false {
-                                    print("USER: \(userName) DOES NOT EXIST - ADDING")
-                                    Constants.Data.userObjects.append(addUser)
-                                }
-                                
-                                //Alert the parent view controller (if needed) that the logged in user should be in the global array
-                                if addUser.userID == Constants.Data.currentUser {
+                                // Convert the AnyObject to JSON with keys and AnyObject values
+                                // Then convert the AnyObject values to Strings or Numbers depending on their key
+                                if let checkUser = user as? [String: AnyObject] {
+                                    let userID = checkUser["user_id"] as! String
+                                    let userName = checkUser["user_name"] as! String
+                                    let userImageKey = checkUser["user_image_key"] as! String
+                                    print("PVC - \(self.printCheck): USER ID: \(userID)")
+                                    print("PVC - \(self.printCheck): USER NAME: \(userName)")
+                                    print("PVC - \(self.printCheck): USER IMAGE KEY: \(userImageKey)")
                                     
-                                    // Call the parent VC to alert that the logged in user has been added to the global user list
-                                    if let parentVC = self.peopleViewDelegate {
-                                        parentVC.userObjectListUpdatedWithCurrentUser()
-                                        print("FOUND LOGGED IN USER \(addUser.userName)")
-                                    }
-                                }
-                                
-                                // Check to ensure the user does not already exist in the local User array
-                                var personExists = false
-                                loopPersonCheck: for personObject in self.peopleList {
-                                    if personObject.userID == userID {
-                                        personObject.userName = userName
-                                        personObject.userImageKey = userImageKey
-                                        personObject.userStatus = Constants.UserStatusTypes(rawValue: arrayIndex)
-                                        
-                                        personExists = true
-                                        break loopPersonCheck
-                                    }
-                                }
-                                if personExists == false {
+                                    // Create a User Object and add it to the global User array
+                                    let addUser = User()
+                                    addUser.userID = userID
+                                    addUser.userName = userName
+                                    addUser.userImageKey = userImageKey
+                                    addUser.userStatus = Constants.UserStatusTypes(rawValue: arrayIndex)
                                     
-                                    // Add the User Object to the local list only if it is not the currently logged in user
-                                    // If it is the logged in user, assign the userName to the displayUserTextField
-                                    if addUser.userID != Constants.Data.currentUser {
-                                        
-                                        self.peopleList.append(addUser)
-                                        print("PVC - \(self.printCheck): ADDED USER \(addUser.userName) TO PEOPLE LIST")
-                                        
+                                    print("PVC - TRYING TO ADD DOWNLOADED USER: \(userName)")
+                                    
+                                    // Check to ensure the user does not already exist in the global User array
+                                    var userObjectExists = false
+                                    loopUserObjectCheck: for userObject in Constants.Data.userObjects {
+                                        if userObject.userID == userID {
+                                            userObject.userName = userName
+                                            userObject.userImageKey = userImageKey
+                                            userObject.userStatus = Constants.UserStatusTypes(rawValue: arrayIndex)
+                                            
+                                            userObjectExists = true
+                                            break loopUserObjectCheck
+                                        }
                                     }
+                                    if userObjectExists == false {
+                                        print("USER: \(userName) DOES NOT EXIST - ADDING")
+                                        Constants.Data.userObjects.append(addUser)
+                                    }
+                                    
+                                    //Alert the parent view controller (if needed) that the logged in user should be in the global array
+                                    if addUser.userID == Constants.Data.currentUser {
+                                        
+                                        // Call the parent VC to alert that the logged in user has been added to the global user list
+                                        if let parentVC = self.peopleViewDelegate {
+                                            parentVC.userObjectListUpdatedWithCurrentUser()
+                                            print("FOUND LOGGED IN USER \(addUser.userName)")
+                                        }
+                                    }
+                                    
+                                    // Check to ensure the user does not already exist in the local User array
+                                    var personExists = false
+                                    loopPersonCheck: for personObject in self.peopleList {
+                                        if personObject.userID == userID {
+                                            personObject.userName = userName
+                                            personObject.userImageKey = userImageKey
+                                            personObject.userStatus = Constants.UserStatusTypes(rawValue: arrayIndex)
+                                            
+                                            personExists = true
+                                            break loopPersonCheck
+                                        }
+                                    }
+                                    if personExists == false {
+                                        
+                                        // Add the User Object to the local list only if it is not the currently logged in user
+                                        // If it is the logged in user, assign the userName to the displayUserTextField
+                                        if addUser.userID != Constants.Data.currentUser {
+                                            
+                                            self.peopleList.append(addUser)
+                                            print("PVC - \(self.printCheck): ADDED USER \(addUser.userName) TO PEOPLE LIST")
+                                            
+                                        }
+                                    }
+                                    print("PVC - \(self.printCheck): PEOPLE LIST COUNT: \(self.peopleList.count)")
                                 }
-                                print("PVC - \(self.printCheck): PEOPLE LIST COUNT: \(self.peopleList.count)")
                             }
                         }
-                    }
-                    // Find the passed person, remove them from their position in the list and place them at the top (index: 0) position
-                    self.bringTopPersonToFrontOfPeopleList()
-                    
-//                    // Reload the Table View
-//                    self.refreshTableViewAndEndSpinner(true)
-                }
-            }
-        })
-    }
-    
-    // Download User Image
-    func getUserImage(_ userID: String, imageKey: String) {
-        print("PVC - \(self.printCheck): GETTING IMAGE FOR: \(imageKey)")
-        
-        let downloadingFilePath = NSTemporaryDirectory() + imageKey // + Constants.Settings.frameImageFileType)
-        let downloadingFileURL = URL(fileURLWithPath: downloadingFilePath)
-        let transferManager = AWSS3TransferManager.default()
-        
-        // Download the Frame
-        let downloadRequest : AWSS3TransferManagerDownloadRequest = AWSS3TransferManagerDownloadRequest()
-        downloadRequest.bucket = Constants.Strings.S3BucketUserImages
-        downloadRequest.key =  imageKey
-        downloadRequest.downloadingFileURL = downloadingFileURL
-        
-        transferManager?.download(downloadRequest).continue({ (task) -> AnyObject! in
-            if let error = task.error {
-                if error._domain == AWSS3TransferManagerErrorDomain as String
-                    && AWSS3TransferManagerErrorType(rawValue: error._code) == AWSS3TransferManagerErrorType.paused {
-                    print("PVC - \(self.printCheck): DOWNLOAD PAUSED")
-                } else {
-                    print("PVC - \(self.printCheck): DOWNLOAD FAILED: [\(error)]")
-                }
-            } else if let exception = task.exception {
-                print("PVC - \(self.printCheck): DOWNLOAD FAILED: [\(exception)]")
-            } else {
-                print("PVC - \(self.printCheck): DOWNLOAD SUCCEEDED")
-                DispatchQueue.main.async(execute: { () -> Void in
-                    // Assign the image to the Preview Image View
-                    if FileManager().fileExists(atPath: downloadingFilePath) {
-                        print("IMAGE FILE AVAILABLE")
-                        let thumbnailData = try? Data(contentsOf: URL(fileURLWithPath: downloadingFilePath))
+                        // Find the passed person, remove them from their position in the list and place them at the top (index: 0) position
+                        self.bringTopPersonToFrontOfPeopleList()
                         
-                        // Ensure the Thumbnail Data is not null
-                        if let tData = thumbnailData {
-                            print("GET IMAGE - CHECK 1")
-                            
-                            // Find the correct User Object in the global list and assign the newly downloaded Image
-                            loopUserObjectCheck: for userObject in Constants.Data.userObjects {
-                                if userObject.userID == userID {
-                                    userObject.userImage = UIImage(data: tData)
-                                    
-                                    break loopUserObjectCheck
-                                }
-                            }
+                        //                    // Reload the Table View
+                        //                    self.refreshTableViewAndEndSpinner(true)
+                    }
+                    else
+                    {
+                        // Show the error message
+                        let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                        self.present(alertController, animated: true, completion: nil)
+                    }
+                case let awsGetUserImage as AWSGetUserImage:
+                    if success
+                    {
+                        if let newImage = awsGetUserImage.user.userImage
+                        {
                             // Find the correct User Object in the local list and assign the newly downloaded Image
                             loopUserObjectCheckLocal: for userObjectLocal in self.peopleList {
-                                if userObjectLocal.userID == userID {
-                                    userObjectLocal.userImage = UIImage(data: tData)
+                                if userObjectLocal.userID == awsGetUserImage.user.userID {
+                                    userObjectLocal.userImage = newImage
                                     
                                     break loopUserObjectCheckLocal
                                 }
                             }
                             
-                            print("ADDED IMAGE: \(imageKey))")
+                            print("PVC - ADDED USER IMAGE: \(awsGetUserImage.user.userImageKey))")
                             
                             // Reload the Table View
                             self.refreshTableViewAndEndSpinner(false)
                         }
-                        
-                    } else {
-                        print("FRAME FILE NOT AVAILABLE")
                     }
-                })
-            }
-            return nil
+                    else
+                    {
+                        // Show the error message
+                        let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                        self.present(alertController, animated: true, completion: nil)
+                    }
+                default:
+                    print("DEFAULT: THERE WAS AN ISSUE WITH THE DATA RETURNED FROM AWS")
+                    // Show the error message
+                    let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                    self.present(alertController, animated: true, completion: nil)
+                }
         })
     }
 

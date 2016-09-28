@@ -122,6 +122,34 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
         displayUserImage.clipsToBounds = true
         displayUserImageContainer.addSubview(displayUserImage)
         
+        // Try to retrieve the current user data from Core Data
+        // Access Core Data
+        // Retrieve the Current User Blob data from Core Data
+        let moc = DataController().managedObjectContext
+        let currentUserFetch = NSFetchRequest<NSFetchRequestResult>(entityName: "CurrentUser")
+        
+        // Create an empty blobNotifications list in case the Core Data request fails
+        var currentUser = [CurrentUser]()
+        do {
+            currentUser = try moc.fetch(currentUserFetch) as! [CurrentUser]
+        } catch {
+            fatalError("Failed to fetch frames: \(error)")
+        }
+        
+        // If the return has content, the current user is saved - use that data
+        if currentUser.count > 0
+        {
+            print("CORE DATA - CURRENT USER - GOT USER DATA")
+            
+            // Apply the current user data in the current user elements
+            displayUserLabel.text = currentUser[0].userName
+            
+            if let imageData = currentUser[0].userImage
+            {
+                displayUserImage.image = UIImage(data: imageData)
+            }
+        }
+        
         // Add a custom logout button
         logoutButton = UIView(frame: CGRect(x: (viewContainer.frame.width * 3) / 4 - 50, y: displayUserContainer.frame.height / 2 - 30, width: 100, height: 60))
         logoutButton.layer.cornerRadius = 5
@@ -269,7 +297,7 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
         
         DispatchQueue.main.async(execute: {
             self.editNameCurrentName.text = "Current User Name:\n " + self.currentUserName
-        });
+        })
         
         // Add an animation to bring the edit user name screen into view
         UIView.animate(withDuration: 0.2, animations: {
@@ -328,7 +356,7 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
                 self.displayUserLabel.text = newUserName
                 
                 // Upload the new username to AWS
-                AWSPrepRequest(requestToCall: AWSEditUserName(userID: Constants.Data.currentUser, newUserName: newUserName), delegate: self as AWSRequestDelegate).prepRequest()
+                AWSPrepRequest(requestToCall: AWSEditUserName(newUserName: newUserName), delegate: self as AWSRequestDelegate).prepRequest()
                 
                 // Edit the logged in user's userName in the global list
                 userLoop: for userObject in Constants.Data.userObjects {
@@ -378,7 +406,7 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
             }
             
             // Upload the new user image to AWS and update the userImageKey
-            updateUserImage(pickedImage)
+            AWSPrepRequest(requestToCall: AWSEditUserImage(newUserImage: pickedImage), delegate: self as AWSRequestDelegate).prepRequest()
         }
         self.dismiss(animated: true, completion: nil)
     }
@@ -435,7 +463,7 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
                     print("CHECKING CORE DATA - NO CURRENT USER DATA - CALLING GET USER DATA")
                     
                     // Download the user's userImage and display in the display user image view
-                    getUserImage(userObject.userID, imageKey: userObject.userImageKey)
+                    AWSPrepRequest(requestToCall: AWSGetUserImage(user: userObject), delegate: self as AWSRequestDelegate).prepRequest()
                     
                 } else {
                     print("CHECKING CORE DATA - USE PREVIOUS IMAGE DATA")
@@ -453,33 +481,6 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
         }
     }
     
-    // Create a thumbnail-sized image from a large image
-    func resizeImage(_ image: UIImage, targetSize: CGSize) -> UIImage {
-        let size = image.size
-        
-        let widthRatio  = targetSize.width  / image.size.width
-        let heightRatio = targetSize.height / image.size.height
-        
-        // Figure out what our orientation is, and use that to form the rectangle
-        var newSize: CGSize
-        if(widthRatio > heightRatio) {
-            newSize = CGSize(width: size.width * heightRatio, height: size.height * heightRatio)
-        } else {
-            newSize = CGSize(width: size.width * widthRatio,  height: size.height * widthRatio)
-        }
-        
-        // This is the rect that we've calculated out and this is what is actually used below
-        let rect = CGRect(x: 0, y: 0, width: newSize.width, height: newSize.height)
-        
-        // Actually do the resizing to the rect using the ImageContext stuff
-        UIGraphicsBeginImageContextWithOptions(newSize, false, 1.0)
-        image.draw(in: rect)
-        let newImage = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-        
-        return newImage!
-    }
-    
     
     // MARK: AWS DELEGATE METHODS
     
@@ -489,202 +490,100 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
     
     func processAwsReturn(_ objectType: AWSRequestObject, success: Bool)
     {
-        // Process the return data based on the method used
-        switch objectType
-        {
-        case _ as AWSEditUserName:
-            if !success
+        DispatchQueue.main.async(execute:
             {
-                // Show the error message
-//                self.createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try to update your username again.")
-            }
-        default:
-            print("DEFAULT: THERE WAS AN ISSUE WITH THE DATA RETURNED FROM AWS")
-            
-            // Show the error message
-//            self.createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
-        }
-    }
-    
-    // MARK: AWS METHODS
-    
-    // Download the userImage for the indicated user object in the UserObject list
-    func updateUserImage(_ userImage: UIImage) {
-        // Get the User Data for the userID
-        let json: NSDictionary = ["request" : "random_user_image_id"]
-        let lambdaInvoker = AWSLambdaInvoker.default()
-        lambdaInvoker.invokeFunction("Blobjot-CreateRandomID", jsonObject: json, completionHandler: { (responseData, err) -> Void in
-            
-            if (err != nil) {
-                print("UUI: Error: \(err)")
-            } else if (responseData != nil) {
-                let imageID = responseData! as! String
-                print("UUI: imageID: \(imageID)")
-                
-                let resizedImage = self.resizeImage(userImage, targetSize: CGSize(width: 200, height: 200))
-                
-                if let data = UIImagePNGRepresentation(resizedImage) {
-                    print("UUI: INSIDE DATA")
-                    
-                    let filePath = NSTemporaryDirectory() + ("userImage" + imageID + ".png")
-                    print("UUI: FILE PATH: \("file:///" + filePath)")
-                    try? data.write(to: URL(fileURLWithPath: filePath), options: [.atomic])
-                    
-                    var uploadMetadata = [String : String]()
-                    uploadMetadata["user_id"] = Constants.Data.currentUser
-                    print("UUI: METADATA: \(uploadMetadata)")
-                    
-                    let uploadRequest = AWSS3TransferManagerUploadRequest()
-                    uploadRequest?.bucket = Constants.Strings.S3BucketUserImages
-                    uploadRequest?.metadata = uploadMetadata
-                    uploadRequest?.key =  imageID
-                    uploadRequest?.body = URL(string: "file:///" + filePath)
-                    print("UUI: UPLOAD REQUEST: \(uploadRequest)")
-                    
-                    let transferManager = AWSS3TransferManager.default()
-                    transferManager?.upload(uploadRequest).continue({ (task) -> AnyObject! in
-                        if let error = task.error {
-                            if error._domain == AWSS3TransferManagerErrorDomain as String
-                                && AWSS3TransferManagerErrorType(rawValue: error._code) == AWSS3TransferManagerErrorType.paused {
-                                print("Upload paused.")
-                            } else {
-                                print("Upload failed: [\(error)]")
-                                // Delete the user image from temporary memory
-                                do {
-                                    print("Deleting image: \(imageID)")
-                                    try FileManager.default.removeItem(atPath: filePath)
-                                }
-                                catch let error as NSError {
-                                    print("Ooops! Something went wrong: \(error)")
-                                }
-                            }
-                        } else if let exception = task.exception {
-                            print("Upload failed: [\(exception)]")
-                            // Delete the user image from temporary memory
-                            do {
-                                print("Deleting image: \(imageID)")
-                                try FileManager.default.removeItem(atPath: filePath)
-                            }
-                            catch let error as NSError {
-                                print("Ooops! Something went wrong: \(error)")
-                            }
-                        } else {
-                            print("Upload succeeded")
-                            // Delete the user image from temporary memory
-                            do {
-                                print("Deleting image: \(imageID)")
-                                try FileManager.default.removeItem(atPath: filePath)
-                            }
-                            catch let error as NSError {
-                                print("Ooops! Something went wrong: \(error)")
-                            }
-                        }
-                        return nil
-                    })
-                }
-            }
-        })
-    }
-    
-    // Download Logged In User Image
-    func getUserImage(_ userID: String, imageKey: String) {
-        print("AVC - GETTING IMAGE FOR: \(imageKey)")
-        
-        let downloadingFilePath = NSTemporaryDirectory() + imageKey // + Constants.Settings.frameImageFileType)
-        let downloadingFileURL = URL(fileURLWithPath: downloadingFilePath)
-        let transferManager = AWSS3TransferManager.default()
-        
-        // Download the Frame
-        let downloadRequest : AWSS3TransferManagerDownloadRequest = AWSS3TransferManagerDownloadRequest()
-        downloadRequest.bucket = Constants.Strings.S3BucketUserImages
-        downloadRequest.key =  imageKey
-        downloadRequest.downloadingFileURL = downloadingFileURL
-        
-        transferManager?.download(downloadRequest).continue({ (task) -> AnyObject! in
-            if let error = task.error {
-                if error._domain == AWSS3TransferManagerErrorDomain as String
-                    && AWSS3TransferManagerErrorType(rawValue: error._code) == AWSS3TransferManagerErrorType.paused {
-                    print("AVC - DOWNLOAD PAUSED")
-                } else {
-                    print("AVC - DOWNLOAD FAILED: [\(error)]")
-                }
-            } else if let exception = task.exception {
-                print("AVC - DOWNLOAD FAILED: [\(exception)]")
-            } else {
-                print("AVC - DOWNLOAD SUCCEEDED")
-                DispatchQueue.main.async(execute: { () -> Void in
-                    // Assign the image to the Preview Image View
-                    if FileManager().fileExists(atPath: downloadingFilePath) {
-                        print("IMAGE FILE AVAILABLE")
-                        let thumbnailData = try? Data(contentsOf: URL(fileURLWithPath: downloadingFilePath))
-                        
-                        // Ensure the Thumbnail Data is not null
-                        if let tData = thumbnailData {
-                            print("GET IMAGE - CHECK 1")
-                            
-                            self.displayUserImage.image = UIImage(data: tData)
+                // Process the return data based on the method used
+                switch objectType
+                {
+                case let awsGetUserImage as AWSGetUserImage:
+                    if success
+                    {
+                        // Refresh the user image if it exists
+                        if let userImage = awsGetUserImage.user.userImage
+                        {
+                            self.displayUserImage.image = userImage
                             self.displayUserImageActivityIndicator.stopAnimating()
-                            print("ADDED IMAGE TO DISPLAY USER IMAGE: \(imageKey))")
+                            print("ADDED IMAGE TO DISPLAY USER IMAGE: \(awsGetUserImage.user.userImageKey))")
                             
-                            // Save the logged in user data to Core Data for quicker access
-                            loopUserObjectCheck: for userObject in Constants.Data.userObjects {
-                                if userObject.userID == Constants.Data.currentUser {
-                                    
-                                    // Access Core Data
-                                    // Retrieve the Current User Blob data from Core Data
-                                    let moc = DataController().managedObjectContext
-                                    let currentUserFetch = NSFetchRequest<NSFetchRequestResult>(entityName: "CurrentUser")
-                                    
-                                    // Create an empty blobNotifications list in case the Core Data request fails
-                                    var currentUser = [CurrentUser]()
-                                    do {
-                                        currentUser = try moc.fetch(currentUserFetch) as! [CurrentUser]
-                                    } catch {
-                                        fatalError("Failed to fetch frames: \(error)")
-                                    }
-                                    
-                                    print("CORE DATA - CURRENT USER COUNT: \(currentUser.count)")
-                                    
-                                    // If the return has no content, the current user has not yet been saved
-                                    if currentUser.count == 0 {
-                                        print("CORE DATA - CURRENT USER - SAVING NEW DATA")
-                                        
-                                        // Save the current user data in Core Data
-                                        let entity = NSEntityDescription.insertNewObject(forEntityName: "CurrentUser", into: moc) as! CurrentUser
-                                        entity.setValue(userObject.userID, forKey: "userID")
-                                        entity.setValue(userObject.userName, forKey: "userName")
-                                        entity.setValue(userObject.userImageKey, forKey: "userImageKey")
-                                        entity.setValue(tData, forKey: "userImage")
-                                        
-                                    } else {
-                                        print("CORE DATA - CURRENT USER - MODIFYING DATA")
-                                        
-                                        // Replace the current user data to ensure that the latest data is used
-                                        currentUser[0].userID = userObject.userID
-                                        currentUser[0].userName = userObject.userName
-                                        currentUser[0].userImageKey = userObject.userImageKey
-                                        currentUser[0].userImage = tData
-                                    }
-                                    
-                                    // Save the Entity
-                                    do {
-                                        try moc.save()
-                                    } catch {
-                                        fatalError("Failure to save context: \(error)")
-                                    }
-                                    
-                                    break loopUserObjectCheck
-                                }
-                            }
+                            // Store the new image in Core Data for immediate access in next VC loading
+                            self.saveUserImageToCoreData(user: awsGetUserImage.user)
                         }
-                        
-                    } else {
-                        print("FRAME FILE NOT AVAILABLE")
                     }
-                })
-            }
-            return nil
+                    else
+                    {
+                        // Show the error message
+                        let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                        self.present(alertController, animated: true, completion: nil)
+                    }
+                case _ as AWSEditUserName:
+                    if !success
+                    {
+                        // Show the error message
+                        let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                        self.present(alertController, animated: true, completion: nil)
+                    }
+                case _ as AWSEditUserImage:
+                    if !success
+                    {
+                        // Show the error message
+                        let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                        self.present(alertController, animated: true, completion: nil)
+                    }
+                default:
+                    print("DEFAULT: THERE WAS AN ISSUE WITH THE DATA RETURNED FROM AWS")
+                    
+                    // Show the error message
+                    let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                    self.present(alertController, animated: true, completion: nil)
+                }
         })
+    }
+    
+    // Save the current user's image to Core Data
+    func saveUserImageToCoreData(user: User)
+    {
+        // Access Core Data
+        // Retrieve the Current User Blob data from Core Data
+        let moc = DataController().managedObjectContext
+        let currentUserFetch = NSFetchRequest<NSFetchRequestResult>(entityName: "CurrentUser")
+        
+        // Create an empty blobNotifications list in case the Core Data request fails
+        var currentUser = [CurrentUser]()
+        do {
+            currentUser = try moc.fetch(currentUserFetch) as! [CurrentUser]
+        } catch {
+            fatalError("Failed to fetch frames: \(error)")
+        }
+        
+        print("CORE DATA - CURRENT USER COUNT: \(currentUser.count)")
+        
+        // If the return has no content, the current user has not yet been saved
+        if currentUser.count == 0 {
+            print("CORE DATA - CURRENT USER - SAVING NEW DATA")
+            
+            // Save the current user data in Core Data
+            let entity = NSEntityDescription.insertNewObject(forEntityName: "CurrentUser", into: moc) as! CurrentUser
+            entity.setValue(user.userID, forKey: "userID")
+            entity.setValue(user.userName, forKey: "userName")
+            entity.setValue(user.userImageKey, forKey: "userImageKey")
+            entity.setValue(user.userImage, forKey: "userImage")
+            
+        } else {
+            print("CORE DATA - CURRENT USER - MODIFYING DATA")
+            
+            // Replace the current user data to ensure that the latest data is used
+            currentUser[0].userID = user.userID
+            currentUser[0].userName = user.userName
+            currentUser[0].userImageKey = user.userImageKey
+            currentUser[0].userImage = UIImagePNGRepresentation(user.userImage!)
+        }
+        
+        // Save the Entity
+        do {
+            try moc.save()
+        } catch {
+            fatalError("Failure to save context: \(error)")
+        }
     }
 
 }

@@ -13,25 +13,25 @@ import GoogleMaps
 import MobileCoreServices
 import GooglePlacePicker
 import UIKit
-fileprivate func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
-  switch (lhs, rhs) {
-  case let (l?, r?):
-    return l < r
-  case (nil, _?):
-    return true
-  default:
-    return false
-  }
-}
-
-fileprivate func > <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
-  switch (lhs, rhs) {
-  case let (l?, r?):
-    return l > r
-  default:
-    return rhs < lhs
-  }
-}
+//fileprivate func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
+//  switch (lhs, rhs) {
+//  case let (l?, r?):
+//    return l < r
+//  case (nil, _?):
+//    return true
+//  default:
+//    return false
+//  }
+//}
+//
+//fileprivate func > <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
+//  switch (lhs, rhs) {
+//  case let (l?, r?):
+//    return l > r
+//  default:
+//    return rhs < lhs
+//  }
+//}
 
 
 
@@ -179,7 +179,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        print("VIEW DID LOAD")
+        print("MVC - VIEW DID LOAD")
         
         self.edgesForExtendedLayout = UIRectEdge.all
         
@@ -200,9 +200,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         UIApplication.shared.isStatusBarHidden = false
         UIApplication.shared.statusBarStyle = UIStatusBarStyle.lightContent
         statusBarHeight = UIApplication.shared.statusBarFrame.size.height
-        print("**************** STATUS BAR HEIGHT: \(statusBarHeight)")
         viewFrameY = self.view.frame.minY
-        print("**************** VIEW FRAME Y: \(viewFrameY)")
         screenSize = UIScreen.main.bounds
         
         let vcHeight = screenSize.height - statusBarHeight
@@ -217,8 +215,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         viewContainer = UIView(frame: CGRect(x: 0, y: vcY!, width: screenSize.width, height: vcHeight))
         viewContainer.backgroundColor = Constants.Colors.standardBackground
         self.view.addSubview(viewContainer)
-        print("**************** VIEW CONTAINER FRAME Y: \(viewContainer.frame.minY)")
-        
         
         // Create a camera with the default location (if location services are used, this should not be shown for long)
         let camera = GMSCameraPosition.camera(withLatitude: 29.758624, longitude: -95.366795, zoom: 10)
@@ -248,13 +244,13 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         viewContainer.addSubview(mapView)
         
         
-        // The temporary location accuracy label
-        accuracyLabel = UILabel(frame: CGRect(x: 5, y: mapView.frame.height - 50 - Constants.Dim.mapViewButtonTrackUserSize, width: 100, height: 20))
-        accuracyLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 18)
-        accuracyLabel.text = "NA m"
-        accuracyLabel.textColor = UIColor.black
-        accuracyLabel.textAlignment = .left
-        viewContainer.addSubview(accuracyLabel)
+//        // The temporary location accuracy label
+//        accuracyLabel = UILabel(frame: CGRect(x: 5, y: mapView.frame.height - 50 - Constants.Dim.mapViewButtonTrackUserSize, width: 100, height: 20))
+//        accuracyLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 18)
+//        accuracyLabel.text = "NA m"
+//        accuracyLabel.textColor = UIColor.black
+//        accuracyLabel.textAlignment = .left
+//        viewContainer.addSubview(accuracyLabel)
         
         // For Adding Blobs, create a default gray circle at the center of the screen with a slider for the user to change the circle radius
         // These components are not initially shown (until the user taps the Add Blob button)
@@ -650,17 +646,13 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     }
     
     override func viewWillAppear(_ animated: Bool) {
-        print("VIEW WILL APPEAR")
+        print("MVC - VIEW WILL APPEAR")
         
         refreshMap()
         
         if showLoginScreenBool {
             print("MVC - SHOW LOGIN SCREEN")
             self.viewContainer.addSubview(loginScreen)
-            
-//            let loginViewController = LoginViewController()
-//            loginViewController.modalPresentationStyle = UIModalPresentationStyle.overCurrentContext
-//            self.present(loginViewController, animated: true, completion: nil)
         }
     }
     
@@ -672,37 +664,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     override var prefersStatusBarHidden : Bool {
         return self.statusBarHidden
     }
-    
-//    // Check if a user is logged in
-//    func checkForUser() {
-//        print("FBSDK - CHECK FOR USER")
-//        print("LOGGED IN USER: \(Constants.Data.currentUser)")
-//        print("AWS COGNITO CREDENTIALS: \(Constants.credentialsProvider.identityId)")
-//        
-//        // Show the login screen if no user is logged in
-//        if Constants.Data.currentUser == "" {
-//            
-//            // Check to see if the facebook user id is already in the FBSDK
-//            if let facebookToken = FBSDKAccessToken.current() {
-//                
-//                // If the Cognito credentials are still valid, retrieve the user data
-//                if Constants.credentialsProvider.identityId != nil {
-//                    print("FBSDK USER ID: \(facebookToken.userID)")
-//                    self.fbGraphRequest(facebookToken.userID)
-//                } else {
-//                    // Else if the Cognito credentials have expired, request the credentials again (Cognito Identity ID) and use the current Facebook info
-////                    let awsMethods = AWSMethods()
-////                    awsMethods.awsMethodsCognitoDelegate = self
-////                    awsMethods.getCognitoIdentityID(facebookToken)
-//                    self.prepAWSRequest(methodToCall: AWSMethodTypes.loginUser)
-//                }
-//                
-//            } else {
-//                viewContainer.addSubview(loginScreen)
-//                loginScreen.addSubview(loginBox)
-//            }
-//        }
-//    }
     
     
     // MARK: SEARCH BAR METHODS
@@ -734,7 +695,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     
     // Turn the network activity indicator on and off again.
     func didRequestAutocompletePredictions(forResultsController resultsController: GMSAutocompleteResultsViewController) {
-        print("SEARCH CONTROLLER - DID REQUEST")
         UIApplication.shared.isNetworkActivityIndicatorVisible = true
         
         // Hide the status bar while the user searches for the place
@@ -744,7 +704,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     }
     
     func didUpdateAutocompletePredictions(forResultsController resultsController: GMSAutocompleteResultsViewController) {
-        print("SEARCH CONTROLLER - DID UPDATE")
         UIApplication.shared.isNetworkActivityIndicatorVisible = false
     }
     
@@ -984,7 +943,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             self.showLoginScreenBool = false
             
             // Remove the loginScreen (in case it is showing) so that it does not show when the user returns to the map
-//            self.loginBox.removeFromSuperview()
             self.loginScreen.removeFromSuperview()
             
             // Since the first attempt to download the map data would have failed if the user was not logged in, refresh it again
@@ -1049,9 +1007,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         
         // PREPARE DATA
         // Request the Map Data for the logged in user
-//        let awsMethods = AWSMethods()
-//        awsMethods.awsMethodsMapVcDelegate = self
-//        awsMethods.getMapData()
         AWSPrepRequest(requestToCall: AWSGetMapData(), delegate: self as AWSRequestDelegate).prepRequest()
         print("CALLED MAP DATA")
         
@@ -1123,7 +1078,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 
                 let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
                 let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
-// *COMPLETE********* find username for previewBlob.blobUserID
+                
                 // Try to access the locally stored preview Blob User to set the navigation bar title
                 if let previewUser = self.previewBlobUser {
                     ncTitleText.text = previewUser.userName
@@ -1154,7 +1109,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     
     // KEY-VALUE OBSERVER HANDLERS
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-        print("Change at keyPath = \(keyPath)")
+//        print("Change at keyPath = \(keyPath)")
         
         // Detect if the user's location has changed
         if keyPath == "myLocation" {
@@ -1166,14 +1121,14 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         // Detect if the map camera has changed
         // An alternative is the mapView delegate "willMove"
         if keyPath == "camera" {
-            print("CAMERA CHANGING: MAPVIEW CAMERA BEFORE: \(mapView.camera)")
+//            print("CAMERA CHANGING: MAPVIEW CAMERA BEFORE: \(mapView.camera)")
         }
     }
     
     // For KEY-VALUE OBSERVER change "myLocation" - can be used elsewhere
     // Reload Blob data based on the user's new location
     func refreshBlobsForCurrentLocation() {
-        print("MVC - REFRESHING BLOBS FOR CURRENT LOCATION")
+//        print("MVC - REFRESHING BLOBS FOR CURRENT LOCATION")
         
         // Check that the user's current location is accessible
         if let userCurrentLocation = mapView.myLocation {
@@ -1188,7 +1143,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             // Determine the user's new coordinates and the range of accuracy around those coordinates
             let userLocation = CLLocation(latitude: userCurrentLocation.coordinate.latitude, longitude: userCurrentLocation.coordinate.longitude)
             let userRangeRadius = userCurrentLocation.horizontalAccuracy
-            accuracyLabel.text = String(userRangeRadius) + " m"
+//            accuracyLabel.text = String(userRangeRadius) + " m"
             
             // Check to ensure that the location accuracy is reasonable - if too high, do not update data and wait for more accuracy
             if userRangeRadius <= Constants.Settings.locationAccuracyMax {
@@ -1215,19 +1170,13 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                     // If the minimum distance from the Blob's center to the user is equal to or less than the Blob radius,
                     // request the extra Blob data (Blob Text and/or Blob Media)
                     if minUserDistanceFromBlobCenter <= blob.blobRadius {
-                        print("MVC - WITHIN RANGE OF BLOB: \(blob.blobID)")
+//                        print("MVC - WITHIN RANGE OF BLOB: \(blob.blobID)")
                         
                         // Ensure that the Blob data has not already been requested
                         // If so, append the Blob to the Location Blob Array
                         if !blob.blobExtraRequested {
                             blob.blobExtraRequested = true
-                            print("MVC - REQUESTING BLOB EXTRA")
-                            
-                            // Only request the extra Blob data if it has not already been requested
-//                            getBlobData(blob.blobID)
-//                            let awsMethods = AWSMethods()
-//                            awsMethods.awsMethodsMapVcDelegate = self
-//                            awsMethods.getBlobData(blob.blobID)
+//                            print("MVC - REQUESTING BLOB EXTRA")
                             
                             AWSPrepRequest(requestToCall: AWSGetBlobData(blob: blob), delegate: self as AWSRequestDelegate).prepRequest()
                             
@@ -1243,12 +1192,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                             }
                             // If the user has not been downloaded, request the user and the userImage
                             if !userExists {
-//                                self.getSingleUserData(blob.blobUserID)
-                                
-//                                let awsMethods = AWSMethods()
-//                                awsMethods.awsMethodsMapVcDelegate = self
-//                                awsMethods.getSingleUserData(blob.blobUserID, forPreviewBox: true)
-                                
                                 AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: blob.blobUserID, forPreviewBox: true), delegate: self as AWSRequestDelegate).prepRequest()
                             }
                         } else {
@@ -1267,12 +1210,10 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                                 
                                 // If the Blob Type is not Permanent, remove it from the Map View and Data
                                 if blobType != Constants.BlobTypes.permanent {
-                                    //                                        print("DELETING BLOB: \(blob.blobID)")
                                     
                                     // Remove the Blob from the global array of locationBlobs so that it cannot be accessed
                                     loopLocationBlobsCheck: for (index, lBlob) in Constants.Data.locationBlobs.enumerated() {
                                         if lBlob.blobID == blob.blobID {
-                                            //                                                print("DELETING LOCATION BLOB: \(lBlob.blobID)")
                                             Constants.Data.locationBlobs.remove(at: index)
                                             
                                             break loopLocationBlobsCheck
@@ -1282,7 +1223,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                                     // Remove the Blob from the global array of mapBlobs so that it cannot be accessed
                                     loopMapBlobsCheck: for (index, mBlob) in Constants.Data.mapBlobs.enumerated() {
                                         if mBlob.blobID == blob.blobID {
-                                            //                                                print("DELETING MAP BLOB: \(mBlob.blobID)")
                                             Constants.Data.mapBlobs.remove(at: index)
                                             
                                             break loopMapBlobsCheck
@@ -1292,7 +1232,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                                     // Remove the Blob from the list of mapCircles so that is does not show on the mapView
                                     loopMapCirclesCheck: for (index, circle) in Constants.Data.mapCircles.enumerated() {
                                         if circle.title == blob.blobID {
-                                            //                                                print("DELETING CIRCLE: \(circle.title)")
                                             circle.map = nil
                                             Constants.Data.mapCircles.remove(at: index)
                                             
@@ -1444,7 +1383,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     
     // Called after the map is moved
     func mapView(_ mapView: GMSMapView, didChange position: GMSCameraPosition) {
-        print("DID CHANGE CAMERA POSITION: \(mapView.camera)")
+//        print("DID CHANGE CAMERA POSITION: \(mapView.camera)")
         // Adjust the Map Camera back to apply the correct camera angle
         adjustMapViewCamera()
         
@@ -1456,9 +1395,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             marker.map = nil
         }
         self.blobMarkers = [GMSMarker]()
-        print("ADD MARKER CHECK - MAP ZOOM: \(Double(mapView.camera.zoom))")
         for blob in Constants.Data.mapBlobs {
-            print("ADD MARKER CHECK - BLOB RADIUS: \(blob.blobRadius))")
             
             // Add the marker to the map for the Blob if the radius of the marker is the same or larger than the visible radius of the Blob
             // The equation relating Blob radius to Camera Zoom is:  Radius = Zoom * -30 + 480
@@ -1901,7 +1838,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     
     // Loop through the Map Blobs, check if they have already been added as Map Circles, and create a Map Circle if needed
     func addMapBlobsToMap() {
-        print("MAP BLOBS COUNT: \(Constants.Data.mapBlobs.count)")
+//        print("MAP BLOBS COUNT: \(Constants.Data.mapBlobs.count)")
         
         // Loop through Map Blobs and check for corresponding Map Circles
         for addBlob in Constants.Data.mapBlobs {
@@ -1929,10 +1866,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     
     // Receive the Blob data, create a new GMSCircle, and add it to the local Map View
     func createBlobOnMap(_ blobCenter: CLLocationCoordinate2D, blobRadius: Double, blobType: Constants.BlobTypes, blobTitle: String) {
-        print("ABOUT TO ADD CIRCLE: \(blobTitle), \(blobCenter), \(blobRadius), \(blobType)")
+//        print("ABOUT TO ADD CIRCLE: \(blobTitle), \(blobCenter), \(blobRadius), \(blobType)")
         
         let addCircle = GMSCircle()
-        print("CIRCLE CHECK 1: \(addCircle)")
         addCircle.position = blobCenter
         addCircle.radius = blobRadius
         addCircle.title = blobTitle
@@ -1942,7 +1878,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         addCircle.map = self.mapView
         Constants.Data.mapCircles.append(addCircle)
         
-//        let path = pathForCoordinate(blobCenter, withMeterRadius: blobRadius)
+//        let path = UtilityFunctions().pathForCoordinate(blobCenter, withMeterRadius: blobRadius)
 //        let blob = GMSPolyline(path: path)
 //        blob.map = self.mapView
     }
@@ -2036,35 +1972,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         }
     }
     
-    func pathForCoordinate(_ coordinate: CLLocationCoordinate2D, withMeterRadius: Double) -> GMSMutablePath {
-        let degreesBetweenPoints = 8.0
-        
-        let path = GMSMutablePath()
-        
-        // 45 sides
-        let numberOfPoints = floor(360.0 / degreesBetweenPoints)
-        let distRadians: Double = withMeterRadius / 6371000.0
-        let varianceRadians: Double = (withMeterRadius / 10) / 6371000.0
-        
-        // earth radius in meters
-        let centerLatRadians: Double = coordinate.latitude * M_PI / 180
-        let centerLonRadians: Double = coordinate.longitude * M_PI / 180
-        
-        //array to hold all the points
-        for index in 0 ..< Int(numberOfPoints) {
-            let degrees: Double = Double(index) * Double(degreesBetweenPoints)
-            let degreeRadians: Double = degrees * M_PI / 180
-            let pointLatRadians: Double = asin(sin(centerLatRadians) * cos(distRadians) + cos(centerLatRadians) * sin(distRadians) * cos(degreeRadians))
-            let pointLonRadians: Double = centerLonRadians + atan2(sin(degreeRadians) * sin(distRadians) * cos(centerLatRadians), cos(distRadians) - sin(centerLatRadians) * sin(pointLatRadians))
-            let pointLat: Double = pointLatRadians * 180 / M_PI
-            let pointLon: Double = pointLonRadians * 180 / M_PI
-            let point: CLLocationCoordinate2D = CLLocationCoordinate2DMake(pointLat, pointLon)
-            path.add(point)
-        }
-        
-        return path
-    }
-    
     
     // MARK: OTHER DELEGATE METHODS
     func logoutUser() {
@@ -2092,115 +1999,120 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     
     func processAwsReturn(_ objectType: AWSRequestObject, success: Bool)
     {
-        // Process the return data based on the method used
-        switch objectType
-        {
-        case _ as AWSLoginUser:
-            if success
+        DispatchQueue.main.async(execute:
             {
-                if self.newLogin
+                // Process the return data based on the method used
+                switch objectType
                 {
-                    // Load the account view to show the logged in user
-                    self.tapButtonAccount()
-                    print("LOGIN - CALLED TAP ACCOUNT")
+                case _ as AWSLoginUser:
+                    if success
+                    {
+                        if self.newLogin
+                        {
+                            // Load the account view to show the logged in user
+                            self.tapButtonAccount()
+                            print("LOGIN - CALLED TAP ACCOUNT")
+                            
+                            // Hide the logging in indicator and label
+                            self.loginActivityIndicator.stopAnimating()
+                            self.loginProcessLabel.removeFromSuperview()
+                        }
+                        else
+                        {
+                            // Since the first attempt to download the map data would have failed if the user was not logged in, refresh it again
+                            self.refreshMap()
+                        }
+                    }
+                    else
+                    {
+                        // Hide the logging in indicator and label
+                        self.loginActivityIndicator.stopAnimating()
+                        self.loginProcessLabel.removeFromSuperview()
+                        
+                        // Show the error message
+                        self.createAlertOkView("Login Error", message: "We're sorry, but we seem to have an issue logging you in.  Please tap the \"Log out\" button and try logging in again.")
+                        
+                        print("***** LOG IN ERROR *****")
+                    }
+                case _ as AWSGetMapData:
+                    if success
+                    {
+                        // Attempt to call the local function to add the Map Blobs to the Map
+                        self.addMapBlobsToMap()
+                    }
+                    else
+                    {
+                        // Show the error message
+                        self.createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please refresh the map to try again.")
+                    }
+                case let awsGetBlobData as AWSGetBlobData:
+                    if success
+                    {
+                        // Refresh the collection view and show the blob notification if needed
+                        self.refreshCollectionView()
+                        self.displayNotification(awsGetBlobData.blob)
+                    }
+                    else
+                    {
+                        // Show the error message
+                        self.createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                    }
+                case _ as AWSGetThumbnailImage:
+                    if !success
+                    {
+                        // Show the error message
+                        self.createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                    }
+                case let awsGetSingleUserData as AWSGetSingleUserData:
+                    if success
+                    {
+                        // Refresh the collection view
+                        self.refreshCollectionView()
+                        
+                        // If the Blob Active View Controller is not null, send a refresh command so that the Parent VC's Child's VC's Table View's rows look for the new data
+                        self.updateBlobActionTable()
+                        
+                        // If the MapView called this method to update the Preview Box, send the needed data to the PreviewBox
+                        if awsGetSingleUserData.forPreviewBox!
+                        {
+                            self.updatePreviewBoxData(awsGetSingleUserData.user)
+                        }
+                    }
+                    else
+                    {
+                        // Show the error message
+                        self.createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                    }
+                case let awsGetUserImage as AWSGetUserImage:
+                    if success
+                    {
+                        // Refresh the collection view
+                        self.refreshCollectionView()
+                        
+                        // If the Blob Active View Controller is not null, send a refresh command so that the Parent VC's Child's VC's Table View's rows look for the new data
+                        self.updateBlobActionTable()
+                        
+                        // Update the preview data
+                        self.refreshPreviewUserData(awsGetUserImage.user)
+                    }
+                    else
+                    {
+                        // Show the error message
+                        self.createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                    }
+                case _ as AWSEditUserName:
+                    if !success
+                    {
+                        // Show the error message
+                        self.createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try to update your username again.")
+                    }
+                default:
+                    print("DEFAULT: THERE WAS AN ISSUE WITH THE DATA RETURNED FROM AWS")
                     
-                    // Hide the logging in indicator and label
-                    self.loginActivityIndicator.stopAnimating()
-                    self.loginProcessLabel.removeFromSuperview()
+                    // Show the error message
+                    self.createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                 }
-                else
-                {
-                    // Since the first attempt to download the map data would have failed if the user was not logged in, refresh it again
-                    self.refreshMap()
-                }
-            }
-            else
-            {
-                // Hide the logging in indicator and label
-                self.loginActivityIndicator.stopAnimating()
-                self.loginProcessLabel.removeFromSuperview()
-                
-                // Show the error message
-                self.createAlertOkView("Login Error", message: "We're sorry, but we seem to have an issue logging you in.  Please tap the \"Log out\" button and try logging in again.")
-            }
-        case _ as AWSGetMapData:
-            if success
-            {
-                // Attempt to call the local function to add the Map Blobs to the Map
-                self.addMapBlobsToMap()
-            }
-            else
-            {
-                // Show the error message
-                self.createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please refresh the map to try again.")
-            }
-        case let awsGetBlobData as AWSGetBlobData:
-            if success
-            {
-                // Refresh the collection view and show the blob notification if needed
-                self.refreshCollectionView()
-                self.displayNotification(awsGetBlobData.blob)
-            }
-            else
-            {
-                // Show the error message
-                self.createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
-            }
-        case _ as AWSGetThumbnailImage:
-            if !success
-            {
-                // Show the error message
-                self.createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
-            }
-        case let awsGetSingleUserData as AWSGetSingleUserData:
-            if success
-            {
-                // Refresh the collection view
-                self.refreshCollectionView()
-                
-                // If the Blob Active View Controller is not null, send a refresh command so that the Parent VC's Child's VC's Table View's rows look for the new data
-                self.updateBlobActionTable()
-                
-                // If the MapView called this method to update the Preview Box, send the needed data to the PreviewBox
-                if awsGetSingleUserData.forPreviewBox!
-                {
-                    self.updatePreviewBoxData(awsGetSingleUserData.user)
-                }
-            }
-            else
-            {
-                // Show the error message
-                self.createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
-            }
-        case let awsGetUserImage as AWSGetUserImage:
-            if success
-            {
-                // Refresh the collection view
-                self.refreshCollectionView()
-                
-                // If the Blob Active View Controller is not null, send a refresh command so that the Parent VC's Child's VC's Table View's rows look for the new data
-                self.updateBlobActionTable()
-                
-                // Update the preview data
-                self.refreshPreviewUserData(awsGetUserImage.user)
-            }
-            else
-            {
-                // Show the error message
-                self.createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
-            }
-        case _ as AWSEditUserName:
-            if !success
-            {
-                // Show the error message
-                self.createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try to update your username again.")
-            }
-        default:
-            print("DEFAULT: THERE WAS AN ISSUE WITH THE DATA RETURNED FROM AWS")
-            
-            // Show the error message
-            self.createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
-        }
+        })
     }
     
     func displayNotification(_ blob: Blob)

@@ -42,27 +42,24 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         let configuration = AWSServiceConfiguration(region: Constants.Strings.awsRegion, credentialsProvider: Constants.credentialsProvider)
         AWSServiceManager.default().defaultServiceConfiguration = configuration
         
-//        let pool = AWSCognitoUserPool
-        
         // FacebookSDK Prep
         FBSDKApplicationDelegate.sharedInstance().application(application, didFinishLaunchingWithOptions: launchOptions)
+        
+        // Prepare the root View Controller and make visible
+        self.mapViewController = MapViewController()
+        self.window = UIWindow(frame: UIScreen.main.bounds)
+//        self.navController.pushViewController(mapViewController, animated: false)
+//        self.navController.navigationBar.barTintColor = Constants.Colors.colorStatusBar
+//        self.navController.viewControllers = [mapViewController]
+//        self.window!.rootViewController = navController
+        self.window!.rootViewController = mapViewController
+        self.window!.makeKeyAndVisible()
+        print("!!!!!! ASSIGNED ROOT VIEW CONTROLLER !!!!!!")
         
         // Change the color of the default background (try to change the color of the background seen when using a flip transition)
         if let window = window {
             window.layer.backgroundColor = Constants.Colors.colorStatusBar.cgColor
         }
-        
-        // Prepare the root View Controller and make visible
-        self.mapViewController = MapViewController()
-        self.navController.pushViewController(mapViewController, animated: false)
-        
-        self.window = UIWindow(frame: UIScreen.main.bounds)
-        self.navController.navigationBar.barTintColor = Constants.Colors.colorStatusBar
-        self.navController.viewControllers = [mapViewController]
-        self.window!.rootViewController = navController
-//        self.window!.rootViewController = mapViewController
-        self.window!.makeKeyAndVisible()
-        print("!!!!!! ASSIGNED ROOT VIEW CONTROLLER !!!!!!")
         
         // Initialize the notification settings and reset the badge number
         let settings = UIUserNotificationSettings(types: [.alert, .badge , .sound], categories: nil)
@@ -329,35 +326,38 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     
     func processAwsReturn(_ objectType: AWSRequestObject, success: Bool)
     {
-        // Process the return data based on the method used
-        switch objectType
-        {
-        case let awsGetBlobData as AWSGetBlobData:
-            if success
+        DispatchQueue.main.async(execute:
             {
-                // Show the blob notification if needed
-                self.displayNotification(awsGetBlobData.blob)
-            }
-            else
-            {
-                // Show the error message
-                self.createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
-            }
-        case _ as AWSGetSingleUserData:
-            if success
-            {
-            }
-            else
-            {
-                // Show the error message
-                self.createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
-            }
-        default:
-            print("DEFAULT: THERE WAS AN ISSUE WITH THE DATA RETURNED FROM AWS")
-            
-            // Show the error message
-            self.createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
-        }
+                // Process the return data based on the method used
+                switch objectType
+                {
+                case let awsGetBlobData as AWSGetBlobData:
+                    if success
+                    {
+                        // Show the blob notification if needed
+                        self.displayNotification(awsGetBlobData.blob)
+                    }
+                    else
+                    {
+                        // Show the error message
+                        self.createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                    }
+                case _ as AWSGetSingleUserData:
+                    if success
+                    {
+                    }
+                    else
+                    {
+                        // Show the error message
+                        self.createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                    }
+                default:
+                    print("DEFAULT: THERE WAS AN ISSUE WITH THE DATA RETURNED FROM AWS")
+                    
+                    // Show the error message
+                    self.createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                }
+        })
     }
     
     func displayNotification(_ blob: Blob) {

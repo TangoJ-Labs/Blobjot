@@ -36,12 +36,12 @@
 		B80D17751D90E1C90032B0D8 /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80D17741D90E1C90032B0D8 /* LoginViewController.swift */; };
 		B80D17771D922FF20032B0D8 /* AWSClasses.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80D17761D922FF20032B0D8 /* AWSClasses.swift */; };
 		B80D17791D9712C60032B0D8 /* style.json in Resources */ = {isa = PBXBuildFile; fileRef = B80D17781D9712C50032B0D8 /* style.json */; };
+		B80D177B1D98A5760032B0D8 /* UtilityFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80D177A1D98A5760032B0D8 /* UtilityFunctions.swift */; };
 		B81822071D5B98F300B3A2BB /* BlobThumbnailObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = B81822061D5B98F300B3A2BB /* BlobThumbnailObject.swift */; };
 		B85FDE891D7DC2BA002A8FC7 /* CustomIdentityProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B85FDE881D7DC2BA002A8FC7 /* CustomIdentityProvider.swift */; };
 		B86406FD1D71BDCD0084D6EF /* white.png in Resources */ = {isa = PBXBuildFile; fileRef = B86406FC1D71BDCD0084D6EF /* white.png */; };
 		B86406FF1D74AD800084D6EF /* SearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B86406FE1D74AD7F0084D6EF /* SearchViewController.swift */; };
 		B86407011D75BAE50084D6EF /* circle-small.png in Resources */ = {isa = PBXBuildFile; fileRef = B86407001D75BAE50084D6EF /* circle-small.png */; };
-		B86407031D7677A40084D6EF /* AWSMethods.swift in Sources */ = {isa = PBXBuildFile; fileRef = B86407021D7677A40084D6EF /* AWSMethods.swift */; };
 		B86407051D7B0E720084D6EF /* DataController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B86407041D7B0E710084D6EF /* DataController.swift */; };
 		B86407081D7B13EB0084D6EF /* DataModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = B86407061D7B13EB0084D6EF /* DataModel.xcdatamodeld */; };
 		B864070D1D7B14A40084D6EF /* BlobNotifications+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B86407091D7B14A40084D6EF /* BlobNotifications+CoreDataProperties.swift */; };
@@ -127,12 +127,12 @@
 		B80D17741D90E1C90032B0D8 /* LoginViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
 		B80D17761D922FF20032B0D8 /* AWSClasses.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AWSClasses.swift; sourceTree = "<group>"; };
 		B80D17781D9712C50032B0D8 /* style.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = style.json; path = Blobjot/style.json; sourceTree = "<group>"; };
+		B80D177A1D98A5760032B0D8 /* UtilityFunctions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UtilityFunctions.swift; sourceTree = "<group>"; };
 		B81822061D5B98F300B3A2BB /* BlobThumbnailObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlobThumbnailObject.swift; sourceTree = "<group>"; };
 		B85FDE881D7DC2BA002A8FC7 /* CustomIdentityProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomIdentityProvider.swift; sourceTree = "<group>"; };
 		B86406FC1D71BDCD0084D6EF /* white.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = white.png; sourceTree = "<group>"; };
 		B86406FE1D74AD7F0084D6EF /* SearchViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SearchViewController.swift; sourceTree = "<group>"; };
 		B86407001D75BAE50084D6EF /* circle-small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "circle-small.png"; sourceTree = "<group>"; };
-		B86407021D7677A40084D6EF /* AWSMethods.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AWSMethods.swift; sourceTree = "<group>"; };
 		B86407041D7B0E710084D6EF /* DataController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataController.swift; sourceTree = "<group>"; };
 		B86407071D7B13EB0084D6EF /* DataModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = DataModel.xcdatamodel; sourceTree = "<group>"; };
 		B86407091D7B14A40084D6EF /* BlobNotifications+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "BlobNotifications+CoreDataProperties.swift"; sourceTree = "<group>"; };
@@ -289,7 +289,6 @@
 				B80C56381D51158000C4E683 /* AccountViewController.swift */,
 				B88131921D510EEE00021C4B /* AppDelegate.swift */,
 				B80D17761D922FF20032B0D8 /* AWSClasses.swift */,
-				B86407021D7677A40084D6EF /* AWSMethods.swift */,
 				B80C56301D51126800C4E683 /* Blob.swift */,
 				B80C56391D51158000C4E683 /* BlobAddMediaViewController.swift */,
 				B80C563A1D51158000C4E683 /* BlobAddPeopleTableViewCell.swift */,
@@ -318,6 +317,7 @@
 				B80C56461D51158000C4E683 /* PeopleViewController.swift */,
 				B86406FE1D74AD7F0084D6EF /* SearchViewController.swift */,
 				B80C56601D5183B100C4E683 /* User.swift */,
+				B80D177A1D98A5760032B0D8 /* UtilityFunctions.swift */,
 			);
 			path = Blobjot;
 			sourceTree = "<group>";
@@ -627,7 +627,6 @@
 				B80C56551D51158000C4E683 /* PeopleTableViewCell.swift in Sources */,
 				B86407101D7B14A40084D6EF /* CurrentUser.swift in Sources */,
 				B80D17771D922FF20032B0D8 /* AWSClasses.swift in Sources */,
-				B86407031D7677A40084D6EF /* AWSMethods.swift in Sources */,
 				B864070E1D7B14A40084D6EF /* BlobNotification.swift in Sources */,
 				B80C56341D5112F100C4E683 /* Constants.swift in Sources */,
 				B85FDE891D7DC2BA002A8FC7 /* CustomIdentityProvider.swift in Sources */,
@@ -635,6 +634,7 @@
 				B80C56361D5113B900C4E683 /* MapViewController.swift in Sources */,
 				B80C56481D51158000C4E683 /* AccountViewController.swift in Sources */,
 				B80C56531D51158000C4E683 /* BlobViewController.swift in Sources */,
+				B80D177B1D98A5760032B0D8 /* UtilityFunctions.swift in Sources */,
 				B80C56311D51126800C4E683 /* Blob.swift in Sources */,
 				B80C564B1D51158000C4E683 /* BlobAddPeopleViewController.swift in Sources */,
 				B80C56491D51158000C4E683 /* BlobAddMediaViewController.swift in Sources */,
