@@ -56,13 +56,13 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Blobjot/AWSClasses.swift"
-            timestampString = "496586093.321327"
+            timestampString = "496935765.38775"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "511"
-            endingLineNumber = "511"
-            landmarkName = "AWSGetThumbnailImage"
-            landmarkType = "3">
+            startingLineNumber = "538"
+            endingLineNumber = "538"
+            landmarkName = "init(blob:)"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy

@@ -566,8 +566,10 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
             entity.setValue(user.userID, forKey: "userID")
             entity.setValue(user.userName, forKey: "userName")
             entity.setValue(user.userImageKey, forKey: "userImageKey")
-            entity.setValue(user.userImage, forKey: "userImage")
-            
+            if let userImage = user.userImage
+            {
+                entity.setValue(UIImagePNGRepresentation(userImage), forKey: "userImage")
+            }
         } else {
             print("CORE DATA - CURRENT USER - MODIFYING DATA")
             

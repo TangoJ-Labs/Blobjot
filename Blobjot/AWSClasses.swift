@@ -53,9 +53,23 @@ class AWSPrepRequest
             // Ensure that the Cognito ID is still valid
             if Constants.credentialsProvider.identityId != nil
             {
-                print("AC - FIRING REQUEST")
-                // If the Identity ID is still valid, go ahead and fire the needed method
-                self.requestToCall.makeRequest()
+                // If the Identity ID is still valid, ensure that the current userID is not nil
+                if Constants.Data.currentUser != ""
+                {
+                    print("AC - FIRING REQUEST")
+                    // All login info is current; go ahead and fire the needed method
+                    self.requestToCall.makeRequest()
+                }
+                else
+                {
+                    // The current ID is nil, so request it from AWS, but store the previous request and call it when the
+                    // login is complete
+                    print("AC - NO CURRENT USER - SECONDARY REQUEST: \(self.requestToCall) WITH FB TOKEN: \(facebookToken)")
+                    let awsLoginUser = AWSLoginUser(secondaryAwsRequestObject: self.requestToCall)
+                    awsLoginUser.awsRequestDelegate = self.awsRequestDelegate
+                    awsLoginUser.facebookToken = facebookToken
+                    awsLoginUser.makeRequest()
+                }
             }
             else
             {
@@ -155,10 +169,17 @@ class AWSRequestObject
 
 /**
  Properties:
- - facebookID Input- The received facebookID from the FBSDK request
+ - secondaryAwsRequestObject- An optional property that allows the original request to be carried by the login request, when the login request is fired by the prepRequest class due to no user being logged in.  This property should not be used for AWSLoginUser calls based directly on user interaction
  */
 class AWSLoginUser : AWSRequestObject
 {
+    var secondaryAwsRequestObject: AWSRequestObject?
+    
+    required init(secondaryAwsRequestObject: AWSRequestObject?)
+    {
+        self.secondaryAwsRequestObject = secondaryAwsRequestObject
+    }
+    
     // FBSDK METHOD - Get user data from FB before attempting to log in via AWS
     override func makeRequest()
     {
@@ -217,6 +238,7 @@ class AWSLoginUser : AWSRequestObject
     // Log in the user or create a new user
     func loginUser(_ facebookName: String, facebookThumbnailUrl: String)
     {
+        print("AC - LU - FACEBOOK TOKEN: \(self.facebookToken)")
         let json: NSDictionary = ["facebook_id" : self.facebookToken!.userID, "facebook_name": facebookName, "facebook_thumbnail_url": facebookThumbnailUrl]
         print("AC - USER LOGIN DATA: \(json)")
         
@@ -248,10 +270,19 @@ class AWSLoginUser : AWSRequestObject
                     // The response will be the userID associated with the facebookID used, save the userID globally
                     Constants.Data.currentUser = responseData as! String
                     
-                    // Notify the parent view that the AWS call completed successfully
-                    if let parentVC = self.awsRequestDelegate
+                    // If the secondary request object is not nil, process the carried (second) request; no need to
+                    // pass the login response to the parent view controller since it did not explicitly call the login request
+                    if let secondaryAwsRequestObject = self.secondaryAwsRequestObject
                     {
-                        parentVC.processAwsReturn(self, success: true)
+                        AWSPrepRequest(requestToCall: secondaryAwsRequestObject, delegate: self.awsRequestDelegate!).prepRequest()
+                    }
+                    else
+                    {
+                        // Notify the parent view that the AWS Login call completed successfully
+                        if let parentVC = self.awsRequestDelegate
+                        {
+                            parentVC.processAwsReturn(self, success: true)
+                        }
                     }
                 }
         })
@@ -1217,20 +1248,32 @@ class AWSUploadBlobData : AWSRequestObject
         print("SENDING DATA TO LAMBDA")
         
         // Create some JSON to send the Blob data
-        let json: NSDictionary = [
-            "blobID"            : self.blobID
-            , "blobLat"         : String(self.blobLat)
-            , "blobLong"        : String(self.blobLong)
-            , "blobMediaID"     : self.blobMediaID
-            , "blobMediaType"   : String(self.blobMediaType)
-            , "blobRadius"      : String(self.blobRadius)
-            , "blobText"        : self.blobText
-            , "blobThumbnailID" : self.blobThumbnailID
-            , "blobTimestamp"   : String(self.blobTimestamp)
-            , "blobType"        : String(self.blobType)
-            , "blobTaggedUsers" : self.blobTaggedUsers
-            , "blobUserID"      : self.blobUserID
-        ]
+        var json = [String: Any]()
+        json["blobID"]          = self.blobID
+        json["blobLat"]         = String(self.blobLat)
+        json["blobLong"]        = String(self.blobLong)
+        json["blobMediaID"]     = self.blobMediaID
+        json["blobMediaType"]   = String(self.blobMediaType)
+        json["blobRadius"]      = String(self.blobRadius)
+        json["blobText"]        = self.blobText
+        json["blobThumbnailID"] = self.blobThumbnailID
+        json["blobTimestamp"]   = String(self.blobTimestamp)
+        json["blobType"]        = String(self.blobType)
+        json["blobTaggedUsers"] = self.blobTaggedUsers
+        json["blobUserID"]      = self.blobUserID
+        
+//            , "blobLat"         : String(self.blobLat)
+//            , "blobLong"        : String(self.blobLong)
+//            , "blobMediaID"     : self.blobMediaID
+//            , "blobMediaType"   : String(self.blobMediaType)
+//            , "blobRadius"      : String(self.blobRadius)
+//            , "blobText"        : self.blobText
+//            , "blobThumbnailID" : self.blobThumbnailID
+//            , "blobTimestamp"   : String(self.blobTimestamp)
+//            , "blobType"        : String(self.blobType)
+//            , "blobTaggedUsers" : self.blobTaggedUsers
+//            , "blobUserID"      : self.blobUserID
+//        ]
         print("LAMBDA JSON: \(json)")
         let lambdaInvoker = AWSLambdaInvoker.default()
         lambdaInvoker.invokeFunction("Blobjot-CreateBlob", jsonObject: json, completionHandler:
@@ -1275,12 +1318,17 @@ class AWSHideBlob : AWSRequestObject
     override func makeRequest()
     {
         print("ADDING BLOB VIEW: \(self.blobID), \(self.userID), \(Date().timeIntervalSince1970)")
-        let json: NSDictionary = [
-            "blob_id"       : self.blobID
-            , "user_id"     : self.userID
-            , "timestamp"   : String(Date().timeIntervalSince1970)
-            , "action_type" : "hide"
-        ]
+//        let json: NSDictionary = [
+//            "blob_id"       : self.blobID
+//            , "user_id"     : self.userID
+//            , "timestamp"   : String(Date().timeIntervalSince1970)
+//            , "action_type" : "hide"
+//        ]
+        var json = [String: Any]()
+        json["blob_id"]     = self.blobID
+        json["user_id"]     = self.userID
+        json["timestamp"]   = String(Date().timeIntervalSince1970)
+        json["action_type"] = "hide"
         
         let lambdaInvoker = AWSLambdaInvoker.default()
         lambdaInvoker.invokeFunction("Blobjot-AddBlobAction", jsonObject: json, completionHandler:
@@ -1319,12 +1367,17 @@ class AWSDeleteBlob : AWSRequestObject
     override func makeRequest()
     {
         print("ADDING BLOB DELETE: \(self.blobID), \(self.userID), \(Date().timeIntervalSince1970)")
-        let json: NSDictionary = [
-            "blob_id"       : self.blobID
-            , "user_id"     : self.userID
-            , "timestamp"   : String(Date().timeIntervalSince1970)
-            , "action_type" : "delete"
-        ]
+//        let json: NSDictionary = [
+//            "blob_id"       : self.blobID
+//            , "user_id"     : self.userID
+//            , "timestamp"   : String(Date().timeIntervalSince1970)
+//            , "action_type" : "delete"
+//        ]
+        var json = [String: Any]()
+        json["blob_id"]     = self.blobID
+        json["user_id"]     = self.userID
+        json["timestamp"]   = String(Date().timeIntervalSince1970)
+        json["action_type"] = "delete"
         
         let lambdaInvoker = AWSLambdaInvoker.default()
         lambdaInvoker.invokeFunction("Blobjot-AddBlobAction", jsonObject: json, completionHandler:
@@ -1424,12 +1477,17 @@ class AWSAddBlobView : AWSRequestObject
         }
         
         print("ADDING BLOB VIEW: \(blobID), \(userID), \(Date().timeIntervalSince1970)")
-        let json: NSDictionary = [
-            "blob_id"       : blobID
-            , "user_id"     : userID
-            , "timestamp"   : String(Date().timeIntervalSince1970)
-            , "action_type" : "view"
-        ]
+//        let json: NSDictionary = [
+//            "blob_id"       : blobID
+//            , "user_id"     : userID
+//            , "timestamp"   : String(Date().timeIntervalSince1970)
+//            , "action_type" : "view"
+//        ]
+        var json = [String: Any]()
+        json["blob_id"]     = self.blobID
+        json["user_id"]     = self.userID
+        json["timestamp"]   = String(Date().timeIntervalSince1970)
+        json["action_type"] = "view"
         
         let lambdaInvoker = AWSLambdaInvoker.default()
         lambdaInvoker.invokeFunction("Blobjot-AddBlobAction", jsonObject: json, completionHandler:
@@ -1576,11 +1634,15 @@ class AWSAddUserConnectionAction : AWSRequestObject
     override func makeRequest()
     {
         print("ADDING CONNECTION ACTION: \(self.userID), \(self.connectionUserID), \(self.actionType)")
-        let json: NSDictionary = [
-            "user_id"               : self.userID
-            , "connection_user_id"  : self.connectionUserID
-            , "action_type"         : self.actionType
-        ]
+//        let json: NSDictionary = [
+//            "user_id"               : self.userID
+//            , "connection_user_id"  : self.connectionUserID
+//            , "action_type"         : self.actionType
+//        ]
+        var json = [String: Any]()
+        json["user_id"]             = self.userID
+        json["connection_user_id"]  = self.connectionUserID
+        json["action_type"]         = self.actionType
         
         let lambdaInvoker = AWSLambdaInvoker.default()
         lambdaInvoker.invokeFunction("Blobjot-AddUserConnectionAction", jsonObject: json, completionHandler:

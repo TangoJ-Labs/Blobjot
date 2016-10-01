@@ -281,9 +281,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
                             print("AD - REQUESTING BLOB EXTRA")
                             
                             // Only request the extra Blob data if it has not already been requested
-//                            let awsMethods = AWSMethods()
-//                            awsMethods.awsMethodsCognitoDelegate = self
-//                            awsMethods.getBlobData(blob.blobID)
                             AWSPrepRequest(requestToCall: AWSGetBlobData(blob: blob), delegate: self as AWSRequestDelegate).prepRequest()
                             
                             // When downloading Blob data, always request the user data if it does not already exist
@@ -299,9 +296,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
                             // If the user has not been downloaded, request the user and the userImage and then notify the user
                             if !userExists {
                                 
-//                                let awsMethods = AWSMethods()
-//                                awsMethods.awsMethodsCognitoDelegate = self
-//                                awsMethods.getSingleUserData(blob.blobUserID, forPreviewBox: false)
                                 AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: blob.blobUserID, forPreviewBox: false), delegate: self as AWSRequestDelegate).prepRequest()
                             }
                         } else {
@@ -345,6 +339,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
                 case _ as AWSGetSingleUserData:
                     if success
                     {
+                        print("AD - GOT SINGLE USER DATA")
                     }
                     else
                     {

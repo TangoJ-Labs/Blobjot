@@ -183,10 +183,10 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         
         self.edgesForExtendedLayout = UIRectEdge.all
         
-        // Hide the navigation controller
-        if let navController = navigationController {
-            navController.isNavigationBarHidden = true
-        }
+//        // Hide the navigation controller
+//        if let navController = navigationController {
+//            navController.isNavigationBarHidden = true
+//        }
         
         // Create a fake user for the default blob
         defaultBlobUser = User()
@@ -274,7 +274,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         selectorSlider.addTarget(self, action: #selector(MapViewController.sliderValueDidChange(_:)), for: .valueChanged)
         
         // Add the Add Button in the bottom right corner
-        buttonAdd = UIView(frame: CGRect(x: viewContainer.frame.width - Constants.Dim.mapViewButtonAddSize / 2, y: viewContainer.frame.height - Constants.Dim.mapViewButtonAddSize / 2, width: Constants.Dim.mapViewButtonAddSize, height: Constants.Dim.mapViewButtonAddSize))
+        buttonAdd = UIView(frame: CGRect(x: viewContainer.frame.width - Constants.Dim.mapViewButtonAddSize / 2, y: viewContainer.frame.height - 5 - Constants.Dim.mapViewButtonAddSize, width: Constants.Dim.mapViewButtonAddSize, height: Constants.Dim.mapViewButtonAddSize))
         buttonAdd.layer.cornerRadius = Constants.Dim.mapViewButtonAddSize / 2
         buttonAdd.backgroundColor = Constants.Colors.colorPurple
         buttonAdd.layer.shadowOffset = CGSize(width: 0, height: 0.2)
@@ -289,9 +289,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         buttonAddImage.textAlignment = .center
         buttonAdd.addSubview(buttonAddImage)
         
-        // Add the Cancel Add Button to show in the bottom right corner to the left of the Add Button
+        // Add the Cancel Add Button to show in the bottom right corner above the Add Button
         // Do not show the Cancel Add Button until the user selects Add Button
-        buttonCancelAdd = UIView(frame: CGRect(x: viewContainer.frame.width - 10 - Constants.Dim.mapViewButtonAddSize * 2, y: viewContainer.frame.height - 5 - Constants.Dim.mapViewButtonAddSize, width: Constants.Dim.mapViewButtonAddSize, height: Constants.Dim.mapViewButtonAddSize))
+        buttonCancelAdd = UIView(frame: CGRect(x: viewContainer.frame.width - Constants.Dim.mapViewButtonAddSize / 2, y: viewContainer.frame.height - 10 - Constants.Dim.mapViewButtonAddSize * 2, width: Constants.Dim.mapViewButtonAddSize, height: Constants.Dim.mapViewButtonAddSize))
         buttonCancelAdd.layer.cornerRadius = Constants.Dim.mapViewButtonAddSize / 2
         buttonCancelAdd.backgroundColor = Constants.Colors.colorPurple
         buttonCancelAdd.layer.shadowOffset = CGSize(width: 0, height: 0.2)
@@ -305,40 +305,8 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         buttonCancelAddImage.textAlignment = .center
         buttonCancelAdd.addSubview(buttonCancelAddImage)
         
-        // Add the Profile / Account Button in the bottom right corner just above the Add Button
-        buttonAccountView = UIView(frame: CGRect(x: viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonAccountSize, y: viewContainer.frame.height - 10 - Constants.Dim.mapViewButtonAddSize - Constants.Dim.mapViewButtonAccountSize, width: Constants.Dim.mapViewButtonAccountSize, height: Constants.Dim.mapViewButtonAccountSize))
-        buttonAccountView.layer.cornerRadius = Constants.Dim.mapViewButtonAccountSize / 2
-        buttonAccountView.backgroundColor = Constants.Colors.colorPurple
-        buttonAccountView.layer.shadowOffset = CGSize(width: 0, height: 0.2)
-        buttonAccountView.layer.shadowOpacity = 0.2
-        buttonAccountView.layer.shadowRadius = 1.0
-        viewContainer.addSubview(buttonAccountView)
-        
-        buttonAccountViewImage = UILabel(frame: CGRect(x: 1, y: 1, width: Constants.Dim.mapViewButtonAccountSize - 1, height: Constants.Dim.mapViewButtonAccountSize - 1))
-        buttonAccountViewImage.font = UIFont(name: Constants.Strings.fontRegular, size: 18)
-        buttonAccountViewImage.text = "\u{1F464}"
-        buttonAccountViewImage.textColor = UIColor.white
-        buttonAccountViewImage.textAlignment = .center
-        buttonAccountView.addSubview(buttonAccountViewImage)
-        
-        // Add the "My Location" Tracker Button in the bottom right corner, to the left of the Add Button
-        buttonTrackUser = UIView(frame: CGRect(x: 15 + Constants.Dim.mapViewButtonTrackUserSize, y: viewContainer.frame.height - 5 - Constants.Dim.mapViewButtonTrackUserSize, width: Constants.Dim.mapViewButtonTrackUserSize, height: Constants.Dim.mapViewButtonTrackUserSize))
-        buttonTrackUser.layer.cornerRadius = Constants.Dim.mapViewButtonTrackUserSize / 2
-        buttonTrackUser.backgroundColor = Constants.Colors.colorPurple
-        buttonTrackUser.layer.shadowOffset = CGSize(width: 0, height: 0.2)
-        buttonTrackUser.layer.shadowOpacity = 0.2
-        buttonTrackUser.layer.shadowRadius = 1.0
-        viewContainer.addSubview(buttonTrackUser)
-        
-        buttonTrackUserImage = UILabel(frame: CGRect(x: 1, y: 1, width: Constants.Dim.mapViewButtonTrackUserSize - 1, height: Constants.Dim.mapViewButtonTrackUserSize - 1))
-        buttonTrackUserImage.font = UIFont(name: Constants.Strings.fontRegular, size: 18)
-        buttonTrackUserImage.text = "\u{25CE}"
-        buttonTrackUserImage.textColor = UIColor.white
-        buttonTrackUserImage.textAlignment = .center
-        buttonTrackUser.addSubview(buttonTrackUserImage)
-        
-        // Add the Map Refresh button in the bottom left corner
-        buttonRefreshMap = UIView(frame: CGRect(x: 10, y: viewContainer.frame.height - 5 - Constants.Dim.mapViewButtonTrackUserSize, width: Constants.Dim.mapViewButtonTrackUserSize, height: Constants.Dim.mapViewButtonTrackUserSize))
+        // Add the Map Refresh button in the bottom right corner, just above the Add Button
+        buttonRefreshMap = UIView(frame: CGRect(x: viewContainer.frame.width - Constants.Dim.mapViewButtonTrackUserSize / 2, y: viewContainer.frame.height - 10 - Constants.Dim.mapViewButtonAddSize - Constants.Dim.mapViewButtonTrackUserSize, width: Constants.Dim.mapViewButtonTrackUserSize, height: Constants.Dim.mapViewButtonTrackUserSize))
         buttonRefreshMap.layer.cornerRadius = Constants.Dim.mapViewButtonSearchSize / 2
         buttonRefreshMap.backgroundColor = Constants.Colors.colorPurple
         buttonRefreshMap.layer.shadowOffset = CGSize(width: 0, height: 0.2)
@@ -352,6 +320,22 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         buttonRefreshMapImage.textColor = UIColor.white
         buttonRefreshMapImage.textAlignment = .center
         buttonRefreshMap.addSubview(buttonRefreshMapImage)
+        
+        // Add the "My Location" Tracker Button in the bottom right corner, to the left of the Add Button
+        buttonTrackUser = UIView(frame: CGRect(x: viewContainer.frame.width - Constants.Dim.mapViewButtonTrackUserSize / 2, y: viewContainer.frame.height - 15 - Constants.Dim.mapViewButtonAddSize - Constants.Dim.mapViewButtonTrackUserSize * 2, width: Constants.Dim.mapViewButtonTrackUserSize, height: Constants.Dim.mapViewButtonTrackUserSize))
+        buttonTrackUser.layer.cornerRadius = Constants.Dim.mapViewButtonTrackUserSize / 2
+        buttonTrackUser.backgroundColor = Constants.Colors.colorPurple
+        buttonTrackUser.layer.shadowOffset = CGSize(width: 0, height: 0.2)
+        buttonTrackUser.layer.shadowOpacity = 0.2
+        buttonTrackUser.layer.shadowRadius = 1.0
+        viewContainer.addSubview(buttonTrackUser)
+        
+        buttonTrackUserImage = UILabel(frame: CGRect(x: 1, y: 1, width: Constants.Dim.mapViewButtonTrackUserSize - 1, height: Constants.Dim.mapViewButtonTrackUserSize - 1))
+        buttonTrackUserImage.font = UIFont(name: Constants.Strings.fontRegular, size: 18)
+        buttonTrackUserImage.text = "\u{25CE}"
+        buttonTrackUserImage.textColor = UIColor.white
+        buttonTrackUserImage.textAlignment = .center
+        buttonTrackUser.addSubview(buttonTrackUserImage)
         
         // Show a loading indicator for when the Map is refreshing
         buttonRefreshMapActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: 0, y: 0, width: buttonRefreshMap.frame.width, height: buttonRefreshMap.frame.height))
@@ -389,6 +373,22 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         buttonListViewImage.textColor = UIColor.white
         buttonListViewImage.textAlignment = .center
         buttonListView.addSubview(buttonListViewImage)
+        
+        // Add the Profile / Account Button in the top right corner just below the List Button
+        buttonAccountView = UIView(frame: CGRect(x: viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonAccountSize, y: 15 + Constants.Dim.mapViewButtonSearchSize + Constants.Dim.mapViewButtonListSize, width: Constants.Dim.mapViewButtonAccountSize, height: Constants.Dim.mapViewButtonAccountSize))
+        buttonAccountView.layer.cornerRadius = Constants.Dim.mapViewButtonAccountSize / 2
+        buttonAccountView.backgroundColor = Constants.Colors.colorPurple
+        buttonAccountView.layer.shadowOffset = CGSize(width: 0, height: 0.2)
+        buttonAccountView.layer.shadowOpacity = 0.2
+        buttonAccountView.layer.shadowRadius = 1.0
+        viewContainer.addSubview(buttonAccountView)
+        
+        buttonAccountViewImage = UILabel(frame: CGRect(x: 1, y: 1, width: Constants.Dim.mapViewButtonAccountSize - 1, height: Constants.Dim.mapViewButtonAccountSize - 1))
+        buttonAccountViewImage.font = UIFont(name: Constants.Strings.fontRegular, size: 18)
+        buttonAccountViewImage.text = "\u{1F464}"
+        buttonAccountViewImage.textColor = UIColor.white
+        buttonAccountViewImage.textAlignment = .center
+        buttonAccountView.addSubview(buttonAccountViewImage)
         
         // The small icon that indicates that the current user location accuracy is too low to enable Blob viewing
         let lavSize: CGFloat = 40
@@ -637,12 +637,8 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         mapView.addObserver(self, forKeyPath: "myLocation", options:NSKeyValueObservingOptions(), context: nil)
         mapView.addObserver(self, forKeyPath: "camera", options:NSKeyValueObservingOptions(), context: nil)
         
-//        self.checkForUser()
-//        let awsMethods = AWSMethods()
-//        awsMethods.awsMethodsMapVcDelegate = self
-//        awsMethods.prepAWSRequest(methodToCall: Constants.AWSMethodTypes.loginUser)
-        
-        AWSPrepRequest(requestToCall: AWSLoginUser(), delegate: self as AWSRequestDelegate).prepRequest()
+//        // Request login the user
+//        AWSPrepRequest(requestToCall: AWSLoginUser(secondaryAwsRequestObject: nil), delegate: self as AWSRequestDelegate).prepRequest()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -785,11 +781,11 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         tabBarController.navigationItem.setLeftBarButton(backButtonItem, animated: true)
         tabBarController.navigationItem.titleView = ncTitle
         
-//        // Create the Navigation Controller, attach the Tab Bar Controller and present the View Controller
-//        let navController = UINavigationController(rootViewController: tabBarController)
-//        navController.navigationBar.barTintColor = Constants.Colors.colorStatusBar
-//        self.presentViewController(navController, animated: true, completion: nil)
-        self.navigationController!.pushViewController(tabBarController, animated: true)
+        // Create the Navigation Controller, attach the Tab Bar Controller and present the View Controller
+        let navController = UINavigationController(rootViewController: tabBarController)
+        navController.navigationBar.barTintColor = Constants.Colors.colorStatusBar
+        self.present(navController, animated: true, completion: nil)
+//        self.navigationController!.pushViewController(tabBarController, animated: true)
     }
     
     // If the Add Button is tapped, check to see if the addingBlob indicator has already been activated (true)
@@ -1617,12 +1613,8 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             self.newLogin = true
             
             // Now that the Facebook token has been retrieved, get the Cognito IdentityID
-//            let awsMethods = AWSMethods()
-//            awsMethods.awsMethodsMapVcDelegate = self
-//            awsMethods.prepAWSRequest(methodToCall: Constants.AWSMethodTypes.loginUser)
-//            self.prepAWSRequest(methodToCall: Constants.AWSMethodTypes.loginUser)
             print("MVC - FBSDK TOKEN: \(FBSDKAccessToken.current())")
-            AWSPrepRequest(requestToCall: AWSLoginUser(), delegate: self as AWSRequestDelegate).prepRequest()
+            AWSPrepRequest(requestToCall: AWSLoginUser(secondaryAwsRequestObject: nil), delegate: self as AWSRequestDelegate).prepRequest()
             print("MVC - LOGIN - CALLED AWS LOGIN USER FUNCTION")
         }
     }
@@ -1977,10 +1969,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     func logoutUser() {
         
         // The logged in username has been cleared, so run the login process again to show the login screen
-//        let awsMethods = AWSMethods()
-//        awsMethods.awsMethodsMapVcDelegate = self
-//        awsMethods.prepAWSRequest(methodToCall: Constants.AWSMethodTypes.loginUser)
-        AWSPrepRequest(requestToCall: AWSLoginUser(), delegate: self as AWSRequestDelegate).prepRequest()
+        AWSPrepRequest(requestToCall: AWSLoginUser(secondaryAwsRequestObject: nil), delegate: self as AWSRequestDelegate).prepRequest()
     }
     
     
