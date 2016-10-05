@@ -367,23 +367,28 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
                 
                 // Ensure that the Blob Text is not nil
                 // If it is nil, just show the Blob userName
-                if let blobText = blob.blobText {
-                    notification.alertBody = "\(userObject.userName): \(blobText)"
+                if let blobUserName = userObject.userName {
+                    if let blobText = blob.blobText {
+                        notification.alertBody = "\(blobUserName): \(blobText)"
+                    } else {
+                        notification.alertBody = "\(blobUserName)"
+                    }
+                    notification.alertAction = "open"
+                    notification.hasAction = false
+//                    notification.alertTitle = "\(userObject.userName)"
+                    notification.userInfo = ["blobID" : blob.blobID]
+                    notification.fireDate = Date().addingTimeInterval(0) //Show the notification now
+                    
+                    UIApplication.shared.scheduleLocalNotification(notification)
+                    
+                    // Add to the number shown on the badge (count of notifications)
+                    self.badgeNumber += 1
+                    print("BADGE NUMBER: \(self.badgeNumber)")
+                    UIApplication.shared.applicationIconBadgeNumber = self.badgeNumber
+                    
                 } else {
-                    notification.alertBody = "\(userObject.userName)"
+                    print("***** ERROR CREATING NOTIFICATION *****")
                 }
-                notification.alertAction = "open"
-                notification.hasAction = false
-//                notification.alertTitle = "\(userObject.userName)"
-                notification.userInfo = ["blobID" : blob.blobID]
-                notification.fireDate = Date().addingTimeInterval(0) //Show the notification now
-                
-                UIApplication.shared.scheduleLocalNotification(notification)
-                
-                // Add to the number shown on the badge (count of notifications)
-                self.badgeNumber += 1
-                print("BADGE NUMBER: \(self.badgeNumber)")
-                UIApplication.shared.applicationIconBadgeNumber = self.badgeNumber
                 
                 break loopUserObjectCheck
             }

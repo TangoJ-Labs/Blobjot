@@ -132,6 +132,8 @@ struct Constants {
     struct Data {
         
         static var attemptedLogin: Bool = false
+        static var loginTries: Int = 0
+        static var lastCredentials: TimeInterval = Date().timeIntervalSince1970
         
         static var currentUser: String = "" //DON_QUIXOTE: MY9QP9I8HW6ZDMWA || THE_LADY_WITH_COFFEE: 70X4ODWM6D4AL2H4 || TEST_USER: NOLFGJEJ5KX6AIE2 // THE LOGGED IN USER
         static var currentUserName: String?
@@ -153,10 +155,10 @@ struct Constants {
         static let statusBarStandardHeight: CGFloat = 20
         
         static let mapViewButtonAddSize: CGFloat = 100
-        static let mapViewButtonSearchSize: CGFloat = 40
-        static let mapViewButtonListSize: CGFloat = 40
-        static let mapViewButtonAccountSize: CGFloat = 40
-        static let mapViewButtonTrackUserSize: CGFloat = 40
+        static let mapViewButtonSearchSize: CGFloat = 60
+        static let mapViewButtonListSize: CGFloat = 60
+        static let mapViewButtonAccountSize: CGFloat = 60
+        static let mapViewButtonTrackUserSize: CGFloat = 60
         
         static let mapViewSearchBarContainerHeight: CGFloat = 45
         static let mapViewSearchBarHeight: CGFloat = 25
@@ -232,6 +234,7 @@ struct Constants {
         
         static let gKey = "AIzaSyBdwjW6jYuPjZP7oW8NsqHkZQyMxFq_j0w"
         static let mapStyleUrl = URL(string: "mapbox://styles/tangojlabs/ciqwaddsl0005b7m0xwctftow")
+        static let maxLoginTries: Int = 5
         static let locationAccuracyMax: Double = 30 // In meters
         static let locationAccuracyMaxBackground: Double = 100 // In meters
         

@@ -56,11 +56,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Blobjot/AWSClasses.swift"
-            timestampString = "496935765.38775"
+            timestampString = "497328336.022343"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "538"
-            endingLineNumber = "538"
+            startingLineNumber = "581"
+            endingLineNumber = "581"
             landmarkName = "init(blob:)"
             landmarkType = "7">
          </BreakpointContent>

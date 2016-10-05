@@ -315,6 +315,7 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
         
         // Log out the user from the app
         Constants.Data.currentUser = ""
+        Constants.credentialsProvider.clearCredentials()
         
         // Clear the data from the app
         Constants.Data.mapBlobs = [Blob]()
@@ -333,9 +334,6 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
             parentVC.popViewController()
             parentVC.logoutUser()
         }
-        
-//        // Load the Map View and show the login screen
-//        self.popViewController()
     }
     
     // Save the newly typed user name

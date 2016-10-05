@@ -219,7 +219,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         // Create a camera with the default location (if location services are used, this should not be shown for long)
         let camera = GMSCameraPosition.camera(withLatitude: 29.758624, longitude: -95.366795, zoom: 10)
         mapView = GMSMapView.map(withFrame: viewContainer.bounds, camera: camera)
-        mapView.padding = UIEdgeInsets(top: 0, left: 0, bottom: 5 + Constants.Dim.mapViewButtonTrackUserSize, right: 0)
+        mapView.padding = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
         mapView.delegate = self
         mapView.mapType = kGMSTypeNormal
         mapView.isIndoorEnabled = true
@@ -282,7 +282,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         buttonAdd.layer.shadowRadius = 1.0
         viewContainer.addSubview(buttonAdd)
         
-        buttonAddImage = UILabel(frame: CGRect(x: 0, y: 0, width: Constants.Dim.mapViewButtonAddSize, height: Constants.Dim.mapViewButtonAddSize))
+        buttonAddImage = UILabel(frame: CGRect(x: 0, y: 0, width: Constants.Dim.mapViewButtonAddSize / 2, height: Constants.Dim.mapViewButtonAddSize))
         buttonAddImage.font = UIFont(name: Constants.Strings.fontRegular, size: 30)
         buttonAddImage.text = "\u{002B}"
         buttonAddImage.textColor = UIColor.white
@@ -298,7 +298,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         buttonCancelAdd.layer.shadowOpacity = 0.2
         buttonCancelAdd.layer.shadowRadius = 1.0
         
-        buttonCancelAddImage = UILabel(frame: CGRect(x: 0, y: 0, width: Constants.Dim.mapViewButtonAddSize, height: Constants.Dim.mapViewButtonAddSize))
+        buttonCancelAddImage = UILabel(frame: CGRect(x: 0, y: 0, width: Constants.Dim.mapViewButtonAddSize / 2, height: Constants.Dim.mapViewButtonAddSize))
         buttonCancelAddImage.font = UIFont(name: Constants.Strings.fontRegular, size: 30)
         buttonCancelAddImage.text = "\u{2717}"
         buttonCancelAddImage.textColor = UIColor.white
@@ -306,7 +306,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         buttonCancelAdd.addSubview(buttonCancelAddImage)
         
         // Add the Map Refresh button in the bottom right corner, just above the Add Button
-        buttonRefreshMap = UIView(frame: CGRect(x: viewContainer.frame.width - Constants.Dim.mapViewButtonTrackUserSize / 2, y: viewContainer.frame.height - 10 - Constants.Dim.mapViewButtonAddSize - Constants.Dim.mapViewButtonTrackUserSize, width: Constants.Dim.mapViewButtonTrackUserSize, height: Constants.Dim.mapViewButtonTrackUserSize))
+        buttonRefreshMap = UIView(frame: CGRect(x: viewContainer.frame.width - Constants.Dim.mapViewButtonAddSize / 2 - Constants.Dim.mapViewButtonTrackUserSize, y: viewContainer.frame.height - Constants.Dim.mapViewButtonTrackUserSize / 2, width: Constants.Dim.mapViewButtonTrackUserSize, height: Constants.Dim.mapViewButtonTrackUserSize))
         buttonRefreshMap.layer.cornerRadius = Constants.Dim.mapViewButtonSearchSize / 2
         buttonRefreshMap.backgroundColor = Constants.Colors.colorPurple
         buttonRefreshMap.layer.shadowOffset = CGSize(width: 0, height: 0.2)
@@ -314,7 +314,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         buttonRefreshMap.layer.shadowRadius = 1.0
         viewContainer.addSubview(buttonRefreshMap)
         
-        buttonRefreshMapImage = UILabel(frame: CGRect(x: 1, y: 1, width: Constants.Dim.mapViewButtonTrackUserSize - 1, height: Constants.Dim.mapViewButtonTrackUserSize - 1))
+        buttonRefreshMapImage = UILabel(frame: CGRect(x: 0, y: 0, width: Constants.Dim.mapViewButtonTrackUserSize, height: Constants.Dim.mapViewButtonTrackUserSize / 2))
         buttonRefreshMapImage.font = UIFont(name: Constants.Strings.fontRegular, size: 18)
         buttonRefreshMapImage.text = "\u{21BB}"
         buttonRefreshMapImage.textColor = UIColor.white
@@ -322,7 +322,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         buttonRefreshMap.addSubview(buttonRefreshMapImage)
         
         // Add the "My Location" Tracker Button in the bottom right corner, to the left of the Add Button
-        buttonTrackUser = UIView(frame: CGRect(x: viewContainer.frame.width - Constants.Dim.mapViewButtonTrackUserSize / 2, y: viewContainer.frame.height - 15 - Constants.Dim.mapViewButtonAddSize - Constants.Dim.mapViewButtonTrackUserSize * 2, width: Constants.Dim.mapViewButtonTrackUserSize, height: Constants.Dim.mapViewButtonTrackUserSize))
+        buttonTrackUser = UIView(frame: CGRect(x: viewContainer.frame.width - Constants.Dim.mapViewButtonAddSize / 2 - 5 - Constants.Dim.mapViewButtonTrackUserSize * 2, y: viewContainer.frame.height - Constants.Dim.mapViewButtonTrackUserSize / 2, width: Constants.Dim.mapViewButtonTrackUserSize, height: Constants.Dim.mapViewButtonTrackUserSize))
         buttonTrackUser.layer.cornerRadius = Constants.Dim.mapViewButtonTrackUserSize / 2
         buttonTrackUser.backgroundColor = Constants.Colors.colorPurple
         buttonTrackUser.layer.shadowOffset = CGSize(width: 0, height: 0.2)
@@ -330,7 +330,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         buttonTrackUser.layer.shadowRadius = 1.0
         viewContainer.addSubview(buttonTrackUser)
         
-        buttonTrackUserImage = UILabel(frame: CGRect(x: 1, y: 1, width: Constants.Dim.mapViewButtonTrackUserSize - 1, height: Constants.Dim.mapViewButtonTrackUserSize - 1))
+        buttonTrackUserImage = UILabel(frame: CGRect(x: 0, y: 0, width: Constants.Dim.mapViewButtonTrackUserSize, height: Constants.Dim.mapViewButtonTrackUserSize / 2))
         buttonTrackUserImage.font = UIFont(name: Constants.Strings.fontRegular, size: 18)
         buttonTrackUserImage.text = "\u{25CE}"
         buttonTrackUserImage.textColor = UIColor.white
@@ -343,7 +343,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         buttonRefreshMap.addSubview(buttonRefreshMapActivityIndicator)
         
         // The Search Button
-        buttonSearchView = UIView(frame: CGRect(x: viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonSearchSize, y: 5, width: Constants.Dim.mapViewButtonSearchSize, height: Constants.Dim.mapViewButtonSearchSize))
+        buttonSearchView = UIView(frame: CGRect(x: viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonSearchSize, y: 0 - Constants.Dim.mapViewButtonSearchSize / 2, width: Constants.Dim.mapViewButtonSearchSize, height: Constants.Dim.mapViewButtonSearchSize))
         buttonSearchView.layer.cornerRadius = Constants.Dim.mapViewButtonSearchSize / 2
         buttonSearchView.backgroundColor = Constants.Colors.colorPurple
         buttonSearchView.layer.shadowOffset = CGSize(width: 0, height: 0.2)
@@ -351,7 +351,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         buttonSearchView.layer.shadowRadius = 1.0
         viewContainer.addSubview(buttonSearchView)
         
-        buttonSearchViewImage = UILabel(frame: CGRect(x: 1, y: 1, width: Constants.Dim.mapViewButtonSearchSize - 1, height: Constants.Dim.mapViewButtonSearchSize - 1))
+        buttonSearchViewImage = UILabel(frame: CGRect(x: 0, y: Constants.Dim.mapViewButtonSearchSize / 2, width: Constants.Dim.mapViewButtonSearchSize, height: Constants.Dim.mapViewButtonSearchSize / 2))
         buttonSearchViewImage.font = UIFont(name: Constants.Strings.fontRegular, size: 18)
         buttonSearchViewImage.text = "\u{1F50E}"
         buttonSearchViewImage.textColor = UIColor.white
@@ -359,7 +359,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         buttonSearchView.addSubview(buttonSearchViewImage)
         
         // Add the List Button in the top right corner, just below the search button
-        buttonListView = UIView(frame: CGRect(x: viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonListSize, y: 10 + Constants.Dim.mapViewButtonSearchSize, width: Constants.Dim.mapViewButtonListSize, height: Constants.Dim.mapViewButtonListSize))
+        buttonListView = UIView(frame: CGRect(x: viewContainer.frame.width - Constants.Dim.mapViewButtonListSize / 2, y: Constants.Dim.mapViewButtonSearchSize, width: Constants.Dim.mapViewButtonListSize, height: Constants.Dim.mapViewButtonListSize))
         buttonListView.layer.cornerRadius = Constants.Dim.mapViewButtonListSize / 2
         buttonListView.backgroundColor = Constants.Colors.colorPurple
         buttonListView.layer.shadowOffset = CGSize(width: 0, height: 0.2)
@@ -367,7 +367,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         buttonListView.layer.shadowRadius = 1.0
         viewContainer.addSubview(buttonListView)
         
-        buttonListViewImage = UILabel(frame: CGRect(x: 1, y: 1, width: Constants.Dim.mapViewButtonListSize - 1, height: Constants.Dim.mapViewButtonListSize - 1))
+        buttonListViewImage = UILabel(frame: CGRect(x: 0, y: 0, width: Constants.Dim.mapViewButtonListSize / 2, height: Constants.Dim.mapViewButtonListSize))
         buttonListViewImage.font = UIFont(name: Constants.Strings.fontRegular, size: 18)
         buttonListViewImage.text = "\u{2630}"
         buttonListViewImage.textColor = UIColor.white
@@ -375,7 +375,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         buttonListView.addSubview(buttonListViewImage)
         
         // Add the Profile / Account Button in the top right corner just below the List Button
-        buttonAccountView = UIView(frame: CGRect(x: viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonAccountSize, y: 15 + Constants.Dim.mapViewButtonSearchSize + Constants.Dim.mapViewButtonListSize, width: Constants.Dim.mapViewButtonAccountSize, height: Constants.Dim.mapViewButtonAccountSize))
+        buttonAccountView = UIView(frame: CGRect(x: viewContainer.frame.width - Constants.Dim.mapViewButtonAccountSize / 2, y: 5 + Constants.Dim.mapViewButtonSearchSize + Constants.Dim.mapViewButtonListSize, width: Constants.Dim.mapViewButtonAccountSize, height: Constants.Dim.mapViewButtonAccountSize))
         buttonAccountView.layer.cornerRadius = Constants.Dim.mapViewButtonAccountSize / 2
         buttonAccountView.backgroundColor = Constants.Colors.colorPurple
         buttonAccountView.layer.shadowOffset = CGSize(width: 0, height: 0.2)
@@ -383,7 +383,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         buttonAccountView.layer.shadowRadius = 1.0
         viewContainer.addSubview(buttonAccountView)
         
-        buttonAccountViewImage = UILabel(frame: CGRect(x: 1, y: 1, width: Constants.Dim.mapViewButtonAccountSize - 1, height: Constants.Dim.mapViewButtonAccountSize - 1))
+        buttonAccountViewImage = UILabel(frame: CGRect(x: 0, y: 0, width: Constants.Dim.mapViewButtonAccountSize / 2, height: Constants.Dim.mapViewButtonAccountSize))
         buttonAccountViewImage.font = UIFont(name: Constants.Strings.fontRegular, size: 18)
         buttonAccountViewImage.text = "\u{1F464}"
         buttonAccountViewImage.textColor = UIColor.white
@@ -644,11 +644,11 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     override func viewWillAppear(_ animated: Bool) {
         print("MVC - VIEW WILL APPEAR")
         
-        refreshMap()
+        self.refreshMap()
         
         if showLoginScreenBool {
             print("MVC - SHOW LOGIN SCREEN")
-            self.viewContainer.addSubview(loginScreen)
+            self.showLoginScreen()
         }
     }
     
@@ -1980,10 +1980,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         self.showLoginScreenBool = true
         
         self.viewContainer.addSubview(loginScreen)
-        
-//        let loginViewController = LoginViewController()
-//        loginViewController.modalPresentationStyle = UIModalPresentationStyle.overCurrentContext
-//        self.present(loginViewController, animated: true, completion: nil)
     }
     
     func processAwsReturn(_ objectType: AWSRequestObject, success: Bool)
@@ -2022,6 +2018,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                         self.createAlertOkView("Login Error", message: "We're sorry, but we seem to have an issue logging you in.  Please tap the \"Log out\" button and try logging in again.")
                         
                         print("***** LOG IN ERROR *****")
+                        
+                        // Show the login screen for manual login
+                        self.showLoginScreen()
                     }
                 case _ as AWSGetMapData:
                     if success

@@ -43,6 +43,7 @@ class AWSPrepRequest
     {
         print("AC - IN PREP REQUEST: \(requestToCall)")
         print("AC - FBSDK TOKEN: \(FBSDKAccessToken.current())")
+        
         // Check to see if the facebook user id is already in the FBSDK
         if let facebookToken = FBSDKAccessToken.current()
         {
@@ -50,26 +51,12 @@ class AWSPrepRequest
             self.requestToCall.facebookToken = facebookToken
             
             print("AC - COGNITO ID: \(Constants.credentialsProvider.identityId)")
-            // Ensure that the Cognito ID is still valid
-            if Constants.credentialsProvider.identityId != nil
+            // Ensure that the Cognito ID is still valid and is not older than an hour (AWS will invalidate if older)
+            if Constants.credentialsProvider.identityId != nil && Constants.Data.lastCredentials - NSDate().timeIntervalSinceNow < 3600
             {
-                // If the Identity ID is still valid, ensure that the current userID is not nil
-                if Constants.Data.currentUser != ""
-                {
-                    print("AC - FIRING REQUEST")
-                    // All login info is current; go ahead and fire the needed method
-                    self.requestToCall.makeRequest()
-                }
-                else
-                {
-                    // The current ID is nil, so request it from AWS, but store the previous request and call it when the
-                    // login is complete
-                    print("AC - NO CURRENT USER - SECONDARY REQUEST: \(self.requestToCall) WITH FB TOKEN: \(facebookToken)")
-                    let awsLoginUser = AWSLoginUser(secondaryAwsRequestObject: self.requestToCall)
-                    awsLoginUser.awsRequestDelegate = self.awsRequestDelegate
-                    awsLoginUser.facebookToken = facebookToken
-                    awsLoginUser.makeRequest()
-                }
+                print("AC - ALREADY HAVE COGNITO ID - GETTING NEW AWS ID")
+                // The Cognito ID is valid, so check for a Blobjot ID and then make the request
+                self.getBlobjotID(facebookToken: facebookToken)
             }
             else
             {
@@ -113,6 +100,7 @@ class AWSPrepRequest
         if let token = requestToCall.facebookToken
         {
             print("AC - GETTING COGNITO ID")
+            print("AC - GETTING COGNITO ID: \(Constants.credentialsProvider.identityId)")
             // Authenticate the user in AWS Cognito
             Constants.credentialsProvider.logins = [AWSIdentityProviderFacebook: token.tokenString]
             
@@ -132,6 +120,12 @@ class AWSPrepRequest
                     if (task.error != nil)
                     {
                         print("AC - AWS COGNITO GET IDENTITY ID - ERROR: " + task.error!.localizedDescription)
+                        
+                        // Record the login attempt
+                        Constants.Data.loginTries += 1
+                        
+                        // Go ahead and move to the next login step
+                        self.getBlobjotID(facebookToken: token)
                     }
                     else
                     {
@@ -140,15 +134,41 @@ class AWSPrepRequest
                         print("AC - AWS COGNITO GET IDENTITY ID - AWS COGNITO ID: \(cognitoId)")
                         print("AC - AWS COGNITO GET IDENTITY ID - CHECK IDENTITY ID: \(Constants.credentialsProvider.identityId)")
                         
+                        // Save the current time to mark when the last CognitoID was saved
+                        Constants.Data.lastCredentials = NSDate().timeIntervalSinceNow
+                        
                         // Request extra facebook data for the user ON THE MAIN THREAD
                         DispatchQueue.main.async(execute:
                             {
-                                self.requestToCall.facebookToken = token
-                                self.requestToCall.makeRequest()
+                                print("AC - GOT COGNITO ID - GETTING NEW AWS ID")
+                                self.getBlobjotID(facebookToken: token)
                         });
                     }
                     return nil
             })
+        }
+    }
+    
+    // After ensuring that the Cognito ID is valid, so check for a Blobjot ID and then make the request
+    func getBlobjotID(facebookToken: FBSDKAccessToken!)
+    {
+        // If the Identity ID is still valid, ensure that the current userID is not nil
+        if Constants.Data.currentUser != ""
+        {
+            print("AC - FIRING REQUEST")
+            // All login info is current; go ahead and fire the needed method
+            self.requestToCall.facebookToken = facebookToken
+            self.requestToCall.makeRequest()
+        }
+        else
+        {
+            // The current ID is nil, so request it from AWS, but store the previous request and call it when the
+            // login is complete
+            print("AC - NO CURRENT USER - SECONDARY REQUEST: \(self.requestToCall) WITH FB TOKEN: \(facebookToken)")
+            let awsLoginUser = AWSLoginUser(secondaryAwsRequestObject: self.requestToCall)
+            awsLoginUser.awsRequestDelegate = self.awsRequestDelegate
+            awsLoginUser.facebookToken = facebookToken
+            awsLoginUser.makeRequest()
         }
     }
 }
@@ -183,55 +203,73 @@ class AWSLoginUser : AWSRequestObject
     // FBSDK METHOD - Get user data from FB before attempting to log in via AWS
     override func makeRequest()
     {
-        print("FBSDK - MAKING GRAPH REQUEST")
-        let fbRequest = FBSDKGraphRequest(graphPath: "me", parameters: ["fields": "id, email, name, picture"]) //parameters: ["fields": "id,email,name,picture"])
-        print("FBSDK - MAKING GRAPH CALL")
-        fbRequest?.start
-            {(connection: FBSDKGraphRequestConnection?, result: Any?, error: Error?) in
-                
-                print("FBSDK - CONNECTION: \(connection)")
-                
-                if error != nil
-                {
-                    print("FBSDK - Error Getting Info \(error)")
-                }
-                else
-                {
-                    print("FBSDK - RESULT: \(result)")
+        if Constants.Data.loginTries <= Constants.Settings.maxLoginTries
+        {
+            print("FBSDK - MAKING GRAPH REQUEST")
+            print("AC - FBSDK - COGNITO ID: \(Constants.credentialsProvider.identityId)")
+            let fbRequest = FBSDKGraphRequest(graphPath: "me", parameters: ["fields": "id, email, name, picture"]) //parameters: ["fields": "id,email,name,picture"])
+            print("FBSDK - MAKING GRAPH CALL")
+            fbRequest?.start
+                {(connection: FBSDKGraphRequestConnection?, result: Any?, error: Error?) in
                     
-                    if let resultDict = result as? [String:AnyObject]
+                    print("FBSDK - CONNECTION: \(connection)")
+                    
+                    if error != nil
                     {
-                        print("FBSDK - User Info : \(resultDict)")
-                        print("FBSDK - USER NAME : \(resultDict["name"])")
+                        print("FBSDK - Error Getting Info \(error)")
                         
-                        if let resultPicture = resultDict["picture"] as? [String:AnyObject]
-                        {
-                            if let resultPictureData = resultPicture["data"] as? [String:AnyObject]
-                            {
-                                print("FBSDK - IMAGE URL : \(resultPictureData["url"])")
-                            }
-                        }
+                        // Record the attempt
+                        Constants.Data.loginTries += 1
                         
-                        if let facebookName = resultDict["name"]
+                        // Try again
+                        self.makeRequest()
+                    }
+                    else
+                    {
+                        print("FBSDK - RESULT: \(result)")
+                        
+                        if let resultDict = result as? [String:AnyObject]
                         {
-                            print("FBSDK - FACEBOOK NAME: \(facebookName)")
+                            print("FBSDK - User Info : \(resultDict)")
+                            print("FBSDK - USER NAME : \(resultDict["name"])")
                             
-                            var facebookImageUrl = "none"
                             if let resultPicture = resultDict["picture"] as? [String:AnyObject]
                             {
                                 if let resultPictureData = resultPicture["data"] as? [String:AnyObject]
                                 {
                                     print("FBSDK - IMAGE URL : \(resultPictureData["url"])")
-                                    facebookImageUrl = resultPictureData["url"]! as! String
                                 }
                             }
-                            print("FBSDK - FACEBOOK URL: \(facebookImageUrl)")
                             
-                            self.loginUser((facebookName as! String), facebookThumbnailUrl: facebookImageUrl)
+                            if let facebookName = resultDict["name"]
+                            {
+                                print("FBSDK - FACEBOOK NAME: \(facebookName)")
+                                
+                                var facebookImageUrl = "none"
+                                if let resultPicture = resultDict["picture"] as? [String:AnyObject]
+                                {
+                                    if let resultPictureData = resultPicture["data"] as? [String:AnyObject]
+                                    {
+                                        print("FBSDK - IMAGE URL : \(resultPictureData["url"])")
+                                        facebookImageUrl = resultPictureData["url"]! as! String
+                                    }
+                                }
+                                print("FBSDK - FACEBOOK URL: \(facebookImageUrl)")
+                                
+                                self.loginUser((facebookName as! String), facebookThumbnailUrl: facebookImageUrl)
+                            }
                         }
+                        
                     }
-                    
-                }
+            }
+        }
+        else
+        {
+            // Notify the parent view that the AWS call completed with an error
+            if let parentVC = self.awsRequestDelegate
+            {
+                parentVC.processAwsReturn(self, success: false)
+            }
         }
     }
     
@@ -239,6 +277,7 @@ class AWSLoginUser : AWSRequestObject
     func loginUser(_ facebookName: String, facebookThumbnailUrl: String)
     {
         print("AC - LU - FACEBOOK TOKEN: \(self.facebookToken)")
+        print("AC - LU - COGNITO ID: \(Constants.credentialsProvider.identityId)")
         let json: NSDictionary = ["facebook_id" : self.facebookToken!.userID, "facebook_name": facebookName, "facebook_thumbnail_url": facebookThumbnailUrl]
         print("AC - USER LOGIN DATA: \(json)")
         
@@ -249,6 +288,9 @@ class AWSLoginUser : AWSRequestObject
                 if (err != nil)
                 {
                     print("AC - FBSDK LOGIN - ERROR: \(err)")
+                    
+                    // Record the login attempt
+                    Constants.Data.loginTries += 1
                     
                     DispatchQueue.main.async(execute:
                         {
@@ -300,6 +342,7 @@ class AWSGetMapData : AWSRequestObject
     override func makeRequest()
     {
         print("REQUESTING GMD")
+        print("AC - GMD - COGNITO ID: \(Constants.credentialsProvider.identityId)")
         
         // Create some JSON to send the logged in userID
         let json: NSDictionary = ["user_id" : Constants.Data.currentUser]
