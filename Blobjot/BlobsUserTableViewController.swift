@@ -371,39 +371,15 @@ class BlobsUserTableViewController: UIViewController, UITableViewDataSource, UIT
                                     // Then convert the AnyObject values to Strings or Numbers depending on their key
                                     if let checkBlob = newBlob as? [String: AnyObject]
                                     {
-                                        let blobTimestamp = checkBlob["blobTimestamp"] as! Double
-                                        let blobDatetime = Date(timeIntervalSince1970: blobTimestamp)
-                                        let blobTypeInt = checkBlob["blobType"] as! Int
-                                        
-                                        // Evaluate the blobType Integer received and convert it to the appropriate BlobType Class
-                                        var blobType: Constants.BlobTypes!
-                                        switch blobTypeInt
-                                        {
-                                        case 1:
-                                            blobType = Constants.BlobTypes.temporary
-                                        case 2:
-                                            blobType = Constants.BlobTypes.permanent
-                                        case 3:
-                                            blobType = Constants.BlobTypes.public
-                                        case 4:
-                                            blobType = Constants.BlobTypes.invisible
-                                        case 5:
-                                            blobType = Constants.BlobTypes.sponsoredTemporary
-                                        case 6:
-                                            blobType = Constants.BlobTypes.sponsoredPermanent
-                                        default:
-                                            blobType = Constants.BlobTypes.temporary
-                                        }
-                                        
                                         // Finish converting the JSON AnyObjects and assign the data to a new Blob Object
                                         print("ASSIGNING DATA")
                                         let addBlob = Blob()
                                         addBlob.blobID = checkBlob["blobID"] as! String
-                                        addBlob.blobDatetime = blobDatetime
+                                        addBlob.blobDatetime = Date(timeIntervalSince1970: checkBlob["blobTimestamp"] as! Double)
                                         addBlob.blobLat = checkBlob["blobLat"] as! Double
                                         addBlob.blobLong = checkBlob["blobLong"] as! Double
                                         addBlob.blobRadius = checkBlob["blobRadius"] as! Double
-                                        addBlob.blobType = blobType
+                                        addBlob.blobType = Constants().blobTypes(checkBlob["blobType"] as! Int)
                                         addBlob.blobUserID = checkBlob["blobUserID"] as! String
                                         addBlob.blobText = checkBlob["blobText"] as? String
                                         addBlob.blobThumbnailID = checkBlob["blobThumbnailID"] as? String
@@ -454,7 +430,7 @@ class BlobsUserTableViewController: UIViewController, UITableViewDataSource, UIT
                         self.present(alertController, animated: true, completion: nil)
                     }
                 default:
-                    print("DEFAULT: THERE WAS AN ISSUE WITH THE DATA RETURNED FROM AWS")
+                    print("BUTVC-DEFAULT: THERE WAS AN ISSUE WITH THE DATA RETURNED FROM AWS")
                     // Show the error message
                     let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                     self.present(alertController, animated: true, completion: nil)

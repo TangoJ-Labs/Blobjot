@@ -38,6 +38,12 @@
 		B80D17791D9712C60032B0D8 /* style.json in Resources */ = {isa = PBXBuildFile; fileRef = B80D17781D9712C50032B0D8 /* style.json */; };
 		B80D177B1D98A5760032B0D8 /* UtilityFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80D177A1D98A5760032B0D8 /* UtilityFunctions.swift */; };
 		B81822071D5B98F300B3A2BB /* BlobThumbnailObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = B81822061D5B98F300B3A2BB /* BlobThumbnailObject.swift */; };
+		B82421551DA5DEE400827557 /* MV_add_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = B824214F1DA5DEE400827557 /* MV_add_icon.png */; };
+		B82421561DA5DEE400827557 /* MV_list_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = B82421501DA5DEE400827557 /* MV_list_icon.png */; };
+		B82421571DA5DEE400827557 /* MV_location_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = B82421511DA5DEE400827557 /* MV_location_icon.png */; };
+		B82421581DA5DEE400827557 /* MV_profile_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = B82421521DA5DEE400827557 /* MV_profile_icon.png */; };
+		B82421591DA5DEE400827557 /* MV_refresh_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = B82421531DA5DEE400827557 /* MV_refresh_icon.png */; };
+		B824215A1DA5DEE400827557 /* MV_search_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = B82421541DA5DEE400827557 /* MV_search_icon.png */; };
 		B85FDE891D7DC2BA002A8FC7 /* CustomIdentityProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B85FDE881D7DC2BA002A8FC7 /* CustomIdentityProvider.swift */; };
 		B86406FD1D71BDCD0084D6EF /* white.png in Resources */ = {isa = PBXBuildFile; fileRef = B86406FC1D71BDCD0084D6EF /* white.png */; };
 		B86406FF1D74AD800084D6EF /* SearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B86406FE1D74AD7F0084D6EF /* SearchViewController.swift */; };
@@ -129,6 +135,12 @@
 		B80D17781D9712C50032B0D8 /* style.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = style.json; path = Blobjot/style.json; sourceTree = "<group>"; };
 		B80D177A1D98A5760032B0D8 /* UtilityFunctions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UtilityFunctions.swift; sourceTree = "<group>"; };
 		B81822061D5B98F300B3A2BB /* BlobThumbnailObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlobThumbnailObject.swift; sourceTree = "<group>"; };
+		B824214F1DA5DEE400827557 /* MV_add_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MV_add_icon.png; sourceTree = "<group>"; };
+		B82421501DA5DEE400827557 /* MV_list_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MV_list_icon.png; sourceTree = "<group>"; };
+		B82421511DA5DEE400827557 /* MV_location_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MV_location_icon.png; sourceTree = "<group>"; };
+		B82421521DA5DEE400827557 /* MV_profile_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MV_profile_icon.png; sourceTree = "<group>"; };
+		B82421531DA5DEE400827557 /* MV_refresh_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MV_refresh_icon.png; sourceTree = "<group>"; };
+		B82421541DA5DEE400827557 /* MV_search_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MV_search_icon.png; sourceTree = "<group>"; };
 		B85FDE881D7DC2BA002A8FC7 /* CustomIdentityProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomIdentityProvider.swift; sourceTree = "<group>"; };
 		B86406FC1D71BDCD0084D6EF /* white.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = white.png; sourceTree = "<group>"; };
 		B86406FE1D74AD7F0084D6EF /* SearchViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SearchViewController.swift; sourceTree = "<group>"; };
@@ -229,8 +241,14 @@
 				B80C565C1D5117C800C4E683 /* Default-568h@2x.png */,
 				B80C56581D5116E000C4E683 /* defaultMedia.png */,
 				B80C56591D5116E000C4E683 /* logo.png */,
-				B8A729301D64064800FD6E0A /* star_yellow.png */,
+				B824214F1DA5DEE400827557 /* MV_add_icon.png */,
+				B82421501DA5DEE400827557 /* MV_list_icon.png */,
+				B82421511DA5DEE400827557 /* MV_location_icon.png */,
+				B82421521DA5DEE400827557 /* MV_profile_icon.png */,
+				B82421531DA5DEE400827557 /* MV_refresh_icon.png */,
+				B82421541DA5DEE400827557 /* MV_search_icon.png */,
 				B8A729311D64064800FD6E0A /* star_clear.png */,
+				B8A729301D64064800FD6E0A /* star_yellow.png */,
 				B86406FC1D71BDCD0084D6EF /* white.png */,
 			);
 			name = Assets;
@@ -417,7 +435,7 @@
 				TargetAttributes = {
 					B881318E1D510EEE00021C4B = {
 						CreatedOnToolsVersion = 7.3.1;
-						DevelopmentTeam = 76TL7JRK9R;
+						DevelopmentTeam = 72XSPM3WLQ;
 						LastSwiftMigration = 0800;
 						SystemCapabilities = {
 							com.apple.Keychain = {
@@ -470,8 +488,14 @@
 				B8A729331D64064800FD6E0A /* star_clear.png in Resources */,
 				B80D17791D9712C60032B0D8 /* style.json in Resources */,
 				B80C565D1D5117C800C4E683 /* Default-568h@2x.png in Resources */,
+				B824215A1DA5DEE400827557 /* MV_search_icon.png in Resources */,
+				B82421581DA5DEE400827557 /* MV_profile_icon.png in Resources */,
+				B82421571DA5DEE400827557 /* MV_location_icon.png in Resources */,
+				B82421561DA5DEE400827557 /* MV_list_icon.png in Resources */,
 				B8A729321D64064800FD6E0A /* star_yellow.png in Resources */,
+				B82421551DA5DEE400827557 /* MV_add_icon.png in Resources */,
 				B86406FD1D71BDCD0084D6EF /* white.png in Resources */,
+				B82421591DA5DEE400827557 /* MV_refresh_icon.png in Resources */,
 				B80C565B1D5116E000C4E683 /* logo.png in Resources */,
 				B881319D1D510EEE00021C4B /* Assets.xcassets in Resources */,
 				B86407011D75BAE50084D6EF /* circle-small.png in Resources */,
@@ -711,8 +735,8 @@
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_IDENTITY = "";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				CODE_SIGN_IDENTITY = "iPhone Developer: Sean Hart (LMW994B3US)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Sean Hart (LMW994B3US)";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -734,7 +758,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				PROVISIONING_PROFILE = "";
+				PROVISIONING_PROFILE = "658936ba-0b89-42aa-a9d5-7948098ef7d3";
 				SDKROOT = iphoneos;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -761,7 +785,8 @@
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "iPhone Developer: Sean Hart (LMW994B3US)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Sean Hart (LMW994B3US)";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
@@ -776,7 +801,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
 				MTL_ENABLE_DEBUG_INFO = NO;
-				PROVISIONING_PROFILE = "";
+				PROVISIONING_PROFILE = "658936ba-0b89-42aa-a9d5-7948098ef7d3";
 				SDKROOT = iphoneos;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -790,7 +815,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Blobjot/Blobjot.entitlements;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "iPhone Developer: Sean Hart (LMW994B3US)";
+				DEVELOPMENT_TEAM = 72XSPM3WLQ;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
@@ -800,7 +826,8 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.blobjot.Blobjot;
 				PRODUCT_NAME = Blobjot;
-				PROVISIONING_PROFILE = "";
+				PROVISIONING_PROFILE = "658936ba-0b89-42aa-a9d5-7948098ef7d3";
+				PROVISIONING_PROFILE_SPECIFIER = "Blobjot-DEV-ProvProfile";
 				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
@@ -811,7 +838,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Blobjot/Blobjot.entitlements;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "iPhone Developer: Sean Hart (LMW994B3US)";
+				DEVELOPMENT_TEAM = 72XSPM3WLQ;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
@@ -821,7 +849,8 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.blobjot.Blobjot;
 				PRODUCT_NAME = Blobjot;
-				PROVISIONING_PROFILE = "";
+				PROVISIONING_PROFILE = "658936ba-0b89-42aa-a9d5-7948098ef7d3";
+				PROVISIONING_PROFILE_SPECIFIER = "Blobjot-DEV-ProvProfile";
 				SWIFT_VERSION = 3.0;
 			};
 			name = Release;

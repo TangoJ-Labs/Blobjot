@@ -148,6 +148,22 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
         mapView.mapType = kGMSTypeNormal
         mapView.isIndoorEnabled = true
         mapView.isMyLocationEnabled = true
+        do
+        {
+            // Set the map style by passing the URL of the local file.
+            if let styleURL = Bundle.main.url(forResource: "style", withExtension: "json")
+            {
+                mapView.mapStyle = try GMSMapStyle(contentsOfFileURL: styleURL)
+            }
+            else
+            {
+                NSLog("Unable to find style.json")
+            }
+        }
+        catch
+        {
+            NSLog("The style definition could not be loaded: \(error)")
+        }
         viewContainer.addSubview(mapView)
         
         // Add the viewScreen and loading indicator for use when the Blob is being uploaded
@@ -583,6 +599,9 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
             }
         }
         
+        // Sort the mapBlobs
+        UtilityFunctions().sortMapBlobs()
+        
         print("MAP BLOBS COUNT 2: \(Constants.Data.mapBlobs.count)")
         print("USER BLOBS COUNT: \(Constants.Data.userBlobs.count)")
     }
@@ -665,7 +684,7 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
                         self.sendAttempted = false
                     }
                 default:
-                    print("DEFAULT: THERE WAS AN ISSUE WITH THE DATA RETURNED FROM AWS")
+                    print("BAVC-DEFAULT: THERE WAS AN ISSUE WITH THE DATA RETURNED FROM AWS")
                     // Show the error message
                     let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                     self.present(alertController, animated: true, completion: nil)

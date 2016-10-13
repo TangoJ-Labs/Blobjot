@@ -6,6 +6,7 @@
 //  Copyright © 2016 blobjot. All rights reserved.
 //
 
+import AWSCognito
 import GoogleMaps
 import UIKit
 
@@ -49,6 +50,111 @@ class UtilityFunctions {
         return alertController
     }
     
+    // Create an alert screen with only an acknowledgment option (an "OK" button)
+    func createAlertOkViewInTopVC(_ title: String, message: String) {
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: UIAlertControllerStyle.alert)
+        let okAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.default) { (result : UIAlertAction) -> Void in
+            print("OK")
+        }
+        alertController.addAction(okAction)
+//        self.present(alertController, animated: true, completion: nil)
+        alertController.show()
+    }
+    
+    func displayLocalBlobNotification(_ blob: Blob) {
+        print("SHOWING NOTIFICATION FOR BLOB: \(blob.blobID) WITH TEXT: \(blob.blobText)")
+        
+        // Find the user for the Blob
+        loopUserObjectCheck: for userObject in Constants.Data.userObjects {
+            if userObject.userID == blob.blobUserID {
+                
+                // Create a notification of the new Blob at the current location
+                let notification = UILocalNotification()
+                
+                // Ensure that the Blob Text is not nil
+                // If it is nil, just show the Blob userName
+                if let blobUserName = userObject.userName {
+                    if let blobText = blob.blobText {
+                        notification.alertBody = "\(blobUserName): \(blobText)"
+                    } else {
+                        notification.alertBody = "\(blobUserName)"
+                    }
+                    notification.alertAction = "open"
+                    notification.hasAction = false
+//                    notification.alertTitle = "\(userObject.userName)"
+                    notification.userInfo = ["blobID" : blob.blobID]
+                    notification.fireDate = Date().addingTimeInterval(0) //Show the notification now
+                    
+                    UIApplication.shared.scheduleLocalNotification(notification)
+                    
+                    // Add to the number shown on the badge (count of notifications)
+                    Constants.Data.badgeNumber += 1
+                    UIApplication.shared.applicationIconBadgeNumber = Constants.Data.badgeNumber
+                    
+                } else {
+                    print("***** ERROR CREATING LOCAL BLOB NOTIFICATION *****")
+                }
+                
+                break loopUserObjectCheck
+            }
+        }
+        
+        // Save the Blob notification in Core Data (so that the user is not notified again)
+        let moc = DataController().managedObjectContext
+        let entity = NSEntityDescription.insertNewObject(forEntityName: "BlobNotification", into: moc) as! BlobNotification
+        entity.setValue(blob.blobID, forKey: "blobID")
+        // Save the Entity
+        do {
+            try moc.save()
+        } catch {
+            fatalError("Failure to save context: \(error)")
+        }
+    }
+    
+    // Process a notification for a new blob
+    func displayNewBlobNotification(newBlobID: String)
+    {
+        // Recall the Blob data
+        loopBlobCheck: for blob in Constants.Data.mapBlobs
+        {
+            if blob.blobID == newBlobID
+            {
+                // Recall the userObject needed based on recalled Blob data
+                loopUserCheck: for user in Constants.Data.userObjects
+                {
+                    if user.userID == blob.blobUserID
+                    {
+                        if let userName = user.userName
+                        {
+//                            print("AD - TRYING TO SHOW NEW BLOB ALERT")
+//                            self.createAlertOkViewInTopVC("New Blob", message: "\(userName) added a new Blob for you.")
+                            
+                            // Create a notification of the new Blob at the current location
+                            let notification = UILocalNotification()
+                            
+                            notification.alertBody = "\(userName) added a new Blob for you."
+                            notification.alertAction = "open"
+                            notification.hasAction = false
+//                            notification.alertTitle = "\(userObject.userName)"
+                            notification.userInfo = ["blobID" : blob.blobID]
+                            notification.fireDate = Date().addingTimeInterval(0) //Show the notification now
+                            
+                            UIApplication.shared.scheduleLocalNotification(notification)
+                            
+                            // Add to the number shown on the badge (count of notifications)
+                            Constants.Data.badgeNumber += 1
+                            UIApplication.shared.applicationIconBadgeNumber = Constants.Data.badgeNumber
+                        }
+                        
+                        break loopUserCheck
+                    }
+                }
+                
+                break loopBlobCheck
+            }
+        }
+    }
+    
     // Create a solid color UIImage
     func getImageWithColor(_ color: UIColor, size: CGSize) -> UIImage {
         let rect = CGRect(x: 0, y: 0, width: size.width, height: size.height)
@@ -88,5 +194,22 @@ class UtilityFunctions {
         }
         
         return path
+    }
+    
+    // Sort the Global mapBlobs array
+    // Sort first by type (see enumeration raw values), and then by date added (latest on top)
+    func sortMapBlobs()
+    {
+        Constants.Data.mapBlobs.sort
+            { b1, b2 in
+                if b1.blobType == b2.blobType
+                {
+                    return b1.blobDatetime > b2.blobDatetime
+                }
+                else
+                {
+                    return b1.blobType.rawValue < b2.blobType.rawValue
+                }
+        }
     }
 }

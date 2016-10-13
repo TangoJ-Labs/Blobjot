@@ -528,7 +528,7 @@ class AccountViewController: UIViewController, UITextViewDelegate, UISearchBarDe
                         self.present(alertController, animated: true, completion: nil)
                     }
                 default:
-                    print("DEFAULT: THERE WAS AN ISSUE WITH THE DATA RETURNED FROM AWS")
+                    print("AVC-DEFAULT: THERE WAS AN ISSUE WITH THE DATA RETURNED FROM AWS")
                     
                     // Show the error message
                     let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")

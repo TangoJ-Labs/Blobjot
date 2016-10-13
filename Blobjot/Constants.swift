@@ -19,11 +19,11 @@ struct Constants {
     
     enum BlobTypes: Int {
         case temporary = 1
-        case permanent = 2
-        case `public` = 3
-        case invisible = 4
-        case sponsoredTemporary = 5
-        case sponsoredPermanent = 6
+        case `public` = 2
+        case permanent = 3
+        case sponsoredTemporary = 4
+        case sponsoredPermanent = 5
+        case invisible = 6
     }
     
     enum UserStatusTypes: Int {
@@ -53,8 +53,32 @@ struct Constants {
 //        case Invisible = Constants.Colors.blobGray
 //    }
     
-    func blobColor(_ blobType: Constants.BlobTypes) -> UIColor {
-        switch blobType {
+    func blobTypes(_ blobTypeInt: Int) -> Constants.BlobTypes
+    {
+        // Evaluate the blobType Integer received and convert it to the appropriate BlobType Class
+        switch blobTypeInt
+        {
+        case 1:
+            return Constants.BlobTypes.temporary
+        case 2:
+            return Constants.BlobTypes.permanent
+        case 3:
+            return Constants.BlobTypes.public
+        case 4:
+            return Constants.BlobTypes.invisible
+        case 5:
+            return Constants.BlobTypes.sponsoredTemporary
+        case 6:
+            return Constants.BlobTypes.sponsoredPermanent
+        default:
+            return Constants.BlobTypes.temporary
+        }
+    }
+    
+    func blobColor(_ blobType: Constants.BlobTypes) -> UIColor
+    {
+        switch blobType
+        {
         case .temporary:
             return Constants.Colors.blobRed
         case .permanent:
@@ -68,8 +92,10 @@ struct Constants {
         }
     }
     
-    func blobColorOpaque(_ blobType: Constants.BlobTypes) -> UIColor {
-        switch blobType {
+    func blobColorOpaque(_ blobType: Constants.BlobTypes) -> UIColor
+    {
+        switch blobType
+        {
         case .temporary:
             return Constants.Colors.blobRedOpaque
         case .permanent:
@@ -109,6 +135,7 @@ struct Constants {
         static let blobHighlight = UIColor.darkGray
         
         static let colorPurple = UIColor(red: 153/255, green: 102/255, blue: 255/255, alpha: 1.0) //#9966FF
+        static let colorPurpleTransparent = UIColor(red: 153/255, green: 102/255, blue: 255/255, alpha: 0.3) //#9966FF
         static let colorPurpleLight = UIColor(red: 204/255, green: 179/255, blue: 255/255, alpha: 1.0) //#CCB3FF
         static let colorPurpleDark = UIColor(red: 119/255, green: 51/255, blue: 255/255, alpha: 1.0) //#7733ff
         
@@ -131,6 +158,7 @@ struct Constants {
     
     struct Data {
         
+        static var badgeNumber = 0
         static var attemptedLogin: Bool = false
         static var loginTries: Int = 0
         static var lastCredentials: TimeInterval = Date().timeIntervalSince1970

@@ -13,26 +13,6 @@ import GoogleMaps
 import MobileCoreServices
 import GooglePlacePicker
 import UIKit
-//fileprivate func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
-//  switch (lhs, rhs) {
-//  case let (l?, r?):
-//    return l < r
-//  case (nil, _?):
-//    return true
-//  default:
-//    return false
-//  }
-//}
-//
-//fileprivate func > <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
-//  switch (lhs, rhs) {
-//  case let (l?, r?):
-//    return l > r
-//  default:
-//    return rhs < lhs
-//  }
-//}
-
 
 
 class MapViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, GMSMapViewDelegate, BlobAddViewControllerDelegate, GMSAutocompleteResultsViewControllerDelegate, FBSDKLoginButtonDelegate, AWSRequestDelegate, AccountViewControllerDelegate {
@@ -79,7 +59,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     
     // The navigation buttons to show other view controllers
     var buttonAdd: UIView!
-    var buttonAddImage: UILabel!
+    var buttonAddImage: UIImageView!
     var buttonCancelAdd: UIView!
     var buttonCancelAddImage: UILabel!
     var buttonSearchView: UIView!
@@ -276,17 +256,21 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         // Add the Add Button in the bottom right corner
         buttonAdd = UIView(frame: CGRect(x: viewContainer.frame.width - Constants.Dim.mapViewButtonAddSize / 2, y: viewContainer.frame.height - 5 - Constants.Dim.mapViewButtonAddSize, width: Constants.Dim.mapViewButtonAddSize, height: Constants.Dim.mapViewButtonAddSize))
         buttonAdd.layer.cornerRadius = Constants.Dim.mapViewButtonAddSize / 2
-        buttonAdd.backgroundColor = Constants.Colors.colorPurple
+        buttonAdd.backgroundColor = Constants.Colors.colorPurpleLight
         buttonAdd.layer.shadowOffset = CGSize(width: 0, height: 0.2)
         buttonAdd.layer.shadowOpacity = 0.2
         buttonAdd.layer.shadowRadius = 1.0
         viewContainer.addSubview(buttonAdd)
         
-        buttonAddImage = UILabel(frame: CGRect(x: 0, y: 0, width: Constants.Dim.mapViewButtonAddSize / 2, height: Constants.Dim.mapViewButtonAddSize))
-        buttonAddImage.font = UIFont(name: Constants.Strings.fontRegular, size: 30)
-        buttonAddImage.text = "\u{002B}"
-        buttonAddImage.textColor = UIColor.white
-        buttonAddImage.textAlignment = .center
+//        buttonAddImage = UILabel(frame: CGRect(x: 0, y: 0, width: Constants.Dim.mapViewButtonAddSize / 2, height: Constants.Dim.mapViewButtonAddSize))
+//        buttonAddImage.font = UIFont(name: Constants.Strings.fontRegular, size: 30)
+//        buttonAddImage.text = "\u{002B}"
+//        buttonAddImage.textColor = UIColor.white
+//        buttonAddImage.textAlignment = .center
+        buttonAddImage = UIImageView(frame: CGRect(x: 10, y: 0, width: Constants.Dim.mapViewButtonAddSize / 2 - 20, height: Constants.Dim.mapViewButtonAddSize))
+        buttonAddImage.image = UIImage(named: "MV_add_icon.png")
+        buttonAddImage.contentMode = UIViewContentMode.scaleAspectFit
+        buttonAddImage.clipsToBounds = true
         buttonAdd.addSubview(buttonAddImage)
         
         // Add the Cancel Add Button to show in the bottom right corner above the Add Button
@@ -843,7 +827,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             viewContainer.addSubview(previewContainer)
             
             // Reset the button settings and remove the elements used in the Add Blob Process
-            buttonAddImage.text = "\u{002B}"
+//            buttonAddImage.text = "\u{002B}"
             buttonCancelAdd.removeFromSuperview()
             selectorCircle.removeFromSuperview()
             selectorSlider.removeFromSuperview()
@@ -865,7 +849,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             buttonTrackUser.removeFromSuperview()
             
             // Change the text of the Add Button to a check mark and add the needed other Views
-            buttonAddImage.text = "\u{2713}" //check mark
+//            buttonAddImage.text = "\u{2713}" //check mark
             viewContainer.addSubview(buttonCancelAdd)
             mapView.addSubview(selectorCircle)
             mapView.addSubview(selectorSlider)
@@ -888,7 +872,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         viewContainer.addSubview(buttonTrackUser)
         viewContainer.addSubview(previewContainer)
         
-        buttonAddImage.text = "\u{002B}" // plus sign
+//        buttonAddImage.text = "\u{002B}" // plus sign
         buttonCancelAdd.removeFromSuperview()
         selectorCircle.removeFromSuperview()
         selectorSlider.removeFromSuperview()
@@ -903,12 +887,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // If the Account Button is tapped, create a Nav Bar, AccountViewController, and present the View
     func tapButtonAccount(_ gesture: UITapGestureRecognizer? = nil) {
         print("MVC - TAPPED ACCOUNT BUTTON")
-        
-//        // Create the Login View Controller and present over the current context
-//        let loginViewController = LoginViewController()
-//        loginViewController.modalPresentationStyle = UIModalPresentationStyle.overCurrentContext
-//        self.present(loginViewController, animated: true, completion: nil)
-//        print("MVC - SHOULD BE PRESENTING LVC")
         
         // Create the back button and title for the Nav Bar
         let backButtonItem = UIBarButtonItem(title: "< Map",
@@ -945,7 +923,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             self.refreshMap()
         })
         print("MVC - AFTER PRESENT CALL FOR ACCOUNT VIEW")
-//        self.loginScreen.removeFromSuperview()
     }
     
     // Dismiss the latest View Controller presented from this VC
@@ -1174,7 +1151,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                             blob.blobExtraRequested = true
 //                            print("MVC - REQUESTING BLOB EXTRA")
                             
-                            AWSPrepRequest(requestToCall: AWSGetBlobData(blob: blob), delegate: self as AWSRequestDelegate).prepRequest()
+                            AWSPrepRequest(requestToCall: AWSGetBlobExtraData(blob: blob), delegate: self as AWSRequestDelegate).prepRequest()
                             
                             // When downloading Blob data, always request the user data if it does not already exist
                             // Find the correct User Object in the global list
@@ -1299,7 +1276,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 - If not, show the short Preview
         */
         var tappedBlob = false
-        for (mbIndex, mBlob) in Constants.Data.mapBlobs.enumerated() {
+        loopMapBlobs: for (mbIndex, mBlob) in Constants.Data.mapBlobs.enumerated() {
             print("LOOPING THROUGH MAP BLOBS, CURRENT BLOB INDEX: \(mbIndex)")
             
             // Mark all Blobs as not selected so that any map tap can deselect a currently selected Blob
@@ -1353,6 +1330,8 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                         break loopLocationBlobCheck
                     }
                 }
+                
+                // DO NOT STOP highlighting Blobs after the first matched Blob - other Blobs may need to be unhighlighted
             }
         }
         // If a Blob was not tapped on the map, close the Preview Box
@@ -1408,6 +1387,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         
         let position = CLLocationCoordinate2DMake(blob.blobLat, blob.blobLong)
         let marker = GMSMarker(position: position)
+        marker.groundAnchor = CGPoint(x: 0.5, y: 0.5)
         marker.title = ""
         marker.iconView = markerView
         marker.tracksViewChanges = false
@@ -1696,14 +1676,15 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     }
     
     // If the preview Blob user data has not yet been downloaded, call this method to refresh the user data in the preview
-    func refreshPreviewUserData(_ user: User) {
-        
+    func refreshPreviewUserData(_ user: User)
+    {
         // Refresh the User Name
         self.previewUserNameLabel.text = user.userName
         self.previewUserNameActivityIndicator.stopAnimating()
         
         // Refresh the User Image, if it exists
-        if user.userImage != nil {
+        if user.userImage != nil
+        {
             self.previewUserImageView.image = user.userImage
             self.previewUserImageActivityIndicator.stopAnimating()
         }
@@ -1722,22 +1703,28 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         
         // If Blob extra data has been requested, the Blob is in range, so download the Thumbnail,
         // otherwise, move the Blob age and text all the way to the right side of the Preview Box
-        if blob.blobExtraRequested {
+        if blob.blobExtraRequested
+        {
             print("BLOB EXTRA REQUESTED")
             
             // Check whether the Blob has media - if not, do not show the Thumbnail box
-            if blob.blobMediaType != nil && blob.blobMediaType == 0 {
+            if blob.blobMediaType != nil && blob.blobMediaType == 0
+            {
                 //Stop animating the activity indicator (if not already stopped)
                 self.previewThumbnailActivityIndicator.stopAnimating()
                 
                 self.previewTimeLabel.frame = CGRect(x: previewContainer.frame.width - 5 - self.previewTimeLabelWidth, y: 5, width: self.previewTimeLabelWidth, height: 15)
                 self.previewTextBox.frame = CGRect(x: 50, y: 10 + previewUserNameLabel.frame.height, width: previewContainer.frame.width - 65, height: 15)
-            } else {
+            }
+            else
+            {
                 print("BLOB EXTRA REQUESTED - CALLING SET THUMBNAIL")
                 // Request and set the thumbnail image
                 setPreviewThumbnail()
             }
-        } else {
+        }
+        else
+        {
             print("BLOB EXTRA NOT REQUESTED")
             //Stop animating the activity indicator (if not already stopped)
             self.previewThumbnailActivityIndicator.stopAnimating()
@@ -1748,7 +1735,8 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         
         // Check whether the Blob is the default (first) Blob in the Location Blob list
         // Otherwise, find the associated User Image and User Name for the Blob User ID as add them to the proper Preview Box elements
-        if blob.blobID == "default" {
+        if blob.blobID == "default"
+        {
             previewUserImageView.image = UIImage(named: "logo.png")
             previewUserNameLabel.text = "Blobjot"
             previewTimeLabel.text = "Since 2016"
@@ -1760,13 +1748,17 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             self.previewThumbnailActivityIndicator.stopAnimating()
             self.previewUserImageActivityIndicator.stopAnimating()
             self.previewUserNameActivityIndicator.stopAnimating()
-        } else {
+        }
+        else
+        {
             
             // Check if the user has already been downloaded
             // If a Blob outside the range of the user was clicked, the user may not have already been downloaded
             var userExists = false
-            loopUserCheck: for user in Constants.Data.userObjects {
-                if user.userID == blob.blobUserID {
+            loopUserCheck: for user in Constants.Data.userObjects
+            {
+                if user.userID == blob.blobUserID
+                {
                     userExists = true
                     
                     // Assign the user to the previewBlobUser
@@ -1776,17 +1768,13 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                     previewUserNameLabel.text = user.userName
                     self.previewUserNameActivityIndicator.stopAnimating()
                     
-                    if user.userImage != nil {
+                    if user.userImage != nil
+                    {
                         previewUserImageView.image = user.userImage
                         self.previewUserImageActivityIndicator.stopAnimating()
                     }
-                    else {
-//                        self.getUserImage(user.userID, imageKey: user.userImageKey)
-                        
-//                        let awsMethods = AWSMethods()
-//                        awsMethods.awsMethodsMapVcDelegate = self
-//                        awsMethods.getUserImage(user.userID, imageKey: user.userImageKey)
-                        
+                    else
+                    {
                         AWSPrepRequest(requestToCall: AWSGetUserImage(user: user), delegate: self as AWSRequestDelegate).prepRequest()
                     }
                     
@@ -1794,16 +1782,14 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 }
             }
             // If the user has not been downloaded, request the user and the userImage
-            if !userExists {
-//                let awsMethods = AWSMethods()
-//                awsMethods.awsMethodsMapVcDelegate = self
-//                awsMethods.getSingleUserData(blob.blobUserID, forPreviewBox: true)
-                
+            if !userExists
+            {
                 AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: blob.blobUserID, forPreviewBox: true), delegate: self as AWSRequestDelegate).prepRequest()
             }
             
             // Set the Preview Time Label to show the age of the Blob
-            if let datetime = blob.blobDatetime {
+            if let datetime = blob.blobDatetime
+            {
                 let stringAge = String(-1 * Int(datetime.timeIntervalSinceNow / 3600)) + " hrs"
                 previewTimeLabel.text = stringAge
             }
@@ -1888,6 +1874,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     
     // Loop through all Map Circles and remove all highlighting (set back to normal)
     func unhighlightMapCircleForBlob(_ blob: Blob) {
+        print("UNHIGHLIGHTING BLOB: \(blob.blobID)")
         
         loopMapCircles: for circle in Constants.Data.mapCircles {
             if circle.title == blob.blobID {
@@ -1921,6 +1908,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             let priority = DispatchQueue.GlobalQueuePriority.default
             DispatchQueue.global(priority: priority).async {
                 print("SET THUMBNAIL - CHECK 3")
+                
+// **** CORRECT: change this so that a local boolean is set to indicate that the preview box is waiting for the image - when the completion is returned,
+// check the image array again for the image, if found, use it and reset the boolean
                 
                 // Look for the correct thumbnail until it is available - it may be downloading still
                 // Only check for ten seconds - after that, the download is taking too long
@@ -2033,7 +2023,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                         // Show the error message
                         self.createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please refresh the map to try again.")
                     }
-                case let awsGetBlobData as AWSGetBlobData:
+                case let awsGetBlobData as AWSGetBlobExtraData:
                     if success
                     {
                         // Refresh the collection view and show the blob notification if needed
@@ -2095,7 +2085,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                         self.createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try to update your username again.")
                     }
                 default:
-                    print("DEFAULT: THERE WAS AN ISSUE WITH THE DATA RETURNED FROM AWS")
+                    print("MVC-DEFAULT: THERE WAS AN ISSUE WITH THE DATA RETURNED FROM AWS")
                     
                     // Show the error message
                     self.createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")

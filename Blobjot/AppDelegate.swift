@@ -21,8 +21,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     var window: UIWindow?
     let navController = UINavigationController()
     var mapViewController: MapViewController!
-    
-    var badgeNumber = 0
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         print("DID FINISH LAUNCHING WITH OPTIONS: \(launchOptions)")
@@ -65,7 +63,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         let settings = UIUserNotificationSettings(types: [.alert, .badge , .sound], categories: nil)
         application.registerUserNotificationSettings(settings)
         
-        UIApplication.shared.applicationIconBadgeNumber = badgeNumber
+        UIApplication.shared.applicationIconBadgeNumber = Constants.Data.badgeNumber
         
         return true
     }
@@ -104,8 +102,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         FBSDKAppEvents.activateApp()
         
         // Clear the badges
-        self.badgeNumber = 0
-        UIApplication.shared.applicationIconBadgeNumber = self.badgeNumber
+        Constants.Data.badgeNumber = 0
+        UIApplication.shared.applicationIconBadgeNumber = Constants.Data.badgeNumber
         
         print("STOPPING LOCATION UPDATING")
         Constants.appDelegateLocationManager.stopUpdatingLocation()
@@ -138,6 +136,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         print("HANDLE ACTION WITH IDENTIFIER - LOCAL - WITH IDENTIFIER: \(identifier); FOR NOTIFICATION: \(notification)")
     }
     
+    // Handles action when a notification is tapped
     func application(_ application: UIApplication, didReceive notification: UILocalNotification) {
         print("DID RECEIVE - LOCAL - NOTIFICATION: \(notification.userInfo!["blobID"])")
         
@@ -150,6 +149,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
                 // Find the Blob in the global mapBlobs
                 checkMapBlobLoop: for blob in Constants.Data.mapBlobs {
                     if blob.blobID == tappedBlobID {
+                        
+                        // Center the map on the Blob location
                         self.mapViewController.setMapCamera(CLLocationCoordinate2D(latitude: blob.blobLat, longitude: blob.blobLong))
                         
                         break checkMapBlobLoop
@@ -163,7 +164,32 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     // MARK: REMOTE (PUSH) NOTIFICATIONS
     
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-        print("AD-RN - DEVICE TOKEN: \(deviceToken)")
+        let token = NSData.init(data: deviceToken)
+        print("AD-RN = DEVICE TOKEN: \(token)")
+        
+        // Use the device token from APNS to register with AWS SNS
+        AWSPrepRequest(requestToCall: AWSRegisterForPushNotifications(deviceToken: token), delegate: self as AWSRequestDelegate).prepRequest()
+        
+//        let syncClient = AWSCognito.default()
+//        syncClient?.registerDevice(deviceToken).continue( { (task: AWSTask!) -> AnyObject! in
+//            if (task.error != nil) {
+//                print("UF-RN - Unable to register device: " + (task.error?.localizedDescription)!)
+//                
+//            } else {
+//                print("UF-RN - Successfully registered device with id: \(task.result)")
+//            }
+//            return nil
+//        })
+//        
+//        syncClient?.openOrCreateDataset("MyDataset").subscribe().continue( { (task: AWSTask!) -> AnyObject! in
+//            if (task.error != nil) {
+//                print("UF-RN - Unable to subscribe to dataset: " + (task.error?.localizedDescription)!)
+//                
+//            } else {
+//                print("UF-RN - Successfully subscribed to dataset: \(task.result)")
+//            }
+//            return nil
+//        })
     }
     
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
@@ -172,14 +198,39 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     
     func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any]) {
         print("AD-RN - DID RECEIVE - REMOTE - NOTIFICATION: \(userInfo)")
+        
+        self.handlePushNotification(userInfo: userInfo)
     }
     
     func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
         print("AD-RN - DID RECEIVE - REMOTE - NOTIFICATION - BACKGROUND: \(userInfo)")
+        
+        self.handlePushNotification(userInfo: userInfo)
     }
     
     func application(_ application: UIApplication, handleActionWithIdentifier identifier: String?, forRemoteNotification userInfo: [AnyHashable: Any], completionHandler: @escaping () -> Void) {
         print("AD-RN - HANDLE ACTION WITH IDENTIFIER: \(identifier) FOR REMOTE NOTIFICATION: \(userInfo)")
+    }
+    
+    // CUSTOM HANDLER FOR PUSH NOTIFICATIONS
+    func handlePushNotification(userInfo: [AnyHashable: Any])
+    {
+//        if let aps = userInfo["aps"] as? [String: AnyObject]
+//        {
+//            let alert = aps["alert"] as? String
+////            let badge = aps["badge"] as? Int
+//            
+//            print("AD-RN - TRYING TO SHOW ALERT")
+//            if alert != nil
+//            {
+//                UtilityFunctions().createAlertOkViewInTopVC("REMOTE NOTIFICATION", message: alert!)
+//            }
+//        }
+        if let blobID = userInfo["blobID"] as? String
+        {
+            // Only request the extra Blob data if it has not already been requested
+            AWSPrepRequest(requestToCall: AWSGetBlobMinimumData(blobID: blobID, notifyUser: true), delegate: self as AWSRequestDelegate).prepRequest()
+        }
     }
     
     
@@ -281,7 +332,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
                             print("AD - REQUESTING BLOB EXTRA")
                             
                             // Only request the extra Blob data if it has not already been requested
-                            AWSPrepRequest(requestToCall: AWSGetBlobData(blob: blob), delegate: self as AWSRequestDelegate).prepRequest()
+                            AWSPrepRequest(requestToCall: AWSGetBlobExtraData(blob: blob), delegate: self as AWSRequestDelegate).prepRequest()
                             
                             // When downloading Blob data, always request the user data if it does not already exist
                             // Find the correct User Object in the global list
@@ -325,95 +376,51 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
                 // Process the return data based on the method used
                 switch objectType
                 {
-                case let awsGetBlobData as AWSGetBlobData:
+                case let awsGetBlobExtraData as AWSGetBlobExtraData:
                     if success
                     {
                         // Show the blob notification if needed
-                        self.displayNotification(awsGetBlobData.blob)
+                        UtilityFunctions().displayLocalBlobNotification(awsGetBlobExtraData.blob)
                     }
                     else
                     {
                         // Show the error message
-                        self.createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                        UtilityFunctions().createAlertOkViewInTopVC("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                     }
-                case _ as AWSGetSingleUserData:
+                case let awsGetBlobMinimumData as AWSGetBlobMinimumData:
+                    if success
+                    {
+                        print("AD-PAR-AGBMD - SUCCESS")
+                        UtilityFunctions().displayNewBlobNotification(newBlobID: awsGetBlobMinimumData.blobID)
+                    }
+                    else
+                    {
+                        print("AD-PAR-AGBMD - ERROR")
+                        // Show the error message
+                        UtilityFunctions().createAlertOkViewInTopVC("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                    }
+                case let awsGetSingleUserData as AWSGetSingleUserData:
                     if success
                     {
                         print("AD - GOT SINGLE USER DATA")
+                        // THIS ASSUMES THAT ONLY A NEW DATA NOTIFICATION WILL REQUEST THE SINGLE USER DATA IN APP DELEGATE
+                        if let blob = awsGetSingleUserData.targetBlob
+                        {
+                            UtilityFunctions().displayNewBlobNotification(newBlobID: blob.blobID)
+                        }
                     }
                     else
                     {
+                        print("AD-PAR-AGSUD - ERROR")
                         // Show the error message
-                        self.createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                        UtilityFunctions().createAlertOkViewInTopVC("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                     }
                 default:
-                    print("DEFAULT: THERE WAS AN ISSUE WITH THE DATA RETURNED FROM AWS")
+                    print("AD-DEFAULT: THERE WAS AN ISSUE WITH THE DATA RETURNED FROM AWS")
                     
                     // Show the error message
-                    self.createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                    UtilityFunctions().createAlertOkViewInTopVC("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                 }
         })
-    }
-    
-    func displayNotification(_ blob: Blob) {
-        print("SHOWING NOTIFICATION FOR BLOB: \(blob.blobID) WITH TEXT: \(blob.blobText)")
-        
-        // Find the user for the Blob
-        loopUserObjectCheck: for userObject in Constants.Data.userObjects {
-            if userObject.userID == blob.blobUserID {
-                
-                // Create a notification of the new Blob at the current location
-                let notification = UILocalNotification()
-                
-                // Ensure that the Blob Text is not nil
-                // If it is nil, just show the Blob userName
-                if let blobUserName = userObject.userName {
-                    if let blobText = blob.blobText {
-                        notification.alertBody = "\(blobUserName): \(blobText)"
-                    } else {
-                        notification.alertBody = "\(blobUserName)"
-                    }
-                    notification.alertAction = "open"
-                    notification.hasAction = false
-//                    notification.alertTitle = "\(userObject.userName)"
-                    notification.userInfo = ["blobID" : blob.blobID]
-                    notification.fireDate = Date().addingTimeInterval(0) //Show the notification now
-                    
-                    UIApplication.shared.scheduleLocalNotification(notification)
-                    
-                    // Add to the number shown on the badge (count of notifications)
-                    self.badgeNumber += 1
-                    print("BADGE NUMBER: \(self.badgeNumber)")
-                    UIApplication.shared.applicationIconBadgeNumber = self.badgeNumber
-                    
-                } else {
-                    print("***** ERROR CREATING NOTIFICATION *****")
-                }
-                
-                break loopUserObjectCheck
-            }
-        }
-        
-        // Save the Blob notification in Core Data (so that the user is not notified again)
-        let moc = DataController().managedObjectContext
-        let entity = NSEntityDescription.insertNewObject(forEntityName: "BlobNotification", into: moc) as! BlobNotification
-        entity.setValue(blob.blobID, forKey: "blobID")
-        // Save the Entity
-        do {
-            try moc.save()
-        } catch {
-            fatalError("Failure to save context: \(error)")
-        }
-    }
-    
-    // Create an alert screen with only an acknowledgment option (an "OK" button)
-    func createAlertOkView(_ title: String, message: String) {
-        let alertController = UIAlertController(title: title, message: message, preferredStyle: UIAlertControllerStyle.alert)
-        let okAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.default) { (result : UIAlertAction) -> Void in
-            print("OK")
-        }
-        alertController.addAction(okAction)
-//        self.present(alertController, animated: true, completion: nil)
-        alertController.show()
     }
 }

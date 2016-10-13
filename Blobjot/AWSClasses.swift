@@ -155,6 +155,9 @@ class AWSPrepRequest
         // If the Identity ID is still valid, ensure that the current userID is not nil
         if Constants.Data.currentUser != ""
         {
+            // The user is already logged in so go ahead and register for notifications
+//            UtilityFunctions().registerPushNotifications()
+            
             print("AC - FIRING REQUEST")
             // All login info is current; go ahead and fire the needed method
             self.requestToCall.facebookToken = facebookToken
@@ -312,6 +315,8 @@ class AWSLoginUser : AWSRequestObject
                     // The response will be the userID associated with the facebookID used, save the userID globally
                     Constants.Data.currentUser = responseData as! String
                     
+//                    UtilityFunctions().registerPushNotifications()
+                    
                     // If the secondary request object is not nil, process the carried (second) request; no need to
                     // pass the login response to the parent view controller since it did not explicitly call the login request
                     if let secondaryAwsRequestObject = self.secondaryAwsRequestObject
@@ -394,39 +399,15 @@ class AWSGetMapData : AWSRequestObject
                             // Then convert the AnyObject values to Strings or Numbers depending on their key
                             if let checkBlob = newBlob as? [String: AnyObject]
                             {
-                                let blobTimestamp = checkBlob["blobTimestamp"] as! Double
-                                let blobDatetime = Date(timeIntervalSince1970: blobTimestamp)
-                                let blobTypeInt = checkBlob["blobType"] as! Int
-                                
-                                // Evaluate the blobType Integer received and convert it to the appropriate BlobType Class
-                                var blobType: Constants.BlobTypes!
-                                switch blobTypeInt
-                                {
-                                case 1:
-                                    blobType = Constants.BlobTypes.temporary
-                                case 2:
-                                    blobType = Constants.BlobTypes.permanent
-                                case 3:
-                                    blobType = Constants.BlobTypes.public
-                                case 4:
-                                    blobType = Constants.BlobTypes.invisible
-                                case 5:
-                                    blobType = Constants.BlobTypes.sponsoredTemporary
-                                case 6:
-                                    blobType = Constants.BlobTypes.sponsoredPermanent
-                                default:
-                                    blobType = Constants.BlobTypes.temporary
-                                }
-                                
                                 // Finish converting the JSON AnyObjects and assign the data to a new Blob Object
                                 print("ASSIGNING DATA")
                                 let addBlob = Blob()
                                 addBlob.blobID = checkBlob["blobID"] as! String
-                                addBlob.blobDatetime = blobDatetime
+                                addBlob.blobDatetime = Date(timeIntervalSince1970: checkBlob["blobTimestamp"] as! Double)
                                 addBlob.blobLat = checkBlob["blobLat"] as! Double
                                 addBlob.blobLong = checkBlob["blobLong"] as! Double
                                 addBlob.blobRadius = checkBlob["blobRadius"] as! Double
-                                addBlob.blobType = blobType
+                                addBlob.blobType = Constants().blobTypes(checkBlob["blobType"] as! Int)
                                 addBlob.blobUserID = checkBlob["blobUserID"] as! String
                                 
                                 // Append the new Blob Object to the global Map Blobs Array
@@ -434,6 +415,9 @@ class AWSGetMapData : AWSRequestObject
                                 print("APPENDED BLOB: \(addBlob.blobID)")
                             }
                         }
+                        
+                        // Sort the mapBlobs
+                        UtilityFunctions().sortMapBlobs()
                         
                         // Notify the parent view that the AWS call completed successfully
                         if let parentVC = self.awsRequestDelegate
@@ -446,7 +430,90 @@ class AWSGetMapData : AWSRequestObject
     }
 }
 
-class AWSGetBlobData : AWSRequestObject
+class AWSGetBlobMinimumData : AWSRequestObject
+{
+    var blobID: String!
+    var notifyUser: Bool!
+    
+    required init(blobID: String, notifyUser: Bool)
+    {
+        self.blobID = blobID
+        self.notifyUser = notifyUser
+    }
+    
+    // Use this request function when a Blob is within range of the user's location and the extra Blob data is needed
+    override func makeRequest()
+    {
+        print("REQUESTING GBMD FOR BLOB: \(self.blobID)")
+        
+        // Create a JSON object with the passed Blob ID
+        let json: NSDictionary = ["blob_id" : self.blobID, "filter" : 1]
+        
+        let lambdaInvoker = AWSLambdaInvoker.default()
+        lambdaInvoker.invokeFunction("Blobjot-GetBlobData", jsonObject: json, completionHandler:
+            { (response, err) -> Void in
+                
+                if (err != nil)
+                {
+                    print("GET BLOB MINIMUM DATA ERROR: \(err)")
+                    // Notify the parent view that the AWS call completed with an error
+                    if let parentVC = self.awsRequestDelegate
+                    {
+                        parentVC.processAwsReturn(self, success: false)
+                    }
+                }
+                else if (response != nil)
+                {
+                    print("AC-GBMD: response: \(response)")
+                    
+                    // Convert the response to JSON with keys and AnyObject values
+                    // Then convert the AnyObject values to Strings or Numbers depending on their key
+                    if let checkBlob = response as? [String: AnyObject]
+                    {
+                        print("CREATE MINIMUM BLOB FOR: \(checkBlob)")
+                        let minBlob = Blob()
+                        minBlob.blobID = self.blobID
+                        minBlob.blobDatetime = Date(timeIntervalSince1970: checkBlob["blobTimestamp"] as! Double)
+                        minBlob.blobLat = checkBlob["blobLat"] as? Double
+                        minBlob.blobLong = checkBlob["blobLong"] as? Double
+                        minBlob.blobRadius = checkBlob["blobRadius"] as? Double
+                        minBlob.blobType = Constants().blobTypes(checkBlob["blobType"] as! Int)
+                        minBlob.blobUserID = checkBlob["blobUserID"] as? String
+                        print("CREATED MINIMUM BLOB")
+                        
+                        Constants.Data.mapBlobs.append(minBlob)
+                        
+                        // Check if the user has already been downloaded
+                        var userExists = false
+                        loopUserCheck: for user in Constants.Data.userObjects
+                        {
+                            if user.userID == minBlob.blobUserID
+                            {
+                                userExists = true
+                                
+                                // Notify the parent view that the AWS call completed successfully
+                                if let parentVC = self.awsRequestDelegate
+                                {
+                                    parentVC.processAwsReturn(self, success: true)
+                                }
+                                
+                                break loopUserCheck
+                            }
+                        }
+                        // If the user has not been downloaded, request the user and the userImage
+                        if !userExists
+                        {
+                            let awsGetSingleUserData = AWSGetSingleUserData(userID: minBlob.blobUserID, forPreviewBox: false)
+                            awsGetSingleUserData.targetBlob = minBlob
+                            AWSPrepRequest(requestToCall: awsGetSingleUserData, delegate: self.awsRequestDelegate!).prepRequest()
+                        }
+                    }
+                }
+        })
+    }
+}
+
+class AWSGetBlobExtraData : AWSRequestObject
 {
     var blob: Blob!
     
@@ -461,7 +528,7 @@ class AWSGetBlobData : AWSRequestObject
         print("REQUESTING GBD FOR BLOB: \(self.blob.blobID)")
         
         // Create a JSON object with the passed Blob ID
-        let json: NSDictionary = ["blob_id" : self.blob.blobID]
+        let json: NSDictionary = ["blob_id" : self.blob.blobID, "filter" : 0]
         
         let lambdaInvoker = AWSLambdaInvoker.default()
         lambdaInvoker.invokeFunction("Blobjot-GetBlobData", jsonObject: json, completionHandler:
@@ -553,11 +620,6 @@ class AWSGetBlobData : AWSRequestObject
                                     Constants.Data.locationBlobs.append(mBlob)
                                     print("APPENDED BLOB AFTER DOWNLOAD: \(mBlob.blobText)")
                                 }
-                                
-//                            // Notify the parent view that the AWS call completed successfully
-//                            if let parentVC = self.AWSMethodsMapVcDelegate {
-//                                parentVC.processAwsReturn(Constants.AWSMethodTypes.getBlobData, success: true)
-//                            }
                                 
                                 // Notify the parent view that the AWS call completed successfully
                                 if let parentVC = self.awsRequestDelegate
@@ -688,6 +750,7 @@ class AWSGetSingleUserData : AWSRequestObject
     var user: User!
     var userID: String!
     var forPreviewBox: Bool!
+    var targetBlob: Blob?
     
     required init(userID: String, forPreviewBox: Bool)
     {
@@ -749,16 +812,18 @@ class AWSGetSingleUserData : AWSRequestObject
                                 // If the userImage has not been downloaded, request a new download
                                 if userObject.userImage == nil
                                 {
-                                    let awsGetUserImage = AWSGetUserImage(user: userObject)
-                                    awsGetUserImage.awsRequestDelegate = self.awsRequestDelegate
-                                    awsGetUserImage.makeRequest()
+//                                    let awsGetUserImage = AWSGetUserImage(user: userObject)
+//                                    awsGetUserImage.awsRequestDelegate = self.awsRequestDelegate
+//                                    awsGetUserImage.makeRequest()
+                                    
+                                    AWSPrepRequest(requestToCall: AWSGetUserImage(user: userObject), delegate: self.awsRequestDelegate!).prepRequest()
                                 }
                                 
                                 userObjectExists = true
                                 break loopUserObjectCheck
                             }
                         }
-                        if userObjectExists == false
+                        if !userObjectExists
                         {
                             print("USER: \(userName) DOES NOT EXIST - ADDING")
                             Constants.Data.userObjects.append(self.user)
@@ -1707,5 +1772,54 @@ class AWSAddUserConnectionAction : AWSRequestObject
                     print("AC-ACA: response: \(response)")
                 }
         })
+    }
+}
+
+class AWSRegisterForPushNotifications : AWSRequestObject
+{
+    var deviceToken: NSData!
+    
+    required init(deviceToken: NSData)
+    {
+        self.deviceToken = deviceToken
+    }
+    
+    // Add a record for an action between user connections
+    override func makeRequest()
+    {
+        print("AC-RPN - REGISTERING FOR PUSH NOTIFICATIONS FOR DEVICE: \(self.deviceToken)")
+        
+        // Ensure that the Current UserID is not nil
+        if Constants.Data.currentUser != ""
+        {
+            var json = [String: Any]()
+            json["device_token"] = self.deviceToken
+            json["user_id"] = Constants.Data.currentUser
+            
+            let lambdaInvoker = AWSLambdaInvoker.default()
+            lambdaInvoker.invokeFunction("Blobjot-RegisterForPushNotifications", jsonObject: json, completionHandler:
+                { (response, err) -> Void in
+                    
+                    if (err != nil)
+                    {
+                        print("AC-RPN - REGISTER FOR PUSH NOTIFICATIONS ERROR: \(err)")
+                        
+                        // Notify the parent view that the AWS call completed with an error
+                        if let parentVC = self.awsRequestDelegate
+                        {
+                            parentVC.processAwsReturn(self, success: false)
+                        }
+                        
+                    }
+                    else if (response != nil)
+                    {
+                        print("AC-RPN: response: \(response)")
+                    }
+            })
+        }
+        else
+        {
+            print("***** AC-RPN: ERROR NO CURRENT USER *****")
+        }
     }
 }
