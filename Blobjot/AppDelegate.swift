@@ -25,7 +25,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         print("DID FINISH LAUNCHING WITH OPTIONS: \(launchOptions)")
         
-        // Push Notifications
+        // Register the device with Apple's Push Notification Service
         let notificationTypes: UIUserNotificationType = [UIUserNotificationType.alert, UIUserNotificationType.badge, UIUserNotificationType.sound]
         let pushNotificationSettings = UIUserNotificationSettings(types: notificationTypes, categories: nil)
         application.registerUserNotificationSettings(pushNotificationSettings)
@@ -36,7 +36,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         GMSPlacesClient.provideAPIKey(Constants.Settings.gKey)
         
         // AWS Cognito Prep
-//        let credentialsProvider = AWSCognitoCredentialsProvider(regionType: Constants.Strings.aws_region, identityPoolId: Constants.Strings.aws_cognitoIdentityPoolId)
         let configuration = AWSServiceConfiguration(region: Constants.Strings.awsRegion, credentialsProvider: Constants.credentialsProvider)
         AWSServiceManager.default().defaultServiceConfiguration = configuration
         
@@ -46,10 +45,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         // Prepare the root View Controller and make visible
         self.mapViewController = MapViewController()
         self.window = UIWindow(frame: UIScreen.main.bounds)
-//        self.navController.pushViewController(mapViewController, animated: false)
-//        self.navController.navigationBar.barTintColor = Constants.Colors.colorStatusBar
-//        self.navController.viewControllers = [mapViewController]
-//        self.window!.rootViewController = navController
         self.window!.rootViewController = mapViewController
         self.window!.makeKeyAndVisible()
         print("!!!!!! ASSIGNED ROOT VIEW CONTROLLER !!!!!!")
@@ -132,28 +127,36 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     // MARK: LOCAL NOTIFICATIONS
     
     // THIS IS NOT FIRING
-    func application(_ application: UIApplication, handleActionWithIdentifier identifier: String?, for notification: UILocalNotification, completionHandler: @escaping () -> Void) {
-        print("HANDLE ACTION WITH IDENTIFIER - LOCAL - WITH IDENTIFIER: \(identifier); FOR NOTIFICATION: \(notification)")
+    func application(_ application: UIApplication, handleActionWithIdentifier identifier: String?, for notification: UILocalNotification, completionHandler: @escaping () -> Void)
+    {
+        print("AD-N - HANDLE ACTION WITH IDENTIFIER - LOCAL - WITH IDENTIFIER: \(identifier); FOR NOTIFICATION: \(notification)")
     }
     
     // Handles action when a notification is tapped
-    func application(_ application: UIApplication, didReceive notification: UILocalNotification) {
-        print("DID RECEIVE - LOCAL - NOTIFICATION: \(notification.userInfo!["blobID"])")
+    func application(_ application: UIApplication, didReceive notification: UILocalNotification)
+    {
+        print("AD-N - DID RECEIVE LOCAL NOTIFICATION COMMAND: \(notification.userInfo!["blobID"])")
+        print("AD-N - APPLICATION STATE: \(application.applicationState.rawValue)")
         
-        // Ensure that the notification userInfo is not nil
-        if let userInfo = notification.userInfo {
-            
-            // Ensure that the passed BlobID is not nil
-            if let tappedBlobID = userInfo["blobID"] as? String {
-                
-                // Find the Blob in the global mapBlobs
-                checkMapBlobLoop: for blob in Constants.Data.mapBlobs {
-                    if blob.blobID == tappedBlobID {
-                        
-                        // Center the map on the Blob location
-                        self.mapViewController.setMapCamera(CLLocationCoordinate2D(latitude: blob.blobLat, longitude: blob.blobLong))
-                        
-                        break checkMapBlobLoop
+        // Ensure that the app was in the background (inactive) state when the notification was received or interacted with (tapped)
+        if application.applicationState == UIApplicationState.inactive
+        {
+            // Ensure that the notification userInfo is not nil
+            if let userInfo = notification.userInfo
+            {
+                // Ensure that the passed BlobID is not nil
+                if let tappedBlobID = userInfo["blobID"] as? String
+                {
+                    // Find the Blob in the global mapBlobs
+                    checkMapBlobLoop: for blob in Constants.Data.mapBlobs
+                    {
+                        if blob.blobID == tappedBlobID
+                        {
+                            // Center the map on the Blob location
+                            self.mapViewController.setMapCamera(CLLocationCoordinate2D(latitude: blob.blobLat, longitude: blob.blobLong))
+                            
+                            break checkMapBlobLoop
+                        }
                     }
                 }
             }
@@ -168,28 +171,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         print("AD-RN = DEVICE TOKEN: \(token)")
         
         // Use the device token from APNS to register with AWS SNS
-        AWSPrepRequest(requestToCall: AWSRegisterForPushNotifications(deviceToken: token), delegate: self as AWSRequestDelegate).prepRequest()
-        
-//        let syncClient = AWSCognito.default()
-//        syncClient?.registerDevice(deviceToken).continue( { (task: AWSTask!) -> AnyObject! in
-//            if (task.error != nil) {
-//                print("UF-RN - Unable to register device: " + (task.error?.localizedDescription)!)
-//                
-//            } else {
-//                print("UF-RN - Successfully registered device with id: \(task.result)")
-//            }
-//            return nil
-//        })
-//        
-//        syncClient?.openOrCreateDataset("MyDataset").subscribe().continue( { (task: AWSTask!) -> AnyObject! in
-//            if (task.error != nil) {
-//                print("UF-RN - Unable to subscribe to dataset: " + (task.error?.localizedDescription)!)
-//                
-//            } else {
-//                print("UF-RN - Successfully subscribed to dataset: \(task.result)")
-//            }
-//            return nil
-//        })
+//        let stringToken = String(data: deviceToken, encoding: String.Encoding.utf8)
+        var stringToken = ""
+        for i in 0..<deviceToken.count {
+            stringToken = stringToken + String(format: "%02.2hhx", arguments: [deviceToken[i]])
+        }
+        print("AD-RN = DEVICE TOKEN STRING: \(stringToken)")
+        AWSPrepRequest(requestToCall: AWSRegisterForPushNotifications(deviceToken: stringToken), delegate: self as AWSRequestDelegate).prepRequest()
     }
     
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
@@ -215,17 +203,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     // CUSTOM HANDLER FOR PUSH NOTIFICATIONS
     func handlePushNotification(userInfo: [AnyHashable: Any])
     {
-//        if let aps = userInfo["aps"] as? [String: AnyObject]
-//        {
-//            let alert = aps["alert"] as? String
-////            let badge = aps["badge"] as? Int
-//            
-//            print("AD-RN - TRYING TO SHOW ALERT")
-//            if alert != nil
-//            {
-//                UtilityFunctions().createAlertOkViewInTopVC("REMOTE NOTIFICATION", message: alert!)
-//            }
-//        }
+        print("AD-RN - HANDLING PUSH NOTIFICATION: \(userInfo)")
         if let blobID = userInfo["blobID"] as? String
         {
             // Only request the extra Blob data if it has not already been requested
@@ -236,6 +214,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     
     // For the FacebookSDK
     func application(_ application: UIApplication, open url: URL, sourceApplication: String?, annotation: Any) -> Bool {
+        print("AD-FBSDK - SOURCE APPLICATION: \(sourceApplication)")
         return FBSDKApplicationDelegate.sharedInstance().application(application, open: url, sourceApplication: sourceApplication, annotation: annotation)
     }
     
@@ -390,7 +369,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
                 case let awsGetBlobMinimumData as AWSGetBlobMinimumData:
                     if success
                     {
-                        print("AD-PAR-AGBMD - SUCCESS")
+                        print("AD-PAR-AGBMD - SUCCESS: \(awsGetBlobMinimumData.blobID)")
                         UtilityFunctions().displayNewBlobNotification(newBlobID: awsGetBlobMinimumData.blobID)
                     }
                     else
@@ -413,6 +392,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
                     {
                         print("AD-PAR-AGSUD - ERROR")
                         // Show the error message
+                        UtilityFunctions().createAlertOkViewInTopVC("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                    }
+                case _ as AWSRegisterForPushNotifications:
+                    if success
+                    {
+                        print("AD-PAR-ARFPN - SUCCESS")
+                        
+                    }
+                    else
+                    {
+                        print("AD-PAR-ARFPN - FAILURE")
                         UtilityFunctions().createAlertOkViewInTopVC("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                     }
                 default:

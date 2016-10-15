@@ -346,8 +346,7 @@ class AWSGetMapData : AWSRequestObject
     // The initial request for Map Blob data - called when the View Controller is instantiated
     override func makeRequest()
     {
-        print("REQUESTING GMD")
-        print("AC - GMD - COGNITO ID: \(Constants.credentialsProvider.identityId)")
+        print("AC-GMD - COGNITO ID: \(Constants.credentialsProvider.identityId)")
         
         // Create some JSON to send the logged in userID
         let json: NSDictionary = ["user_id" : Constants.Data.currentUser]
@@ -358,8 +357,8 @@ class AWSGetMapData : AWSRequestObject
                 
                 if (err != nil)
                 {
-                    print("GET MAP DATA ERROR: \(err)")
-                    print("GET MAP DATA ERROR CODE: \(err!._code)")
+                    print("AC-GMD - GET MAP DATA ERROR: \(err)")
+                    print("AC-GMD - GET MAP DATA ERROR CODE: \(err!._code)")
                     
                     // Process the error codes and alert the user if needed
                     if err!._code == 1 && Constants.Data.currentUser != ""
@@ -376,8 +375,8 @@ class AWSGetMapData : AWSRequestObject
                     // Convert the response to an array of AnyObjects
                     if let newMapBlobs = response as? [AnyObject]
                     {
-                        print("MVC-GMD: jsonData: \(newMapBlobs)")
-                        print("BLOB COUNT: \(newMapBlobs.count)")
+                        print("AC-GMD: jsonData: \(newMapBlobs)")
+                        print("AC-GMD - BLOB COUNT: \(newMapBlobs.count)")
                         
                         // Always clear the mapCircles before clearing the mapBlobs data otherwise the circles will be unresponsive
                         // Each circle must individually have their map nullified, otherwise the mapView will still display the circle
@@ -393,14 +392,14 @@ class AWSGetMapData : AWSRequestObject
                         // Loop through each AnyObject (Blob) in the array
                         for newBlob in newMapBlobs
                         {
-                            print("NEW BLOB: \(newBlob)")
+                            print("AC-GMD - NEW BLOB: \(newBlob)")
                             
                             // Convert the AnyObject to JSON with keys and AnyObject values
                             // Then convert the AnyObject values to Strings or Numbers depending on their key
                             if let checkBlob = newBlob as? [String: AnyObject]
                             {
                                 // Finish converting the JSON AnyObjects and assign the data to a new Blob Object
-                                print("ASSIGNING DATA")
+                                print("AC-GMD - ASSIGNING DATA")
                                 let addBlob = Blob()
                                 addBlob.blobID = checkBlob["blobID"] as! String
                                 addBlob.blobDatetime = Date(timeIntervalSince1970: checkBlob["blobTimestamp"] as! Double)
@@ -412,7 +411,7 @@ class AWSGetMapData : AWSRequestObject
                                 
                                 // Append the new Blob Object to the global Map Blobs Array
                                 Constants.Data.mapBlobs.append(addBlob)
-                                print("APPENDED BLOB: \(addBlob.blobID)")
+                                print("AC-GMD - APPENDED BLOB: \(addBlob.blobID)")
                             }
                         }
                         
@@ -427,6 +426,7 @@ class AWSGetMapData : AWSRequestObject
                     }
                 }
         })
+        print("AC-GMD - AFTER REQUEST")
     }
 }
 
@@ -446,7 +446,7 @@ class AWSGetBlobMinimumData : AWSRequestObject
     {
         print("REQUESTING GBMD FOR BLOB: \(self.blobID)")
         
-        // Create a JSON object with the passed Blob ID
+        // Create a JSON object with the passed Blob ID and an indicator of whether or not the Blob data should be filtered (0 for no, 1 for yes)
         let json: NSDictionary = ["blob_id" : self.blobID, "filter" : 1]
         
         let lambdaInvoker = AWSLambdaInvoker.default()
@@ -1742,11 +1742,6 @@ class AWSAddUserConnectionAction : AWSRequestObject
     override func makeRequest()
     {
         print("ADDING CONNECTION ACTION: \(self.userID), \(self.connectionUserID), \(self.actionType)")
-//        let json: NSDictionary = [
-//            "user_id"               : self.userID
-//            , "connection_user_id"  : self.connectionUserID
-//            , "action_type"         : self.actionType
-//        ]
         var json = [String: Any]()
         json["user_id"]             = self.userID
         json["connection_user_id"]  = self.connectionUserID
@@ -1775,11 +1770,68 @@ class AWSAddUserConnectionAction : AWSRequestObject
     }
 }
 
+//class AWSRegisterForPushNotifications : AWSRequestObject
+//{
+//    var deviceToken: String!
+//    
+//    required init(deviceToken: String)
+//    {
+//        self.deviceToken = deviceToken
+//    }
+//    
+//    override func makeRequest()
+//    {
+//        print("AC-RPN - COGNITO ID: \(Constants.credentialsProvider.identityId)")
+//        
+//        // Create some JSON to send the logged in userID
+//        var json = [String: Any]()
+//        json["device_token"] = self.deviceToken
+//        json["user_id"] = Constants.Data.currentUser
+//        
+//        let lambdaInvoker = AWSLambdaInvoker.default()
+//        lambdaInvoker.invokeFunction("Blobjot-RegisterForPushNotifications", jsonObject: json, completionHandler:
+//            { (response, err) -> Void in
+//                
+//                if (err != nil)
+//                {
+//                    print("AC-RPN - GET MAP DATA ERROR: \(err)")
+//                    print("AC-RPN - GET MAP DATA ERROR CODE: \(err!._code)")
+//                    
+//                    // Process the error codes and alert the user if needed
+//                    if err!._code == 1 && Constants.Data.currentUser != ""
+//                    {
+//                        // Notify the parent view that the AWS call completed with an error
+//                        if let parentVC = self.awsRequestDelegate
+//                        {
+//                            parentVC.processAwsReturn(self, success: false)
+//                        }
+//                    }
+//                }
+//                else if (response != nil)
+//                {
+//                    // Convert the response to an array of AnyObjects
+//                    if let newMapBlobs = response as? [AnyObject]
+//                    {
+//                        print("AC-RPN: jsonData: \(newMapBlobs)")
+//                        print("AC-RPN - BLOB COUNT: \(newMapBlobs.count)")
+//                        
+//                        // Notify the parent view that the AWS call completed successfully
+//                        if let parentVC = self.awsRequestDelegate
+//                        {
+//                            parentVC.processAwsReturn(self, success: true)
+//                        }
+//                    }
+//                }
+//        })
+//        print("AC-RPN - AFTER REQUEST")
+//    }
+//}
+
 class AWSRegisterForPushNotifications : AWSRequestObject
 {
-    var deviceToken: NSData!
+    var deviceToken: String!
     
-    required init(deviceToken: NSData)
+    required init(deviceToken: String)
     {
         self.deviceToken = deviceToken
     }
@@ -1788,6 +1840,7 @@ class AWSRegisterForPushNotifications : AWSRequestObject
     override func makeRequest()
     {
         print("AC-RPN - REGISTERING FOR PUSH NOTIFICATIONS FOR DEVICE: \(self.deviceToken)")
+        print("AC-RPN - CURRENT USER: \(Constants.Data.currentUser)")
         
         // Ensure that the Current UserID is not nil
         if Constants.Data.currentUser != ""
@@ -1796,30 +1849,52 @@ class AWSRegisterForPushNotifications : AWSRequestObject
             json["device_token"] = self.deviceToken
             json["user_id"] = Constants.Data.currentUser
             
+            print("AC-RPN - ABOUT TO CALL LAMBDA PN REGISTRATION")
+            
+            let lambdaInvokerInvocationRequest = AWSLambdaInvokerInvocationRequest()
+            lambdaInvokerInvocationRequest!.functionName = "Blobjot-RegisterForPushNotifications"
+            lambdaInvokerInvocationRequest!.payload = json
+            
             let lambdaInvoker = AWSLambdaInvoker.default()
-            lambdaInvoker.invokeFunction("Blobjot-RegisterForPushNotifications", jsonObject: json, completionHandler:
-                { (response, err) -> Void in
+            lambdaInvoker.invoke(lambdaInvokerInvocationRequest!).continue(
+                { (task) -> AnyObject! in
                     
-                    if (err != nil)
+                    if let error = task.error
                     {
-                        print("AC-RPN - REGISTER FOR PUSH NOTIFICATIONS ERROR: \(err)")
-                        
+                        print("AC-RPN - ERROR: \(error)")
                         // Notify the parent view that the AWS call completed with an error
                         if let parentVC = self.awsRequestDelegate
                         {
                             parentVC.processAwsReturn(self, success: false)
                         }
-                        
                     }
-                    else if (response != nil)
+                    else if let exception = task.exception
                     {
-                        print("AC-RPN: response: \(response)")
+                        print("AC-RPN: exception: \(exception)")
+                        // Notify the parent view that the AWS call completed with an error
+                        if let parentVC = self.awsRequestDelegate
+                        {
+                            parentVC.processAwsReturn(self, success: false)
+                        }
                     }
-            })
+                    else if let result = task.result
+                    {
+                        print("AC-RPN: result: \(result)")
+                        // Notify the parent view that the AWS call completed successfully
+                        if let parentVC = self.awsRequestDelegate
+                        {
+                            parentVC.processAwsReturn(self, success: true)
+                        }
+                    }
+                    
+                    return nil
+                })
+            print("AC-RPN - PAST CALLING LAMBDA PN REGISTRATION")
         }
         else
         {
             print("***** AC-RPN: ERROR NO CURRENT USER *****")
         }
+        print("AC-RPN - PAST CALLING LAMBDA PN REGISTRATION 2")
     }
 }

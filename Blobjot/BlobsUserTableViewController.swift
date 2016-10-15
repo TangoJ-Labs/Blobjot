@@ -426,7 +426,7 @@ class BlobsUserTableViewController: UIViewController, UITableViewDataSource, UIT
                     else
                     {
                         // Show the error message
-                        let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                        let alertController = UtilityFunctions().createAlertOkView("AWSGetThumbnailImage Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                         self.present(alertController, animated: true, completion: nil)
                     }
                 default:

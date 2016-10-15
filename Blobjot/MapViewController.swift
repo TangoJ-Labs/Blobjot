@@ -1596,6 +1596,12 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             print("MVC - FBSDK TOKEN: \(FBSDKAccessToken.current())")
             AWSPrepRequest(requestToCall: AWSLoginUser(secondaryAwsRequestObject: nil), delegate: self as AWSRequestDelegate).prepRequest()
             print("MVC - LOGIN - CALLED AWS LOGIN USER FUNCTION")
+            
+            // Call APNS registration again (need to also log in to AWS SNS, but do this first)
+            let notificationTypes: UIUserNotificationType = [UIUserNotificationType.alert, UIUserNotificationType.badge, UIUserNotificationType.sound]
+            let pushNotificationSettings = UIUserNotificationSettings(types: notificationTypes, categories: nil)
+            UIApplication.shared.registerUserNotificationSettings(pushNotificationSettings)
+            UIApplication.shared.registerForRemoteNotifications()
         }
     }
     

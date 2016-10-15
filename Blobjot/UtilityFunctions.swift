@@ -62,7 +62,7 @@ class UtilityFunctions {
     }
     
     func displayLocalBlobNotification(_ blob: Blob) {
-        print("SHOWING NOTIFICATION FOR BLOB: \(blob.blobID) WITH TEXT: \(blob.blobText)")
+        print("UF-DLBN - SHOWING NOTIFICATION FOR BLOB: \(blob.blobID) WITH TEXT: \(blob.blobText)")
         
         // Find the user for the Blob
         loopUserObjectCheck: for userObject in Constants.Data.userObjects {
@@ -114,6 +114,7 @@ class UtilityFunctions {
     // Process a notification for a new blob
     func displayNewBlobNotification(newBlobID: String)
     {
+        print("UF-DNBN - NOTIFICATION FOR: \(newBlobID)")
         // Recall the Blob data
         loopBlobCheck: for blob in Constants.Data.mapBlobs
         {
@@ -126,9 +127,6 @@ class UtilityFunctions {
                     {
                         if let userName = user.userName
                         {
-//                            print("AD - TRYING TO SHOW NEW BLOB ALERT")
-//                            self.createAlertOkViewInTopVC("New Blob", message: "\(userName) added a new Blob for you.")
-                            
                             // Create a notification of the new Blob at the current location
                             let notification = UILocalNotification()
                             
