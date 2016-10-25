@@ -29,6 +29,9 @@ class LocationBlobsCollectionViewCell: UICollectionViewCell {
         // Add a View Container for the User Image
         userImageContainer = UIView(frame: CGRect(x: 5, y: 5, width: Constants.Dim.mapViewLocationBlobsCVItemSize, height: Constants.Dim.mapViewLocationBlobsCVItemSize))
         userImageContainer.layer.cornerRadius = Constants.Dim.mapViewLocationBlobsCVItemSize / 2
+        userImageContainer.layer.shadowOffset = Constants.Dim.mapViewShadowOffset
+        userImageContainer.layer.shadowOpacity = Constants.Dim.mapViewShadowOpacity
+        userImageContainer.layer.shadowRadius = Constants.Dim.mapViewShadowRadius
         userImageContainer.backgroundColor = UIColor.white
         cellContainer.addSubview(userImageContainer)
         

@@ -42,9 +42,9 @@
 	<key>MGLMapboxAccessToken</key>
 	<string>pk.eyJ1IjoidGFuZ29qbGFicyIsImEiOiJjaXF3YWJybXcwMGQ0ZnhrcXRyYzlmcXhiIn0.ktL0M4BXHYLUSTWgZZtsvA</string>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>Blobjot monitors your location and detects nearby features.</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Blobjot shows your location on the map and detects nearby features.</string>
+	<string>Blobjot monitors your location and detects nearby features.  Check your Account page for location monitoring options to optimize your battery life.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Blobjot needs to access your photos to attach media to Blobs.  We will not post any content without your approval.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>

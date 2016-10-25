@@ -22,17 +22,18 @@ class BlobAddTextViewController: UIViewController, UITextViewDelegate {
         
         // Add the view container to hold all other views (decrease size to match pageViewController)
         viewContainer = UIView(frame: CGRect(x: 0, y: 0, width: self.view.frame.width, height: self.view.frame.height - 74 - self.view.frame.width))
+        viewContainer.backgroundColor = Constants.Colors.standardBackgroundGrayUltraLight
         self.view.addSubview(viewContainer)
         
         // The Blob text view should be centered within the page view and extend the entire width and height, except for a margin
         textViewContainer = UIView(frame: CGRect(x: 5, y: 5, width: viewContainer.frame.width - 10, height: viewContainer.frame.height - 10))
-        textViewContainer.layer.borderWidth = 2.0
-        textViewContainer.layer.borderColor = UIColor.lightGray.cgColor
-        textViewContainer.layer.cornerRadius = 10.0
+//        textViewContainer.layer.borderWidth = 2.0
+//        textViewContainer.layer.borderColor = UIColor.lightGray.cgColor
+//        textViewContainer.layer.cornerRadius = 10.0
         viewContainer.addSubview(textViewContainer)
         
         blobTextView = UITextView(frame: CGRect(x: 5, y: 5, width: textViewContainer.frame.width - 10, height: textViewContainer.frame.height - 10))
-        blobTextView.backgroundColor = UIColor.clear
+        blobTextView.backgroundColor = UIColor.white
         blobTextView.delegate = self
         blobTextView.isEditable = true
         blobTextView.isScrollEnabled = true

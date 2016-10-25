@@ -25,20 +25,23 @@ class BlobsActiveTableViewCell: UITableViewCell {
     override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
-        cellContainer = UIView(frame: CGRect(x: 0, y: 0, width: self.frame.width, height: Constants.Dim.blobsActiveTableViewCellHeight))
+        cellBlobTypeIndicator = UIView(frame: CGRect(x: 0 - 5, y: 2, width: Constants.Dim.blobsActiveTableViewIndicatorSize, height: Constants.Dim.blobsActiveTableViewIndicatorSize))
+        cellBlobTypeIndicator.layer.cornerRadius = Constants.Dim.blobsActiveTableViewIndicatorSize / 2
+        cellBlobTypeIndicator.layer.shadowOffset = CGSize(width: 0, height: 0.2)
+        cellBlobTypeIndicator.layer.shadowOpacity = 0.2
+        cellBlobTypeIndicator.layer.shadowRadius = 1.0
+        self.addSubview(cellBlobTypeIndicator)
+        
+        cellContainer = UIView(frame: CGRect(x: 15, y: 5, width: self.frame.width - 25, height: Constants.Dim.blobsActiveTableViewCellHeight - 10))
+        cellContainer.layer.shadowOffset = Constants.Dim.cardShadowOffset
+        cellContainer.layer.shadowOpacity = Constants.Dim.cardShadowOpacity
+        cellContainer.layer.shadowRadius = Constants.Dim.cardShadowRadius
         cellContainer.backgroundColor = Constants.Colors.standardBackground
         self.addSubview(cellContainer)
         
-        cellBlobTypeIndicator = UIView(frame: CGRect(x: 0 - (Constants.Dim.blobsActiveTableViewIndicatorSize / 2), y: 3, width: Constants.Dim.blobsActiveTableViewIndicatorSize, height: Constants.Dim.blobsActiveTableViewIndicatorSize))
-        cellBlobTypeIndicator.layer.cornerRadius = Constants.Dim.blobsActiveTableViewIndicatorSize / 2
-        cellContainer.addSubview(cellBlobTypeIndicator)
-        
-        cellUserImageContainer = UIView(frame: CGRect(x: 5, y: 20, width: Constants.Dim.blobsActiveTableViewUserImageSize, height: Constants.Dim.blobsActiveTableViewUserImageSize))
+        cellUserImageContainer = UIView(frame: CGRect(x: 5, y: (cellContainer.frame.height / 2) - (Constants.Dim.blobsActiveTableViewUserImageSize / 2), width: Constants.Dim.blobsActiveTableViewUserImageSize, height: Constants.Dim.blobsActiveTableViewUserImageSize))
         cellUserImageContainer.backgroundColor = Constants.Colors.standardBackground
         cellUserImageContainer.layer.cornerRadius = Constants.Dim.blobsActiveTableViewUserImageSize / 2
-        cellUserImageContainer.layer.shadowOffset = CGSize(width: 0, height: 0.2)
-        cellUserImageContainer.layer.shadowOpacity = 0.2
-        cellUserImageContainer.layer.shadowRadius = 1.0
         cellContainer.addSubview(cellUserImageContainer)
         
         cellUserImage = UIImageView(frame: CGRect(x: 0, y: 0, width: Constants.Dim.blobsActiveTableViewUserImageSize, height: Constants.Dim.blobsActiveTableViewUserImageSize))
@@ -72,7 +75,7 @@ class BlobsActiveTableViewCell: UITableViewCell {
         cellSelectedActivityIndicator.color = UIColor.black
         cellContainer.addSubview(cellSelectedActivityIndicator)
         
-        cellThumbnail = UIImageView(frame: CGRect(x: cellContainer.frame.width - 5 - Constants.Dim.blobsActiveTableViewContentSize, y: 5, width: Constants.Dim.blobsActiveTableViewContentSize, height: Constants.Dim.blobsActiveTableViewContentSize))
+        cellThumbnail = UIImageView(frame: CGRect(x: cellContainer.frame.width - cellContainer.frame.height, y: 0, width: cellContainer.frame.height, height: cellContainer.frame.height))
         cellThumbnail.contentMode = UIViewContentMode.scaleAspectFill
         cellThumbnail.clipsToBounds = true
         cellContainer.addSubview(cellThumbnail)

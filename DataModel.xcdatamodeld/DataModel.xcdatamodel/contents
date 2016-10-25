@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="10174" systemVersion="15G31" minimumToolsVersion="Xcode 7.0">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="11232" systemVersion="15G1004" minimumToolsVersion="Xcode 7.0" sourceLanguage="Objective-C" userDefinedModelVersionIdentifier="">
     <entity name="BlobNotification" representedClassName=".BlobNotification" syncable="YES">
         <attribute name="blobID" attributeType="String" syncable="YES"/>
     </entity>
@@ -10,8 +10,12 @@
         <attribute name="userImageKey" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="userName" optional="YES" attributeType="String" syncable="YES"/>
     </entity>
+    <entity name="LocationManagerSetting" representedClassName=".LocationManagerSetting" syncable="YES">
+        <attribute name="locationManagerSetting" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
     <elements>
-        <element name="CurrentUser" positionX="-36" positionY="9" width="128" height="120"/>
         <element name="BlobNotification" positionX="0" positionY="81" width="128" height="60"/>
+        <element name="CurrentUser" positionX="-36" positionY="9" width="128" height="120"/>
+        <element name="LocationManagerSetting" positionX="-18" positionY="54" width="128" height="60"/>
     </elements>
 </model>

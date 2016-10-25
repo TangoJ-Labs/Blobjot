@@ -1,5 +1,5 @@
 //
-//  BlobAddPeopleTableViewCell.swift
+//  ConnectionsTableViewCell.swift
 //  Blobjot
 //
 //  Created by Sean Hart on 8/1/16.
@@ -8,23 +8,28 @@
 
 import UIKit
 
+class ConnectionsTableViewCell: UITableViewCell
+{
 
-class BlobAddPeopleTableViewCell: UITableViewCell {
-    
-    // Declare the view components
     var cellContainer: UIView!
+    var cellActionMessage: UILabel!
+    var cellConnectStar: UIImageView!
     var cellUserImage: UIImageView!
     var cellUserImageActivityIndicator: UIActivityIndicatorView!
     var cellUserName: UILabel!
     
-    override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
+    override init(style: UITableViewCellStyle, reuseIdentifier: String?)
+    {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
-        cellContainer = UIView(frame: CGRect(x: 0, y: 0, width: self.frame.width, height: Constants.Dim.blobAddPeopleTableViewCellHeight))
+        cellContainer = UIView(frame: CGRect(x: 0, y: 0, width: self.frame.width, height: Constants.Dim.connectionsTableViewCellHeight))
         cellContainer.backgroundColor = Constants.Colors.standardBackground
         self.addSubview(cellContainer)
         
-        print("CELL CONTAINER FRAME: \(cellContainer.frame)")
+        cellConnectStar = UIImageView(frame: CGRect(x: 10, y: (cellContainer.frame.height - Constants.Dim.accountConnectStarSize) / 2, width: Constants.Dim.accountConnectStarSize, height: Constants.Dim.accountConnectStarSize))
+        cellConnectStar.contentMode = UIViewContentMode.scaleAspectFill
+        cellConnectStar.clipsToBounds = true
+        cellContainer.addSubview(cellConnectStar)
         
         let imageSize = cellContainer.frame.height - 10
         cellUserImage = UIImageView(frame: CGRect(x: cellContainer.frame.width - 10 - imageSize, y: 5, width: imageSize, height: imageSize))
@@ -39,8 +44,13 @@ class BlobAddPeopleTableViewCell: UITableViewCell {
         cellUserImageActivityIndicator.color = UIColor.black
         cellContainer.addSubview(cellUserImageActivityIndicator)
         
-        cellUserName = UILabel(frame: CGRect(x: 15, y: 10, width: cellContainer.frame.width - 30 - cellUserImage.frame.width, height: 20))
-        cellUserName.font = UIFont(name: Constants.Strings.fontRegular, size: 14)
+        cellActionMessage = UILabel(frame: CGRect(x: 15 + cellConnectStar.frame.width, y: 5, width: cellContainer.frame.width - 30 - cellConnectStar.frame.width - cellUserImage.frame.width, height: 30))
+        cellActionMessage.font = UIFont(name: Constants.Strings.fontRegular, size: 12)
+        cellActionMessage.textAlignment = NSTextAlignment.left
+        cellContainer.addSubview(cellActionMessage)
+        
+        cellUserName = UILabel(frame: CGRect(x: 15 + cellConnectStar.frame.width, y: 25, width: cellContainer.frame.width - 30 - cellConnectStar.frame.width - cellUserImage.frame.width, height: 30))
+        cellUserName.font = UIFont(name: Constants.Strings.fontRegular, size: 24)
         cellContainer.addSubview(cellUserName)
         
         let border1 = CALayer()
@@ -49,16 +59,19 @@ class BlobAddPeopleTableViewCell: UITableViewCell {
         cellContainer.layer.addSublayer(border1)
     }
     
-    required init?(coder aDecoder: NSCoder) {
+    required init?(coder aDecoder: NSCoder)
+    {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func awakeFromNib() {
+    override func awakeFromNib()
+    {
         super.awakeFromNib()
         // Initialization code
     }
     
-    override func setSelected(_ selected: Bool, animated: Bool) {
+    override func setSelected(_ selected: Bool, animated: Bool)
+    {
         super.setSelected(selected, animated: animated)
         // Configure the view for the selected state
     }

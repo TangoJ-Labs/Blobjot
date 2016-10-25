@@ -40,13 +40,8 @@ class BlobAddMediaViewController: UIViewController {
         
         // Status Bar Settings
         statusBarHeight = UIApplication.shared.statusBarFrame.size.height
-        print("**************** BATVC STATUS BAR HEIGHT: \(statusBarHeight)")
-        print("**************** BATVC NAV BAR HEIGHT: \(self.navigationController?.navigationBar.frame.height)")
         viewFrameY = self.view.frame.minY
-        print("**************** BATVC VIEW FRAME Y: \(viewFrameY)")
         screenSize = UIScreen.main.bounds
-        print("**************** BATVC SCREEN HEIGHT: \(screenSize.height)")
-        print("**************** BATVC VIEW HEIGHT: \(self.view.frame.height)")
         
         // Add the view container to hold all other views (allows for shadows on all subviews)
         viewContainer = UIView(frame: CGRect(x: 0, y: 0, width: self.view.frame.width, height: self.view.frame.height - 74 - self.view.frame.width))

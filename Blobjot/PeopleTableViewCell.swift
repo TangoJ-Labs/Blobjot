@@ -11,7 +11,7 @@ import UIKit
 class PeopleTableViewCell: UITableViewCell {
 
     var cellContainer: UIView!
-    var cellConnectStar: UIImageView!
+    var cellConnectIndicator: UILabel!
     var cellUserImage: UIImageView!
     var cellUserImageActivityIndicator: UIActivityIndicatorView!
     var cellActionMessage: UILabel!
@@ -20,19 +20,24 @@ class PeopleTableViewCell: UITableViewCell {
     override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
-        cellContainer = UIView(frame: CGRect(x: 0, y: 0, width: self.frame.width, height: Constants.Dim.peopleTableViewCellHeight))
+        cellContainer = UIView(frame: CGRect(x: 10, y: 5, width: self.frame.width - 20, height: Constants.Dim.peopleTableViewCellHeight - 10))
         cellContainer.backgroundColor = Constants.Colors.standardBackground
+        cellContainer.layer.shadowOffset = Constants.Dim.cardShadowOffset
+        cellContainer.layer.shadowOpacity = Constants.Dim.cardShadowOpacity
+        cellContainer.layer.shadowRadius = Constants.Dim.cardShadowRadius
         self.addSubview(cellContainer)
         
         print("CELL CONTAINER FRAME: \(cellContainer.frame)")
         
-        cellConnectStar = UIImageView(frame: CGRect(x: 10, y: (cellContainer.frame.height - Constants.Dim.peopleConnectStarSize) / 2, width: Constants.Dim.peopleConnectStarSize, height: Constants.Dim.peopleConnectStarSize))
-        cellConnectStar.contentMode = UIViewContentMode.scaleAspectFill
-        cellConnectStar.clipsToBounds = true
-        cellContainer.addSubview(cellConnectStar)
+        cellConnectIndicator = UILabel(frame: CGRect(x: 10, y: (cellContainer.frame.height / 2) - (Constants.Dim.peopleConnectIndicatorSize / 2), width: Constants.Dim.peopleConnectIndicatorSize, height: Constants.Dim.peopleConnectIndicatorSize))
+        cellConnectIndicator.font = UIFont(name: Constants.Strings.fontRegular, size: 28)
+        cellConnectIndicator.text = "\u{002B}"
+        cellConnectIndicator.textColor = Constants.Colors.colorTextGray
+        cellConnectIndicator.textAlignment = .center
+        cellContainer.addSubview(cellConnectIndicator)
         
-        let imageSize = cellContainer.frame.height - 10
-        cellUserImage = UIImageView(frame: CGRect(x: cellContainer.frame.width - 10 - imageSize, y: 5, width: imageSize, height: imageSize))
+        let imageSize = Constants.Dim.peopleTableViewUserImageSize
+        cellUserImage = UIImageView(frame: CGRect(x: cellContainer.frame.width - 10 - imageSize, y: (cellContainer.frame.height / 2) - (imageSize / 2), width: imageSize, height: imageSize))
         cellUserImage.layer.cornerRadius = imageSize / 2
         cellUserImage.contentMode = UIViewContentMode.scaleAspectFill
         cellUserImage.clipsToBounds = true
@@ -44,19 +49,19 @@ class PeopleTableViewCell: UITableViewCell {
         cellUserImageActivityIndicator.color = UIColor.black
         cellContainer.addSubview(cellUserImageActivityIndicator)
         
-        cellActionMessage = UILabel(frame: CGRect(x: 15 + cellConnectStar.frame.width, y: 5, width: cellContainer.frame.width - 30 - cellConnectStar.frame.width - cellUserImage.frame.width, height: 30))
-        cellActionMessage.font = UIFont(name: Constants.Strings.fontRegular, size: 12)
+        cellUserName = UILabel(frame: CGRect(x: 15 + cellConnectIndicator.frame.width, y: (cellContainer.frame.height / 2) - 15, width: cellContainer.frame.width - 30 - cellConnectIndicator.frame.width - cellUserImage.frame.width, height: 30))
+        cellUserName.font = UIFont(name: Constants.Strings.fontRegular, size: 16)
+        cellContainer.addSubview(cellUserName)
+        
+        cellActionMessage = UILabel(frame: CGRect(x: 15 + cellConnectIndicator.frame.width, y: 5, width: cellContainer.frame.width - 30 - cellConnectIndicator.frame.width - cellUserImage.frame.width, height: 30))
+        cellActionMessage.font = UIFont(name: Constants.Strings.fontRegular, size: 8)
         cellActionMessage.textAlignment = NSTextAlignment.left
         cellContainer.addSubview(cellActionMessage)
         
-        cellUserName = UILabel(frame: CGRect(x: 15 + cellConnectStar.frame.width, y: 25, width: cellContainer.frame.width - 30 - cellConnectStar.frame.width - cellUserImage.frame.width, height: 30))
-        cellUserName.font = UIFont(name: Constants.Strings.fontRegular, size: 24)
-        cellContainer.addSubview(cellUserName)
-        
-        let border1 = CALayer()
-        border1.frame = CGRect(x: 10, y: cellContainer.frame.height - 1, width: cellContainer.frame.width - 20, height: 1)
-        border1.backgroundColor = Constants.Colors.blobGray.cgColor
-        cellContainer.layer.addSublayer(border1)
+//        let border1 = CALayer()
+//        border1.frame = CGRect(x: 10, y: cellContainer.frame.height - 1, width: cellContainer.frame.width - 20, height: 1)
+//        border1.backgroundColor = Constants.Colors.blobGray.cgColor
+//        cellContainer.layer.addSublayer(border1)
     }
     
     required init?(coder aDecoder: NSCoder) {

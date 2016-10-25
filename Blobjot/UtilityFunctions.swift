@@ -12,6 +12,13 @@ import UIKit
 
 class UtilityFunctions {
     
+    // The calculator for zoom to Blob size ratio
+    func mapZoomForBlobSize(_ meters: Float) -> Float
+    {
+        let zoom = (0 - (1/98)) * meters + (985/49)
+        return zoom
+    }
+    
     // Create a thumbnail-sized image from a large image
     func resizeImage(_ image: UIImage, targetSize: CGSize) -> UIImage {
         let size = image.size
@@ -208,6 +215,139 @@ class UtilityFunctions {
                 {
                     return b1.blobType.rawValue < b2.blobType.rawValue
                 }
+        }
+    }
+    
+    
+    // MARK: CORE DATA FUNCTION
+    
+    // Retrieve the CurrentUser data
+    func cdCurrentUser() -> [Any]
+    {
+        // Try to retrieve the current user data from Core Data
+        // Access Core Data
+        // Retrieve the Current User Blob data from Core Data
+        let moc = DataController().managedObjectContext
+        let currentUserFetch = NSFetchRequest<NSFetchRequestResult>(entityName: "CurrentUser")
+        
+        // Create an empty blobNotifications list in case the Core Data request fails
+        var currentUser = [CurrentUser]()
+        do
+        {
+            currentUser = try moc.fetch(currentUserFetch) as! [CurrentUser]
+        }
+        catch
+        {
+            fatalError("Failed to fetch CurrentUser: \(error)")
+        }
+        
+        return [currentUser, moc]
+    }
+    
+    // Retrieve the CurrentUser data
+    func cdLocationManagerSetting() -> [Any]
+    {
+        // Try to retrieve the location manager setting from Core Data
+        let moc = DataController().managedObjectContext
+        let locationManagerSettingFetch = NSFetchRequest<NSFetchRequestResult>(entityName: "LocationManagerSetting")
+        
+        // Create an empty blobNotifications list in case the Core Data request fails
+        var locationManagerSetting = [LocationManagerSetting]()
+        do
+        {
+            locationManagerSetting = try moc.fetch(locationManagerSettingFetch) as! [LocationManagerSetting]
+        }
+        catch
+        {
+            fatalError("Failed to fetch locationManagerSetting: \(error)")
+        }
+        
+        return [locationManagerSetting, moc]
+    }
+    
+    // Save the CurrentUser data
+    func cdCurrentUserSave(_ user: User)
+    {
+        // Try to retrieve the current user data from Core Data
+        var currentUserObjects = UtilityFunctions().cdCurrentUser()
+        let currentUserArray = currentUserObjects[0] as! [CurrentUser]
+        let moc = currentUserObjects[1] as! NSManagedObjectContext
+        
+        // If the return has no content, the current user has not yet been saved
+        if currentUserArray.count == 0
+        {
+            // Save the current user data in Core Data
+            let entity = NSEntityDescription.insertNewObject(forEntityName: "CurrentUser", into: moc) as! CurrentUser
+            entity.setValue(user.userID, forKey: "userID")
+            entity.setValue(user.userName, forKey: "userName")
+            entity.setValue(user.userImageKey, forKey: "userImageKey")
+            if let userImage = user.userImage
+            {
+                entity.setValue(UIImagePNGRepresentation(userImage), forKey: "userImage")
+            }
+        }
+        else
+        {
+            // Replace the current user data to ensure that the latest data is used
+            currentUserArray[0].userID = user.userID
+            currentUserArray[0].userName = user.userName
+            currentUserArray[0].userImageKey = user.userImageKey
+            currentUserArray[0].userImage = UIImagePNGRepresentation(user.userImage!)
+        }
+        
+        // Save the Entity
+        do
+        {
+            try moc.save()
+        }
+        catch
+        {
+            fatalError("Failure to save context: \(error)")
+        }
+    }
+    
+    // Save the LocationManagerSetting
+    func cdLocationManagerSettingSave(_ locationManagerConstant: Bool)
+    {
+        print("UF-CDLMS - LOCATION MANAGER CONSTANT: \(locationManagerConstant)")
+        
+        // Try to retrieve the locationManagerSetting from Core Data
+        let locationManagerSettingObjects = UtilityFunctions().cdLocationManagerSetting()
+        let locationManagerSettingArray = locationManagerSettingObjects[0] as! [LocationManagerSetting]
+        let moc = locationManagerSettingObjects[1] as! NSManagedObjectContext
+        
+        // If the return has no content, the locationManagerSetting has not yet been saved
+        if locationManagerSettingArray.count == 0
+        {
+            // Save the locationManagerSetting in Core Data
+            let entity = NSEntityDescription.insertNewObject(forEntityName: "LocationManagerSetting", into: moc) as! LocationManagerSetting
+            entity.setValue("constant", forKey: "locationManagerSetting")
+            print("UF-CDLMS - LOCATION MANAGER SETTING VALUE \"constant\"")
+        }
+        else
+        {
+            // Replace the locationManagerSetting to ensure that the latest setting is used
+            if locationManagerConstant
+            {
+                locationManagerSettingArray[0].setValue("constant", forKey: "locationManagerSetting")
+                print("UF-CDLMS - LOCATION MANAGER SETTING VALUE \"constant\"")
+            }
+            else
+            {
+                locationManagerSettingArray[0].setValue("significant_change", forKey: "locationManagerSetting")
+                print("UF-CDLMS - LOCATION MANAGER SETTING VALUE \"significant_change\"")
+            }
+        }
+        
+        // Save the Entity
+        do
+        {
+            try moc.save()
+            print("UF-CDLMS - SAVED NEW LOCATION MANAGER SETTING VALUE")
+        }
+        catch
+        {
+            fatalError("UF-CDLMS - Failure to save context: \(error)")
         }
     }
 }

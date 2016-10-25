@@ -34,17 +34,31 @@
               ]
   }
   ,{
+  "featureType": "landscape.natural",
+  "elementType": "geometry",
+  "stylers": [
+              { "color": "#d9e4cd" }
+              ]
+  }
+  ,{
   "featureType": "landscape.man_made",
   "elementType": "geometry",
   "stylers": [
-              { "color": "#CCCCCC" }
+              { "color": "#E6E6E6" }
+              ]
+  }
+  ,{
+  "featureType": "water",
+  "elementType": "geometry",
+  "stylers": [
+              { "color": "#cbe6e6" }
               ]
   }
   ,{
   "featureType": "road",
   "elementType": "geometry",
   "stylers": [
-              { "color": "#999999" }
+              { "color": "#FFFFFF" }
               ]
   }
   ,{

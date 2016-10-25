@@ -41,55 +41,67 @@ class AWSPrepRequest
     // Use this method to call all other AWS methods to ensure that the user's credentials are still valid
     func prepRequest()
     {
-        print("AC - IN PREP REQUEST: \(requestToCall)")
-        print("AC - FBSDK TOKEN: \(FBSDKAccessToken.current())")
-        
-        // Check to see if the facebook user id is already in the FBSDK
-        if let facebookToken = FBSDKAccessToken.current()
+        print("AC-PREP - SERVER TRIES: \(Constants.Data.serverTries)")
+        // Ensure that the app is not continuously failing to access the server
+        if Constants.Data.serverTries <= Constants.Settings.maxServerTries
         {
-            // Assign the Facebook Token to the AWSRequestObject
-            self.requestToCall.facebookToken = facebookToken
+            print("AC - IN PREP REQUEST: \(requestToCall)")
+            print("AC - FBSDK TOKEN: \(FBSDKAccessToken.current())")
             
-            print("AC - COGNITO ID: \(Constants.credentialsProvider.identityId)")
-            // Ensure that the Cognito ID is still valid and is not older than an hour (AWS will invalidate if older)
-            if Constants.credentialsProvider.identityId != nil && Constants.Data.lastCredentials - NSDate().timeIntervalSinceNow < 3600
+            // Check to see if the facebook user id is already in the FBSDK
+            if let facebookToken = FBSDKAccessToken.current()
             {
-                print("AC - ALREADY HAVE COGNITO ID - GETTING NEW AWS ID")
-                // The Cognito ID is valid, so check for a Blobjot ID and then make the request
-                self.getBlobjotID(facebookToken: facebookToken)
+                // Assign the Facebook Token to the AWSRequestObject
+                self.requestToCall.facebookToken = facebookToken
+                
+                print("AC - COGNITO ID: \(Constants.credentialsProvider.identityId)")
+                // Ensure that the Cognito ID is still valid and is not older than an hour (AWS will invalidate if older)
+                if Constants.credentialsProvider.identityId != nil && Constants.Data.lastCredentials - NSDate().timeIntervalSinceNow < 3600
+                {
+                    print("AC - ALREADY HAVE COGNITO ID - GETTING NEW AWS ID")
+                    // The Cognito ID is valid, so check for a Blobjot ID and then make the request
+                    self.getBlobjotID(facebookToken: facebookToken)
+                }
+                else
+                {
+                    print("AC - CALLING COGNITO ID")
+                    // If the Cognito credentials have expired, request the credentials again (Cognito Identity ID) and use the current Facebook info
+                    self.getCognitoID()
+                }
             }
             else
             {
-                print("AC - CALLING COGNITO ID")
-                // If the Cognito credentials have expired, request the credentials again (Cognito Identity ID) and use the current Facebook info
-                self.getCognitoID()
+                print("***** USER NEEDS TO LOG IN AGAIN *****")
+                
+                if let parentVC = self.awsRequestDelegate
+                {
+                    print("AC - PARENT VC IS: \(parentVC)")
+                    
+                    // Check to see if the parent viewcontroller is already the MapViewController.  If so, call the MVC showLoginScreen function
+                    // Otherwise, launch a new MapViewController and show the login screen
+                    if parentVC is MapViewController
+                    {
+                        print("AC - PARENT VC IS EQUAL TO MVC")
+                        parentVC.showLoginScreen()
+                    }
+                    else
+                    {
+                        print("AC - PARENT VC IS NOT EQUAL TO MVC")
+                        let newMapViewController = MapViewController()
+                        if let rootNavController = UIApplication.shared.windows[0].rootViewController?.navigationController
+                        {
+                            rootNavController.pushViewController(newMapViewController, animated: true)
+                        }
+                    }
+                }
             }
         }
         else
         {
-            print("***** USER NEEDS TO LOG IN AGAIN *****")
+            // Reset the server try count since the request cycle was stopped - the user can manually try again if needed
+            Constants.Data.serverTries = 0
             
-            if let parentVC = self.awsRequestDelegate
-            {
-                print("AC - PARENT VC IS: \(parentVC)")
-                
-                // Check to see if the parent viewcontroller is already the MapViewController.  If so, call the MVC showLoginScreen function
-                // Otherwise, launch a new MapViewController and show the login screen
-                if parentVC is MapViewController
-                {
-                    print("AC - PARENT VC IS EQUAL TO MVC")
-                    parentVC.showLoginScreen()
-                }
-                else
-                {
-                    print("AC - PARENT VC IS NOT EQUAL TO MVC")
-                    let newMapViewController = MapViewController()
-                    if let rootNavController = UIApplication.shared.windows[0].rootViewController?.navigationController
-                    {
-                        rootNavController.pushViewController(newMapViewController, animated: true)
-                    }
-                }
-            }
+            print("AC-PREP - RESET SERVER TRIES: \(Constants.Data.serverTries)")
         }
     }
     
@@ -121,8 +133,8 @@ class AWSPrepRequest
                     {
                         print("AC - AWS COGNITO GET IDENTITY ID - ERROR: " + task.error!.localizedDescription)
                         
-                        // Record the login attempt
-                        Constants.Data.loginTries += 1
+                        // Record the server request attempt
+                        Constants.Data.serverTries += 1
                         
                         // Go ahead and move to the next login step
                         self.getBlobjotID(facebookToken: token)
@@ -206,73 +218,62 @@ class AWSLoginUser : AWSRequestObject
     // FBSDK METHOD - Get user data from FB before attempting to log in via AWS
     override func makeRequest()
     {
-        if Constants.Data.loginTries <= Constants.Settings.maxLoginTries
-        {
-            print("FBSDK - MAKING GRAPH REQUEST")
-            print("AC - FBSDK - COGNITO ID: \(Constants.credentialsProvider.identityId)")
-            let fbRequest = FBSDKGraphRequest(graphPath: "me", parameters: ["fields": "id, email, name, picture"]) //parameters: ["fields": "id,email,name,picture"])
-            print("FBSDK - MAKING GRAPH CALL")
-            fbRequest?.start
-                {(connection: FBSDKGraphRequestConnection?, result: Any?, error: Error?) in
+        print("FBSDK - MAKING GRAPH REQUEST")
+        print("AC - FBSDK - COGNITO ID: \(Constants.credentialsProvider.identityId)")
+        let fbRequest = FBSDKGraphRequest(graphPath: "me", parameters: ["fields": "id, email, name, picture"]) //parameters: ["fields": "id,email,name,picture"])
+        print("FBSDK - MAKING GRAPH CALL")
+        fbRequest?.start
+            {(connection: FBSDKGraphRequestConnection?, result: Any?, error: Error?) in
+                
+                print("FBSDK - CONNECTION: \(connection)")
+                
+                if error != nil
+                {
+                    print("FBSDK - Error Getting Info \(error)")
                     
-                    print("FBSDK - CONNECTION: \(connection)")
+                    // Record the server request attempt
+                    Constants.Data.serverTries += 1
                     
-                    if error != nil
+                    // Try again
+                    self.makeRequest()
+                }
+                else
+                {
+                    print("FBSDK - RESULT: \(result)")
+                    
+                    if let resultDict = result as? [String:AnyObject]
                     {
-                        print("FBSDK - Error Getting Info \(error)")
+                        print("FBSDK - User Info : \(resultDict)")
+                        print("FBSDK - USER NAME : \(resultDict["name"])")
                         
-                        // Record the attempt
-                        Constants.Data.loginTries += 1
-                        
-                        // Try again
-                        self.makeRequest()
-                    }
-                    else
-                    {
-                        print("FBSDK - RESULT: \(result)")
-                        
-                        if let resultDict = result as? [String:AnyObject]
+                        if let resultPicture = resultDict["picture"] as? [String:AnyObject]
                         {
-                            print("FBSDK - User Info : \(resultDict)")
-                            print("FBSDK - USER NAME : \(resultDict["name"])")
+                            if let resultPictureData = resultPicture["data"] as? [String:AnyObject]
+                            {
+                                print("FBSDK - IMAGE URL : \(resultPictureData["url"])")
+                            }
+                        }
+                        
+                        if let facebookName = resultDict["name"]
+                        {
+                            print("FBSDK - FACEBOOK NAME: \(facebookName)")
                             
+                            var facebookImageUrl = "none"
                             if let resultPicture = resultDict["picture"] as? [String:AnyObject]
                             {
                                 if let resultPictureData = resultPicture["data"] as? [String:AnyObject]
                                 {
                                     print("FBSDK - IMAGE URL : \(resultPictureData["url"])")
+                                    facebookImageUrl = resultPictureData["url"]! as! String
                                 }
                             }
+                            print("FBSDK - FACEBOOK URL: \(facebookImageUrl)")
                             
-                            if let facebookName = resultDict["name"]
-                            {
-                                print("FBSDK - FACEBOOK NAME: \(facebookName)")
-                                
-                                var facebookImageUrl = "none"
-                                if let resultPicture = resultDict["picture"] as? [String:AnyObject]
-                                {
-                                    if let resultPictureData = resultPicture["data"] as? [String:AnyObject]
-                                    {
-                                        print("FBSDK - IMAGE URL : \(resultPictureData["url"])")
-                                        facebookImageUrl = resultPictureData["url"]! as! String
-                                    }
-                                }
-                                print("FBSDK - FACEBOOK URL: \(facebookImageUrl)")
-                                
-                                self.loginUser((facebookName as! String), facebookThumbnailUrl: facebookImageUrl)
-                            }
+                            self.loginUser((facebookName as! String), facebookThumbnailUrl: facebookImageUrl)
                         }
-                        
                     }
-            }
-        }
-        else
-        {
-            // Notify the parent view that the AWS call completed with an error
-            if let parentVC = self.awsRequestDelegate
-            {
-                parentVC.processAwsReturn(self, success: false)
-            }
+                    
+                }
         }
     }
     
@@ -284,6 +285,21 @@ class AWSLoginUser : AWSRequestObject
         let json: NSDictionary = ["facebook_id" : self.facebookToken!.userID, "facebook_name": facebookName, "facebook_thumbnail_url": facebookThumbnailUrl]
         print("AC - USER LOGIN DATA: \(json)")
         
+//        // If the secondary request object is not nil, process the carried (second) request; no need to
+//        // pass the login response to the parent view controller since it did not explicitly call the login request
+//        if let secondaryAwsRequestObject = self.secondaryAwsRequestObject
+//        {
+//            AWSPrepRequest(requestToCall: secondaryAwsRequestObject, delegate: self.awsRequestDelegate!).prepRequest()
+//        }
+//        else
+//        {
+//            // Notify the parent view that the AWS Login call completed successfully
+//            if let parentVC = self.awsRequestDelegate
+//            {
+//                parentVC.processAwsReturn(self, success: true)
+//            }
+//        }
+        
         let lambdaInvoker = AWSLambdaInvoker.default()
         lambdaInvoker.invokeFunction("Blobjot-LoginUser", jsonObject: json, completionHandler:
             { (responseData, err) -> Void in
@@ -293,7 +309,7 @@ class AWSLoginUser : AWSRequestObject
                     print("AC - FBSDK LOGIN - ERROR: \(err)")
                     
                     // Record the login attempt
-                    Constants.Data.loginTries += 1
+                    Constants.Data.serverTries += 1
                     
                     DispatchQueue.main.async(execute:
                         {
@@ -363,6 +379,9 @@ class AWSGetMapData : AWSRequestObject
                     // Process the error codes and alert the user if needed
                     if err!._code == 1 && Constants.Data.currentUser != ""
                     {
+                        // Record the server request attempt
+                        Constants.Data.serverTries += 1
+                        
                         // Notify the parent view that the AWS call completed with an error
                         if let parentVC = self.awsRequestDelegate
                         {
@@ -456,6 +475,9 @@ class AWSGetBlobMinimumData : AWSRequestObject
                 if (err != nil)
                 {
                     print("GET BLOB MINIMUM DATA ERROR: \(err)")
+                    // Record the server request attempt
+                    Constants.Data.serverTries += 1
+                    
                     // Notify the parent view that the AWS call completed with an error
                     if let parentVC = self.awsRequestDelegate
                     {
@@ -537,6 +559,9 @@ class AWSGetBlobExtraData : AWSRequestObject
                 if (err != nil)
                 {
                     print("GET BLOB DATA ERROR: \(err)")
+                    // Record the server request attempt
+                    Constants.Data.serverTries += 1
+                    
                     // Notify the parent view that the AWS call completed with an error
                     if let parentVC = self.awsRequestDelegate
                     {
@@ -675,6 +700,9 @@ class AWSGetThumbnailImage : AWSRequestObject
                         else
                         {
                             print("GTFT: DOWNLOAD FAILED: [\(error)]")
+                            
+                            // Record the server request attempt
+                            Constants.Data.serverTries += 1
                         }
                         
                         // Notify the parent view that the AWS call completed with an error
@@ -686,6 +714,8 @@ class AWSGetThumbnailImage : AWSRequestObject
                     else if let exception = task.exception
                     {
                         print("GTFT: DOWNLOAD FAILED: [\(exception)]")
+                        // Record the server request attempt
+                        Constants.Data.serverTries += 1
                         
                         // Notify the parent view that the AWS call completed with an error
                         if let parentVC = self.awsRequestDelegate
@@ -730,6 +760,8 @@ class AWSGetThumbnailImage : AWSRequestObject
                                 else
                                 {
                                     print("FRAME FILE NOT AVAILABLE")
+                                    // Record the server request attempt
+                                    Constants.Data.serverTries += 1
                                     
                                     // Notify the parent view that the AWS call completed with an error
                                     if let parentVC = self.awsRequestDelegate
@@ -776,6 +808,8 @@ class AWSGetSingleUserData : AWSRequestObject
                 if (err != nil)
                 {
                     print("MVC: GET USER CONNECTIONS DATA ERROR: \(err)")
+                    // Record the server request attempt
+                    Constants.Data.serverTries += 1
                     
                     // Notify the parent view that the AWS call completed with an error
                     if let parentVC = self.awsRequestDelegate
@@ -812,10 +846,6 @@ class AWSGetSingleUserData : AWSRequestObject
                                 // If the userImage has not been downloaded, request a new download
                                 if userObject.userImage == nil
                                 {
-//                                    let awsGetUserImage = AWSGetUserImage(user: userObject)
-//                                    awsGetUserImage.awsRequestDelegate = self.awsRequestDelegate
-//                                    awsGetUserImage.makeRequest()
-                                    
                                     AWSPrepRequest(requestToCall: AWSGetUserImage(user: userObject), delegate: self.awsRequestDelegate!).prepRequest()
                                 }
                                 
@@ -882,6 +912,8 @@ class AWSGetUserImage : AWSRequestObject
                     else
                     {
                         print("MVC: DOWNLOAD FAILED: [\(error)]")
+                        // Record the server request attempt
+                        Constants.Data.serverTries += 1
                     }
                     
                     // Notify the parent view that the AWS call completed with an error
@@ -893,6 +925,8 @@ class AWSGetUserImage : AWSRequestObject
                 else if let exception = task.exception
                 {
                     print("MVC: DOWNLOAD FAILED: [\(exception)]")
+                    // Record the server request attempt
+                    Constants.Data.serverTries += 1
                     
                     // Notify the parent view that the AWS call completed with an error
                     if let parentVC = self.awsRequestDelegate
@@ -973,6 +1007,8 @@ class AWSEditUserName : AWSRequestObject
                 if (err != nil)
                 {
                     print("Error: \(err)")
+                    // Record the server request attempt
+                    Constants.Data.serverTries += 1
                     
                     // Notify the parent view that the AWS call completed with an error
                     if let parentVC = self.awsRequestDelegate
@@ -1017,6 +1053,8 @@ class AWSEditUserImage : AWSRequestObject
                 if (err != nil)
                 {
                     print("UUI: Error: \(err)")
+                    // Record the server request attempt
+                    Constants.Data.serverTries += 1
                 }
                 else if (responseData != nil)
                 {
@@ -1143,6 +1181,8 @@ class AWSGetUserConnections : AWSRequestObject
                 if (err != nil)
                 {
                     print("AC - GET USER CONNECTIONS DATA ERROR: \(err)")
+                    // Record the server request attempt
+                    Constants.Data.serverTries += 1
                     
                     // Notify the parent view that the AWS call completed with an error
                     if let parentVC = self.awsRequestDelegate
@@ -1200,6 +1240,8 @@ class AWSGetRandomID : AWSRequestObject
                 if (err != nil)
                 {
                     print("GET RANDOM ID ERROR: \(err)")
+                    // Record the server request attempt
+                    Constants.Data.serverTries += 1
                     
                     // Notify the parent view that the AWS call completed with an error
                     if let parentVC = self.awsRequestDelegate
@@ -1270,6 +1312,8 @@ class AWSUploadMediaToBucket : AWSRequestObject
                     else
                     {
                         print("Upload failed: [\(error)]")
+                        // Record the server request attempt
+                        Constants.Data.serverTries += 1
                     }
                     
                     // Notify the parent view that the AWS call completed with an error
@@ -1282,6 +1326,8 @@ class AWSUploadMediaToBucket : AWSRequestObject
                 else if let exception = task.exception
                 {
                     print("Upload failed: [\(exception)]")
+                    // Record the server request attempt
+                    Constants.Data.serverTries += 1
                     
                     // Notify the parent view that the AWS call completed with an error
                     if let parentVC = self.awsRequestDelegate
@@ -1334,7 +1380,7 @@ class AWSUploadBlobData : AWSRequestObject
     var blobTaggedUsers: [String]!
     var blobUserID: String!
     
-    required init(blobID: String, blobLat: Double, blobLong: Double, blobMediaID: String, blobMediaType: Int, blobRadius: Double, blobText: String, blobThumbnailID: String, blobTimestamp: Double, blobType: Int, blobTaggedUsers: [String], blobUserID: String)
+    required init(blobID: String, blobLat: Double, blobLong: Double, blobMediaID: String!, blobMediaType: Int, blobRadius: Double, blobText: String, blobThumbnailID: String!, blobTimestamp: Double, blobType: Int, blobTaggedUsers: [String], blobUserID: String)
     {
         self.blobID = blobID
         self.blobLat = blobLat
@@ -1390,6 +1436,8 @@ class AWSUploadBlobData : AWSRequestObject
                 if (err != nil)
                 {
                     print("SENDING DATA TO LAMBDA ERROR: \(err)")
+                    // Record the server request attempt
+                    Constants.Data.serverTries += 1
                     
                     // Notify the parent view that the AWS call completed with an error
                     if let parentVC = self.awsRequestDelegate
@@ -1445,6 +1493,8 @@ class AWSHideBlob : AWSRequestObject
                 if (err != nil)
                 {
                     print("ADD BLOB VIEW ERROR: \(err)")
+                    // Record the server request attempt
+                    Constants.Data.serverTries += 1
                     
                     // Notify the parent view that the AWS call completed with an error
                     if let parentVC = self.awsRequestDelegate
@@ -1494,6 +1544,8 @@ class AWSDeleteBlob : AWSRequestObject
                 if (err != nil)
                 {
                     print("ADD BLOB DELETE ERROR: \(err)")
+                    // Record the server request attempt
+                    Constants.Data.serverTries += 1
                     
                     // Notify the parent view that the AWS call completed with an error
                     if let parentVC = self.awsRequestDelegate
@@ -1528,6 +1580,8 @@ class AWSGetUserBlobs : AWSRequestObject
                 if (err != nil)
                 {
                     print("GET USER BLOBS DATA ERROR: \(err)")
+                    // Record the server request attempt
+                    Constants.Data.serverTries += 1
                     
                     // Notify the parent view that the AWS call completed with an error
                     if let parentVC = self.awsRequestDelegate
@@ -1604,6 +1658,8 @@ class AWSAddBlobView : AWSRequestObject
                 if (err != nil)
                 {
                     print("ADD BLOB VIEW ERROR: \(err)")
+                    // Record the server request attempt
+                    Constants.Data.serverTries += 1
                     
                     // Notify the parent view that the AWS call completed with an error
                     if let parentVC = self.awsRequestDelegate
@@ -1666,6 +1722,8 @@ class AWSGetBlobImage : AWSRequestObject
                             else
                             {
                                 print("3: Download failed: [\(error)]")
+                                // Record the server request attempt
+                                Constants.Data.serverTries += 1
                             }
                             
                             // Notify the parent view that the AWS call completed with an error
@@ -1677,6 +1735,8 @@ class AWSGetBlobImage : AWSRequestObject
                         else if let exception = task.exception
                         {
                             print("3: Download failed: [\(exception)]")
+                            // Record the server request attempt
+                            Constants.Data.serverTries += 1
                             
                             // Notify the parent view that the AWS call completed with an error
                             if let parentVC = self.awsRequestDelegate
@@ -1754,6 +1814,8 @@ class AWSAddUserConnectionAction : AWSRequestObject
                 if (err != nil)
                 {
                     print("ADD CONNECTION ACTION ERROR: \(err)")
+                    // Record the server request attempt
+                    Constants.Data.serverTries += 1
                     
                     // Notify the parent view that the AWS call completed with an error
                     if let parentVC = self.awsRequestDelegate
@@ -1862,6 +1924,9 @@ class AWSRegisterForPushNotifications : AWSRequestObject
                     if let error = task.error
                     {
                         print("AC-RPN - ERROR: \(error)")
+                        // Record the server request attempt
+                        Constants.Data.serverTries += 1
+                        
                         // Notify the parent view that the AWS call completed with an error
                         if let parentVC = self.awsRequestDelegate
                         {
@@ -1871,6 +1936,9 @@ class AWSRegisterForPushNotifications : AWSRequestObject
                     else if let exception = task.exception
                     {
                         print("AC-RPN: exception: \(exception)")
+                        // Record the server request attempt
+                        Constants.Data.serverTries += 1
+                        
                         // Notify the parent view that the AWS call completed with an error
                         if let parentVC = self.awsRequestDelegate
                         {
@@ -1893,8 +1961,125 @@ class AWSRegisterForPushNotifications : AWSRequestObject
         }
         else
         {
+            // No need to recall Registration - will be recalled once a user is logged in
             print("***** AC-RPN: ERROR NO CURRENT USER *****")
         }
         print("AC-RPN - PAST CALLING LAMBDA PN REGISTRATION 2")
+    }
+}
+
+class AWSAddCommentForBlob : AWSRequestObject
+{
+    var blobID: String!
+    var comment: String!
+    
+    required init(blobID: String, comment: String)
+    {
+        self.blobID = blobID
+        self.comment = comment
+    }
+    
+    // Add a record for an action between user connections
+    override func makeRequest()
+    {
+        print("AC-ACFB - ADDING COMMENT FOR BLOB: \(self.blobID)")
+        var json = [String: Any]()
+        json["blob_id"]   = self.blobID
+        json["user_id"]   = Constants.Data.currentUser
+        json["timestamp"] = String(Date().timeIntervalSince1970)
+        json["comment"]   = self.comment
+        
+        let lambdaInvoker = AWSLambdaInvoker.default()
+        lambdaInvoker.invokeFunction("Blobjot-AddComment", jsonObject: json, completionHandler:
+            { (response, err) -> Void in
+                
+                if (err != nil)
+                {
+                    print("AC-ACFB - ADD COMMENT ERROR: \(err)")
+                    // Record the server request attempt
+                    Constants.Data.serverTries += 1
+                    
+                    // Notify the parent view that the AWS call completed with an error
+                    if let parentVC = self.awsRequestDelegate
+                    {
+                        parentVC.processAwsReturn(self, success: false)
+                    }
+                    
+                }
+                else if (response != nil)
+                {
+                    print("AC-ACFB - response: \(response)")
+                }
+        })
+    }
+}
+
+class AWSGetBlobComments : AWSRequestObject
+{
+    var blobID: String!
+    var blobCommentArray = [BlobComment]()
+    
+    required init(blobID: String)
+    {
+        self.blobID = blobID
+    }
+    
+    // The initial request for User's Blob data - called when the View Controller is instantiated
+    override func makeRequest()
+    {
+        print("AC-GBC - REQUESTING BLOB COMMENTS FOR BLOB: \(self.blobID)")
+        
+        // Create some JSON to send the logged in userID
+        let json: NSDictionary = ["blob_id" : self.blobID]
+        
+        let lambdaInvoker = AWSLambdaInvoker.default()
+        lambdaInvoker.invokeFunction("Blobjot-GetBlobComments", jsonObject: json, completionHandler:
+            { (response, err) -> Void in
+                
+                if (err != nil)
+                {
+                    print("AC-GBC - GET BLOB COMMENTS ERROR: \(err)")
+                    // Record the server request attempt
+                    Constants.Data.serverTries += 1
+                    
+                    // Notify the parent view that the AWS call completed with an error
+                    if let parentVC = self.awsRequestDelegate
+                    {
+                        parentVC.processAwsReturn(self, success: false)
+                    }
+                }
+                else if (response != nil)
+                {
+                    // Convert the response to an array of AnyObjects
+                    if let rawBlobComments = response as? [AnyObject] {
+                        print("AC-GBC - jsonData: \(rawBlobComments)")
+                        
+                        for rawBlobComment in rawBlobComments
+                        {
+                            if let jsonBlobComment = rawBlobComment as? [String: AnyObject]
+                            {
+                                // Finish converting the JSON AnyObjects and assign the data to a new Blob Object
+                                print("AC-GBC - ASSIGNING DATA")
+                                let addBlobComment = BlobComment()
+                                addBlobComment.commentID        = jsonBlobComment["commentID"] as! String
+                                addBlobComment.blobID           = jsonBlobComment["blobID"] as! String
+                                addBlobComment.userID           = jsonBlobComment["userID"] as! String
+                                addBlobComment.comment          = jsonBlobComment["comment"] as! String
+                                addBlobComment.commentDatetime  = Date(timeIntervalSince1970: jsonBlobComment["timestamp"] as! Double)
+                                
+                                // Append the new Blob Object to the local User Blobs Array
+                                self.blobCommentArray.append(addBlobComment)
+                                print("AC-GBC - APPENDED BLOB COMMENT: \(addBlobComment.commentID)")
+                            }
+                        }
+                        
+                        // Notify the parent view that the AWS call completed successfully
+                        if let parentVC = self.awsRequestDelegate
+                        {
+                            parentVC.processAwsReturn(self, success: true)
+                        }
+                    }
+                }
+        })
     }
 }

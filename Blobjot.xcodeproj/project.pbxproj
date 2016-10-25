@@ -13,8 +13,8 @@
 		B80C56311D51126800C4E683 /* Blob.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56301D51126800C4E683 /* Blob.swift */; };
 		B80C56341D5112F100C4E683 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56331D5112F100C4E683 /* Constants.swift */; };
 		B80C56361D5113B900C4E683 /* MapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56351D5113B900C4E683 /* MapViewController.swift */; };
-		B80C56471D51158000C4E683 /* AccountTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56371D51158000C4E683 /* AccountTableViewCell.swift */; };
-		B80C56481D51158000C4E683 /* AccountViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56381D51158000C4E683 /* AccountViewController.swift */; };
+		B80C56471D51158000C4E683 /* ConnectionsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56371D51158000C4E683 /* ConnectionsTableViewCell.swift */; };
+		B80C56481D51158000C4E683 /* ConnectionsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56381D51158000C4E683 /* ConnectionsViewController.swift */; };
 		B80C56491D51158000C4E683 /* BlobAddMediaViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56391D51158000C4E683 /* BlobAddMediaViewController.swift */; };
 		B80C564A1D51158000C4E683 /* BlobAddPeopleTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C563A1D51158000C4E683 /* BlobAddPeopleTableViewCell.swift */; };
 		B80C564B1D51158000C4E683 /* BlobAddPeopleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C563B1D51158000C4E683 /* BlobAddPeopleViewController.swift */; };
@@ -23,8 +23,8 @@
 		B80C564E1D51158000C4E683 /* BlobAddViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C563E1D51158000C4E683 /* BlobAddViewController.swift */; };
 		B80C564F1D51158000C4E683 /* BlobsActiveTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C563F1D51158000C4E683 /* BlobsActiveTableViewCell.swift */; };
 		B80C56501D51158000C4E683 /* BlobsActiveTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56401D51158000C4E683 /* BlobsActiveTableViewController.swift */; };
-		B80C56511D51158000C4E683 /* BlobsUserTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56411D51158000C4E683 /* BlobsUserTableViewCell.swift */; };
-		B80C56521D51158000C4E683 /* BlobsUserTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56421D51158000C4E683 /* BlobsUserTableViewController.swift */; };
+		B80C56511D51158000C4E683 /* AccountTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56411D51158000C4E683 /* AccountTableViewCell.swift */; };
+		B80C56521D51158000C4E683 /* AccountViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56421D51158000C4E683 /* AccountViewController.swift */; };
 		B80C56531D51158000C4E683 /* BlobViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56431D51158000C4E683 /* BlobViewController.swift */; };
 		B80C56541D51158000C4E683 /* LocationEventsCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56441D51158000C4E683 /* LocationEventsCollectionViewCell.swift */; };
 		B80C56551D51158000C4E683 /* PeopleTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56451D51158000C4E683 /* PeopleTableViewCell.swift */; };
@@ -44,6 +44,21 @@
 		B82421581DA5DEE400827557 /* MV_profile_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = B82421521DA5DEE400827557 /* MV_profile_icon.png */; };
 		B82421591DA5DEE400827557 /* MV_refresh_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = B82421531DA5DEE400827557 /* MV_refresh_icon.png */; };
 		B824215A1DA5DEE400827557 /* MV_search_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = B82421541DA5DEE400827557 /* MV_search_icon.png */; };
+		B8312FDA1DB3DA8700CFC715 /* LocationManagerSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8312FD91DB3DA8700CFC715 /* LocationManagerSetting.swift */; };
+		B8312FDB1DB3DA8700CFC715 /* LocationManagerSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8312FD91DB3DA8700CFC715 /* LocationManagerSetting.swift */; };
+		B8312FDC1DB3DA8700CFC715 /* LocationManagerSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8312FD91DB3DA8700CFC715 /* LocationManagerSetting.swift */; };
+		B8312FDE1DB3DACB00CFC715 /* LocationManagerSetting+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8312FDD1DB3DACB00CFC715 /* LocationManagerSetting+CoreDataProperties.swift */; };
+		B8312FDF1DB3DACB00CFC715 /* LocationManagerSetting+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8312FDD1DB3DACB00CFC715 /* LocationManagerSetting+CoreDataProperties.swift */; };
+		B8312FE01DB3DACB00CFC715 /* LocationManagerSetting+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8312FDD1DB3DACB00CFC715 /* LocationManagerSetting+CoreDataProperties.swift */; };
+		B8541B6B1DB5C6EF00867D82 /* MV_add_icon-white.png in Resources */ = {isa = PBXBuildFile; fileRef = B8541B641DB5C6EF00867D82 /* MV_add_icon-white.png */; };
+		B8541B6C1DB5C6EF00867D82 /* MV_list_icon-white.png in Resources */ = {isa = PBXBuildFile; fileRef = B8541B651DB5C6EF00867D82 /* MV_list_icon-white.png */; };
+		B8541B6D1DB5C6EF00867D82 /* MV_location_icon-white.png in Resources */ = {isa = PBXBuildFile; fileRef = B8541B661DB5C6EF00867D82 /* MV_location_icon-white.png */; };
+		B8541B6E1DB5C6EF00867D82 /* MV_search_icon-white.png in Resources */ = {isa = PBXBuildFile; fileRef = B8541B671DB5C6EF00867D82 /* MV_search_icon-white.png */; };
+		B8541B6F1DB5C6EF00867D82 /* MV_profile_icon-white.png in Resources */ = {isa = PBXBuildFile; fileRef = B8541B681DB5C6EF00867D82 /* MV_profile_icon-white.png */; };
+		B8541B701DB5C6EF00867D82 /* MV_refresh_icon_large-white.png in Resources */ = {isa = PBXBuildFile; fileRef = B8541B691DB5C6EF00867D82 /* MV_refresh_icon_large-white.png */; };
+		B8541B711DB5C6EF00867D82 /* MV_refresh_icon-white.png in Resources */ = {isa = PBXBuildFile; fileRef = B8541B6A1DB5C6EF00867D82 /* MV_refresh_icon-white.png */; };
+		B8541B731DB7D49000867D82 /* CustomClasses.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8541B721DB7D48D00867D82 /* CustomClasses.swift */; };
+		B8541B751DBBD0B900867D82 /* BlobComment.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8541B741DBBD0B500867D82 /* BlobComment.swift */; };
 		B85FDE891D7DC2BA002A8FC7 /* CustomIdentityProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B85FDE881D7DC2BA002A8FC7 /* CustomIdentityProvider.swift */; };
 		B86406FD1D71BDCD0084D6EF /* white.png in Resources */ = {isa = PBXBuildFile; fileRef = B86406FC1D71BDCD0084D6EF /* white.png */; };
 		B86406FF1D74AD800084D6EF /* SearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B86406FE1D74AD7F0084D6EF /* SearchViewController.swift */; };
@@ -62,6 +77,8 @@
 		B88884031D52D824001EE249 /* FBSDKShareKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B88884001D52D824001EE249 /* FBSDKShareKit.framework */; };
 		B88884041D52D824001EE249 /* FBSDKCoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B88884011D52D824001EE249 /* FBSDKCoreKit.framework */; };
 		B88884081D52DFD7001EE249 /* Bolts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B88884071D52DFD7001EE249 /* Bolts.framework */; };
+		B88DFD881DBD50DF00255BA5 /* BlobTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88DFD871DBD50DF00255BA5 /* BlobTableViewCell.swift */; };
+		B88DFD8A1DBE9F9200255BA5 /* Houston-Downtown2.gpx in Resources */ = {isa = PBXBuildFile; fileRef = B88DFD891DBE9F9200255BA5 /* Houston-Downtown2.gpx */; };
 		B8A729321D64064800FD6E0A /* star_yellow.png in Resources */ = {isa = PBXBuildFile; fileRef = B8A729301D64064800FD6E0A /* star_yellow.png */; };
 		B8A729331D64064800FD6E0A /* star_clear.png in Resources */ = {isa = PBXBuildFile; fileRef = B8A729311D64064800FD6E0A /* star_clear.png */; };
 		B8C8C59D1D57544C004D773E /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C8C59C1D57544C004D773E /* Extensions.swift */; };
@@ -109,8 +126,8 @@
 		B80C56321D5112C100C4E683 /* Houston-Downtown.gpx */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = "Houston-Downtown.gpx"; path = "Blobjot/Houston-Downtown.gpx"; sourceTree = "<group>"; };
 		B80C56331D5112F100C4E683 /* Constants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = Constants.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		B80C56351D5113B900C4E683 /* MapViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapViewController.swift; sourceTree = "<group>"; };
-		B80C56371D51158000C4E683 /* AccountTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccountTableViewCell.swift; sourceTree = "<group>"; };
-		B80C56381D51158000C4E683 /* AccountViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccountViewController.swift; sourceTree = "<group>"; };
+		B80C56371D51158000C4E683 /* ConnectionsTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConnectionsTableViewCell.swift; sourceTree = "<group>"; };
+		B80C56381D51158000C4E683 /* ConnectionsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConnectionsViewController.swift; sourceTree = "<group>"; };
 		B80C56391D51158000C4E683 /* BlobAddMediaViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlobAddMediaViewController.swift; sourceTree = "<group>"; };
 		B80C563A1D51158000C4E683 /* BlobAddPeopleTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlobAddPeopleTableViewCell.swift; sourceTree = "<group>"; };
 		B80C563B1D51158000C4E683 /* BlobAddPeopleViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlobAddPeopleViewController.swift; sourceTree = "<group>"; };
@@ -119,8 +136,8 @@
 		B80C563E1D51158000C4E683 /* BlobAddViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlobAddViewController.swift; sourceTree = "<group>"; };
 		B80C563F1D51158000C4E683 /* BlobsActiveTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = BlobsActiveTableViewCell.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		B80C56401D51158000C4E683 /* BlobsActiveTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = BlobsActiveTableViewController.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
-		B80C56411D51158000C4E683 /* BlobsUserTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = BlobsUserTableViewCell.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
-		B80C56421D51158000C4E683 /* BlobsUserTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = BlobsUserTableViewController.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
+		B80C56411D51158000C4E683 /* AccountTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = AccountTableViewCell.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
+		B80C56421D51158000C4E683 /* AccountViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = AccountViewController.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		B80C56431D51158000C4E683 /* BlobViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlobViewController.swift; sourceTree = "<group>"; };
 		B80C56441D51158000C4E683 /* LocationEventsCollectionViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocationEventsCollectionViewCell.swift; sourceTree = "<group>"; };
 		B80C56451D51158000C4E683 /* PeopleTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PeopleTableViewCell.swift; sourceTree = "<group>"; };
@@ -141,6 +158,20 @@
 		B82421521DA5DEE400827557 /* MV_profile_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MV_profile_icon.png; sourceTree = "<group>"; };
 		B82421531DA5DEE400827557 /* MV_refresh_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MV_refresh_icon.png; sourceTree = "<group>"; };
 		B82421541DA5DEE400827557 /* MV_search_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MV_search_icon.png; sourceTree = "<group>"; };
+		B8312FCC1DB3D9AE00CFC715 /* Blobjot-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Blobjot-Bridging-Header.h"; sourceTree = "<group>"; };
+		B8312FCD1DB3D9AF00CFC715 /* BlobjotTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "BlobjotTests-Bridging-Header.h"; sourceTree = "<group>"; };
+		B8312FCE1DB3D9AF00CFC715 /* BlobjotUITests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "BlobjotUITests-Bridging-Header.h"; sourceTree = "<group>"; };
+		B8312FD91DB3DA8700CFC715 /* LocationManagerSetting.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocationManagerSetting.swift; sourceTree = "<group>"; };
+		B8312FDD1DB3DACB00CFC715 /* LocationManagerSetting+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "LocationManagerSetting+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		B8541B641DB5C6EF00867D82 /* MV_add_icon-white.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "MV_add_icon-white.png"; sourceTree = "<group>"; };
+		B8541B651DB5C6EF00867D82 /* MV_list_icon-white.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "MV_list_icon-white.png"; sourceTree = "<group>"; };
+		B8541B661DB5C6EF00867D82 /* MV_location_icon-white.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "MV_location_icon-white.png"; sourceTree = "<group>"; };
+		B8541B671DB5C6EF00867D82 /* MV_search_icon-white.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "MV_search_icon-white.png"; sourceTree = "<group>"; };
+		B8541B681DB5C6EF00867D82 /* MV_profile_icon-white.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "MV_profile_icon-white.png"; sourceTree = "<group>"; };
+		B8541B691DB5C6EF00867D82 /* MV_refresh_icon_large-white.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "MV_refresh_icon_large-white.png"; sourceTree = "<group>"; };
+		B8541B6A1DB5C6EF00867D82 /* MV_refresh_icon-white.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "MV_refresh_icon-white.png"; sourceTree = "<group>"; };
+		B8541B721DB7D48D00867D82 /* CustomClasses.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomClasses.swift; sourceTree = "<group>"; };
+		B8541B741DBBD0B500867D82 /* BlobComment.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlobComment.swift; sourceTree = "<group>"; };
 		B85FDE881D7DC2BA002A8FC7 /* CustomIdentityProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomIdentityProvider.swift; sourceTree = "<group>"; };
 		B86406FC1D71BDCD0084D6EF /* white.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = white.png; sourceTree = "<group>"; };
 		B86406FE1D74AD7F0084D6EF /* SearchViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SearchViewController.swift; sourceTree = "<group>"; };
@@ -165,6 +196,8 @@
 		B88884001D52D824001EE249 /* FBSDKShareKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = FBSDKShareKit.framework; sourceTree = "<group>"; };
 		B88884011D52D824001EE249 /* FBSDKCoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = FBSDKCoreKit.framework; sourceTree = "<group>"; };
 		B88884071D52DFD7001EE249 /* Bolts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Bolts.framework; path = "../../../Downloads/FacebookSDKs-iOS-4.14.0/Bolts.framework"; sourceTree = "<group>"; };
+		B88DFD871DBD50DF00255BA5 /* BlobTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlobTableViewCell.swift; sourceTree = "<group>"; };
+		B88DFD891DBE9F9200255BA5 /* Houston-Downtown2.gpx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = "Houston-Downtown2.gpx"; sourceTree = "<group>"; };
 		B8A729301D64064800FD6E0A /* star_yellow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = star_yellow.png; sourceTree = "<group>"; };
 		B8A729311D64064800FD6E0A /* star_clear.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = star_clear.png; sourceTree = "<group>"; };
 		B8C8C59C1D57544C004D773E /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
@@ -241,11 +274,18 @@
 				B80C565C1D5117C800C4E683 /* Default-568h@2x.png */,
 				B80C56581D5116E000C4E683 /* defaultMedia.png */,
 				B80C56591D5116E000C4E683 /* logo.png */,
+				B8541B641DB5C6EF00867D82 /* MV_add_icon-white.png */,
 				B824214F1DA5DEE400827557 /* MV_add_icon.png */,
+				B8541B651DB5C6EF00867D82 /* MV_list_icon-white.png */,
 				B82421501DA5DEE400827557 /* MV_list_icon.png */,
+				B8541B661DB5C6EF00867D82 /* MV_location_icon-white.png */,
 				B82421511DA5DEE400827557 /* MV_location_icon.png */,
+				B8541B681DB5C6EF00867D82 /* MV_profile_icon-white.png */,
 				B82421521DA5DEE400827557 /* MV_profile_icon.png */,
+				B8541B691DB5C6EF00867D82 /* MV_refresh_icon_large-white.png */,
+				B8541B6A1DB5C6EF00867D82 /* MV_refresh_icon-white.png */,
 				B82421531DA5DEE400827557 /* MV_refresh_icon.png */,
+				B8541B671DB5C6EF00867D82 /* MV_search_icon-white.png */,
 				B82421541DA5DEE400827557 /* MV_search_icon.png */,
 				B8A729311D64064800FD6E0A /* star_clear.png */,
 				B8A729301D64064800FD6E0A /* star_yellow.png */,
@@ -259,6 +299,7 @@
 			isa = PBXGroup;
 			children = (
 				B80C56321D5112C100C4E683 /* Houston-Downtown.gpx */,
+				B88DFD891DBE9F9200255BA5 /* Houston-Downtown2.gpx */,
 				B80A84441D5AD2E1003943C3 /* Sugar_Land-Trailbrook_Front.gpx */,
 				B80D17781D9712C50032B0D8 /* style.json */,
 			);
@@ -287,6 +328,9 @@
 				B88131901D510EEE00021C4B /* Products */,
 				B80C565E1D51599E00C4E683 /* Resources */,
 				B80C565F1D5159D300C4E683 /* Settings */,
+				B8312FCC1DB3D9AE00CFC715 /* Blobjot-Bridging-Header.h */,
+				B8312FCD1DB3D9AF00CFC715 /* BlobjotTests-Bridging-Header.h */,
+				B8312FCE1DB3D9AF00CFC715 /* BlobjotUITests-Bridging-Header.h */,
 			);
 			sourceTree = "<group>";
 		};
@@ -303,8 +347,8 @@
 		B88131911D510EEE00021C4B /* Blobjot */ = {
 			isa = PBXGroup;
 			children = (
-				B80C56371D51158000C4E683 /* AccountTableViewCell.swift */,
-				B80C56381D51158000C4E683 /* AccountViewController.swift */,
+				B80C56411D51158000C4E683 /* AccountTableViewCell.swift */,
+				B80C56421D51158000C4E683 /* AccountViewController.swift */,
 				B88131921D510EEE00021C4B /* AppDelegate.swift */,
 				B80D17761D922FF20032B0D8 /* AWSClasses.swift */,
 				B80C56301D51126800C4E683 /* Blob.swift */,
@@ -314,21 +358,26 @@
 				B80C563C1D51158000C4E683 /* BlobAddTextViewController.swift */,
 				B80C563D1D51158000C4E683 /* BlobAddTypeViewController.swift */,
 				B80C563E1D51158000C4E683 /* BlobAddViewController.swift */,
+				B8541B741DBBD0B500867D82 /* BlobComment.swift */,
 				B864070A1D7B14A40084D6EF /* BlobNotification.swift */,
 				B86407091D7B14A40084D6EF /* BlobNotifications+CoreDataProperties.swift */,
 				B80C563F1D51158000C4E683 /* BlobsActiveTableViewCell.swift */,
 				B80C56401D51158000C4E683 /* BlobsActiveTableViewController.swift */,
-				B80C56411D51158000C4E683 /* BlobsUserTableViewCell.swift */,
-				B80C56421D51158000C4E683 /* BlobsUserTableViewController.swift */,
 				B81822061D5B98F300B3A2BB /* BlobThumbnailObject.swift */,
+				B88DFD871DBD50DF00255BA5 /* BlobTableViewCell.swift */,
 				B80C56431D51158000C4E683 /* BlobViewController.swift */,
+				B80C56371D51158000C4E683 /* ConnectionsTableViewCell.swift */,
+				B80C56381D51158000C4E683 /* ConnectionsViewController.swift */,
 				B80C56331D5112F100C4E683 /* Constants.swift */,
 				B864070C1D7B14A40084D6EF /* CurrentUser.swift */,
 				B864070B1D7B14A40084D6EF /* CurrentUser+CoreDataProperties.swift */,
+				B8541B721DB7D48D00867D82 /* CustomClasses.swift */,
 				B85FDE881D7DC2BA002A8FC7 /* CustomIdentityProvider.swift */,
 				B86407041D7B0E710084D6EF /* DataController.swift */,
 				B8C8C59C1D57544C004D773E /* Extensions.swift */,
 				B80C56441D51158000C4E683 /* LocationEventsCollectionViewCell.swift */,
+				B8312FD91DB3DA8700CFC715 /* LocationManagerSetting.swift */,
+				B8312FDD1DB3DACB00CFC715 /* LocationManagerSetting+CoreDataProperties.swift */,
 				B80D17741D90E1C90032B0D8 /* LoginViewController.swift */,
 				B80C56351D5113B900C4E683 /* MapViewController.swift */,
 				B80C56451D51158000C4E683 /* PeopleTableViewCell.swift */,
@@ -483,22 +532,30 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B8541B6E1DB5C6EF00867D82 /* MV_search_icon-white.png in Resources */,
+				B88DFD8A1DBE9F9200255BA5 /* Houston-Downtown2.gpx in Resources */,
 				B80C565A1D5116E000C4E683 /* defaultMedia.png in Resources */,
 				B80A84451D5AD2E2003943C3 /* Sugar_Land-Trailbrook_Front.gpx in Resources */,
 				B8A729331D64064800FD6E0A /* star_clear.png in Resources */,
 				B80D17791D9712C60032B0D8 /* style.json in Resources */,
+				B8541B711DB5C6EF00867D82 /* MV_refresh_icon-white.png in Resources */,
 				B80C565D1D5117C800C4E683 /* Default-568h@2x.png in Resources */,
 				B824215A1DA5DEE400827557 /* MV_search_icon.png in Resources */,
 				B82421581DA5DEE400827557 /* MV_profile_icon.png in Resources */,
 				B82421571DA5DEE400827557 /* MV_location_icon.png in Resources */,
 				B82421561DA5DEE400827557 /* MV_list_icon.png in Resources */,
+				B8541B6C1DB5C6EF00867D82 /* MV_list_icon-white.png in Resources */,
 				B8A729321D64064800FD6E0A /* star_yellow.png in Resources */,
 				B82421551DA5DEE400827557 /* MV_add_icon.png in Resources */,
 				B86406FD1D71BDCD0084D6EF /* white.png in Resources */,
 				B82421591DA5DEE400827557 /* MV_refresh_icon.png in Resources */,
 				B80C565B1D5116E000C4E683 /* logo.png in Resources */,
+				B8541B6F1DB5C6EF00867D82 /* MV_profile_icon-white.png in Resources */,
+				B8541B701DB5C6EF00867D82 /* MV_refresh_icon_large-white.png in Resources */,
+				B8541B6B1DB5C6EF00867D82 /* MV_add_icon-white.png in Resources */,
 				B881319D1D510EEE00021C4B /* Assets.xcassets in Resources */,
 				B86407011D75BAE50084D6EF /* circle-small.png in Resources */,
+				B8541B6D1DB5C6EF00867D82 /* MV_location_icon-white.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -646,9 +703,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B8541B751DBBD0B900867D82 /* BlobComment.swift in Sources */,
 				B864070F1D7B14A40084D6EF /* CurrentUser+CoreDataProperties.swift in Sources */,
 				B8C8C59D1D57544C004D773E /* Extensions.swift in Sources */,
 				B80C56551D51158000C4E683 /* PeopleTableViewCell.swift in Sources */,
+				B8312FDE1DB3DACB00CFC715 /* LocationManagerSetting+CoreDataProperties.swift in Sources */,
 				B86407101D7B14A40084D6EF /* CurrentUser.swift in Sources */,
 				B80D17771D922FF20032B0D8 /* AWSClasses.swift in Sources */,
 				B864070E1D7B14A40084D6EF /* BlobNotification.swift in Sources */,
@@ -656,7 +715,7 @@
 				B85FDE891D7DC2BA002A8FC7 /* CustomIdentityProvider.swift in Sources */,
 				B86407051D7B0E720084D6EF /* DataController.swift in Sources */,
 				B80C56361D5113B900C4E683 /* MapViewController.swift in Sources */,
-				B80C56481D51158000C4E683 /* AccountViewController.swift in Sources */,
+				B80C56481D51158000C4E683 /* ConnectionsViewController.swift in Sources */,
 				B80C56531D51158000C4E683 /* BlobViewController.swift in Sources */,
 				B80D177B1D98A5760032B0D8 /* UtilityFunctions.swift in Sources */,
 				B80C56311D51126800C4E683 /* Blob.swift in Sources */,
@@ -666,20 +725,23 @@
 				B80C56501D51158000C4E683 /* BlobsActiveTableViewController.swift in Sources */,
 				B80C56611D5183B100C4E683 /* User.swift in Sources */,
 				B80C56541D51158000C4E683 /* LocationEventsCollectionViewCell.swift in Sources */,
-				B80C56471D51158000C4E683 /* AccountTableViewCell.swift in Sources */,
+				B80C56471D51158000C4E683 /* ConnectionsTableViewCell.swift in Sources */,
 				B80C564D1D51158000C4E683 /* BlobAddTypeViewController.swift in Sources */,
 				B80D17751D90E1C90032B0D8 /* LoginViewController.swift in Sources */,
 				B86406FF1D74AD800084D6EF /* SearchViewController.swift in Sources */,
 				B80C564C1D51158000C4E683 /* BlobAddTextViewController.swift in Sources */,
-				B80C56511D51158000C4E683 /* BlobsUserTableViewCell.swift in Sources */,
+				B80C56511D51158000C4E683 /* AccountTableViewCell.swift in Sources */,
 				B80C564F1D51158000C4E683 /* BlobsActiveTableViewCell.swift in Sources */,
 				B864070D1D7B14A40084D6EF /* BlobNotifications+CoreDataProperties.swift in Sources */,
-				B80C56521D51158000C4E683 /* BlobsUserTableViewController.swift in Sources */,
+				B80C56521D51158000C4E683 /* AccountViewController.swift in Sources */,
 				B88131931D510EEE00021C4B /* AppDelegate.swift in Sources */,
+				B88DFD881DBD50DF00255BA5 /* BlobTableViewCell.swift in Sources */,
+				B8312FDA1DB3DA8700CFC715 /* LocationManagerSetting.swift in Sources */,
 				B80C564A1D51158000C4E683 /* BlobAddPeopleTableViewCell.swift in Sources */,
 				B86407081D7B13EB0084D6EF /* DataModel.xcdatamodeld in Sources */,
 				B81822071D5B98F300B3A2BB /* BlobThumbnailObject.swift in Sources */,
 				B80C564E1D51158000C4E683 /* BlobAddViewController.swift in Sources */,
+				B8541B731DB7D49000867D82 /* CustomClasses.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -687,7 +749,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B8312FDF1DB3DACB00CFC715 /* LocationManagerSetting+CoreDataProperties.swift in Sources */,
 				B88131AB1D510EEF00021C4B /* BlobjotTests.swift in Sources */,
+				B8312FDB1DB3DA8700CFC715 /* LocationManagerSetting.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -695,7 +759,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B8312FE01DB3DACB00CFC715 /* LocationManagerSetting+CoreDataProperties.swift in Sources */,
 				B88131B61D510EEF00021C4B /* BlobjotUITests.swift in Sources */,
+				B8312FDC1DB3DA8700CFC715 /* LocationManagerSetting.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -814,6 +880,7 @@
 			baseConfigurationReference = A5145EC0D2F396CEDC3D1CE7 /* Pods-Blobjot.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Blobjot/Blobjot.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer: Sean Hart (LMW994B3US)";
 				DEVELOPMENT_TEAM = 72XSPM3WLQ;
@@ -828,6 +895,8 @@
 				PRODUCT_NAME = Blobjot;
 				PROVISIONING_PROFILE = "658936ba-0b89-42aa-a9d5-7948098ef7d3";
 				PROVISIONING_PROFILE_SPECIFIER = "Blobjot-DEV-ProvProfile";
+				SWIFT_OBJC_BRIDGING_HEADER = "Blobjot-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
@@ -837,6 +906,7 @@
 			baseConfigurationReference = ECCEA997791A35BA1BCB3413 /* Pods-Blobjot.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Blobjot/Blobjot.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer: Sean Hart (LMW994B3US)";
 				DEVELOPMENT_TEAM = 72XSPM3WLQ;
@@ -851,6 +921,7 @@
 				PRODUCT_NAME = Blobjot;
 				PROVISIONING_PROFILE = "658936ba-0b89-42aa-a9d5-7948098ef7d3";
 				PROVISIONING_PROFILE_SPECIFIER = "Blobjot-DEV-ProvProfile";
+				SWIFT_OBJC_BRIDGING_HEADER = "Blobjot-Bridging-Header.h";
 				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
@@ -860,10 +931,13 @@
 			baseConfigurationReference = F21B6FE74C2C324EDC05B21F /* Pods-BlobjotTests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_MODULES = YES;
 				INFOPLIST_FILE = BlobjotTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.blobjot.BlobjotTests;
 				PRODUCT_NAME = Blobjot;
+				SWIFT_OBJC_BRIDGING_HEADER = "BlobjotTests-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 3.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Blobjot.app/Blobjot";
 			};
@@ -874,10 +948,12 @@
 			baseConfigurationReference = 6D9D1A9C9D6614F904B32B05 /* Pods-BlobjotTests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_MODULES = YES;
 				INFOPLIST_FILE = BlobjotTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.blobjot.BlobjotTests;
 				PRODUCT_NAME = Blobjot;
+				SWIFT_OBJC_BRIDGING_HEADER = "BlobjotTests-Bridging-Header.h";
 				SWIFT_VERSION = 3.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Blobjot.app/Blobjot";
 			};
@@ -887,10 +963,13 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = BF3D7EAE5506D94FE1CC92A9 /* Pods-BlobjotUITests.debug.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				INFOPLIST_FILE = BlobjotUITests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.blobjot.BlobjotUITests;
 				PRODUCT_NAME = Blobjot;
+				SWIFT_OBJC_BRIDGING_HEADER = "BlobjotUITests-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 3.0;
 				TEST_TARGET_NAME = Blobjot;
 			};
@@ -900,10 +979,12 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 2B56171CD8E7CA54A66EC916 /* Pods-BlobjotUITests.release.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				INFOPLIST_FILE = BlobjotUITests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.blobjot.BlobjotUITests;
 				PRODUCT_NAME = Blobjot;
+				SWIFT_OBJC_BRIDGING_HEADER = "BlobjotUITests-Bridging-Header.h";
 				SWIFT_VERSION = 3.0;
 				TEST_TARGET_NAME = Blobjot;
 			};

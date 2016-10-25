@@ -10,14 +10,16 @@ import AWSCore
 import GoogleMaps
 import UIKit
 
-struct Constants {
+struct Constants
+{
     
     static var inBackground = false
     static var appDelegateLocationManager = CLLocationManager()
     
     static var credentialsProvider = AWSCognitoCredentialsProvider(regionType: Constants.Strings.awsRegion, identityPoolId: Constants.Strings.awsCognitoIdentityPoolID)
     
-    enum BlobTypes: Int {
+    enum BlobTypes: Int
+    {
         case temporary = 1
         case `public` = 2
         case permanent = 3
@@ -26,32 +28,14 @@ struct Constants {
         case invisible = 6
     }
     
-    enum UserStatusTypes: Int {
+    enum UserStatusTypes: Int
+    {
         case pending = 0
         case waiting = 1
         case connected = 2
         case notConnected = 3
         case blocked = 4
     }
-    
-//    enum AWSMethodTypes: Int
-//    {
-//        case loginUser = 0
-//        case logoutUser = 1
-//        case getMapData = 2
-//        case getBlobData = 3
-//        case getThumbnailImageForThumbnail = 4
-//        case getSingleUserData = 5
-//        case getUserImage = 6
-//        case editUserName = 7
-//    }
-    
-//    enum BlobColors: UIColor {
-//        case Temporary = Constants.Colors.blobRed
-//        case Permanent = Constants.Colors.blobYellow
-//        case Public = Constants.Colors.blobPurple
-//        case Invisible = Constants.Colors.blobGray
-//    }
     
     func blobTypes(_ blobTypeInt: Int) -> Constants.BlobTypes
     {
@@ -109,15 +93,23 @@ struct Constants {
         }
     }
     
-    struct Colors {
+    struct Colors
+    {
         
         static let standardBackground = UIColor.white
         static let standardBackgroundTransparent = UIColor(red: 255/255, green: 255/255, blue: 255/255, alpha: 0.8) //#FFF
-        static let standardBackgroundGray = UIColor.gray
-        static let standardBackgroundGrayTransparent = UIColor(red: 0/255, green: 0/255, blue: 0/255, alpha: 0.3) //#000000
-        static let colorStatusBar = UIColor(red: 38/255, green: 38/255, blue: 38/255, alpha: 1.0) //#262626
-        static let colorTopBar = UIColor(red: 64/255, green: 64/255, blue: 64/255, alpha: 1.0) //#404040
+        static let standardBackgroundGray = UIColor(red: 104/255, green: 104/255, blue: 104/255, alpha: 1.0) //#686868
+        static let standardBackgroundGrayTransparent = UIColor(red: 104/255, green: 104/255, blue: 104/255, alpha: 0.3) //#686868
+        static let standardBackgroundGrayUltraLight = UIColor(red: 242/255, green: 242/255, blue: 242/255, alpha: 1.0) //#F2F2F2
+//        static let colorStatusBar = UIColor(red: 38/255, green: 38/255, blue: 38/255, alpha: 1.0) //#262626
+//        static let colorTopBar = UIColor(red: 64/255, green: 64/255, blue: 64/255, alpha: 1.0) //#404040
+//        static let colorStatusBar = UIColor(red: 242/255, green: 242/255, blue: 242/255, alpha: 1.0) //#F2F2F2
+//        static let colorTopBar = UIColor(red: 242/255, green: 242/255, blue: 242/255, alpha: 1.0) //#F2F2F2
+        static let colorStatusBar = UIColor(red: 138/255, green: 112/255, blue: 178/255, alpha: 1.0) //#8A70B2
+        static let colorTopBar = UIColor(red: 138/255, green: 112/255, blue: 178/255, alpha: 1.0) //#8A70B2
         static let colorBorderGrayLight = UIColor(red: 204/255, green: 204/255, blue: 204/255, alpha: 1.0) //#CCC
+//        static let colorTextNavBar = UIColor(red: 51/255, green: 51/255, blue: 51/255, alpha: 1.0) //#333333
+        static let colorTextNavBar = UIColor.white
         
         static let colorTextStandard = UIColor(red: 0/255, green: 0/255, blue: 0/255, alpha: 0.3) //#000000
         static let colorTextGray = UIColor(red: 38/255, green: 38/255, blue: 38/255, alpha: 1.0) //#262626
@@ -126,18 +118,18 @@ struct Constants {
         
         static let blobGray = UIColor(red: 0/255, green: 0/255, blue: 0/255, alpha: 0.3) //#000000
         static let blobGrayOpaque = UIColor(red: 38/255, green: 38/255, blue: 38/255, alpha: 1.0) //#262626
-        static let blobRed = UIColor(red: 255/255, green: 105/255, blue: 97/255, alpha: 0.3) //#FF6961
-        static let blobRedOpaque = UIColor(red: 255/255, green: 105/255, blue: 97/255, alpha: 1.0) //#FF6961
-        static let blobYellow = UIColor(red: 253/255, green: 253/255, blue: 150/255, alpha: 0.3) //#FDFD96
-        static let blobYellowOpaque = UIColor(red: 253/255, green: 253/255, blue: 150/255, alpha: 1.0) //#FDFD96
-        static let blobPurple = UIColor(red: 150/255, green: 111/255, blue: 214/255, alpha: 0.3) //#966FD6
-        static let blobPurpleOpaque = UIColor(red: 150/255, green: 111/255, blue: 214/255, alpha: 1.0) //#966FD6
-        static let blobHighlight = UIColor.darkGray
+        static let blobRed = UIColor(red: 242/255, green: 105/255, blue: 99/255, alpha: 0.3) //#F26963
+        static let blobRedOpaque = UIColor(red: 242/255, green: 105/255, blue: 99/255, alpha: 1.0) //#F26963
+        static let blobYellow = UIColor(red: 252/255, green: 178/255, blue: 73/255, alpha: 0.3) //#FCB249
+        static let blobYellowOpaque = UIColor(red: 252/255, green: 178/255, blue: 73/255, alpha: 1.0) //#FCB249
+        static let blobPurple = UIColor(red: 138/255, green: 112/255, blue: 178/255, alpha: 0.3) //#8A70B2
+        static let blobPurpleOpaque = UIColor(red: 138/255, green: 112/255, blue: 178/255, alpha: 1.0) //#8A70B2
+        static let blobHighlight = UIColor(red: 104/255, green: 104/255, blue: 104/255, alpha: 1.0) //#686868
         
-        static let colorPurple = UIColor(red: 153/255, green: 102/255, blue: 255/255, alpha: 1.0) //#9966FF
-        static let colorPurpleTransparent = UIColor(red: 153/255, green: 102/255, blue: 255/255, alpha: 0.3) //#9966FF
-        static let colorPurpleLight = UIColor(red: 204/255, green: 179/255, blue: 255/255, alpha: 1.0) //#CCB3FF
-        static let colorPurpleDark = UIColor(red: 119/255, green: 51/255, blue: 255/255, alpha: 1.0) //#7733ff
+        static let colorPurple = UIColor(red: 138/255, green: 112/255, blue: 178/255, alpha: 1.0) //#8A70B2
+        static let colorPurpleTransparent = UIColor(red: 138/255, green: 112/255, blue: 178/255, alpha: 0.3) //#8A70B2
+        static let colorPurpleLight = UIColor(red: 215/255, green: 206/255, blue: 228/255, alpha: 1.0) //#D7CEE4
+        static let colorPurpleDark = UIColor(red: 84/255, green: 62/255, blue: 116/255, alpha: 1.0) //#543E74
         
         static let colorBlue = UIColor(red: 0/255, green: 153/255, blue: 255/255, alpha: 1.0) //#0099FF
         static let colorBlueLight = UIColor(red: 102/255, green: 194/255, blue: 255/255, alpha: 1.0) //#66C2FF
@@ -154,13 +146,15 @@ struct Constants {
         static let colorPreviewTextNormal = UIColor.black
         static let colorPreviewTextError = UIColor.red
         
+        static let colorMapViewButton = UIColor(red: 138/255, green: 112/255, blue: 178/255, alpha: 1.0) //#8A70B2
+        
     }
     
     struct Data {
         
         static var badgeNumber = 0
         static var attemptedLogin: Bool = false
-        static var loginTries: Int = 0
+        static var serverTries: Int = 0
         static var lastCredentials: TimeInterval = Date().timeIntervalSince1970
         
         static var currentUser: String = "" //DON_QUIXOTE: MY9QP9I8HW6ZDMWA || THE_LADY_WITH_COFFEE: 70X4ODWM6D4AL2H4 || TEST_USER: NOLFGJEJ5KX6AIE2 // THE LOGGED IN USER
@@ -182,11 +176,11 @@ struct Constants {
         
         static let statusBarStandardHeight: CGFloat = 20
         
-        static let mapViewButtonAddSize: CGFloat = 100
-        static let mapViewButtonSearchSize: CGFloat = 60
-        static let mapViewButtonListSize: CGFloat = 60
-        static let mapViewButtonAccountSize: CGFloat = 60
-        static let mapViewButtonTrackUserSize: CGFloat = 60
+        static let mapViewButtonAddSize: CGFloat = 40
+        static let mapViewButtonSearchSize: CGFloat = 40
+        static let mapViewButtonListSize: CGFloat = 40
+        static let mapViewButtonAccountSize: CGFloat = 40
+        static let mapViewButtonTrackUserSize: CGFloat = 40
         
         static let mapViewSearchBarContainerHeight: CGFloat = 45
         static let mapViewSearchBarHeight: CGFloat = 25
@@ -197,30 +191,42 @@ struct Constants {
         static let mapViewLocationBlobsCVIndicatorSize: CGFloat = 10
         static let mapViewLocationBlobsCVHighlightAdjustSize: CGFloat = 10
         
+        static let mapViewShadowOffset = CGSize(width: 0, height: 0.2)
+        static let mapViewShadowOpacity: Float = 0.2
+        static let mapViewShadowRadius: CGFloat = 1.0
+        
+        static let cardShadowOffset = CGSize(width: 0, height: 0.2)
+        static let cardShadowOpacity: Float = 0.5
+        static let cardShadowRadius: CGFloat = 2.0
+        
         static let blobsActiveTableViewCellHeight: CGFloat = 100
         static let blobsActiveTableViewUserImageSize: CGFloat = 60
-        static let blobsActiveTableViewIndicatorSize: CGFloat = 94
+        static let blobsActiveTableViewIndicatorSize: CGFloat = 40
         static let blobsActiveTableViewContentSize: CGFloat = 90
         
-        static let blobsUserTableViewCellHeight: CGFloat = 100
-        static let blobsUserTableViewIndicatorSize: CGFloat = 60
+        static let accountTableViewCellHeight: CGFloat = 100
+        static let blobsUserTableViewIndicatorSize: CGFloat = 40
         static let blobsUserTableViewContentSize: CGFloat = 90
         
-        static let blobViewUserImageSize: CGFloat = 60
-        static let blobViewIndicatorSize: CGFloat = 120
+        static let blobViewUserImageSize: CGFloat = 28
+        static let blobViewIndicatorSize: CGFloat = 60
+        static let blobViewButtonSize: CGFloat = 40
+        static let blobViewCellHeight: CGFloat = 50
+        static let blobViewCommentUserImageSize: CGFloat = 20
         
         static let blobAddTypeCircleSize: CGFloat = 40
         
         static let blobAddPeopleSearchBarHeight: CGFloat = 40
-        static let blobAddPeopleTableViewCellHeight: CGFloat = 60
+        static let blobAddPeopleTableViewCellHeight: CGFloat = 40
         
         static let peopleSearchBarHeight: CGFloat = 40
         static let peopleTableViewCellHeight: CGFloat = 80
-        static let peopleConnectStarSize: CGFloat = 40
+        static let peopleTableViewUserImageSize: CGFloat = 40
+        static let peopleConnectIndicatorSize: CGFloat = 40
         
         static let accountProfileBoxHeight: CGFloat = 120
         static let accountSearchBarHeight: CGFloat = 40
-        static let accountTableViewCellHeight: CGFloat = 80
+        static let connectionsTableViewCellHeight: CGFloat = 80
         static let accountConnectStarSize: CGFloat = 40
         
     }
@@ -240,11 +246,12 @@ struct Constants {
         static let S3BucketMedia = "blobjot-media"
         
         static let peopleTableViewCellReuseIdentifier = "peopleTableViewCell"
-        static let accountTableViewCellReuseIdentifier = "accountTableViewCell"
+        static let connectionsTableViewCellReuseIdentifier = "connectionsTableViewCell"
         static let locationBlobsCellReuseIdentifier = "locationBlobsCell"
         static let blobsActiveTableViewCellReuseIdentifier = "blobsActiveTableViewCell"
-        static let blobsUserTableViewCellReuseIdentifier = "blobsUserTableViewCell"
+        static let accountTableViewCellReuseIdentifier = "accountTableViewCell"
         static let blobAddPeopleTableViewCellReuseIdentifier = "blobAddPeopleTableViewCell"
+        static let blobTableViewCellReuseIdentifier = "blobTableViewCell"
         
         static let cacheSessionViewHistory = "sessionViewHistory"
         
@@ -256,15 +263,25 @@ struct Constants {
 //        static let awsCognitoIdentityPoolID = "us-east-1:6db4d1c8-f3f5-4466-b135-535279ff6077"
         static let awsCognitoIdentityPoolID = "us-east-1:c24cf3db-0349-4163-87ad-3572319324e7"
         
+        static let stringLogOut = "Log Out"
+        static let stringLMConstant = "Constant\n(High Accuracy)"
+        static let stringLMSignificant = "Battery Saver\n(Low Accuracy)"
+        
     }
     
     struct Settings {
         
         static let gKey = "AIzaSyBdwjW6jYuPjZP7oW8NsqHkZQyMxFq_j0w"
         static let mapStyleUrl = URL(string: "mapbox://styles/tangojlabs/ciqwaddsl0005b7m0xwctftow")
-        static let maxLoginTries: Int = 5
+        static let maxServerTries: Int = 5
+        static let locationDistanceFilter: Double = 10 // In meters
         static let locationAccuracyMax: Double = 30 // In meters
         static let locationAccuracyMaxBackground: Double = 100 // In meters
+        static let locationAccuracyDeferredDistance: Double = 100 // In meters
+        static let locationAccuracyDeferredInterval: Double = 180 // In seconds
+        
+        static var locationManagerConstant: Bool = true
+        static var statusBarStyle: UIStatusBarStyle = UIStatusBarStyle.lightContent
         
     }
     

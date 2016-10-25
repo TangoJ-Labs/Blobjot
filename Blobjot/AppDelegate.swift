@@ -16,15 +16,15 @@ import GooglePlaces
 import UIKit
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate, AWSRequestDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate, AWSRequestDelegate
+{
 
     var window: UIWindow?
     let navController = UINavigationController()
     var mapViewController: MapViewController!
 
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-        print("DID FINISH LAUNCHING WITH OPTIONS: \(launchOptions)")
-        
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool
+    {
         // Register the device with Apple's Push Notification Service
         let notificationTypes: UIUserNotificationType = [UIUserNotificationType.alert, UIUserNotificationType.badge, UIUserNotificationType.sound]
         let pushNotificationSettings = UIUserNotificationSettings(types: notificationTypes, categories: nil)
@@ -47,10 +47,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         self.window = UIWindow(frame: UIScreen.main.bounds)
         self.window!.rootViewController = mapViewController
         self.window!.makeKeyAndVisible()
-        print("!!!!!! ASSIGNED ROOT VIEW CONTROLLER !!!!!!")
         
         // Change the color of the default background (try to change the color of the background seen when using a flip transition)
-        if let window = window {
+        if let window = window
+        {
             window.layer.backgroundColor = Constants.Colors.colorStatusBar.cgColor
         }
         
@@ -63,7 +63,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         return true
     }
     
-    func applicationWillResignActive(_ application: UIApplication) {
+    func applicationWillResignActive(_ application: UIApplication)
+    {
         // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
         // Use this method to pause ongoing tasks, disable timers, and throttle down OpenGL ES frame rates. Games should use this method to pause the game.
         
@@ -74,7 +75,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         self.updateLocationManager()
     }
     
-    func applicationDidEnterBackground(_ application: UIApplication) {
+    func applicationDidEnterBackground(_ application: UIApplication)
+    {
         print("IN APP DID ENTER BACKGROUND")
         
         Constants.inBackground = true
@@ -82,13 +84,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         self.updateLocationManager()
     }
     
-    func applicationWillEnterForeground(_ application: UIApplication) {
+    func applicationWillEnterForeground(_ application: UIApplication)
+    {
         // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
         
         Constants.inBackground = false
+        
+        print("AD-AWEF - STOPPING LOCATION UPDATING")
+        Constants.appDelegateLocationManager.stopUpdatingLocation()
+        self.updateLocationManager()
     }
     
-    func applicationDidBecomeActive(_ application: UIApplication) {
+    func applicationDidBecomeActive(_ application: UIApplication)
+    {
         print("IN APP DID BECOME ACTIVE")
         // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
         Constants.inBackground = false
@@ -100,11 +108,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         Constants.Data.badgeNumber = 0
         UIApplication.shared.applicationIconBadgeNumber = Constants.Data.badgeNumber
         
-        print("STOPPING LOCATION UPDATING")
+        print("AD-ADBA - STOPPING LOCATION UPDATING")
         Constants.appDelegateLocationManager.stopUpdatingLocation()
+        self.updateLocationManager()
     }
     
-    func applicationWillTerminate(_ application: UIApplication) {
+    func applicationWillTerminate(_ application: UIApplication)
+    {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
         // Saves changes in the application's managed object context before the application terminates.
         
@@ -115,9 +125,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         let moc = dataController.managedObjectContext
         
         // Try to save the context
-        do {
+        do
+        {
             try moc.save()
-        } catch {
+        }
+        catch
+        {
             let nserror = error as NSError
             NSLog("Unresolved error \(nserror), \(nserror.userInfo)")
         }
@@ -154,6 +167,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
                         {
                             // Center the map on the Blob location
                             self.mapViewController.setMapCamera(CLLocationCoordinate2D(latitude: blob.blobLat, longitude: blob.blobLong))
+                            self.mapViewController.mapView.animate(toZoom: UtilityFunctions().mapZoomForBlobSize(Float(blob.blobRadius)))
                             
                             break checkMapBlobLoop
                         }
@@ -166,14 +180,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     
     // MARK: REMOTE (PUSH) NOTIFICATIONS
     
-    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-        let token = NSData.init(data: deviceToken)
-        print("AD-RN = DEVICE TOKEN: \(token)")
-        
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data)
+    {
         // Use the device token from APNS to register with AWS SNS
-//        let stringToken = String(data: deviceToken, encoding: String.Encoding.utf8)
         var stringToken = ""
-        for i in 0..<deviceToken.count {
+        for i in 0..<deviceToken.count
+        {
             stringToken = stringToken + String(format: "%02.2hhx", arguments: [deviceToken[i]])
         }
         print("AD-RN = DEVICE TOKEN STRING: \(stringToken)")
@@ -213,7 +225,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     
     
     // For the FacebookSDK
-    func application(_ application: UIApplication, open url: URL, sourceApplication: String?, annotation: Any) -> Bool {
+    func application(_ application: UIApplication, open url: URL, sourceApplication: String?, annotation: Any) -> Bool
+    {
         print("AD-FBSDK - SOURCE APPLICATION: \(sourceApplication)")
         return FBSDKApplicationDelegate.sharedInstance().application(application, open: url, sourceApplication: sourceApplication, annotation: annotation)
     }
@@ -221,16 +234,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     
     // FUNCTIONS FOR LOCATION DELEGATE
     
-    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error)
+    {
         print("Error while updating location " + error.localizedDescription)
     }
     
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        print("AD - UPDATED LOCATIONS: \(locations)")
-        
-        if Constants.inBackground {
-            print("AD - UPDATED LOCATIONS - IN BACKGROUND: \(locations[0])")
-            
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation])
+    {
+        if Constants.inBackground
+        {
             // Calculate which Blobs are at the current location
             processNewLocationDataForNotifications(locations[0])
         }
@@ -239,31 +251,43 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     
     // MARK:  CUSTOM FUNCTIONS
     
-    func updateLocationManager() {
-        print("APPLYING LOCATION MANAGER")
+    func updateLocationManager()
+    {
         Constants.appDelegateLocationManager.delegate = self
         Constants.appDelegateLocationManager.desiredAccuracy = kCLLocationAccuracyBest
         Constants.appDelegateLocationManager.requestAlwaysAuthorization()
         Constants.appDelegateLocationManager.pausesLocationUpdatesAutomatically = false
         Constants.appDelegateLocationManager.allowsBackgroundLocationUpdates = true
-//        Constants.appDelegateLocationManager.startMonitoringSignificantLocationChanges()
         Constants.appDelegateLocationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
-        Constants.appDelegateLocationManager.startUpdatingLocation()
-        print("EXISTING LOCATION MANAGER: \(Constants.appDelegateLocationManager.description)")
+        Constants.appDelegateLocationManager.distanceFilter = Constants.Settings.locationDistanceFilter
+        
+        if Constants.Settings.locationManagerConstant
+        {
+            Constants.appDelegateLocationManager.startUpdatingLocation()
+            Constants.appDelegateLocationManager.disallowDeferredLocationUpdates()
+        }
+        else
+        {
+            Constants.appDelegateLocationManager.startMonitoringSignificantLocationChanges()
+            Constants.appDelegateLocationManager.allowDeferredLocationUpdates(untilTraveled: Constants.Settings.locationAccuracyDeferredDistance, timeout: Constants.Settings.locationAccuracyDeferredInterval)
+        }
     }
     
     // Process the new location data passed by the locationManager to create new notifications if needed
-    func processNewLocationDataForNotifications(_ userLocation: CLLocation) {
-        
+    func processNewLocationDataForNotifications(_ userLocation: CLLocation)
+    {
         // Retrieve the Blob notification data from Core Data
         let moc = DataController().managedObjectContext
         let blobFetch = NSFetchRequest<NSFetchRequestResult>(entityName: "BlobNotification")
         
         // Create an empty blobNotifications list in case the Core Data request fails
         var blobNotifications = [BlobNotification]()
-        do {
+        do
+        {
             blobNotifications = try moc.fetch(blobFetch) as! [BlobNotification]
-        } catch {
+        }
+        catch
+        {
             fatalError("Failed to fetch frames: \(error)")
         }
         
@@ -271,14 +295,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         let userRangeRadius = userLocation.horizontalAccuracy
         
         // Check to ensure that the location accuracy is reasonable - if too high, do not update data and wait for more accuracy
-        if userRangeRadius <= Constants.Settings.locationAccuracyMaxBackground {
-            
+        if userRangeRadius <= Constants.Settings.locationAccuracyMaxBackground
+        {
             // Clear the array of current location Blobs and add the default Blob as the first element
             Constants.Data.locationBlobs = [Constants.Data.defaultBlob]
             
             // Loop through the array of map Blobs to find which Blobs are in range of the user's current location
-            for blob in Constants.Data.mapBlobs {
-                
+            for blob in Constants.Data.mapBlobs
+            {
                 // Find the minimum distance possible to the Blob center from the user's location
                 // Determine the raw distance from the Blob center to the user's location
                 // Then subtract the user's location range radius to find the distance from the Blob center to the edge of
@@ -289,21 +313,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
                 
                 // If the minimum distance from the Blob's center to the user is equal to or less than the Blob radius,
                 // request the extra Blob data (Blob Text and/or Blob Media)
-                if minUserDistanceFromBlobCenter <= blob.blobRadius {
-                    print("AD - WITHIN RANGE OF BLOB: \(blob.blobID)")
-                    
+                if minUserDistanceFromBlobCenter <= blob.blobRadius
+                {
                     // Check to see if the current user has already been notified of the Blob
                     // Because a Blob notification is saved in BlobViewController each time the Blob is viewed,
                     // multiple entries with the same blobID may exist, but the loop will stop after reaching the first entry
                     var blobNotExists = false
-                    checkBlobNotLoop: for blobNotObject in blobNotifications {
-                        if blobNotObject.blobID == blob.blobID {
+                    checkBlobNotLoop: for blobNotObject in blobNotifications
+                    {
+                        if blobNotObject.blobID == blob.blobID
+                        {
                             blobNotExists = true
                             break checkBlobNotLoop
                         }
                     }
-                    if !blobNotExists {
-                        
+                    if !blobNotExists
+                    {
                         // Ensure that the Blob data has not already been requested
                         // If it as been requested, just append the Blob to the Location Blob Array
                         if !blob.blobExtraRequested {
@@ -316,19 +341,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
                             // When downloading Blob data, always request the user data if it does not already exist
                             // Find the correct User Object in the global list
                             var userExists = false
-                            loopUserObjectCheck: for userObject in Constants.Data.userObjects {
-                                if userObject.userID == blob.blobUserID {
+                            loopUserObjectCheck: for userObject in Constants.Data.userObjects
+                            {
+                                if userObject.userID == blob.blobUserID
+                                {
                                     userExists = true
                                     
                                     break loopUserObjectCheck
                                 }
                             }
                             // If the user has not been downloaded, request the user and the userImage and then notify the user
-                            if !userExists {
-                                
+                            if !userExists
+                            {
                                 AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: blob.blobUserID, forPreviewBox: false), delegate: self as AWSRequestDelegate).prepRequest()
                             }
-                        } else {
+                        }
+                        else
+                        {
                             Constants.Data.locationBlobs.append(blob)
                             print("AD - APPENDING BLOB")
                         }
@@ -344,7 +373,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     
     // MARK: AWS DELEGATE METHODS
     
-    func showLoginScreen() {
+    func showLoginScreen()
+    {
         print("AD - SHOW LOGIN SCREEN")
     }
     
@@ -369,8 +399,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
                 case let awsGetBlobMinimumData as AWSGetBlobMinimumData:
                     if success
                     {
+                        // Fire a notification to alert the user that a new Blob has been added
                         print("AD-PAR-AGBMD - SUCCESS: \(awsGetBlobMinimumData.blobID)")
                         UtilityFunctions().displayNewBlobNotification(newBlobID: awsGetBlobMinimumData.blobID)
+                        
+                        // Refresh the map so that the circle is added to the map
+                        self.mapViewController.refreshMap()
                     }
                     else
                     {
@@ -385,7 +419,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
                         // THIS ASSUMES THAT ONLY A NEW DATA NOTIFICATION WILL REQUEST THE SINGLE USER DATA IN APP DELEGATE
                         if let blob = awsGetSingleUserData.targetBlob
                         {
+                            // Fire a notification to alert the user that a new Blob has been added
                             UtilityFunctions().displayNewBlobNotification(newBlobID: blob.blobID)
+                            
+                            // Refresh the map so that the circle is added to the map
+                            self.mapViewController.refreshMap()
                         }
                     }
                     else

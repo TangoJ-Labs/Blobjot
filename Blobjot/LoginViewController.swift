@@ -39,11 +39,9 @@ class LoginViewController: UIViewController, FBSDKLoginButtonDelegate {
         
         // Record the status bar settings to adjust the view if needed
         UIApplication.shared.isStatusBarHidden = false
-        UIApplication.shared.statusBarStyle = UIStatusBarStyle.lightContent
+        UIApplication.shared.statusBarStyle = Constants.Settings.statusBarStyle
         statusBarHeight = UIApplication.shared.statusBarFrame.size.height
-        print("**************** LVC - STATUS BAR HEIGHT: \(statusBarHeight)")
         viewFrameY = self.view.frame.minY
-        print("**************** LVC - VIEW FRAME Y: \(viewFrameY)")
         screenSize = UIScreen.main.bounds
         
         let vcHeight = screenSize.height - statusBarHeight
@@ -58,7 +56,6 @@ class LoginViewController: UIViewController, FBSDKLoginButtonDelegate {
         viewContainer = UIView(frame: CGRect(x: screenSize.width / 4, y: vcHeight / 4, width: screenSize.width / 2, height: vcHeight / 2))
         viewContainer.backgroundColor = UIColor.white
         self.view.addSubview(viewContainer)
-        print("**************** LVC - VIEW CONTAINER FRAME Y: \(viewContainer.frame.minY)")
         
         // Create the login screen, login box, and facebook login button
         // Create the login screen and facebook login button

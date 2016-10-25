@@ -57,12 +57,8 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
         
         // Status Bar Settings
         statusBarHeight = UIApplication.shared.statusBarFrame.size.height
-        print("**************** BAPVC STATUS BAR HEIGHT: \(statusBarHeight)")
         viewFrameY = self.view.frame.minY
-        print("**************** BAPVC VIEW FRAME Y: \(viewFrameY)")
         screenSize = UIScreen.main.bounds
-        print("**************** BAPVC SCREEN HEIGHT: \(screenSize.height)")
-        print("**************** BAPVC VIEW HEIGHT: \(self.view.frame.height)")
         
         // Add the view container to hold all other views (decrease size to match pageViewController)
         viewContainer = UIView(frame: CGRect(x: 0, y: 0, width: self.view.frame.width, height: self.view.frame.height - 74 - self.view.frame.width))
@@ -364,7 +360,7 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
     // MARK: AWS DELEGATE METHODS
     
     func showLoginScreen() {
-        print("AD - SHOW LOGIN SCREEN")
+        print("BAPVC - SHOW LOGIN SCREEN")
     }
     
     func processAwsReturn(_ objectType: AWSRequestObject, success: Bool)
@@ -379,15 +375,15 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
                     {
                         // Loop through the arrays and add each user - the arrays should be in the proper order by user type
                         for (arrayIndex, userArray) in awsGetUserConnections.userConnectionArrays.enumerated() {
-                            print("AC - array: \(arrayIndex): jsonData: \(userArray)")
-                            print("AC - USER COUNT: \(userArray.count)")
+                            print("BAPVC - array: \(arrayIndex): jsonData: \(userArray)")
+                            print("BAPVC - USER COUNT: \(userArray.count)")
                             
                             // Stop the table loading spinner before adding data so that it does not show up in front of the user list
                             //                        self.accountTableActivityIndicator.stopAnimating()
                             
                             // Loop through each AnyObject (User) in the array
                             for user in userArray {
-                                print("AC - USER: \(user)")
+                                print("BAPVC - USER: \(user)")
                                 
                                 // Convert the AnyObject to JSON with keys and AnyObject values
                                 // Then convert the AnyObject values to Strings or Numbers depending on their key
@@ -395,9 +391,9 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
                                     let userID = checkUser["user_id"] as! String
                                     let userName = checkUser["user_name"] as! String
                                     let userImageKey = checkUser["user_image_key"] as! String
-                                    print("AC - USER ID: \(userID)")
-                                    print("AC - USER NAME: \(userName)")
-                                    print("AC - USER IMAGE KEY: \(userImageKey)")
+                                    print("BAPVC - USER ID: \(userID)")
+                                    print("BAPVC - USER NAME: \(userName)")
+                                    print("BAPVC - USER IMAGE KEY: \(userImageKey)")
                                     
                                     // Create a User Object and add it to the global User array
                                     let addUser = User()
@@ -406,7 +402,7 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
                                     addUser.userImageKey = userImageKey
                                     addUser.userStatus = Constants.UserStatusTypes(rawValue: arrayIndex)
                                     
-                                    print("AC - TRYING TO ADD DOWNLOADED USER: \(userName)")
+                                    print("BAPVC - TRYING TO ADD DOWNLOADED USER: \(userName)")
                                     
                                     // Check to ensure the user does not already exist in the local User array
                                     var personExists = false
@@ -428,7 +424,7 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
                                             print("AC - ADDED CONNECTED USER \(addUser.userName) TO PEOPLE LIST")
                                         }
                                     }
-                                    print("AC - PEOPLE LIST COUNT: \(self.peopleList.count)")
+                                    print("BAPVC - PEOPLE LIST COUNT: \(self.peopleList.count)")
                                 }
                             }
                         }
