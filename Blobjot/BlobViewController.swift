@@ -8,7 +8,6 @@
 
 import AWSLambda
 import AWSS3
-import Darwin
 import GoogleMaps
 import UIKit
 
@@ -98,7 +97,9 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
         blobTableView = UITableView(frame: CGRect(x: 0, y: 0, width: viewContainer.frame.width, height: viewContainer.frame.height))
         blobTableView.dataSource = self
         blobTableView.delegate = self
-        blobTableView.register(BlobTableViewCell.self, forCellReuseIdentifier: Constants.Strings.blobTableViewCellReuseIdentifier)
+        blobTableView.register(BlobTableViewCellBlob.self, forCellReuseIdentifier: Constants.Strings.blobTableViewCellBlobReuseIdentifier)
+        blobTableView.register(BlobTableViewCellLabel.self, forCellReuseIdentifier: Constants.Strings.blobTableViewCellLabelReuseIdentifier)
+        blobTableView.register(BlobTableViewCellComment.self, forCellReuseIdentifier: Constants.Strings.blobTableViewCellCommentReuseIdentifier)
         blobTableView.separatorStyle = .none
         blobTableView.backgroundColor = Constants.Colors.standardBackgroundGrayUltraLight
         blobTableView.alwaysBounceVertical = true
@@ -267,29 +268,14 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
             print("BVC - CELL HEIGHT - COMMENT HEIGHT FOR CELL: \(indexPath.row)")
             cellHeight = Constants.Dim.blobViewCommentCellHeight
             
-            // Make a dummy textview to calculate the needed height
-            let testCommentView = UITextView(frame: CGRect(x: 0, y: 0, width: commentBoxWidth, height: 20))
-            testCommentView.layer.cornerRadius = 5
-            testCommentView.font = UIFont(name: Constants.Strings.fontRegular, size: 16)
-            if let text = self.blobCommentArray[indexPath.row - 2].comment
-            {
-                testCommentView.text = text
-            }
-            
-            // Check the content size, if it is more than the normal height, resize the textview and cell to match the height
-//            let contentSize = testCommentView.contentSize.height
-//            print("BVC - CONTENT SIZE (TEST) FOR CELL: \(indexPath.row): \(contentSize)")
-//            if contentSize > Constants.Dim.blobViewCommentCellHeight - 4
-//            {
-//                testCommentView.frame.size.height = contentSize
-//                cellHeight = contentSize + 4
-//            }
+            // Calculate the text size to resize the cell height
             var contentSize: CGFloat = Constants.Dim.blobViewCommentCellHeight - 4
             if let text = self.blobCommentArray[indexPath.row - 2].comment
             {
-                contentSize = textHeightForAttributedText(text: NSAttributedString(string: text), width: commentBoxWidth)
+                contentSize = UtilityFunctions().textHeightForAttributedText(text: NSAttributedString(string: text), width: commentBoxWidth)
             }
             print("BVC - CONTENT SIZE FOR CELL: \(indexPath.row): \(contentSize)")
+            // Check the content size, if it is more than the normal height, resize the textview and cell to match the height
             if contentSize > Constants.Dim.blobViewCommentCellHeight - 4
             {
                 cellHeight = contentSize + 4
@@ -301,33 +287,24 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell
     {
-        let cell = tableView.dequeueReusableCell(withIdentifier: Constants.Strings.blobTableViewCellReuseIdentifier, for: indexPath) as! BlobTableViewCell
-        cell.cellContainer.frame.size.height = Constants.Dim.blobViewCellHeight
-        cell.cellContainer.backgroundColor = Constants.Colors.standardBackgroundGrayUltraLight
+//        cell.cellContainer.frame.size.height = Constants.Dim.blobViewCellHeight
+//        cell.cellContainer.backgroundColor = Constants.Colors.standardBackgroundGrayUltraLight
         
         if indexPath.row == 0
         {
-            var userImageContainer: UIView!
-            var userImageView: UIImageView!
-            var blobTypeIndicatorView: UIView!
-            var blobDatetimeLabel: UILabel!
-            var blobDateAgeLabel: UILabel!
-            var blobTextViewContainer: UIView!
-            var blobTextView: UITextView!
-            var blobImageView: UIImageView!
-            var mapView: GMSMapView!
-            var blobMediaActivityIndicator: UIActivityIndicatorView!
+            let cell = tableView.dequeueReusableCell(withIdentifier: Constants.Strings.blobTableViewCellBlobReuseIdentifier, for: indexPath) as! BlobTableViewCellBlob
             
-            // The User Image should be in the upper right quadrant
-            userImageContainer = UIImageView(frame: CGRect(x: 5, y: viewContainer.frame.height - 10 - Constants.Dim.blobViewUserImageSize - viewContainer.frame.width, width: Constants.Dim.blobViewUserImageSize, height: Constants.Dim.blobViewUserImageSize))
-            userImageContainer.layer.cornerRadius = Constants.Dim.blobViewUserImageSize / 2
-            cell.cellContainer.addSubview(userImageContainer)
+            if self.blobHasMedia || self.userBlob
+            {
+                cell.cellContainer.frame.size.height = self.viewContainer.frame.height
+            }
+            else
+            {
+                cell.cellContainer.frame.size.height = self.viewContainer.frame.height - self.viewContainer.frame.width
+            }
             
-            userImageView = UIImageView(frame: CGRect(x: 0, y: 0, width: userImageContainer.frame.width, height: userImageContainer.frame.height))
-            userImageView.layer.cornerRadius = Constants.Dim.blobViewUserImageSize / 2
-            userImageView.contentMode = UIViewContentMode.scaleAspectFill
-            userImageView.clipsToBounds = true
-            userImageContainer.addSubview(userImageView)
+            cell.blobTextViewContainer = UIView(frame: CGRect(x: 10 + Constants.Dim.blobViewUserImageSize, y: 50, width: viewContainer.frame.width - 15 - Constants.Dim.blobViewUserImageSize, height: viewContainer.frame.height - 60 - viewContainer.frame.width))
+            cell.blobTextView = UITextView(frame: CGRect(x: 0, y: 0, width: cell.blobTextViewContainer.frame.width, height: cell.blobTextViewContainer.frame.height))
             
             // Try to find the globally stored user data
             loopUserCheck: for user in Constants.Data.userObjects
@@ -339,7 +316,7 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
                     // and should be passed to this controller when downloaded
                     if let userImage = user.userImage
                     {
-                        userImageView.image = userImage
+                        cell.userImageView.image = userImage
                     }
                     // *COMPLETE******** RECEIVE A NOTIFICATION FROM THE MAP VIEW WHEN THE USER IMAGE HAS BEEN DOWNLOADED (IF NOT ALREADY)
                     
@@ -347,65 +324,27 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
                 }
             }
             
-            // The Blob Type Indicator should be to the top right of the the User Image
-            blobTypeIndicatorView = UIView(frame: CGRect(x: 5, y: 5, width: Constants.Dim.blobViewIndicatorSize, height: Constants.Dim.blobViewIndicatorSize))
-            blobTypeIndicatorView.layer.cornerRadius = Constants.Dim.blobViewIndicatorSize / 2
-            blobTypeIndicatorView.layer.shadowOffset = CGSize(width: 0, height: 0.2)
-            blobTypeIndicatorView.layer.shadowOpacity = 0.2
-            blobTypeIndicatorView.layer.shadowRadius = 1.0
             // Ensure blobType is not null
             if let blobType = blob.blobType
             {
                 // Assign the Blob Type color to the Blob Indicator
-                blobTypeIndicatorView.backgroundColor = Constants().blobColorOpaque(blobType)
+                cell.blobTypeIndicatorView.backgroundColor = Constants().blobColorOpaque(blobType)
             }
-            cell.cellContainer.addSubview(blobTypeIndicatorView)
-            
-            // The Date Age Label should be in small font just below the Navigation Bar at the right of the screen (right aligned text)
-            blobDateAgeLabel = UILabel(frame: CGRect(x: 0, y: 0, width: blobTypeIndicatorView.frame.width, height: blobTypeIndicatorView.frame.height))
-            blobDateAgeLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 10)
-            blobDateAgeLabel.textColor = Constants.Colors.colorTextGray
-            blobDateAgeLabel.textAlignment = .center
-            blobTypeIndicatorView.addSubview(blobDateAgeLabel)
-            
-            // The Datetime Label should be in small font just below the Navigation Bar starting at the left of the screen (left aligned text)
-            blobDatetimeLabel = UILabel(frame: CGRect(x: viewContainer.frame.width / 2 - 2, y: 2, width: viewContainer.frame.width / 2 - 2, height: 15))
-            blobDatetimeLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 10)
-            blobDatetimeLabel.textColor = Constants.Colors.colorTextGray
-            blobDatetimeLabel.textAlignment = .right
-            cell.cellContainer.addSubview(blobDatetimeLabel)
             
             if let datetime = blob.blobDatetime
             {
                 let formatter = DateFormatter()
                 formatter.dateFormat = "E, H:mm" //"E, MMM d HH:mm"
                 let stringDate: String = formatter.string(from: datetime as Date)
-                blobDatetimeLabel.text = stringDate
+                cell.blobDatetimeLabel.text = stringDate
                 let stringAge = String(-1 * Int(datetime.timeIntervalSinceNow / 3600)) + " hrs"
-                blobDateAgeLabel.text = stringAge
+                cell.blobDateAgeLabel.text = stringAge
             }
             
-            // The Text View should be in the upper left quadrant of the screen (to the left of the User Image), and should extend into the upper right quadrant nearing the User Image
-            blobTextViewContainer = UIView(frame: CGRect(x: 10 + Constants.Dim.blobViewUserImageSize, y: 50, width: viewContainer.frame.width - 15 - Constants.Dim.blobViewUserImageSize, height: viewContainer.frame.height - 60 - viewContainer.frame.width))
-            blobTextViewContainer.backgroundColor = UIColor.white
-            blobTextViewContainer.layer.cornerRadius = 10
-            blobTextViewContainer.layer.shadowOffset = CGSize(width: 0, height: 0.2)
-            blobTextViewContainer.layer.shadowOpacity = 0.5
-            blobTextViewContainer.layer.shadowRadius = 2.0
-            cell.cellContainer.addSubview(blobTextViewContainer)
-            
-            blobTextView = UITextView(frame: CGRect(x: 0, y: 0, width: blobTextViewContainer.frame.width, height: blobTextViewContainer.frame.height))
-            blobTextView.backgroundColor = UIColor.white
-            blobTextView.layer.cornerRadius = 10
-            blobTextView.font = UIFont(name: Constants.Strings.fontRegular, size: 16)
-            blobTextView.isScrollEnabled = true
-            blobTextView.isEditable = false
-            blobTextView.isSelectable = false
             if let text = blob.blobText
             {
-                blobTextView.text = text
+                cell.blobTextView.text = text
             }
-            blobTextViewContainer.addSubview(blobTextView)
             
             // The Media Content View should be in the lower half of the screen (partially extending into the upper half)
             // It should span the width of the screen
@@ -415,40 +354,40 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
             // Only show the media section if the blob has media
             if self.blobHasMedia
             {
-                blobImageView = UIImageView(frame: CGRect(x: 0, y: viewContainer.frame.height - blobImageSize, width: blobImageSize, height: blobImageSize))
-                blobImageView.contentMode = UIViewContentMode.scaleAspectFill
-                blobImageView.clipsToBounds = true
+                cell.blobImageView = UIImageView(frame: CGRect(x: 0, y: viewContainer.frame.height - blobImageSize, width: blobImageSize, height: blobImageSize))
+                cell.blobImageView.contentMode = UIViewContentMode.scaleAspectFill
+                cell.blobImageView.clipsToBounds = true
                 
                 // Add a loading indicator until the Media has downloaded
                 // Give it the same size and location as the blobImageView
-                blobMediaActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: 0, y: viewContainer.frame.height - viewContainer.frame.width, width: viewContainer.frame.width, height: viewContainer.frame.width))
-                blobMediaActivityIndicator.color = UIColor.black
+                cell.blobMediaActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: 0, y: viewContainer.frame.height - viewContainer.frame.width, width: viewContainer.frame.width, height: viewContainer.frame.width))
+                cell.blobMediaActivityIndicator.color = UIColor.black
                 
                 // Start animating the activity indicator
-                blobMediaActivityIndicator.startAnimating()
+                cell.blobMediaActivityIndicator.startAnimating()
                 print("BVC - MEDIA INDICATOR START")
                 
                 // Assign the blob image to the image if available - if not, assign the thumbnail until the real image downloads
                 if blobImage != nil
                 {
-                    blobImageView.image = blobImage
+                    cell.blobImageView.image = blobImage
                     
                     // Stop animating the activity indicator
-                    blobMediaActivityIndicator.stopAnimating()
+                    cell.blobMediaActivityIndicator.stopAnimating()
                     print("BVC - MEDIA INDICATOR STOP")
                 }
                 else if let thumbnailImage = blob.blobThumbnail
                 {
-                    blobImageView.image = thumbnailImage
+                    cell.blobImageView.image = thumbnailImage
                 }
                 else
                 {
                     // Stop animating the activity indicator
-                    blobMediaActivityIndicator.stopAnimating()
+                    cell.blobMediaActivityIndicator.stopAnimating()
                     print("BVC - MEDIA INDICATOR STOP")
                 }
-                cell.cellContainer.addSubview(blobImageView)
-                cell.cellContainer.addSubview(blobMediaActivityIndicator)
+                cell.cellContainer.addSubview(cell.blobImageView)
+                cell.cellContainer.addSubview(cell.blobMediaActivityIndicator)
             }
             
             // Add the Map View only if the Blob being viewed was created by the current user
@@ -464,17 +403,17 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
                     mapZoom = mapZoom + 2.0
                 }
                 let camera = GMSCameraPosition.camera(withLatitude: blob.blobLat, longitude: blob.blobLong, zoom: mapZoom)
-                mapView = GMSMapView.map(withFrame: mapFrame, camera: camera)
-                mapView.delegate = self
-                mapView.mapType = kGMSTypeNormal
-                mapView.isIndoorEnabled = true
-                mapView.isMyLocationEnabled = false
+                cell.mapView = GMSMapView.map(withFrame: mapFrame, camera: camera)
+                cell.mapView.delegate = self
+                cell.mapView.mapType = kGMSTypeNormal
+                cell.mapView.isIndoorEnabled = true
+                cell.mapView.isMyLocationEnabled = false
                 do
                 {
                     // Set the map style by passing the URL of the local file.
                     if let styleURL = Bundle.main.url(forResource: "style", withExtension: "json")
                     {
-                        mapView.mapStyle = try GMSMapStyle(contentsOfFileURL: styleURL)
+                        cell.mapView.mapStyle = try GMSMapStyle(contentsOfFileURL: styleURL)
                     }
                     else
                     {
@@ -485,9 +424,9 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
                 {
                     NSLog("The style definition could not be loaded: \(error)")
                 }
-                cell.cellContainer.addSubview(mapView)
+                cell.cellContainer.addSubview(cell.mapView)
                 
-                self.adjustMapViewCamera(mapView)
+                self.adjustMapViewCamera(cell.mapView)
             }
             
             // Using the data passed from the parent VC to create a circle on the map to represent the Blob
@@ -495,122 +434,83 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
             blobCircle.fillColor = Constants().blobColor(blob.blobType)
             blobCircle.strokeColor = Constants().blobColor(blob.blobType)
             blobCircle.strokeWidth = 1
-            blobCircle.map = mapView
+            blobCircle.map = cell.mapView
+            
+            return cell
         }
         else if indexPath.row == 1
         {
-//            cell.cellContainer.backgroundColor = UIColor.yellow
+            let cell = tableView.dequeueReusableCell(withIdentifier: Constants.Strings.blobTableViewCellLabelReuseIdentifier, for: indexPath) as! BlobTableViewCellLabel
+            
+            cell.cellContainer.backgroundColor = UIColor.yellow
             cell.cellContainer.frame.size.height = Constants.Dim.blobViewCellHeight
-            let commentLabel: UILabel!
-            commentLabel = UILabel(frame: CGRect(x: 0, y: 0, width: cell.cellContainer.frame.width, height: cell.cellContainer.frame.height))
-            commentLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 12)
-            commentLabel.textColor = Constants.Colors.colorTextGray
-            commentLabel.text = ""
-            commentLabel.textAlignment = .center
-            cell.cellContainer.addSubview(commentLabel)
             
             if blobCommentArray.count == 0
             {
                 cell.cellContainer.frame.size.height = Constants.Dim.blobViewCommentCellHeight
-                commentLabel.frame.size.height = Constants.Dim.blobViewCommentCellHeight
-                commentLabel.text = "NO COMMENTS YET"
+                cell.commentLabel.frame.size.height = Constants.Dim.blobViewCommentCellHeight
+                cell.commentLabel.text = "NO COMMENTS YET"
                 print("BVC - ADD NO COMMENTS LABEL")
             }
+            
+            return cell
         }
         else
         {
-//            cell.cellContainer.backgroundColor = UIColor.red
+            let cell = tableView.dequeueReusableCell(withIdentifier: Constants.Strings.blobTableViewCellCommentReuseIdentifier, for: indexPath) as! BlobTableViewCellComment
+            
+            cell.cellContainer.backgroundColor = UIColor.red
             cell.cellContainer.frame.size.height = Constants.Dim.blobViewCommentCellHeight
-            var addCommentView: UITextView!
-            var userImageView: UIImageView!
             
             // If the comment's user is the logged in user, format the comment differently
             if self.blobCommentArray[indexPath.row - 2].userID == Constants.Data.currentUser
             {
-                // Add a new view for each comment
-                addCommentView = UITextView(frame: CGRect(x: cell.cellContainer.frame.width - 5 - commentBoxWidth, y: 2, width: commentBoxWidth, height: Constants.Dim.blobViewCommentCellHeight - 4))
-                addCommentView.backgroundColor = Constants.Colors.standardBackground
-                
-                // Add an imageview for the user image for the comment
-                userImageView = UIImageView(frame: CGRect(x: 5, y: 5, width: Constants.Dim.blobViewCommentUserImageSize, height: Constants.Dim.blobViewCommentUserImageSize))
+                // Add a new view for each comment, to the right of the view
+                cell.addCommentView = UITextView(frame: CGRect(x: cell.cellContainer.frame.width - 5 - commentBoxWidth, y: 2, width: commentBoxWidth, height: Constants.Dim.blobViewCommentCellHeight - 4))
+                cell.addCommentView.backgroundColor = Constants.Colors.standardBackground
             }
             else
             {
-                // Add a new view for each comment
-                addCommentView = UITextView(frame: CGRect(x: 10 + Constants.Dim.blobViewCommentUserImageSize, y: 2, width: commentBoxWidth, height: Constants.Dim.blobViewCommentCellHeight - 4))
-                addCommentView.backgroundColor = Constants.Colors.colorPurpleLight
+                // Add a new view for each comment - to the left of the view, but right of the user image
+                cell.addCommentView = UITextView(frame: CGRect(x: 10 + Constants.Dim.blobViewCommentUserImageSize, y: 2, width: commentBoxWidth, height: Constants.Dim.blobViewCommentCellHeight - 4))
                 
-                // Add an imageview for the user image for the comment (ONLY IF THE USER IS NOT THE CURRENT USER)
-                userImageView = UIImageView(frame: CGRect(x: 5, y: 5, width: Constants.Dim.blobViewCommentUserImageSize, height: Constants.Dim.blobViewCommentUserImageSize))
-                userImageView.layer.cornerRadius = Constants.Dim.blobViewCommentUserImageSize / 2
-                userImageView.contentMode = UIViewContentMode.scaleAspectFill
-                userImageView.clipsToBounds = true
-                cell.cellContainer.addSubview(userImageView)
                 userLoop: for user in Constants.Data.userObjects
                 {
                     if user.userID == self.blobCommentArray[indexPath.row - 2].userID
                     {
                         if let commentUserImage = user.userImage
                         {
-                            userImageView.image = commentUserImage
+                            cell.userImageView.image = commentUserImage
                         }
                         break userLoop
                     }
                 }
             }
             
-            addCommentView.layer.cornerRadius = 5
-            addCommentView.font = UIFont(name: Constants.Strings.fontRegular, size: 12)
-            addCommentView.isScrollEnabled = false
-            addCommentView.isEditable = false
-            addCommentView.isSelectable = false
             if let text = self.blobCommentArray[indexPath.row - 2].comment
             {
-                addCommentView.text = text
+                cell.addCommentView.text = text
             }
-            cell.cellContainer.addSubview(addCommentView)
-
-//            // Make a dummy textview to calculate the needed height
-//            let testCommentView = UITextView(frame: CGRect(x: 0, y: 0, width: commentBoxWidth, height: 20))
-//            testCommentView.layer.cornerRadius = 5
-//            testCommentView.font = UIFont(name: Constants.Strings.fontRegular, size: 16)
-//            if let text = self.blobCommentArray[indexPath.row - 2].comment
-//            {
-//                testCommentView.text = text
-//            }
             
-            // Check the content size, if it is more than the normal height, resize the textview and cell to match the height
-//            let contentSize = testCommentView.contentSize.height
+            // Calculate the text size to resize the textview height
             var contentSize: CGFloat = Constants.Dim.blobViewCommentCellHeight - 4
             if let text = self.blobCommentArray[indexPath.row - 2].comment
             {
-                contentSize = textHeightForAttributedText(text: NSAttributedString(string: text), width: commentBoxWidth)
+                contentSize = UtilityFunctions().textHeightForAttributedText(text: NSAttributedString(string: text), width: commentBoxWidth)
             }
             print("BVC - CONTENT SIZE FOR CELL: \(indexPath.row): \(contentSize)")
+            // Check the content size, if it is more than the normal height, resize the textview and cell to match the height
             if contentSize > Constants.Dim.blobViewCommentCellHeight - 4
             {
-                addCommentView.frame.size.height = contentSize
+                cell.addCommentView.frame.size.height = contentSize
                 cell.cellContainer.frame.size.height = contentSize + 4
             }
+            
+            return cell
         }
-        
-        return cell
     }
     
-    func textHeightForAttributedText(text: NSAttributedString, width: CGFloat) -> CGFloat
-    {
-        let calculationView = UITextView()
-        calculationView.attributedText = text
-        let size = calculationView.sizeThatFits(CGSize(width: width, height: CGFloat(FLT_MAX)))
-        return size.height
-    }
-    
-    
-//    // For the slide action to delete the Blob
-//    func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]?
-//    {
-//        return nil
-//    }
+    // Disable the swipe actions
     func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCellEditingStyle {
         return .none
     }
@@ -644,17 +544,6 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
     {
         // Return false if you do not want the specified item to be editable.
         return true
-    }
-    
-    // Override to support editing the table view.
-    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath)
-    {
-//        if editingStyle == .Delete {
-//            // Delete the row from the data source
-//            tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
-//        } else if editingStyle == .Insert {
-//            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-//        }
     }
     
     
@@ -799,6 +688,24 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
     
     func refreshDataManually()
     {
+        // Reload the Blob in case additional data has been added (try both mapBlobs and userBlobs)
+        mapBlobCheck: for mBlob in Constants.Data.mapBlobs
+        {
+            if mBlob.blobID == self.blob.blobID
+            {
+                self.blob = mBlob
+                break mapBlobCheck
+            }
+        }
+        userBlobCheck: for uBlob in Constants.Data.userBlobs
+        {
+            if uBlob.blobID == self.blob.blobID
+            {
+                self.blob = uBlob
+                break userBlobCheck
+            }
+        }
+        
         // Reload the TableView
         self.blobTableView.performSelector(onMainThread: #selector(UITableView.reloadData), with: nil, waitUntilDone: true)
         
@@ -852,7 +759,7 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
                     if !success
                     {
                         // Show the error message
-                        let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                        let alertController = UtilityFunctions().createAlertOkView("AWSAddBlobView - Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                         self.present(alertController, animated: true, completion: nil)
                     }
                 case let awsGetBlobImage as AWSGetBlobImage:
@@ -874,7 +781,7 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
                     else
                     {
                         // Show the error message
-                        let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                        let alertController = UtilityFunctions().createAlertOkView("AWSGetBlobImage - Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                         self.present(alertController, animated: true, completion: nil)
                     }
                 case let awsGetBlobComments as AWSGetBlobComments:
@@ -911,7 +818,7 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
                     else
                     {
                         // Show the error message
-                        let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                        let alertController = UtilityFunctions().createAlertOkView("AWSGetBlobComments - Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                         self.present(alertController, animated: true, completion: nil)
                     }
                 case _ as AWSGetUserImage:
@@ -924,13 +831,13 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
                     else
                     {
                         // Show the error message
-                        let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                        let alertController = UtilityFunctions().createAlertOkView("AWSGetUserImage - Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                         self.present(alertController, animated: true, completion: nil)
                     }
                 default:
                     print("BVC-DEFAULT: THERE WAS AN ISSUE WITH THE DATA RETURNED FROM AWS")
                     // Show the error message
-                    let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                    let alertController = UtilityFunctions().createAlertOkView("DEFAULT - Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                     self.present(alertController, animated: true, completion: nil)
                 }
         })

@@ -71,6 +71,7 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
     var blobMediaType = 0
     
     var randomMediaID: String?
+    var usableMediaID: String = "na"
     var uploadImageFilePath: String?
     
     var blobVideoUrl: URL?
@@ -299,6 +300,9 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
                 // Save the thumbnail locally
                 if let randomMediaID = self.randomMediaID
                 {
+                    // Save the randomMediaID in the usableMediaID to indicate that an image was added
+                    self.usableMediaID = randomMediaID
+                    
                     // Create and locally save the mediaImage
                     if let data = UIImagePNGRepresentation(pickedImage)
                     {
@@ -312,76 +316,10 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
                 vc3.videoPlayIndicator.text = ""
             }
         }
-        else if mediaType == "public.movie"
-        {
-            blobMediaType = 2
-            
-            print("VIDEOS ARE NOT ALLOWED AT THIS TIME")
-            
-//            print("VIDEO MEDIA URL: \(info[UIImagePickerControllerMediaURL] as? NSURL)")
-//            print("VIDEO REFERENCE URL: \(info[UIImagePickerControllerReferenceURL] as? NSURL)")
-//            
-//            let mediaURL = info[UIImagePickerControllerMediaURL] as? NSURL
-//            let referenceURL = info[UIImagePickerControllerReferenceURL] as? NSURL
-//            let targetURL: NSURL!
-//            
-//            // Save the file path for access when uploading the file - find which URL type is not nil
-//            if mediaURL != nil {
-//                
-//                targetURL = mediaURL
-//            } else {
-//                
-//                targetURL = referenceURL
-//            }
-//            
-//            // Save the video to a local file for upload
-////            PHPhotoLibrary.sharedPhotoLibrary().performChanges({
-////                PHAssetChangeRequest.creationRequestForAssetFromVideoAtFileURL(NSURL(fileURLWithPath: self.blobVideoUrl!.absoluteString))
-////            }) { completed, error in
-////                if completed {
-////                    print("Video is saved!")
-////                }
-////            }
-//            
-////            let library: ALAssetsLibrary = ALAssetsLibrary()
-////            let videoWriteCompletionBlock: ALAssetsLibraryWriteVideoCompletionBlock = {(newURL: NSURL!, error: NSError!) in
-////                if (error != nil) {
-////                    NSLog("Error writing image with metadata to Photo Library: %@", error)
-////                }
-////                else {
-////                    NSLog("Wrote image with metadata to Photo Library %@", newURL)
-////                    self.blobVideoUrl = newURL
-////                }
-////                
-////            }
-////            if library.videoAtPathIsCompatibleWithSavedPhotosAlbum(targetURL) {
-////                library.writeVideoAtPathToSavedPhotosAlbum(targetURL, completionBlock: videoWriteCompletionBlock)
-////            }
-//            
-//            // Create an asset and generate a screenshot at one second into the video
-//            let asset = AVURLAsset(URL: blobVideoUrl!)
-//            let generator = AVAssetImageGenerator(asset: asset)
-//            generator.appliesPreferredTrackTransform = true
-//            
-//            let timestamp = CMTime(seconds: 0, preferredTimescale: 60)
-//            
-//            do {
-//                let imageRef = try generator.copyCGImageAtTime(timestamp, actualTime: nil)
-//                
-//                // Store the picked image to access when uploading
-//                blobImage = UIImage(CGImage: imageRef)
-//                
-//                // Show the indicator that the media is a video
-//                vc3.videoPlayIndicator.text = "\u{25B6}"
-//            } catch let error as NSError {
-//                print("Image generation failed with error \(error)")
-//            }
-        }
         
         // If the blobImage was successfully saved, create a low-quality thumbnail and save it locally
         if let blobImage = self.blobImage
         {
-//            blobThumbnail = blobImage.resizeWithPercentage(0.2)
             blobThumbnail = blobImage.resizeWithWidth(Constants.Dim.blobsActiveTableViewContentSize)
             
             // Save the thumbnail locally
@@ -508,7 +446,7 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
     func sendBlobAndPopViewController(_ sender: UIBarButtonItem)
     {
         print("SEND FILES TO S3 AND DATA TO LAMBDA AND POP VC")
-        print("RANDOM ID: \(self.randomMediaID)")
+        print("RANDOM ID: \(self.usableMediaID)")
         print("SEND ALREADY ATTEMPTED?: \(self.sendAttempted)")
         print("PEOPLE SELECTED?: \(self.selectedOneOrMorePeople)")
         
@@ -524,71 +462,47 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
             viewScreenActivityIndicator.startAnimating()
             
             // Prepare the media and urls for upload
-            if let randomMediaID = self.randomMediaID
+            print("SENDING FILES")
+            print("BLOB MEDIA TYPE: \(self.blobMediaType)")
+            
+            // Calculate the current time to use in dating the Blob
+            let nowTime = Date().timeIntervalSince1970
+            
+            // Set the media key to an image by default - it will change to an .mp4 if it is a video
+            let uploadMediaKey = self.usableMediaID + ".png"
+            
+            // Process the Blob based on its media type
+            if self.blobMediaType == 0
             {
-                print("SENDING FILES")
-                print("BLOB MEDIA TYPE: \(self.blobMediaType)")
+                print("PROCESSING NON-MEDIA BLOB")
                 
-                // Calculate the current time to use in dating the Blob
-                let nowTime = Date().timeIntervalSince1970
-                
-                // Set the media key to an image by default - it will change to an .mp4 if it is a video
-                let uploadMediaKey = randomMediaID + ".png"
-                
-                // Process the Blob based on its media type
-                if self.blobMediaType == 0 {
-                    print("PROCESSING NON-MEDIA BLOB")
-                    
-                    // NO MEDIA WAS ATTACHED
-                    processBlobData(randomMediaID, uploadKey: uploadMediaKey, currentTime: nowTime)
-                }
-                else if self.blobMediaType == 1
+                // NO MEDIA WAS ATTACHED
+                if let randomMediaID = self.randomMediaID
                 {
-                    print("PROCESSING PHOTO BLOB")
-                    // THE MEDIA IS A PHOTO
-                    
-                    // If the media is an image, upload using temporary image and delete the temporary image
-                    // Upload the image to AWS, and upload the Blob data after the file is successfully uploaded
-                    if let imageFilePath = self.uploadImageFilePath {
-                        AWSPrepRequest(requestToCall: AWSUploadMediaToBucket(bucket: Constants.Strings.S3BucketMedia, uploadMediaFilePath: imageFilePath, mediaID: randomMediaID, uploadKey: uploadMediaKey, currentTime: nowTime, deleteWhenFinished: true), delegate: self as AWSRequestDelegate).prepRequest()
-                    }
+                    self.processBlobData(randomMediaID, mediaID: self.usableMediaID, uploadKey: uploadMediaKey, currentTime: nowTime)
                 }
-                else if self.blobMediaType == 2
-                {
-                    // THE MEDIA IS A VIDEO
-                    print("VIDEOS ARE NOT ALLOWED AT THIS TIME")
-                    
-//                    // Else if the media is a video, change the file path to .mp4 and upload using the selected file path from the picker
-//                    
-//                    uploadMediaKey = randomMediaID + ".mp4"
-//                    
-//                    print("BLOB MEDIA URL: \(self.blobVideoUrl)")
-//                    print("BLOB MEDIA URL ABS STRING: \(self.blobVideoUrl?.absoluteString)")
-//                    print("BLOB MEDIA URL REL STRING: \(self.blobVideoUrl?.relativeString)")
-//                    print("BLOB MEDIA URL PARA STRING: \(self.blobVideoUrl?.parameterString)")
-//                    print("BLOB MEDIA URL PATH: \(self.blobVideoUrl?.path)")
-//                    print("BLOB MEDIA URL REL PATH: \(self.blobVideoUrl?.relativePath)")
-//                    
-//                    // If the video url is not null, get the string filepath and send that to be uploaded to AWS
-//                    if let videoUrl = self.blobVideoUrl {
-//                        self.uploadVideoFilePath = videoUrl.absoluteString
-//                        
-//                        if let videoFilePath = self.uploadVideoFilePath {
-//                            self.uploadMediaToBucket(Constants.Strings.S3BucketMedia, uploadMediaFilePath: videoFilePath, uploadKey: uploadMediaKey, deleteWhenFinished: false)
-//                        }
-//                    }
-                }
+            }
+            else if self.blobMediaType == 1
+            {
+                print("PROCESSING PHOTO BLOB")
+                // THE MEDIA IS A PHOTO
                 
-                // Upload the Thumbnail to AWS
-                if let thumbnailFilePath = self.uploadThumbnailFilePath
-                {
-                    AWSPrepRequest(requestToCall: AWSUploadMediaToBucket(bucket: Constants.Strings.S3BucketThumbnails, uploadMediaFilePath: thumbnailFilePath, mediaID: randomMediaID, uploadKey: uploadMediaKey, currentTime: nowTime, deleteWhenFinished: true), delegate: self as AWSRequestDelegate).prepRequest()
+                // If the media is an image, upload using temporary image and delete the temporary image
+                // Upload the image to AWS, and upload the Blob data after the file is successfully uploaded
+                if let imageFilePath = self.uploadImageFilePath {
+                    AWSPrepRequest(requestToCall: AWSUploadMediaToBucket(bucket: Constants.Strings.S3BucketMedia, uploadMediaFilePath: imageFilePath, mediaID: self.usableMediaID, uploadKey: uploadMediaKey, currentTime: nowTime, deleteWhenFinished: true), delegate: self as AWSRequestDelegate).prepRequest()
                 }
+            }
+            
+            // Upload the Thumbnail to AWS
+            if let thumbnailFilePath = self.uploadThumbnailFilePath
+            {
+                AWSPrepRequest(requestToCall: AWSUploadMediaToBucket(bucket: Constants.Strings.S3BucketThumbnails, uploadMediaFilePath: thumbnailFilePath, mediaID: self.usableMediaID, uploadKey: uploadMediaKey, currentTime: nowTime, deleteWhenFinished: true), delegate: self as AWSRequestDelegate).prepRequest()
             }
         }
     }
     
-    func processBlobData(_ mediaID: String, uploadKey: String, currentTime: Double)
+    func processBlobData(_ blobID: String, mediaID: String, uploadKey: String, currentTime: Double)
     {
         print("PROCESSING BLOB DATA")
         
@@ -600,7 +514,7 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
         }
         
         // Upload the Blob data to Lamda and then DynamoDB
-        AWSPrepRequest(requestToCall: AWSUploadBlobData(blobID: mediaID, blobLat: self.blobCoords.latitude, blobLong: self.blobCoords.longitude, blobMediaID: uploadKey, blobMediaType: self.blobMediaType, blobRadius: self.blobRadius, blobText: self.vc2.blobTextView.text, blobThumbnailID: mediaID + ".png", blobTimestamp: currentTime, blobType: self.blobType.rawValue, blobTaggedUsers: taggedUsers, blobUserID: Constants.Data.currentUser), delegate: self as AWSRequestDelegate).prepRequest()
+        AWSPrepRequest(requestToCall: AWSUploadBlobData(blobID: blobID, blobLat: self.blobCoords.latitude, blobLong: self.blobCoords.longitude, blobMediaID: uploadKey, blobMediaType: self.blobMediaType, blobRadius: self.blobRadius, blobText: self.vc2.blobTextView.text, blobThumbnailID: mediaID + ".png", blobTimestamp: currentTime, blobType: self.blobType.rawValue, blobTaggedUsers: taggedUsers, blobUserID: Constants.Data.currentUser), delegate: self as AWSRequestDelegate).prepRequest()
         
         print("MAP BLOBS COUNT 1: \(Constants.Data.mapBlobs.count)")
         
@@ -687,7 +601,7 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
                         // Do this inside this if statement otherwise the Blob will be added twice (the upload Media method
                         // is used for the thumbnail too
                         if awsUploadMediaToBucket.bucket == Constants.Strings.S3BucketMedia {
-                            self.processBlobData(awsUploadMediaToBucket.mediaID, uploadKey: awsUploadMediaToBucket.uploadKey, currentTime: awsUploadMediaToBucket.currentTime)
+                            self.processBlobData(awsUploadMediaToBucket.mediaID, mediaID: awsUploadMediaToBucket.mediaID, uploadKey: awsUploadMediaToBucket.uploadKey, currentTime: awsUploadMediaToBucket.currentTime)
                         }
                     }
                     else

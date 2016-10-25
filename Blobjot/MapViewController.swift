@@ -160,6 +160,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     var menuButtonMapOpen: Bool = false
     var menuButtonBlobOpen: Bool = false
     
+    // Create a local property to hold the child VC
+    var blobVC: BlobViewController!
+    
     
     override func viewDidLoad()
     {
@@ -1048,7 +1051,8 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             print(pBlob.blobExtraRequested)
             print(pBlob.blobText)
             print(pBlob.blobThumbnailID)
-            if (pBlob.blobExtraRequested || pBlob.blobUserID == "default") && (pBlob.blobText != nil || pBlob.blobThumbnailID != nil)
+//            if (pBlob.blobExtraRequested || pBlob.blobUserID == "default") && (pBlob.blobText != nil || pBlob.blobThumbnailID != nil)
+            if pBlob.blobExtraRequested && (pBlob.blobText != nil || pBlob.blobThumbnailID != nil)
             {
                 // Close the Preview Box - the user is not interacting with the Preview Box anymore
                 closePreview()
@@ -1088,7 +1092,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 ncTitle.addSubview(ncTitleText)
                 
                 // Instantiate the BlobViewController and pass the Preview Blob to the VC
-                let blobVC = BlobViewController()
+                blobVC = BlobViewController()
                 blobVC.blob = pBlob
                 
                 // Instantiate the Nav Controller and attach the Nav Bar items to the view controller settings
@@ -2155,6 +2159,46 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     }
     
     
+    func displayNotification(_ blob: Blob)
+    {
+    }
+    
+    func refreshCollectionView()
+    {
+        // Reload the Collection View
+        self.locationBlobsCollectionView.performSelector(onMainThread: #selector(UICollectionView.reloadData), with: nil, waitUntilDone: true)
+        print("BLOB REFRESH AFTER DOWNLOAD - RELOADED COLLECTION VIEW")
+    }
+    
+    func updateBlobActionTable()
+    {
+        if self.activeBlobsVC != nil
+        {
+            self.activeBlobsVC.reloadTableView()
+        }
+    }
+    
+    func updatePreviewBoxData(_ user: User)
+    {
+        // Assign the user to the previewBlobUser
+        self.previewBlobUser = user
+        
+        print("PVC - TRYING TO ADD DOWNLOADED USER: \(user.userName)")
+        
+        // Set the preview box with the downloaded data
+        self.previewUserNameLabel.text = user.userName
+        
+        // If the new User data is for the same user and the Preview user and the preview User data is nil, refresh the preview box
+        if let pBlob = self.previewBlob
+        {
+            if pBlob.blobUserID == user.userID && self.previewUserNameLabel.text == nil
+            {
+                self.refreshPreviewUserData(user)
+            }
+        }
+    }
+    
+    
     // MARK: AWS DELEGATE METHODS
     
     func showLoginScreen()
@@ -2223,6 +2267,12 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                         // Refresh the collection view and show the blob notification if needed
                         self.refreshCollectionView()
                         self.displayNotification(awsGetBlobData.blob)
+                        
+                        // Refresh child VCs
+                        if self.blobVC != nil
+                        {
+                            self.blobVC.refreshDataManually()
+                        }
                     }
                     else
                     {
@@ -2249,6 +2299,12 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                         {
                             self.updatePreviewBoxData(awsGetSingleUserData.user)
                         }
+                        
+                        // Refresh child VCs
+                        if self.blobVC != nil
+                        {
+                            self.blobVC.refreshDataManually()
+                        }
                     }
                     else
                     {
@@ -2266,6 +2322,12 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                         
                         // Update the preview data
                         self.refreshPreviewUserData(awsGetUserImage.user)
+                        
+                        // Refresh child VCs
+                        if self.blobVC != nil
+                        {
+                            self.blobVC.refreshDataManually()
+                        }
                     }
                     else
                     {
@@ -2285,45 +2347,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                     self.createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                 }
         })
-    }
-    
-    func displayNotification(_ blob: Blob)
-    {
-    }
-    
-    func refreshCollectionView()
-    {
-        // Reload the Collection View
-        self.locationBlobsCollectionView.performSelector(onMainThread: #selector(UICollectionView.reloadData), with: nil, waitUntilDone: true)
-        print("BLOB REFRESH AFTER DOWNLOAD - RELOADED COLLECTION VIEW")
-    }
-    
-    func updateBlobActionTable()
-    {
-        if self.activeBlobsVC != nil
-        {
-            self.activeBlobsVC.reloadTableView()
-        }
-    }
-    
-    func updatePreviewBoxData(_ user: User)
-    {
-        // Assign the user to the previewBlobUser
-        self.previewBlobUser = user
-        
-        print("PVC - TRYING TO ADD DOWNLOADED USER: \(user.userName)")
-        
-        // Set the preview box with the downloaded data
-        self.previewUserNameLabel.text = user.userName
-        
-        // If the new User data is for the same user and the Preview user and the preview User data is nil, refresh the preview box
-        if let pBlob = self.previewBlob
-        {
-            if pBlob.blobUserID == user.userID && self.previewUserNameLabel.text == nil
-            {
-                self.refreshPreviewUserData(user)
-            }
-        }
     }
     
 }

@@ -7,6 +7,7 @@
 //
 
 import AWSCognito
+//import Darwin
 import GoogleMaps
 import UIKit
 
@@ -17,6 +18,15 @@ class UtilityFunctions {
     {
         let zoom = (0 - (1/98)) * meters + (985/49)
         return zoom
+    }
+    
+    // Calculate the needed textview height for text - need to use font size 10
+    func textHeightForAttributedText(text: NSAttributedString, width: CGFloat) -> CGFloat
+    {
+        let calculationView = UITextView()
+        calculationView.attributedText = text
+        let size = calculationView.sizeThatFits(CGSize(width: width, height: CGFloat(FLT_MAX)))
+        return size.height
     }
     
     // Create a thumbnail-sized image from a large image

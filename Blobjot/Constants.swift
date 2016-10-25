@@ -252,7 +252,9 @@ struct Constants
         static let blobsActiveTableViewCellReuseIdentifier = "blobsActiveTableViewCell"
         static let accountTableViewCellReuseIdentifier = "accountTableViewCell"
         static let blobAddPeopleTableViewCellReuseIdentifier = "blobAddPeopleTableViewCell"
-        static let blobTableViewCellReuseIdentifier = "blobTableViewCell"
+        static let blobTableViewCellBlobReuseIdentifier = "blobTableViewCellBlob"
+        static let blobTableViewCellLabelReuseIdentifier = "blobTableViewCellLabel"
+        static let blobTableViewCellCommentReuseIdentifier = "blobTableViewCellComment"
         
         static let cacheSessionViewHistory = "sessionViewHistory"
         

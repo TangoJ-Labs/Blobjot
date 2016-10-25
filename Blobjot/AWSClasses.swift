@@ -1416,18 +1416,6 @@ class AWSUploadBlobData : AWSRequestObject
         json["blobTaggedUsers"] = self.blobTaggedUsers
         json["blobUserID"]      = self.blobUserID
         
-//            , "blobLat"         : String(self.blobLat)
-//            , "blobLong"        : String(self.blobLong)
-//            , "blobMediaID"     : self.blobMediaID
-//            , "blobMediaType"   : String(self.blobMediaType)
-//            , "blobRadius"      : String(self.blobRadius)
-//            , "blobText"        : self.blobText
-//            , "blobThumbnailID" : self.blobThumbnailID
-//            , "blobTimestamp"   : String(self.blobTimestamp)
-//            , "blobType"        : String(self.blobType)
-//            , "blobTaggedUsers" : self.blobTaggedUsers
-//            , "blobUserID"      : self.blobUserID
-//        ]
         print("LAMBDA JSON: \(json)")
         let lambdaInvoker = AWSLambdaInvoker.default()
         lambdaInvoker.invokeFunction("Blobjot-CreateBlob", jsonObject: json, completionHandler:

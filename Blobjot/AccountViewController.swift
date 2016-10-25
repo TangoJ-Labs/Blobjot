@@ -70,7 +70,10 @@ class AccountViewController: UIViewController, UITextViewDelegate, UITableViewDa
     var blobsTableViewBackgroundLabel: UILabel!
     var blobsUserTableView: UITableView!
     
-    var userBlobs = [Blob]()
+//    var userBlobs = [Blob]()
+    
+    // Create a local property to hold the child VC
+    var blobVC: BlobViewController!
     
     override func viewDidLoad()
     {
@@ -567,7 +570,7 @@ class AccountViewController: UIViewController, UITextViewDelegate, UITableViewDa
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int
     {
         // #warning Incomplete implementation, return the number of rows
-        return userBlobs.count
+        return Constants.Data.userBlobs.count
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat
@@ -592,7 +595,7 @@ class AccountViewController: UIViewController, UITextViewDelegate, UITableViewDa
         cell.selectedBackgroundView = sbv
         
         // Retrieve the Blob associated with this cell
-        let cellBlob = userBlobs[(indexPath as NSIndexPath).row]
+        let cellBlob = Constants.Data.userBlobs[(indexPath as NSIndexPath).row]
         
         // Convert the Blob timestamp to readable format and assign
         let dateFormatter = DateFormatter()
@@ -632,7 +635,7 @@ class AccountViewController: UIViewController, UITextViewDelegate, UITableViewDa
     func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]?
     {
         // Retrieve the Blob associated with this cell
-        let cellBlob = userBlobs[(indexPath as NSIndexPath).row]
+        let cellBlob = Constants.Data.userBlobs[(indexPath as NSIndexPath).row]
         
         // Create a dummy action to add to the initial action array
         let actionReturn = UITableViewRowAction()
@@ -645,7 +648,7 @@ class AccountViewController: UIViewController, UITextViewDelegate, UITableViewDa
                 print("delete button tapped")
                 
                 // Remove the Blob from the userBlobs array (so it disappears from the Table View)
-                self.userBlobs.remove(at: (indexPath as NSIndexPath).row)
+                Constants.Data.userBlobs.remove(at: (indexPath as NSIndexPath).row)
                 
                 // Refresh the Table View to no longer show that row
                 self.blobsUserTableView.performSelector(onMainThread: #selector(UITableView.reloadData), with: nil, waitUntilDone: true)
@@ -686,10 +689,10 @@ class AccountViewController: UIViewController, UITextViewDelegate, UITableViewDa
         tableView.deselectRow(at: indexPath, animated: true)
         
         // Load the Blob View Controller with the selected Blob
-        print("USER BLOB COUNT: \(userBlobs.count)")
-        if userBlobs.count >= (indexPath as NSIndexPath).row
+        print("USER BLOB COUNT: \(Constants.Data.userBlobs.count)")
+        if Constants.Data.userBlobs.count >= (indexPath as NSIndexPath).row
         {
-            self.loadBlobViewWithBlob(userBlobs[(indexPath as NSIndexPath).row])
+            self.loadBlobViewWithBlob(Constants.Data.userBlobs[(indexPath as NSIndexPath).row])
         }
         
         // Reference the cell and start the loading indicator
@@ -776,7 +779,7 @@ class AccountViewController: UIViewController, UITextViewDelegate, UITableViewDa
             ncTitle.addSubview(ncTitleText)
             
             // Instantiate the BlobViewController and pass the Preview Blob to the VC
-            let blobVC = BlobViewController()
+            blobVC = BlobViewController()
             blobVC.blob = blob
             blobVC.userBlob = true
             
@@ -884,6 +887,12 @@ class AccountViewController: UIViewController, UITextViewDelegate, UITableViewDa
                     {
                         // Refresh the user elements
                         self.refreshCurrentUserElements()
+                        
+                        // Refresh child VCs
+                        if self.blobVC != nil
+                        {
+                            self.blobVC.refreshDataManually()
+                        }
                     }
                     else
                     {
@@ -949,12 +958,12 @@ class AccountViewController: UIViewController, UITextViewDelegate, UITableViewDa
                                         addBlob.blobMediaID = checkBlob["blobMediaID"] as? String
                                         
                                         // Append the new Blob Object to the local User Blobs Array
-                                        self.userBlobs.append(addBlob)
+                                        Constants.Data.userBlobs.append(addBlob)
                                         print("APPENDED BLOB: \(addBlob.blobID)")
                                     }
                                 }
                                 // Sort the User Blobs from newest to oldest
-                                self.userBlobs.sort(by: {$0.blobDatetime.timeIntervalSince1970 > $1.blobDatetime.timeIntervalSince1970})
+                                Constants.Data.userBlobs.sort(by: {$0.blobDatetime.timeIntervalSince1970 > $1.blobDatetime.timeIntervalSince1970})
                                 
                                 // Refresh the Table View
                                 self.blobsUserTableView.performSelector(onMainThread: #selector(UITableView.reloadData), with: nil, waitUntilDone: true)
@@ -971,7 +980,7 @@ class AccountViewController: UIViewController, UITextViewDelegate, UITableViewDa
                     if success
                     {
                         // Find the correct User Object in the global list and assign the newly downloaded Image
-                        loopUserObjectCheck: for blobObject in self.userBlobs {
+                        loopUserObjectCheck: for blobObject in Constants.Data.userBlobs {
                             if blobObject.blobID == awsGetThumbnailImage.blob.blobID {
                                 blobObject.blobThumbnail = awsGetThumbnailImage.blob.blobThumbnail
                                 
@@ -984,6 +993,12 @@ class AccountViewController: UIViewController, UITextViewDelegate, UITableViewDa
                         // Reload the Table View
                         print("GET IMAGE - RELOAD TABLE VIEW")
                         self.blobsUserTableView.performSelector(onMainThread: #selector(UITableView.reloadData), with: nil, waitUntilDone: true)
+                        
+                        // Refresh child VCs
+                        if self.blobVC != nil
+                        {
+                            self.blobVC.refreshDataManually()
+                        }
                     }
                     else
                     {
