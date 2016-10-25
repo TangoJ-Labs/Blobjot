@@ -8,6 +8,7 @@
 
 import AWSLambda
 import AWSS3
+import Darwin
 import GoogleMaps
 import UIKit
 
@@ -50,6 +51,7 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
     
     var scrollViewHeight: CGFloat!
     var blobCommentBoxDefaultHeight: CGFloat!
+    var commentBoxWidth: CGFloat!
     
     // Added comment boxes properties
     let commentOffsetX: CGFloat = 10 + Constants.Dim.blobViewUserImageSize
@@ -90,6 +92,7 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
         
         // Define the comment box height now that the viewContainer is set
         blobCommentBoxDefaultHeight = viewContainer.frame.height - 250
+        commentBoxWidth = viewContainer.frame.width - 30 - Constants.Dim.blobViewCommentUserImageSize
         
         // Add all content via a table view
         blobTableView = UITableView(frame: CGRect(x: 0, y: 0, width: viewContainer.frame.width, height: viewContainer.frame.height))
@@ -101,7 +104,11 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
         blobTableView.alwaysBounceVertical = true
         blobTableView.showsVerticalScrollIndicator = false
         blobTableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 50, right: 0)
+//        blobTableView.rowHeight = UITableViewAutomaticDimension
         viewContainer.addSubview(blobTableView)
+        
+//        blobTableView.setNeedsLayout()
+//        blobTableView.layoutIfNeeded()
         
         // Create a refresh control for the CollectionView and add a subview to move the refresh control where needed
         refreshControl = UIRefreshControl()
@@ -233,6 +240,7 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
         
         if indexPath.row == 0
         {
+            print("BVC - CELL HEIGHT - BLOB HEIGHT FOR CELL: \(indexPath.row)")
             if self.blobHasMedia || self.userBlob
             {
                 cellHeight = self.viewContainer.frame.height
@@ -242,13 +250,50 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
                 cellHeight = self.viewContainer.frame.height - self.viewContainer.frame.width
             }
         }
-//        else if indexPath.row == 1
-//        {
-//            cellHeight = 20
-//        }
+        else if indexPath.row == 1
+        {
+            print("BVC - CELL HEIGHT - COMMENT HEADER HEIGHT FOR CELL: \(indexPath.row)")
+            if self.blobCommentArray.count > 0
+            {
+                cellHeight = Constants.Dim.blobViewCellHeight
+            }
+            else
+            {
+                cellHeight = Constants.Dim.blobViewCommentCellHeight
+            }
+        }
         else
         {
-            cellHeight = Constants.Dim.blobViewCellHeight
+            print("BVC - CELL HEIGHT - COMMENT HEIGHT FOR CELL: \(indexPath.row)")
+            cellHeight = Constants.Dim.blobViewCommentCellHeight
+            
+            // Make a dummy textview to calculate the needed height
+            let testCommentView = UITextView(frame: CGRect(x: 0, y: 0, width: commentBoxWidth, height: 20))
+            testCommentView.layer.cornerRadius = 5
+            testCommentView.font = UIFont(name: Constants.Strings.fontRegular, size: 16)
+            if let text = self.blobCommentArray[indexPath.row - 2].comment
+            {
+                testCommentView.text = text
+            }
+            
+            // Check the content size, if it is more than the normal height, resize the textview and cell to match the height
+//            let contentSize = testCommentView.contentSize.height
+//            print("BVC - CONTENT SIZE (TEST) FOR CELL: \(indexPath.row): \(contentSize)")
+//            if contentSize > Constants.Dim.blobViewCommentCellHeight - 4
+//            {
+//                testCommentView.frame.size.height = contentSize
+//                cellHeight = contentSize + 4
+//            }
+            var contentSize: CGFloat = Constants.Dim.blobViewCommentCellHeight - 4
+            if let text = self.blobCommentArray[indexPath.row - 2].comment
+            {
+                contentSize = textHeightForAttributedText(text: NSAttributedString(string: text), width: commentBoxWidth)
+            }
+            print("BVC - CONTENT SIZE FOR CELL: \(indexPath.row): \(contentSize)")
+            if contentSize > Constants.Dim.blobViewCommentCellHeight - 4
+            {
+                cellHeight = contentSize + 4
+            }
         }
         
         return cellHeight
@@ -257,6 +302,7 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell
     {
         let cell = tableView.dequeueReusableCell(withIdentifier: Constants.Strings.blobTableViewCellReuseIdentifier, for: indexPath) as! BlobTableViewCell
+        cell.cellContainer.frame.size.height = Constants.Dim.blobViewCellHeight
         cell.cellContainer.backgroundColor = Constants.Colors.standardBackgroundGrayUltraLight
         
         if indexPath.row == 0
@@ -454,6 +500,7 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
         else if indexPath.row == 1
         {
 //            cell.cellContainer.backgroundColor = UIColor.yellow
+            cell.cellContainer.frame.size.height = Constants.Dim.blobViewCellHeight
             let commentLabel: UILabel!
             commentLabel = UILabel(frame: CGRect(x: 0, y: 0, width: cell.cellContainer.frame.width, height: cell.cellContainer.frame.height))
             commentLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 12)
@@ -464,29 +511,24 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
             
             if blobCommentArray.count == 0
             {
-                print("BVC - ADD COMMENTS LABEL")
-                commentLabel.text = "COMMENTS"
-            }
-            else
-            {
-                print("BVC - ADD NO COMMENTS LABEL")
+                cell.cellContainer.frame.size.height = Constants.Dim.blobViewCommentCellHeight
+                commentLabel.frame.size.height = Constants.Dim.blobViewCommentCellHeight
                 commentLabel.text = "NO COMMENTS YET"
+                print("BVC - ADD NO COMMENTS LABEL")
             }
         }
         else
         {
 //            cell.cellContainer.backgroundColor = UIColor.red
-            
+            cell.cellContainer.frame.size.height = Constants.Dim.blobViewCommentCellHeight
             var addCommentView: UITextView!
             var userImageView: UIImageView!
-            
-            let commentBoxWidth = cell.cellContainer.frame.width - 30 - Constants.Dim.blobViewCommentUserImageSize
             
             // If the comment's user is the logged in user, format the comment differently
             if self.blobCommentArray[indexPath.row - 2].userID == Constants.Data.currentUser
             {
                 // Add a new view for each comment
-                addCommentView = UITextView(frame: CGRect(x: cell.cellContainer.frame.width - 5 - commentBoxWidth, y: 2, width: commentBoxWidth, height: Constants.Dim.blobViewCellHeight - 4))
+                addCommentView = UITextView(frame: CGRect(x: cell.cellContainer.frame.width - 5 - commentBoxWidth, y: 2, width: commentBoxWidth, height: Constants.Dim.blobViewCommentCellHeight - 4))
                 addCommentView.backgroundColor = Constants.Colors.standardBackground
                 
                 // Add an imageview for the user image for the comment
@@ -495,7 +537,7 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
             else
             {
                 // Add a new view for each comment
-                addCommentView = UITextView(frame: CGRect(x: 10 + Constants.Dim.blobViewCommentUserImageSize, y: 2, width: commentBoxWidth, height: Constants.Dim.blobViewCellHeight - 4))
+                addCommentView = UITextView(frame: CGRect(x: 10 + Constants.Dim.blobViewCommentUserImageSize, y: 2, width: commentBoxWidth, height: Constants.Dim.blobViewCommentCellHeight - 4))
                 addCommentView.backgroundColor = Constants.Colors.colorPurpleLight
                 
                 // Add an imageview for the user image for the comment (ONLY IF THE USER IS NOT THE CURRENT USER)
@@ -518,8 +560,8 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
             }
             
             addCommentView.layer.cornerRadius = 5
-            addCommentView.font = UIFont(name: Constants.Strings.fontRegular, size: 16)
-            addCommentView.isScrollEnabled = true
+            addCommentView.font = UIFont(name: Constants.Strings.fontRegular, size: 12)
+            addCommentView.isScrollEnabled = false
             addCommentView.isEditable = false
             addCommentView.isSelectable = false
             if let text = self.blobCommentArray[indexPath.row - 2].comment
@@ -527,9 +569,40 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
                 addCommentView.text = text
             }
             cell.cellContainer.addSubview(addCommentView)
+
+//            // Make a dummy textview to calculate the needed height
+//            let testCommentView = UITextView(frame: CGRect(x: 0, y: 0, width: commentBoxWidth, height: 20))
+//            testCommentView.layer.cornerRadius = 5
+//            testCommentView.font = UIFont(name: Constants.Strings.fontRegular, size: 16)
+//            if let text = self.blobCommentArray[indexPath.row - 2].comment
+//            {
+//                testCommentView.text = text
+//            }
+            
+            // Check the content size, if it is more than the normal height, resize the textview and cell to match the height
+//            let contentSize = testCommentView.contentSize.height
+            var contentSize: CGFloat = Constants.Dim.blobViewCommentCellHeight - 4
+            if let text = self.blobCommentArray[indexPath.row - 2].comment
+            {
+                contentSize = textHeightForAttributedText(text: NSAttributedString(string: text), width: commentBoxWidth)
+            }
+            print("BVC - CONTENT SIZE FOR CELL: \(indexPath.row): \(contentSize)")
+            if contentSize > Constants.Dim.blobViewCommentCellHeight - 4
+            {
+                addCommentView.frame.size.height = contentSize
+                cell.cellContainer.frame.size.height = contentSize + 4
+            }
         }
         
         return cell
+    }
+    
+    func textHeightForAttributedText(text: NSAttributedString, width: CGFloat) -> CGFloat
+    {
+        let calculationView = UITextView()
+        calculationView.attributedText = text
+        let size = calculationView.sizeThatFits(CGSize(width: width, height: CGFloat(FLT_MAX)))
+        return size.height
     }
     
     

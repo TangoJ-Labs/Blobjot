@@ -211,7 +211,8 @@ struct Constants
         static let blobViewUserImageSize: CGFloat = 28
         static let blobViewIndicatorSize: CGFloat = 60
         static let blobViewButtonSize: CGFloat = 40
-        static let blobViewCellHeight: CGFloat = 50
+        static let blobViewCellHeight: CGFloat = 20
+        static let blobViewCommentCellHeight: CGFloat = 35
         static let blobViewCommentUserImageSize: CGFloat = 20
         
         static let blobAddTypeCircleSize: CGFloat = 40
