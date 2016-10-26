@@ -891,7 +891,7 @@ class AccountViewController: UIViewController, UITextViewDelegate, UITableViewDa
                         // Refresh child VCs
                         if self.blobVC != nil
                         {
-                            self.blobVC.refreshDataManually()
+                            self.blobVC.refreshCommentTable()
                         }
                     }
                     else
@@ -997,7 +997,7 @@ class AccountViewController: UIViewController, UITextViewDelegate, UITableViewDa
                         // Refresh child VCs
                         if self.blobVC != nil
                         {
-                            self.blobVC.refreshDataManually()
+                            self.blobVC.refreshCommentTable()
                         }
                     }
                     else

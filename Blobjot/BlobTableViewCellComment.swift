@@ -28,10 +28,12 @@ class BlobTableViewCellComment: UITableViewCell
         
 //        let commentBoxWidth = cellContainer.frame.width - 30 - Constants.Dim.blobViewCommentUserImageSize
         
-        addCommentView = UITextView()
+        let addCommentViewOffsetX = 10 + Constants.Dim.blobViewCommentUserImageSize
+        addCommentView = UITextView(frame: CGRect(x: addCommentViewOffsetX, y: 2, width: self.frame.width - 5 - addCommentViewOffsetX, height: self.frame.height - 4))
         addCommentView.backgroundColor = Constants.Colors.colorPurpleLight
         addCommentView.layer.cornerRadius = 5
         addCommentView.font = UIFont(name: Constants.Strings.fontRegular, size: 12)
+        addCommentView.text = "TEST"
         addCommentView.isScrollEnabled = false
         addCommentView.isEditable = false
         addCommentView.isSelectable = false
