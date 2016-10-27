@@ -22,11 +22,27 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
     // Add the view components
     var viewContainer: UIView!
     var blobTableView: UITableView!
+    lazy var refreshControl: UIRefreshControl = UIRefreshControl()
+    
+    var blobCommentsButton: UIView!
+    var blobCommentsButtonIcon: UIImageView!
+    var blobCommentsContainer: UIView!
+    var blobCommentAddContainer: UIView!
+    var blobCommentAddCancelLabel: UILabel!
+    var blobCommentAddSendLabel: UILabel!
+    var blobCommentAddTextView: UITextView!
+    var blobCommentAddTextViewDefaultText: UILabel!
+    
+    var blobCommentButtonTapGesture: UITapGestureRecognizer!
+    var blobCommentAddCancelLabelTapGesture: UITapGestureRecognizer!
+    var blobCommentAddSendLabelTapGesture: UITapGestureRecognizer!
     
     // Properties to hold local information
+    var blobCommentBoxDefaultHeight: CGFloat!
+    var commentBoxWidth: CGFloat!
+    
     var viewContainerHeight: CGFloat!
     var blobCellHeight: CGFloat!
-    var commentBoxWidth: CGFloat!
     var tableViewHeightArray = [CGFloat]()
     
     // This blob should be initialized when the ViewController is initialized
@@ -73,6 +89,8 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
         viewContainer.backgroundColor = Constants.Colors.standardBackgroundGrayUltraLight
         self.view.addSubview(viewContainer)
         
+        // Define the comment box height now that the viewContainer is set
+        blobCommentBoxDefaultHeight = viewContainer.frame.height - 250
         commentBoxWidth = viewContainer.frame.width - 30 - Constants.Dim.blobViewCommentUserImageSize
         
         blobCellHeight = self.viewContainerHeight
@@ -99,8 +117,89 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
         blobTableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 20, right: 0)
         viewContainer.addSubview(blobTableView)
         
-        // Request the Blob comments
-        AWSPrepRequest(requestToCall: AWSGetBlobComments(blobID: self.blob.blobID), delegate: self as AWSRequestDelegate).prepRequest()
+        // Create a refresh control for the CollectionView and add a subview to move the refresh control where needed
+        refreshControl = UIRefreshControl()
+        refreshControl.attributedTitle = NSAttributedString(string: "")
+        refreshControl.addTarget(self, action: #selector(BlobViewController.refreshDataManually), for: UIControlEvents.valueChanged)
+        blobTableView.addSubview(refreshControl)
+//        blobTableView.contentOffset = CGPoint(x: 0, y: -self.refreshControl.frame.size.height)
+        
+        // Add the Add Button in the bottom right corner (hidden if the Blob has media, unhidden if not)
+        if self.blobHasMedia || self.userBlob
+        {
+            blobCommentsButton = UIView(frame: CGRect(x: viewContainer.frame.width - 5 - Constants.Dim.blobViewButtonSize, y: viewContainer.frame.height + 5 + Constants.Dim.blobViewButtonSize, width: Constants.Dim.blobViewButtonSize, height: Constants.Dim.blobViewButtonSize))
+        }
+        else
+        {
+            blobCommentsButton = UIView(frame: CGRect(x: viewContainer.frame.width - 5 - Constants.Dim.blobViewButtonSize, y: viewContainer.frame.height - 5 - Constants.Dim.blobViewButtonSize, width: Constants.Dim.blobViewButtonSize, height: Constants.Dim.blobViewButtonSize))
+        }
+        blobCommentsButton.layer.cornerRadius = Constants.Dim.blobViewButtonSize / 2
+        blobCommentsButton.backgroundColor = Constants.Colors.colorMapViewButton
+        blobCommentsButton.layer.shadowOffset = Constants.Dim.mapViewShadowOffset
+        blobCommentsButton.layer.shadowOpacity = Constants.Dim.mapViewShadowOpacity
+        blobCommentsButton.layer.shadowRadius = Constants.Dim.mapViewShadowRadius
+        viewContainer.addSubview(blobCommentsButton)
+        
+        // The Comment Container should start below the screen and not be visible until called
+        blobCommentsContainer = UIView(frame: CGRect(x: 0, y: viewContainer.frame.height, width: viewContainer.frame.width, height: viewContainer.frame.height))
+        blobCommentsContainer.backgroundColor = UIColor.white
+        viewContainer.addSubview(blobCommentsContainer)
+        
+        // The Text View to add a new comment - should be at the top of the comment container
+        blobCommentAddContainer = UIView(frame: CGRect(x: 0, y: 0, width: blobCommentsContainer.bounds.width, height: blobCommentBoxDefaultHeight))
+        blobCommentAddContainer.backgroundColor = Constants.Colors.standardBackgroundGrayUltraLight
+        blobCommentsContainer.addSubview(blobCommentAddContainer)
+        
+        blobCommentAddCancelLabel = UILabel(frame: CGRect(x: 5, y: 0, width: (viewContainer.frame.width / 2) - 5, height: 50))
+        blobCommentAddCancelLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 16)
+        blobCommentAddCancelLabel.textColor = Constants.Colors.standardBackgroundGrayUltraLight
+        blobCommentAddCancelLabel.textAlignment = .left
+        blobCommentAddCancelLabel.numberOfLines = 1
+        blobCommentAddCancelLabel.text = "CANCEL"
+        blobCommentAddCancelLabel.isUserInteractionEnabled = true
+        blobCommentAddContainer.addSubview(blobCommentAddCancelLabel)
+        
+        blobCommentAddSendLabel = UILabel(frame: CGRect(x: viewContainer.frame.width / 2, y: 0, width: (viewContainer.frame.width / 2) - 5, height: 50))
+        blobCommentAddSendLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 16)
+        blobCommentAddSendLabel.textColor = Constants.Colors.standardBackgroundGrayUltraLight
+        blobCommentAddSendLabel.textAlignment = .right
+        blobCommentAddSendLabel.numberOfLines = 1
+        blobCommentAddSendLabel.text = "SEND"
+        blobCommentAddSendLabel.isUserInteractionEnabled = true
+        blobCommentAddContainer.addSubview(blobCommentAddSendLabel)
+        
+        blobCommentAddTextView = UITextView(frame: CGRect(x: 5, y: 50, width: blobCommentAddContainer.bounds.width - 10, height: blobCommentAddContainer.bounds.height - 35))
+        blobCommentAddTextView.backgroundColor = UIColor.white
+        blobCommentAddTextView.delegate = self
+        blobCommentAddTextView.font = UIFont(name: Constants.Strings.fontRegular, size: 16)
+        blobCommentAddTextView.isScrollEnabled = true
+        blobCommentAddTextView.isEditable = true
+        blobCommentAddTextView.isSelectable = true
+        blobCommentAddContainer.addSubview(blobCommentAddTextView)
+        
+        blobCommentAddTextViewDefaultText = UILabel(frame: CGRect(x: 0, y: 0, width: blobCommentAddTextView.frame.width, height: 20))
+        blobCommentAddTextViewDefaultText.font = UIFont(name: Constants.Strings.fontRegular, size: 16)
+        blobCommentAddTextViewDefaultText.textColor = Constants.Colors.colorTextGray
+        blobCommentAddTextViewDefaultText.textAlignment = .left
+        blobCommentAddTextViewDefaultText.numberOfLines = 1
+        blobCommentAddTextViewDefaultText.text = "Add a comment."
+        blobCommentAddTextView.addSubview(blobCommentAddTextViewDefaultText)
+        
+        // Add the Tap Gesture Recognizers for the comment features
+        blobCommentButtonTapGesture = UITapGestureRecognizer(target: self, action: #selector(BlobViewController.blobCommentButtonTap(_:)))
+        blobCommentButtonTapGesture.numberOfTapsRequired = 1  // add single tap
+        blobCommentsButton.addGestureRecognizer(blobCommentButtonTapGesture)
+        
+        blobCommentAddCancelLabelTapGesture = UITapGestureRecognizer(target: self, action: #selector(BlobViewController.blobCommentAddCancelLabelTap(_:)))
+        blobCommentAddCancelLabelTapGesture.numberOfTapsRequired = 1  // add single tap
+        blobCommentAddCancelLabel.addGestureRecognizer(blobCommentAddCancelLabelTapGesture)
+        
+        blobCommentAddSendLabelTapGesture = UITapGestureRecognizer(target: self, action: #selector(BlobViewController.blobCommentAddSendLabelTap(_:)))
+        blobCommentAddSendLabelTapGesture.numberOfTapsRequired = 1  // add single tap
+        blobCommentAddSendLabel.addGestureRecognizer(blobCommentAddSendLabelTapGesture)
+        
+        // Request all needed data
+        self.refreshDataManually()
     }
 
     override func didReceiveMemoryWarning()
@@ -143,7 +242,19 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
         }
         else
         {
-            return Constants.Dim.blobViewCommentCellHeight
+            var cellHeight: CGFloat = Constants.Dim.blobViewCommentCellHeight
+            var contentSize: CGFloat = Constants.Dim.blobViewCommentCellHeight - 4
+            if let text = self.blobCommentArray[indexPath.row - 1].comment
+            {
+                contentSize = textHeightForAttributedText(text: NSAttributedString(string: text), width: commentBoxWidth)
+            }
+            print("BVC - CONTENT SIZE FOR CELL: \(indexPath.row): \(contentSize)")
+            if contentSize > Constants.Dim.blobViewCommentCellHeight - 4
+            {
+                cellHeight = contentSize + 4
+            }
+            
+            return cellHeight
         }
     }
     
@@ -162,11 +273,17 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
                 cell = tableView.dequeueReusableCell(withIdentifier: Constants.Strings.blobTableViewCellBlobNoLabelReuseIdentifier, for: indexPath) as! BlobTableViewCellBlob
             }
             
+            // Remove all subviews
+            for subview in cell.subviews
+            {
+                subview.removeFromSuperview()
+            }
+            
             print("BVC - CELL HEIGHT: \(cell.frame.height)")
             
             var userImageContainer: UIView!
             var userImageView: UIImageView!
-            
+            var blobTypeIndicatorView: UIView!
             var blobDatetimeLabel: UILabel!
             var blobDateAgeLabel: UILabel!
             var blobTextViewContainer: UIView!
@@ -205,25 +322,25 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
             }
             
             // The Blob Type Indicator should be to the top right of the the User Image
-            cell.blobTypeIndicatorView.frame = CGRect(x: 5, y: 5, width: Constants.Dim.blobViewIndicatorSize, height: Constants.Dim.blobViewIndicatorSize)
-//            blobTypeIndicatorView.layer.cornerRadius = Constants.Dim.blobViewIndicatorSize / 2
-//            blobTypeIndicatorView.layer.shadowOffset = CGSize(width: 0, height: 0.2)
-//            blobTypeIndicatorView.layer.shadowOpacity = 0.2
-//            blobTypeIndicatorView.layer.shadowRadius = 1.0
+            blobTypeIndicatorView = UIView(frame: CGRect(x: 5, y: 5, width: Constants.Dim.blobViewIndicatorSize, height: Constants.Dim.blobViewIndicatorSize))
+            blobTypeIndicatorView.layer.cornerRadius = Constants.Dim.blobViewIndicatorSize / 2
+            blobTypeIndicatorView.layer.shadowOffset = CGSize(width: 0, height: 0.2)
+            blobTypeIndicatorView.layer.shadowOpacity = 0.2
+            blobTypeIndicatorView.layer.shadowRadius = 1.0
             // Ensure blobType is not null
             if let blobType = blob.blobType
             {
                 // Assign the Blob Type color to the Blob Indicator
-                cell.blobTypeIndicatorView.backgroundColor = Constants().blobColorOpaque(blobType)
+                blobTypeIndicatorView.backgroundColor = Constants().blobColorOpaque(blobType)
             }
-//            cell.addSubview(cell.blobTypeIndicatorView)
+            cell.addSubview(blobTypeIndicatorView)
             
             // The Date Age Label should be in small font just below the Navigation Bar at the right of the screen (right aligned text)
-            blobDateAgeLabel = UILabel(frame: CGRect(x: 0, y: 0, width: cell.blobTypeIndicatorView.frame.width, height: cell.blobTypeIndicatorView.frame.height))
+            blobDateAgeLabel = UILabel(frame: CGRect(x: 0, y: 0, width: blobTypeIndicatorView.frame.width, height: blobTypeIndicatorView.frame.height))
             blobDateAgeLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 10)
             blobDateAgeLabel.textColor = Constants.Colors.colorTextGray
             blobDateAgeLabel.textAlignment = .center
-            cell.blobTypeIndicatorView.addSubview(blobDateAgeLabel)
+            blobTypeIndicatorView.addSubview(blobDateAgeLabel)
             
             // The Datetime Label should be in small font just below the Navigation Bar starting at the left of the screen (left aligned text)
             blobDatetimeLabel = UILabel(frame: CGRect(x: cell.frame.width / 2 - 2, y: 2, width: cell.frame.width / 2 - 2, height: 15))
@@ -243,7 +360,7 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
             }
             
             // The Text View should be in the upper left quadrant of the screen (to the left of the User Image), and should extend into the upper right quadrant nearing the User Image
-            if self.blobHasMedia
+            if self.blobHasMedia || self.userBlob
             {
                 blobTextViewContainer = UIView(frame: CGRect(x: 10 + Constants.Dim.blobViewUserImageSize, y: 50, width: cell.frame.width - 15 - Constants.Dim.blobViewUserImageSize, height: self.blobCellHeight - 60 - cell.frame.width))
             }
@@ -296,6 +413,7 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
                 // Assign the blob image to the image if available - if not, assign the thumbnail until the real image downloads
                 if blobImage != nil
                 {
+                    print("BVC - ADDED BLOB IMAGE")
                     blobImageView.image = blobImage
                     
                     // Stop animating the activity indicator
@@ -364,8 +482,6 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
             
             // Add a comment label to the end of the first cell
             let commentLabel: UILabel!
-//            commentLabel = UILabel(frame: CGRect(x: 0, y: cell.frame.height - 30, width: cell.frame.width, height: 30))
-//            commentLabel.text = "NO COMMENTS YET"
             if self.blobCommentArray.count == 0
             {
                 commentLabel = UILabel(frame: CGRect(x: 0, y: cell.frame.height - 30, width: cell.frame.width, height: 30))
@@ -396,9 +512,6 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
             
             print("BTC - CELL HEIGHT: \(cell.frame.height)")
             
-//            cell.cellContainer.frame.size.height = Constants.Dim.blobViewCommentCellHeight
-//            cell.addCommentView.frame.size.height = Constants.Dim.blobViewCommentCellHeight - 4
-            
             let addCommentView: UITextView!
             
             // If the comment's user is the logged in user, format the comment differently
@@ -407,10 +520,6 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
                 addCommentView = UITextView(frame: CGRect(x: cell.frame.width - 5 - self.commentBoxWidth, y: 2, width: self.commentBoxWidth, height: Constants.Dim.blobViewCommentCellHeight - 4))
                 addCommentView.backgroundColor = Constants.Colors.standardBackground
                 cell.addSubview(addCommentView)
-                
-//                // Add a new view for each comment
-//                cell.addCommentView = UITextView(frame: CGRect(x: cell.cellContainer.frame.width - 5 - self.commentBoxWidth, y: 2, width: self.commentBoxWidth, height: Constants.Dim.blobViewCommentCellHeight - 4))
-//                cell.addCommentView.backgroundColor = Constants.Colors.standardBackground
             }
             else
             {
@@ -449,6 +558,19 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
             addCommentView.isSelectable = true
             addCommentView.isUserInteractionEnabled = false
             
+            // Check the content size, if it is more than the normal height, resize the textview and cell to match the height
+            var contentSize: CGFloat = Constants.Dim.blobViewCommentCellHeight - 4
+            if let text = self.blobCommentArray[indexPath.row - 1].comment
+            {
+                contentSize = textHeightForAttributedText(text: NSAttributedString(string: text), width: commentBoxWidth)
+            }
+            print("BVC - CONTENT SIZE FOR CELL: \(indexPath.row): \(contentSize)")
+            if contentSize > Constants.Dim.blobViewCommentCellHeight - 4
+            {
+                addCommentView.frame.size.height = contentSize
+                cell.frame.size.height = contentSize + 4
+            }
+            
             return cell
         }
     }
@@ -456,37 +578,6 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath)
     {
         print("DID SELECT ROW #\((indexPath as NSIndexPath).item)!")
-        
-//        // Prevent the row from being highlighted
-//        tableView.deselectRow(at: indexPath, animated: false)
-//        
-//        if indexPath.row == 0
-//        {
-//            if self.blobCommentArray.count == 0
-//            {
-//                let cell = tableView.dequeueReusableCell(withIdentifier: Constants.Strings.blobTableViewCellBlobWithLabelReuseIdentifier, for: indexPath) as! BlobTableViewCellBlob
-//                cell.selectionStyle = UITableViewCellSelectionStyle.none
-//            }
-//            else
-//            {
-//                let cell = tableView.dequeueReusableCell(withIdentifier: Constants.Strings.blobTableViewCellBlobNoLabelReuseIdentifier, for: indexPath) as! BlobTableViewCellBlob
-//                cell.selectionStyle = UITableViewCellSelectionStyle.none
-//            }
-//        }
-//        else
-//        {
-//            let cell = tableView.dequeueReusableCell(withIdentifier: Constants.Strings.blobTableViewCellCommentReuseIdentifier, for: indexPath) as! BlobTableViewCellComment
-//            cell.selectionStyle = UITableViewCellSelectionStyle.none
-//            
-//            if self.blobCommentArray.count == 0
-//            {
-//                
-//            }
-//            else
-//            {
-//                
-//            }
-//        }
     }
     
     func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath)
@@ -511,7 +602,26 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
     {
         print("BVC - SCROLL VIEW POSITION: \(scrollView.contentOffset.y)")
         
-        
+        // Ensure the Blob has media - otherwise the comment button is alreay in view
+        if self.blobHasMedia || self.userBlob
+        {
+            if scrollView.contentOffset.y > 0
+            {
+                // Animate the comment button into view
+                UIView.animate(withDuration: 0.2, animations:
+                    {
+                        self.blobCommentsButton.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.blobViewButtonSize, y: self.viewContainer.frame.height - 5 - Constants.Dim.blobViewButtonSize, width: Constants.Dim.blobViewButtonSize, height: Constants.Dim.blobViewButtonSize)
+                    }, completion: nil)
+            }
+            else
+            {
+                // Animate the comment button out of view
+                UIView.animate(withDuration: 0.2, animations:
+                    {
+                        self.blobCommentsButton.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.blobViewButtonSize, y: self.viewContainer.frame.height + 5 + Constants.Dim.blobViewButtonSize, width: Constants.Dim.blobViewButtonSize, height: Constants.Dim.blobViewButtonSize)
+                    }, completion: nil)
+            }
+        }
     }
     
     
@@ -549,12 +659,25 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
     {
         print("BVC - TEXT VIEW SHOULD BEGIN EDITING")
         
+        self.blobCommentAddTextViewDefaultText.removeFromSuperview()
+        
         return true
     }
     
     func textViewDidBeginEditing(_ textView: UITextView)
     {
         print("BVC - TEXT VIEW DID BEGIN EDITING")
+        
+        // Show the add comment labels
+        self.blobCommentAddCancelLabel.textColor = Constants.Colors.colorTextGray
+        self.blobCommentAddSendLabel.textColor = Constants.Colors.colorTextGray
+        
+        // Animate the user name edit popup out of view
+        UIView.animate(withDuration: 0.2, animations:
+            {
+                self.blobCommentsContainer.frame = CGRect(x: 0, y: self.viewContainer.frame.height - 250, width: self.blobCommentsContainer.frame.width, height: self.viewContainer.frame.height)
+                // + self.addedCommentHeight + 5
+            }, completion: nil)
     }
     
     
@@ -562,6 +685,51 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
     
     func blobCommentButtonTap(_ gesture: UITapGestureRecognizer)
     {
+        // Show the keyboard
+        self.blobCommentAddTextView.becomeFirstResponder()
+        
+        // Animate the comment box into view
+        UIView.animate(withDuration: 0.2, animations:
+            {
+                self.blobCommentsContainer.frame = CGRect(x: 0, y: 0, width: self.viewContainer.frame.width, height: self.viewContainer.frame.height)
+            }, completion: nil)
+    }
+    
+    func blobCommentAddCancelLabelTap(_ gesture: UITapGestureRecognizer)
+    {
+        print("BVC - COMMENT CANCEL")
+        // Close the comment box and clear the text view
+        self.closeCommentBox()
+    }
+    
+    func blobCommentAddSendLabelTap(_ gesture: UITapGestureRecognizer)
+    {
+        print("BVC - COMMENT SEND")
+        
+        if self.blobCommentAddTextView.text != ""
+        {
+            print("BVC - COMMENT SEND - CONFIRM UPLOAD")
+            // Upload the comment
+            if let commentText = self.blobCommentAddTextView.text
+            {
+                AWSPrepRequest(requestToCall: AWSAddCommentForBlob(blobID: self.blob.blobID, comment: commentText), delegate: self as AWSRequestDelegate).prepRequest()
+                
+                // Add the comment locally
+                let addBlobComment = BlobComment()
+                addBlobComment.commentID        = "new"
+                addBlobComment.blobID           = "new"
+                addBlobComment.userID           = Constants.Data.currentUser
+                addBlobComment.comment          = commentText
+                addBlobComment.commentDatetime  = Date()
+                self.blobCommentArray.append(addBlobComment)
+                
+                // Reload the TableView
+                self.blobTableView.performSelector(onMainThread: #selector(UITableView.reloadData), with: nil, waitUntilDone: true)
+            }
+        }
+        
+        // Close the comment box and clear the text view
+        self.closeCommentBox()
     }
     
     
@@ -571,11 +739,14 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
     {
         print("BVC - REFRESH BLOB VIEW TABLE")
         
-        if self.blobTableView != nil
-        {
-            // Reload the TableView
-            self.blobTableView.performSelector(onMainThread: #selector(UITableView.reloadData), with: nil, waitUntilDone: true)
-        }
+        DispatchQueue.main.async(execute:
+            {
+                if self.blobTableView != nil
+                {
+                    // Reload the TableView
+                    self.blobTableView.performSelector(onMainThread: #selector(UITableView.reloadData), with: nil, waitUntilDone: true)
+                }
+        })
     }
     
     func refreshDataManually()
@@ -587,6 +758,30 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
         
         // Request the Blob comments
         AWSPrepRequest(requestToCall: AWSGetBlobComments(blobID: self.blob.blobID), delegate: self as AWSRequestDelegate).prepRequest()
+    }
+    
+    func closeCommentBox()
+    {
+        // Hide the keyboard
+        self.blobCommentAddTextView.resignFirstResponder()
+        
+        // Clear the text
+        self.blobCommentAddTextView.text = ""
+        
+        // Animate the comment box out of view
+        UIView.animate(withDuration: 0.2, animations:
+            {
+                self.blobCommentsContainer.frame = CGRect(x: 0, y: self.viewContainer.frame.height, width: self.viewContainer.frame.width, height: self.blobCommentBoxDefaultHeight)
+            }, completion:
+            { (finished: Bool) -> Void in
+                
+                // Hide the add comment labels
+                self.blobCommentAddCancelLabel.textColor = Constants.Colors.standardBackgroundGrayUltraLight
+                self.blobCommentAddSendLabel.textColor = Constants.Colors.standardBackgroundGrayUltraLight
+                
+                // Show the comment box default text
+                self.blobCommentAddTextView.addSubview(self.blobCommentAddTextViewDefaultText)
+        })
     }
     
     func tableViewHeight() -> CGFloat {
@@ -628,6 +823,7 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
                 case let awsGetBlobImage as AWSGetBlobImage:
                     if success
                     {
+                        print("BVC - AWS RETURN - AWSGetBlobImage")
                         if let blobImage = awsGetBlobImage.blobImage
                         {
                             // Set the local image property to the downloaded image
@@ -648,7 +844,7 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
                 case let awsGetBlobComments as AWSGetBlobComments:
                     if success
                     {
-                        print("BVC - AWS RETURN - AGBC")
+                        print("BVC - AWS RETURN - AWSGetBlobComments")
                         
                         self.blobCommentArray = awsGetBlobComments.blobCommentArray
                         
@@ -681,12 +877,27 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
                         let alertController = UtilityFunctions().createAlertOkView("AWSGetBlobComments - Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                         self.present(alertController, animated: true, completion: nil)
                     }
+                case _ as AWSGetSingleUserData:
+                    if success
+                    {
+                        print("BVC - AWS RETURN - AWSGetSingleUserData")
+                        
+                        // Reload the TableView
+                        self.refreshBlobViewTable()
+                    }
+                    else
+                    {
+                        // Show the error message
+                        let alertController = UtilityFunctions().createAlertOkView("AWSGetUserImage - Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                        self.present(alertController, animated: true, completion: nil)
+                    }
                 case _ as AWSGetUserImage:
                     if success
                     {
+                        print("BVC - AWS RETURN - AWSGetUserImage")
                         // A new user image was just downloaded for a user in the blob comment list
-//                        // Reload the TableView
-//                        self.blobTableView.performSelector(onMainThread: #selector(UITableView.reloadData), with: nil, waitUntilDone: true)
+                        // Reload the TableView
+                        self.refreshBlobViewTable()
                     }
                     else
                     {

@@ -1627,12 +1627,6 @@ class AWSAddBlobView : AWSRequestObject
         }
         
         print("ADDING BLOB VIEW: \(blobID), \(userID), \(Date().timeIntervalSince1970)")
-//        let json: NSDictionary = [
-//            "blob_id"       : blobID
-//            , "user_id"     : userID
-//            , "timestamp"   : String(Date().timeIntervalSince1970)
-//            , "action_type" : "view"
-//        ]
         var json = [String: Any]()
         json["blob_id"]     = self.blobID
         json["user_id"]     = self.userID

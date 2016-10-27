@@ -15,7 +15,7 @@ class BlobTableViewCellBlob: UITableViewCell
 //    
 //    var userImageContainer: UIView!
 //    var userImageView: UIImageView!
-    var blobTypeIndicatorView: UIView!
+//    var blobTypeIndicatorView: UIView!
 //    var blobDatetimeLabel: UILabel!
 //    var blobDateAgeLabel: UILabel!
 //    var blobTextViewContainer: UIView!
@@ -55,17 +55,17 @@ class BlobTableViewCellBlob: UITableViewCell
 //        userImageView.contentMode = UIViewContentMode.scaleAspectFill
 //        userImageView.clipsToBounds = true
 //        userImageContainer.addSubview(userImageView)
-        
-        
-        // The Blob Type Indicator should be to the top right of the the User Image
-        blobTypeIndicatorView = UIView(frame: CGRect(x: 5, y: 5, width: Constants.Dim.blobViewIndicatorSize, height: Constants.Dim.blobViewIndicatorSize))
-        blobTypeIndicatorView.layer.cornerRadius = Constants.Dim.blobViewIndicatorSize / 2
-        blobTypeIndicatorView.layer.shadowOffset = CGSize(width: 0, height: 0.2)
-        blobTypeIndicatorView.layer.shadowOpacity = 0.2
-        blobTypeIndicatorView.layer.shadowRadius = 1.0
-        blobTypeIndicatorView.isUserInteractionEnabled = true
-        self.addSubview(blobTypeIndicatorView)
-
+//        
+//        
+//        // The Blob Type Indicator should be to the top right of the the User Image
+//        blobTypeIndicatorView = UIView(frame: CGRect(x: 5, y: 5, width: Constants.Dim.blobViewIndicatorSize, height: Constants.Dim.blobViewIndicatorSize))
+//        blobTypeIndicatorView.layer.cornerRadius = Constants.Dim.blobViewIndicatorSize / 2
+//        blobTypeIndicatorView.layer.shadowOffset = CGSize(width: 0, height: 0.2)
+//        blobTypeIndicatorView.layer.shadowOpacity = 0.2
+//        blobTypeIndicatorView.layer.shadowRadius = 1.0
+//        blobTypeIndicatorView.isUserInteractionEnabled = true
+//        self.addSubview(blobTypeIndicatorView)
+//
 //        // The Date Age Label should be in small font just below the Navigation Bar at the right of the screen (right aligned text)
 //        blobDateAgeLabel = UILabel(frame: CGRect(x: 0, y: 0, width: blobTypeIndicatorView.frame.width, height: blobTypeIndicatorView.frame.height))
 //        blobDateAgeLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 10)
