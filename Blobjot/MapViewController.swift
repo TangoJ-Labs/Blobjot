@@ -2271,7 +2271,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                         // Refresh child VCs
                         if self.blobVC != nil
                         {
-                            self.blobVC.refreshCommentTable()
+                            self.blobVC.refreshBlobViewTable()
                         }
                     }
                     else
@@ -2303,7 +2303,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                         // Refresh child VCs
                         if self.blobVC != nil
                         {
-                            self.blobVC.refreshCommentTable()
+                            self.blobVC.refreshBlobViewTable()
                         }
                     }
                     else
@@ -2326,7 +2326,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                         // Refresh child VCs
                         if self.blobVC != nil
                         {
-                            self.blobVC.refreshCommentTable()
+                            self.blobVC.refreshBlobViewTable()
                         }
                     }
                     else

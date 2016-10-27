@@ -252,8 +252,8 @@ struct Constants
         static let blobsActiveTableViewCellReuseIdentifier = "blobsActiveTableViewCell"
         static let accountTableViewCellReuseIdentifier = "accountTableViewCell"
         static let blobAddPeopleTableViewCellReuseIdentifier = "blobAddPeopleTableViewCell"
-        static let blobTableViewCellBlobReuseIdentifier = "blobTableViewCellBlob"
-        static let blobTableViewCellLabelReuseIdentifier = "blobTableViewCellLabel"
+        static let blobTableViewCellBlobWithLabelReuseIdentifier = "blobTableViewCellBlobWithLabel"
+        static let blobTableViewCellBlobNoLabelReuseIdentifier = "blobTableViewCellBlobNoLabel"
         static let blobTableViewCellCommentReuseIdentifier = "blobTableViewCellComment"
         
         static let cacheSessionViewHistory = "sessionViewHistory"
@@ -278,7 +278,7 @@ struct Constants
         static let mapStyleUrl = URL(string: "mapbox://styles/tangojlabs/ciqwaddsl0005b7m0xwctftow")
         static let maxServerTries: Int = 5
         static let locationDistanceFilter: Double = 10 // In meters
-        static let locationAccuracyMax: Double = 30 // In meters
+        static let locationAccuracyMax: Double = 50 // In meters
         static let locationAccuracyMaxBackground: Double = 100 // In meters
         static let locationAccuracyDeferredDistance: Double = 100 // In meters
         static let locationAccuracyDeferredInterval: Double = 180 // In seconds
