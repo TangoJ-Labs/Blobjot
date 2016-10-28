@@ -57,7 +57,7 @@ class BlobsActiveTableViewCell: UITableViewCell {
         cellContainer.addSubview(userImageActivityIndicator)
         
         cellUserName = UILabel(frame: CGRect(x: 10 + Constants.Dim.blobsActiveTableViewUserImageSize, y: 25, width: cellContainer.frame.width - 20 - Constants.Dim.blobsActiveTableViewUserImageSize - Constants.Dim.blobsActiveTableViewContentSize, height: 30))
-        cellUserName.font = UIFont(name: Constants.Strings.fontRegular, size: 24)
+        cellUserName.font = UIFont(name: Constants.Strings.fontRegular, size: 18)
         cellContainer.addSubview(cellUserName)
         
         cellDatetime = UILabel(frame: CGRect(x: 10 + Constants.Dim.blobsActiveTableViewUserImageSize, y: 20 + cellUserName.frame.height, width: cellContainer.frame.width - 20 - Constants.Dim.blobsActiveTableViewUserImageSize - Constants.Dim.blobsActiveTableViewContentSize, height: 15))
@@ -95,26 +95,30 @@ class BlobsActiveTableViewCell: UITableViewCell {
         super.awakeFromNib()
         // Initialization code
     }
-
-    override func setSelected(_ selected: Bool, animated: Bool) {
-        print("ACTIVE CELL - SET SELECTED")
-        // Configure the view for the selected state
-        let color = cellBlobTypeIndicator.backgroundColor
-        super.setSelected(selected, animated: animated)
-        
-        if(selected) {
-            cellBlobTypeIndicator.backgroundColor = color
-        }
-    }
     
-    override func setHighlighted(_ highlighted: Bool, animated: Bool) {
-        print("ACTIVE CELL - SET HIGHLIGHTED")
-        let color = cellBlobTypeIndicator.backgroundColor
-        super.setHighlighted(highlighted, animated: animated)
-        
-        if(highlighted) {
-            cellBlobTypeIndicator.backgroundColor = color
-        }
+    override func setSelected(_ selected: Bool, animated: Bool) {
+        print("SELECTED ACTIVE BLOB VIEW CELL")
     }
+
+//    override func setSelected(_ selected: Bool, animated: Bool) {
+//        print("ACTIVE CELL - SET SELECTED")
+//        // Configure the view for the selected state
+//        let color = cellBlobTypeIndicator.backgroundColor
+//        super.setSelected(selected, animated: animated)
+//        
+//        if(selected) {
+//            cellBlobTypeIndicator.backgroundColor = color
+//        }
+//    }
+//    
+//    override func setHighlighted(_ highlighted: Bool, animated: Bool) {
+//        print("ACTIVE CELL - SET HIGHLIGHTED")
+//        let color = cellBlobTypeIndicator.backgroundColor
+//        super.setHighlighted(highlighted, animated: animated)
+//        
+//        if(highlighted) {
+//            cellBlobTypeIndicator.backgroundColor = color
+//        }
+//    }
 
 }

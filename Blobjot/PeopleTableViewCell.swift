@@ -45,7 +45,7 @@ class PeopleTableViewCell: UITableViewCell {
         
         // Add a loading indicator while the Image is downloaded / searched for
         // Give it the same size and location as the Image View
-        cellUserImageActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: cellContainer.frame.width - 10 - imageSize, y: 5, width: imageSize, height: imageSize))
+        cellUserImageActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: cellContainer.frame.width - 10 - imageSize, y: (cellContainer.frame.height / 2) - (imageSize / 2), width: imageSize, height: imageSize))
         cellUserImageActivityIndicator.color = UIColor.black
         cellContainer.addSubview(cellUserImageActivityIndicator)
         
@@ -74,8 +74,12 @@ class PeopleTableViewCell: UITableViewCell {
     }
     
     override func setSelected(_ selected: Bool, animated: Bool) {
-        super.setSelected(selected, animated: animated)
-        // Configure the view for the selected state
+        print("SELECTED ACCOUNT VIEW CELL")
     }
+    
+//    override func setSelected(_ selected: Bool, animated: Bool) {
+//        super.setSelected(selected, animated: animated)
+//        // Configure the view for the selected state
+//    }
 
 }

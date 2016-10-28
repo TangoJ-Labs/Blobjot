@@ -315,7 +315,7 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
                     {
                         userImageView.image = userImage
                     }
-                    // *COMPLETE******** RECEIVE A NOTIFICATION FROM THE MAP VIEW WHEN THE USER IMAGE HAS BEEN DOWNLOADED (IF NOT ALREADY)
+// *COMPLETE******** RECEIVE A NOTIFICATION FROM THE MAP VIEW WHEN THE USER IMAGE HAS BEEN DOWNLOADED (IF NOT ALREADY)
                     
                     break loopUserCheck
                 }
@@ -578,6 +578,34 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath)
     {
         print("DID SELECT ROW #\((indexPath as NSIndexPath).item)!")
+        
+        // Create a back button and title for the Nav Bar
+        let backButtonItem = UIBarButtonItem(title: "BLOB \u{2193}",
+                                             style: UIBarButtonItemStyle.plain,
+                                             target: self,
+                                             action: #selector(BlobViewController.popViewController(_:)))
+        backButtonItem.tintColor = Constants.Colors.colorTextNavBar
+        
+        let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
+        let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
+        ncTitleText.text = "All People"
+        ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 12)
+        ncTitleText.textColor = Constants.Colors.colorTextNavBar
+        ncTitleText.textAlignment = .center
+        ncTitle.addSubview(ncTitleText)
+        
+        // Instantiate the PeopleViewController and pass the Preview Blob UserID to the VC
+        let peopleVC = PeopleViewController()
+        peopleVC.peopleListTopPerson = self.blobCommentArray[indexPath.row - 1].userID
+        
+        // Instantiate the Nav Controller and attach the Nav Bar items to the view controller settings
+        let navController = UINavigationController(rootViewController: peopleVC)
+        peopleVC.navigationItem.setLeftBarButton(backButtonItem, animated: true)
+        peopleVC.navigationItem.titleView = ncTitle
+        
+        // Change the Nav Bar color and present the view
+        navController.navigationBar.barTintColor = Constants.Colors.colorStatusBar
+        self.present(navController, animated: true, completion: nil)
     }
     
     func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath)
@@ -735,6 +763,14 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
     
     // MARK: CUSTOM METHODS
     
+    // Dismiss the latest View Controller presented from this VC
+    // This version is used when the top VC is popped from a Nav Bar button
+    func popViewController(_ sender: UIBarButtonItem)
+    {
+        print("pop Back to Map View")
+        self.dismiss(animated: true, completion: {})
+    }
+    
     func refreshBlobViewTable()
     {
         print("BVC - REFRESH BLOB VIEW TABLE")
@@ -869,6 +905,8 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
                             }
                         }
                         
+                        // Stop the refresh controller and reload the table
+                        self.refreshControl.endRefreshing()
                         self.refreshBlobViewTable()
                     }
                     else

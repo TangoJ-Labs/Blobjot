@@ -15,7 +15,7 @@ import GooglePlacePicker
 import UIKit
 
 
-class MapViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, GMSMapViewDelegate, BlobAddViewControllerDelegate, GMSAutocompleteResultsViewControllerDelegate, FBSDKLoginButtonDelegate, AWSRequestDelegate, ConnectionsViewControllerDelegate, AccountViewControllerDelegate
+class MapViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, GMSMapViewDelegate, BlobAddViewControllerDelegate, GMSAutocompleteResultsViewControllerDelegate, FBSDKLoginButtonDelegate, AWSRequestDelegate, PeopleViewControllerDelegate, AccountViewControllerDelegate
 {
     // Save device settings to adjust view if needed
     var screenSize: CGRect!
@@ -148,7 +148,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // Store the local class variables so that information can be passed from background processes if needed
     var activeBlobsVC: BlobsActiveTableViewController!
     var accountVC: AccountViewController!
-    var connectionsVC: ConnectionsViewController!
+    var peopleVC: PeopleViewController!
     var addBlobVC: BlobAddViewController!
     
     // If the user is manually logging in, set the indicator for certain settings
@@ -764,10 +764,11 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
 //        activeBlobsTabBarItem.setTitleTextAttributes([NSForegroundColorAttributeName: UIColor.grayColor()], forState:.Normal)
         activeBlobsVC.tabBarItem = activeBlobsTabBarItem
         
-        connectionsVC = ConnectionsViewController()
-        connectionsVC.connectionsViewDelegate = self
+        peopleVC = PeopleViewController()
+        peopleVC.peopleViewDelegate = self
+        peopleVC.tabBarUsed = true
         let connectionsTabBarItem = UITabBarItem(title: "CONNECTIONS", image: nil, tag: 2)
-        connectionsVC.tabBarItem = connectionsTabBarItem
+        peopleVC.tabBarItem = connectionsTabBarItem
         
         accountVC = AccountViewController()
         accountVC.accountViewDelegate = self
@@ -781,8 +782,8 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         // Create the Tab Bar Controller to hold the Table View Controllers
         let tabBarController = UITabBarController()
         tabBarController.tabBar.barTintColor = Constants.Colors.colorStatusBar
-        tabBarController.tabBar.tintColor = UIColor.white
-        tabBarController.viewControllers = [activeBlobsVC, connectionsVC, accountVC]
+        tabBarController.tabBar.tintColor = Constants.Colors.colorTextNavBar
+        tabBarController.viewControllers = [activeBlobsVC, peopleVC, accountVC]
 //        tabBarController.modalTransitionStyle = .FlipHorizontal
         
         // Create the Back Button Item and Title View for the Tab View
@@ -1027,7 +1028,10 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         
         // Instantiate the PeopleViewController and pass the Preview Blob UserID to the VC
         let peopleVC = PeopleViewController()
-        peopleVC.peopleListTopPerson = previewBlob?.blobUserID
+        if let previewBlob = self.previewBlob
+        {
+            peopleVC.peopleListTopPerson = previewBlob.blobUserID
+        }
         
         // Instantiate the Nav Controller and attach the Nav Bar items to the view controller settings
         let navController = UINavigationController(rootViewController: peopleVC)

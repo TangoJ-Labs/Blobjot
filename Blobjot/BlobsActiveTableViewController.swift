@@ -260,7 +260,7 @@ class BlobsActiveTableViewController: UIViewController, UITableViewDataSource, U
                 }
             }
         }
-        hide.backgroundColor = UIColor.red
+        hide.backgroundColor = Constants.Colors.blobRedOpaque
         
         return [hide]
     }

@@ -26,14 +26,17 @@ class BlobAddTypeViewController: UIViewController {
     var viewContainer: UIView!
     var typeContainer1: UIView!
     var typeContainer1Label: UILabel!
+    var typeContainer1SubLabel: UILabel!
     var typeContainer1Check: UIView!
     var typeContainer1CheckLabel: UILabel!
     var typeContainer2: UIView!
     var typeContainer2Label: UILabel!
+    var typeContainer2SubLabel: UILabel!
     var typeContainer2Check: UIView!
     var typeContainer2CheckLabel: UILabel!
     var typeContainer3: UIView!
     var typeContainer3Label: UILabel!
+    var typeContainer3SubLabel: UILabel!
     var typeContainer3Check: UIView!
     var typeContainer3CheckLabel: UILabel!
     
@@ -58,12 +61,19 @@ class BlobAddTypeViewController: UIViewController {
         typeContainer1 = UIView(frame: CGRect(x: 0, y: 0, width: viewContainer.frame.width, height: viewContainer.frame.height / 3))
         viewContainer.addSubview(typeContainer1)
         
-        typeContainer1Label = UILabel(frame: CGRect(x: 20, y: 0, width: typeContainer1.frame.width * (3/4) - 20, height: typeContainer1.frame.height))
-        typeContainer1Label.font = UIFont(name: Constants.Strings.fontRegular, size: 26)
-        typeContainer1Label.text = "Single-Use Blob"
+        typeContainer1Label = UILabel(frame: CGRect(x: 20, y: 6, width: typeContainer1.frame.width * (3/4) - 20, height: typeContainer1.frame.height / 2))
+        typeContainer1Label.font = UIFont(name: Constants.Strings.fontRegular, size: 24)
+        typeContainer1Label.text = "Temporary Blob"
         typeContainer1Label.textAlignment = .left
         typeContainer1Label.textColor = Constants.Colors.colorTextGray
         typeContainer1.addSubview(typeContainer1Label)
+        
+        typeContainer1SubLabel = UILabel(frame: CGRect(x: 20, y: typeContainer1.frame.height / 2, width: typeContainer1.frame.width * (3/4) - 20, height: typeContainer1.frame.height / 2))
+        typeContainer1SubLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 10)
+        typeContainer1SubLabel.text = "This Blob will disappear once viewed"
+        typeContainer1SubLabel.textAlignment = .left
+        typeContainer1SubLabel.textColor = Constants.Colors.colorTextGray
+        typeContainer1.addSubview(typeContainer1SubLabel)
         
         typeContainer1Check = UIView(frame: CGRect(x: typeContainer1.frame.width * (3/4), y: (typeContainer1.frame.height / 2) - (Constants.Dim.blobAddTypeCircleSize / 2), width: Constants.Dim.blobAddTypeCircleSize, height: Constants.Dim.blobAddTypeCircleSize))
         typeContainer1Check.layer.cornerRadius = Constants.Dim.blobAddTypeCircleSize / 2
@@ -87,12 +97,19 @@ class BlobAddTypeViewController: UIViewController {
         typeContainer2 = UIView(frame: CGRect(x: 0, y: viewContainer.frame.height / 3, width: viewContainer.frame.width, height: viewContainer.frame.height / 3))
         viewContainer.addSubview(typeContainer2)
         
-        typeContainer2Label = UILabel(frame: CGRect(x: 20, y: 0, width: typeContainer2.frame.width * (3/4) - 20, height: typeContainer2.frame.height))
-        typeContainer2Label.font = UIFont(name: Constants.Strings.fontRegular, size: 26)
+        typeContainer2Label = UILabel(frame: CGRect(x: 20, y: 6, width: typeContainer2.frame.width * (3/4) - 20, height: typeContainer2.frame.height / 2))
+        typeContainer2Label.font = UIFont(name: Constants.Strings.fontRegular, size: 24)
         typeContainer2Label.text = "Permanent Blob"
         typeContainer2Label.textAlignment = .left
         typeContainer2Label.textColor = Constants.Colors.colorTextGray
         typeContainer2.addSubview(typeContainer2Label)
+        
+        typeContainer2SubLabel = UILabel(frame: CGRect(x: 20, y: typeContainer2.frame.height / 2, width: typeContainer2.frame.width * (3/4) - 20, height: typeContainer2.frame.height / 2))
+        typeContainer2SubLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 10)
+        typeContainer2SubLabel.text = "This Blob will exist until deleted"
+        typeContainer2SubLabel.textAlignment = .left
+        typeContainer2SubLabel.textColor = Constants.Colors.colorTextGray
+        typeContainer2.addSubview(typeContainer2SubLabel)
         
         typeContainer2Check = UIView(frame: CGRect(x: typeContainer2.frame.width * (3/4), y: (typeContainer2.frame.height / 2) - (Constants.Dim.blobAddTypeCircleSize / 2), width: Constants.Dim.blobAddTypeCircleSize, height: Constants.Dim.blobAddTypeCircleSize))
         typeContainer2Check.layer.cornerRadius = Constants.Dim.blobAddTypeCircleSize / 2
@@ -115,12 +132,19 @@ class BlobAddTypeViewController: UIViewController {
         typeContainer3 = UIView(frame: CGRect(x: 0, y: viewContainer.frame.height * (2/3), width: viewContainer.frame.width, height: viewContainer.frame.height / 3))
         viewContainer.addSubview(typeContainer3)
         
-        typeContainer3Label = UILabel(frame: CGRect(x: 20, y: 0, width: typeContainer3.frame.width * (3/4) - 20, height: typeContainer3.frame.height))
-        typeContainer3Label.font = UIFont(name: Constants.Strings.fontRegular, size: 26)
+        typeContainer3Label = UILabel(frame: CGRect(x: 20, y: 6, width: typeContainer3.frame.width * (3/4) - 20, height: typeContainer3.frame.height / 2))
+        typeContainer3Label.font = UIFont(name: Constants.Strings.fontRegular, size: 24)
         typeContainer3Label.text = "Invisible Blob"
         typeContainer3Label.textAlignment = .left
         typeContainer3Label.textColor = Constants.Colors.colorTextGray
         typeContainer3.addSubview(typeContainer3Label)
+        
+        typeContainer3SubLabel = UILabel(frame: CGRect(x: 20, y: typeContainer3.frame.height / 2, width: typeContainer3.frame.width * (3/4) - 20, height: typeContainer3.frame.height / 2))
+        typeContainer3SubLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 10)
+        typeContainer3SubLabel.text = "A Temporary Blob and not visible on the map"
+        typeContainer3SubLabel.textAlignment = .left
+        typeContainer3SubLabel.textColor = Constants.Colors.colorTextGray
+        typeContainer3.addSubview(typeContainer3SubLabel)
         
         typeContainer3Check = UIView(frame: CGRect(x: typeContainer3.frame.width * (3/4), y: (typeContainer3.frame.height / 2) - (Constants.Dim.blobAddTypeCircleSize / 2), width: Constants.Dim.blobAddTypeCircleSize, height: Constants.Dim.blobAddTypeCircleSize))
         typeContainer3Check.layer.cornerRadius = Constants.Dim.blobAddTypeCircleSize / 2

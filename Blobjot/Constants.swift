@@ -21,11 +21,11 @@ struct Constants
     enum BlobTypes: Int
     {
         case temporary = 1
-        case `public` = 2
-        case permanent = 3
-        case sponsoredTemporary = 4
-        case sponsoredPermanent = 5
-        case invisible = 6
+        case permanent = 2
+        case `public` = 3
+        case invisible = 4
+        case sponsoredTemporary = 5
+        case sponsoredPermanent = 6
     }
     
     enum UserStatusTypes: Int
@@ -110,6 +110,7 @@ struct Constants
         static let colorBorderGrayLight = UIColor(red: 204/255, green: 204/255, blue: 204/255, alpha: 1.0) //#CCC
 //        static let colorTextNavBar = UIColor(red: 51/255, green: 51/255, blue: 51/255, alpha: 1.0) //#333333
         static let colorTextNavBar = UIColor.white
+        static let colorGrayLight = UIColor(red: 204/255, green: 204/255, blue: 204/255, alpha: 1.0) //#CCC
         
         static let colorTextStandard = UIColor(red: 0/255, green: 0/255, blue: 0/255, alpha: 0.3) //#000000
         static let colorTextGray = UIColor(red: 38/255, green: 38/255, blue: 38/255, alpha: 1.0) //#262626
@@ -140,7 +141,7 @@ struct Constants
         static let colorStarSelected = UIColor.yellow
         static let colorStarLarge = UIColor.lightGray.withAlphaComponent(0.9)
         
-        static let colorBlobAddPeopleSearchBar = UIColor.gray
+        static let colorBlobAddPeopleSearchBar = UIColor(red: 138/255, green: 112/255, blue: 178/255, alpha: 1.0) //#8A70B2
         static let colorPeopleSearchBar = UIColor.gray
         
         static let colorPreviewTextNormal = UIColor.black
@@ -230,6 +231,8 @@ struct Constants
         static let connectionsTableViewCellHeight: CGFloat = 80
         static let accountConnectStarSize: CGFloat = 40
         
+        static let tabBarHeight: CGFloat = 49
+        
     }
     
     struct Strings {
@@ -277,9 +280,9 @@ struct Constants
         static let gKey = "AIzaSyBdwjW6jYuPjZP7oW8NsqHkZQyMxFq_j0w"
         static let mapStyleUrl = URL(string: "mapbox://styles/tangojlabs/ciqwaddsl0005b7m0xwctftow")
         static let maxServerTries: Int = 5
-        static let locationDistanceFilter: Double = 10 // In meters
-        static let locationAccuracyMax: Double = 50 // In meters
-        static let locationAccuracyMaxBackground: Double = 100 // In meters
+        static let locationDistanceFilter: Double = 100 // In meters
+        static let locationAccuracyMax: Double = 100 // In meters
+        static let locationAccuracyMaxBackground: Double = 200 // In meters
         static let locationAccuracyDeferredDistance: Double = 100 // In meters
         static let locationAccuracyDeferredInterval: Double = 180 // In seconds
         

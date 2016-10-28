@@ -669,7 +669,7 @@ class AccountViewController: UIViewController, UITextViewDelegate, UITableViewDa
                     }
                 }
             }
-            delete.backgroundColor = UIColor.red
+            delete.backgroundColor = Constants.Colors.blobRedOpaque
             actionReturnArray = [delete]
         }
         else
@@ -933,6 +933,8 @@ class AccountViewController: UIViewController, UITextViewDelegate, UITableViewDa
                             }
                             else
                             {
+                                Constants.Data.userBlobs = [Blob]()
+                                
                                 // Loop through each AnyObject (Blob) in the array
                                 for newBlob in newUserBlobs
                                 {

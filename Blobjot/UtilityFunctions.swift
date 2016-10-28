@@ -11,8 +11,8 @@ import AWSCognito
 import GoogleMaps
 import UIKit
 
-class UtilityFunctions {
-    
+class UtilityFunctions
+{
     // The calculator for zoom to Blob size ratio
     func mapZoomForBlobSize(_ meters: Float) -> Float
     {
@@ -30,7 +30,8 @@ class UtilityFunctions {
     }
     
     // Create a thumbnail-sized image from a large image
-    func resizeImage(_ image: UIImage, targetSize: CGSize) -> UIImage {
+    func resizeImage(_ image: UIImage, targetSize: CGSize) -> UIImage
+    {
         let size = image.size
         
         let widthRatio  = targetSize.width  / image.size.width
@@ -38,9 +39,12 @@ class UtilityFunctions {
         
         // Figure out what our orientation is, and use that to form the rectangle
         var newSize: CGSize
-        if(widthRatio > heightRatio) {
+        if(widthRatio > heightRatio)
+        {
             newSize = CGSize(width: size.width * heightRatio, height: size.height * heightRatio)
-        } else {
+        }
+        else
+        {
             newSize = CGSize(width: size.width * widthRatio,  height: size.height * widthRatio)
         }
         
@@ -57,9 +61,11 @@ class UtilityFunctions {
     }
     
     // Create an alert screen with only an acknowledgment option (an "OK" button)
-    func createAlertOkView(_ title: String, message: String) -> UIAlertController {
+    func createAlertOkView(_ title: String, message: String) -> UIAlertController
+    {
         let alertController = UIAlertController(title: title, message: message, preferredStyle: UIAlertControllerStyle.alert)
-        let okAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.default) { (result : UIAlertAction) -> Void in
+        let okAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.default)
+        { (result : UIAlertAction) -> Void in
             print("OK")
         }
         alertController.addAction(okAction)
@@ -68,9 +74,11 @@ class UtilityFunctions {
     }
     
     // Create an alert screen with only an acknowledgment option (an "OK" button)
-    func createAlertOkViewInTopVC(_ title: String, message: String) {
+    func createAlertOkViewInTopVC(_ title: String, message: String)
+    {
         let alertController = UIAlertController(title: title, message: message, preferredStyle: UIAlertControllerStyle.alert)
-        let okAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.default) { (result : UIAlertAction) -> Void in
+        let okAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.default)
+        { (result : UIAlertAction) -> Void in
             print("OK")
         }
         alertController.addAction(okAction)
@@ -78,22 +86,28 @@ class UtilityFunctions {
         alertController.show()
     }
     
-    func displayLocalBlobNotification(_ blob: Blob) {
+    func displayLocalBlobNotification(_ blob: Blob)
+    {
         print("UF-DLBN - SHOWING NOTIFICATION FOR BLOB: \(blob.blobID) WITH TEXT: \(blob.blobText)")
         
         // Find the user for the Blob
-        loopUserObjectCheck: for userObject in Constants.Data.userObjects {
-            if userObject.userID == blob.blobUserID {
-                
+        loopUserObjectCheck: for userObject in Constants.Data.userObjects
+        {
+            if userObject.userID == blob.blobUserID
+            {
                 // Create a notification of the new Blob at the current location
                 let notification = UILocalNotification()
                 
                 // Ensure that the Blob Text is not nil
                 // If it is nil, just show the Blob userName
-                if let blobUserName = userObject.userName {
-                    if let blobText = blob.blobText {
+                if let blobUserName = userObject.userName
+                {
+                    if let blobText = blob.blobText
+                    {
                         notification.alertBody = "\(blobUserName): \(blobText)"
-                    } else {
+                    }
+                    else
+                    {
                         notification.alertBody = "\(blobUserName)"
                     }
                     notification.alertAction = "open"
@@ -108,7 +122,9 @@ class UtilityFunctions {
                     Constants.Data.badgeNumber += 1
                     UIApplication.shared.applicationIconBadgeNumber = Constants.Data.badgeNumber
                     
-                } else {
+                }
+                else
+                {
                     print("***** ERROR CREATING LOCAL BLOB NOTIFICATION *****")
                 }
                 
@@ -121,9 +137,12 @@ class UtilityFunctions {
         let entity = NSEntityDescription.insertNewObject(forEntityName: "BlobNotification", into: moc) as! BlobNotification
         entity.setValue(blob.blobID, forKey: "blobID")
         // Save the Entity
-        do {
+        do
+        {
             try moc.save()
-        } catch {
+        }
+        catch
+        {
             fatalError("Failure to save context: \(error)")
         }
     }
@@ -171,7 +190,8 @@ class UtilityFunctions {
     }
     
     // Create a solid color UIImage
-    func getImageWithColor(_ color: UIColor, size: CGSize) -> UIImage {
+    func getImageWithColor(_ color: UIColor, size: CGSize) -> UIImage
+    {
         let rect = CGRect(x: 0, y: 0, width: size.width, height: size.height)
         UIGraphicsBeginImageContextWithOptions(size, false, 0)
         color.setFill()
@@ -182,7 +202,8 @@ class UtilityFunctions {
         return image
     }
     
-    func pathForCoordinate(_ coordinate: CLLocationCoordinate2D, withMeterRadius: Double) -> GMSMutablePath {
+    func pathForCoordinate(_ coordinate: CLLocationCoordinate2D, withMeterRadius: Double) -> GMSMutablePath
+    {
         let degreesBetweenPoints = 8.0
         
         let path = GMSMutablePath()

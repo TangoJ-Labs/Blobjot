@@ -80,24 +80,28 @@ class AccountTableViewCell: UITableViewCell {
     }
     
     override func setSelected(_ selected: Bool, animated: Bool) {
-        print("USER CELL - SET SELECTED")
-        // Configure the view for the selected state
-        let color = cellBlobTypeIndicator.backgroundColor
-        super.setSelected(selected, animated: animated)
-        
-        if(selected) {
-            cellBlobTypeIndicator.backgroundColor = color
-        }
+        print("SELECTED ACCOUNT VIEW CELL")
     }
     
-    override func setHighlighted(_ highlighted: Bool, animated: Bool) {
-        print("USER CELL - SET HIGHLIGHTED")
-        let color = cellBlobTypeIndicator.backgroundColor
-        super.setHighlighted(highlighted, animated: animated)
-        
-        if(highlighted) {
-            cellBlobTypeIndicator.backgroundColor = color
-        }
-    }
+//    override func setSelected(_ selected: Bool, animated: Bool) {
+//        print("USER CELL - SET SELECTED")
+//        // Configure the view for the selected state
+//        let color = cellBlobTypeIndicator.backgroundColor
+//        super.setSelected(selected, animated: animated)
+//        
+//        if(selected) {
+//            cellBlobTypeIndicator.backgroundColor = color
+//        }
+//    }
+//    
+//    override func setHighlighted(_ highlighted: Bool, animated: Bool) {
+//        print("USER CELL - SET HIGHLIGHTED")
+//        let color = cellBlobTypeIndicator.backgroundColor
+//        super.setHighlighted(highlighted, animated: animated)
+//        
+//        if(highlighted) {
+//            cellBlobTypeIndicator.backgroundColor = color
+//        }
+//    }
     
 }

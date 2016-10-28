@@ -192,23 +192,27 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         AWSPrepRequest(requestToCall: AWSRegisterForPushNotifications(deviceToken: stringToken), delegate: self as AWSRequestDelegate).prepRequest()
     }
     
-    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error)
+    {
         print("AD-RN - ERROR: \(error)")
     }
     
-    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any]) {
+    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any])
+    {
         print("AD-RN - DID RECEIVE - REMOTE - NOTIFICATION: \(userInfo)")
         
         self.handlePushNotification(userInfo: userInfo)
     }
     
-    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void)
+    {
         print("AD-RN - DID RECEIVE - REMOTE - NOTIFICATION - BACKGROUND: \(userInfo)")
         
         self.handlePushNotification(userInfo: userInfo)
     }
     
-    func application(_ application: UIApplication, handleActionWithIdentifier identifier: String?, forRemoteNotification userInfo: [AnyHashable: Any], completionHandler: @escaping () -> Void) {
+    func application(_ application: UIApplication, handleActionWithIdentifier identifier: String?, forRemoteNotification userInfo: [AnyHashable: Any], completionHandler: @escaping () -> Void)
+    {
         print("AD-RN - HANDLE ACTION WITH IDENTIFIER: \(identifier) FOR REMOTE NOTIFICATION: \(userInfo)")
     }
     
@@ -254,9 +258,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     func updateLocationManager()
     {
         Constants.appDelegateLocationManager.delegate = self
-        Constants.appDelegateLocationManager.desiredAccuracy = kCLLocationAccuracyBest
         Constants.appDelegateLocationManager.requestAlwaysAuthorization()
-        Constants.appDelegateLocationManager.pausesLocationUpdatesAutomatically = false
+        Constants.appDelegateLocationManager.activityType = .other
+        Constants.appDelegateLocationManager.pausesLocationUpdatesAutomatically = true
         Constants.appDelegateLocationManager.allowsBackgroundLocationUpdates = true
         Constants.appDelegateLocationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
         Constants.appDelegateLocationManager.distanceFilter = Constants.Settings.locationDistanceFilter
@@ -364,6 +368,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
                     }
                 }
             }
+// *COMPLETE******** SORT THE LOCATION BLOBS?
 //            print("SORTING LOCATION BLOBS")
 //            // Sort the Location Blobs from newest to oldest
 //            Constants.Data.locationBlobs.sortInPlace({$0.blobDatetime.timeIntervalSince1970 >  $1.blobDatetime.timeIntervalSince1970})

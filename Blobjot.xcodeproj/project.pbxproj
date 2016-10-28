@@ -79,7 +79,6 @@
 		B88884081D52DFD7001EE249 /* Bolts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B88884071D52DFD7001EE249 /* Bolts.framework */; };
 		B88DFD881DBD50DF00255BA5 /* BlobTableViewCellBlob.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88DFD871DBD50DF00255BA5 /* BlobTableViewCellBlob.swift */; };
 		B88DFD8A1DBE9F9200255BA5 /* Houston-Downtown2.gpx in Resources */ = {isa = PBXBuildFile; fileRef = B88DFD891DBE9F9200255BA5 /* Houston-Downtown2.gpx */; };
-		B88DFD8C1DBFC98000255BA5 /* BlobTableViewCellLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88DFD8B1DBFC98000255BA5 /* BlobTableViewCellLabel.swift */; };
 		B88DFD8E1DBFC98E00255BA5 /* BlobTableViewCellComment.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88DFD8D1DBFC98E00255BA5 /* BlobTableViewCellComment.swift */; };
 		B8A729321D64064800FD6E0A /* star_yellow.png in Resources */ = {isa = PBXBuildFile; fileRef = B8A729301D64064800FD6E0A /* star_yellow.png */; };
 		B8A729331D64064800FD6E0A /* star_clear.png in Resources */ = {isa = PBXBuildFile; fileRef = B8A729311D64064800FD6E0A /* star_clear.png */; };
@@ -200,7 +199,6 @@
 		B88884071D52DFD7001EE249 /* Bolts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Bolts.framework; path = "../../../Downloads/FacebookSDKs-iOS-4.14.0/Bolts.framework"; sourceTree = "<group>"; };
 		B88DFD871DBD50DF00255BA5 /* BlobTableViewCellBlob.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlobTableViewCellBlob.swift; sourceTree = "<group>"; };
 		B88DFD891DBE9F9200255BA5 /* Houston-Downtown2.gpx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = "Houston-Downtown2.gpx"; sourceTree = "<group>"; };
-		B88DFD8B1DBFC98000255BA5 /* BlobTableViewCellLabel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlobTableViewCellLabel.swift; sourceTree = "<group>"; };
 		B88DFD8D1DBFC98E00255BA5 /* BlobTableViewCellComment.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlobTableViewCellComment.swift; sourceTree = "<group>"; };
 		B8A729301D64064800FD6E0A /* star_yellow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = star_yellow.png; sourceTree = "<group>"; };
 		B8A729311D64064800FD6E0A /* star_clear.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = star_clear.png; sourceTree = "<group>"; };
@@ -369,7 +367,6 @@
 				B80C56401D51158000C4E683 /* BlobsActiveTableViewController.swift */,
 				B81822061D5B98F300B3A2BB /* BlobThumbnailObject.swift */,
 				B88DFD871DBD50DF00255BA5 /* BlobTableViewCellBlob.swift */,
-				B88DFD8B1DBFC98000255BA5 /* BlobTableViewCellLabel.swift */,
 				B88DFD8D1DBFC98E00255BA5 /* BlobTableViewCellComment.swift */,
 				B80C56431D51158000C4E683 /* BlobViewController.swift */,
 				B80C56371D51158000C4E683 /* ConnectionsTableViewCell.swift */,
@@ -743,7 +740,6 @@
 				B80C56521D51158000C4E683 /* AccountViewController.swift in Sources */,
 				B88131931D510EEE00021C4B /* AppDelegate.swift in Sources */,
 				B88DFD881DBD50DF00255BA5 /* BlobTableViewCellBlob.swift in Sources */,
-				B88DFD8C1DBFC98000255BA5 /* BlobTableViewCellLabel.swift in Sources */,
 				B8312FDA1DB3DA8700CFC715 /* LocationManagerSetting.swift in Sources */,
 				B80C564A1D51158000C4E683 /* BlobAddPeopleTableViewCell.swift in Sources */,
 				B86407081D7B13EB0084D6EF /* DataModel.xcdatamodeld in Sources */,
