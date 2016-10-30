@@ -42,7 +42,13 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
     var commentBoxWidth: CGFloat!
     
     var viewContainerHeight: CGFloat!
-    var blobCellHeight: CGFloat!
+    var blobCellWidth: CGFloat!
+    var blobCellContentHeight: CGFloat!
+    var blobMediaSize: CGFloat!
+    var blobTextViewWidth: CGFloat!
+    var blobTextViewHeight: CGFloat = 0
+    var blobTextViewOffsetY: CGFloat = 50
+    
     var tableViewHeightArray = [CGFloat]()
     
     // This blob should be initialized when the ViewController is initialized
@@ -93,10 +99,25 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
         blobCommentBoxDefaultHeight = viewContainer.frame.height - 250
         commentBoxWidth = viewContainer.frame.width - 30 - Constants.Dim.blobViewCommentUserImageSize
         
-        blobCellHeight = self.viewContainerHeight
+        // Set the main cell standard dimensions
+        blobCellWidth = viewContainer.frame.width
+        blobTextViewWidth = viewContainer.frame.width - 15 - Constants.Dim.blobViewUserImageSize
+        blobMediaSize = viewContainer.frame.width
+        
+        // Calculate the size of the Blob textview
+        if let blobText = self.blob.blobText
+        {
+            self.blobTextViewHeight = textHeightForAttributedText(text: NSAttributedString(string: blobText), width: self.blobTextViewWidth) * 1.3
+        }
+        print("BVC - BLOB TEXT VIEW SIZE: \(blobTextViewHeight)")
+        
+        // Set the blobCellHeight as if a media preview or map is going to be shown
+        blobCellContentHeight = blobTextViewOffsetY + blobTextViewHeight + 5 + blobMediaSize
+        
+        // Correct the blobCellHeight if no media or map will be shown
         if !self.blobHasMedia && !self.userBlob
         {
-            blobCellHeight = viewContainer.frame.height - viewContainer.frame.width
+            blobCellContentHeight = blobTextViewOffsetY + blobTextViewHeight
         }
         
         // A tableview will hold all comments
@@ -125,9 +146,9 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
 //        blobTableView.contentOffset = CGPoint(x: 0, y: -self.refreshControl.frame.size.height)
         
         // Add the Add Button in the bottom right corner (hidden if the Blob has media, unhidden if not)
-        if self.blobHasMedia || self.userBlob
+        if blobCellContentHeight >= viewContainer.frame.height
         {
-            blobCommentsButton = UIView(frame: CGRect(x: viewContainer.frame.width - 5 - Constants.Dim.blobViewButtonSize, y: viewContainer.frame.height + 5 + Constants.Dim.blobViewButtonSize, width: Constants.Dim.blobViewButtonSize, height: Constants.Dim.blobViewButtonSize))
+            blobCommentsButton = UIView(frame: CGRect(x: viewContainer.frame.width - 5 - Constants.Dim.blobViewButtonSize, y: viewContainer.frame.height + 5, width: Constants.Dim.blobViewButtonSize, height: Constants.Dim.blobViewButtonSize))
         }
         else
         {
@@ -233,11 +254,11 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
         {
             if self.blobCommentArray.count == 0
             {
-                return self.blobCellHeight + 30
+                return self.blobCellContentHeight + 30
             }
             else
             {
-                return self.blobCellHeight + 20
+                return self.blobCellContentHeight + 20
             }
         }
         else
@@ -292,9 +313,50 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
             var mapView: GMSMapView!
             var blobMediaActivityIndicator: UIActivityIndicatorView!
             
+            // The Blob Type Indicator should be to the top right of the the User Image
+            blobTypeIndicatorView = UIView(frame: CGRect(x: 5, y: 5, width: Constants.Dim.blobViewIndicatorSize, height: Constants.Dim.blobViewIndicatorSize))
+            blobTypeIndicatorView.layer.cornerRadius = Constants.Dim.blobViewIndicatorSize / 2
+            blobTypeIndicatorView.layer.shadowOffset = CGSize(width: 0, height: 0.2)
+            blobTypeIndicatorView.layer.shadowOpacity = 0.2
+            blobTypeIndicatorView.layer.shadowRadius = 1.0
+            // Ensure blobType is not null
+            if let blobType = blob.blobType
+            {
+                // Assign the Blob Type color to the Blob Indicator
+                blobTypeIndicatorView.backgroundColor = Constants().blobColorOpaque(blobType)
+            }
+            cell.addSubview(blobTypeIndicatorView)
+            
+            // The Date Age Label should be in small font just below the Navigation Bar at the right of the screen (right aligned text)
+            blobDateAgeLabel = UILabel(frame: CGRect(x: 0, y: 0, width: blobTypeIndicatorView.frame.width, height: blobTypeIndicatorView.frame.height))
+            blobDateAgeLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 10)
+            blobDateAgeLabel.textColor = Constants.Colors.colorTextGray
+            blobDateAgeLabel.textAlignment = .center
+            blobTypeIndicatorView.addSubview(blobDateAgeLabel)
+            
+            // The Datetime Label should be in small font just below the Navigation Bar starting at the left of the screen (left aligned text)
+            blobDatetimeLabel = UILabel(frame: CGRect(x: cell.frame.width / 2 - 2, y: 2, width: self.blobCellWidth / 2 - 2, height: 15))
+            blobDatetimeLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 10)
+            blobDatetimeLabel.textColor = Constants.Colors.colorTextGray
+            blobDatetimeLabel.textAlignment = .right
+            cell.addSubview(blobDatetimeLabel)
+            
+            if let datetime = blob.blobDatetime
+            {
+                let formatter = DateFormatter()
+                formatter.dateFormat = "E, H:mm" //"E, MMM d HH:mm"
+                let stringDate: String = formatter.string(from: datetime as Date)
+                blobDatetimeLabel.text = stringDate
+                let stringAge = String(-1 * Int(datetime.timeIntervalSinceNow / 3600)) + " hrs"
+                blobDateAgeLabel.text = stringAge
+            }
+            
             // The User Image should be in the upper right quadrant
-            userImageContainer = UIImageView(frame: CGRect(x: 5, y: self.blobCellHeight - 10 - Constants.Dim.blobViewUserImageSize - cell.frame.width, width: Constants.Dim.blobViewUserImageSize, height: Constants.Dim.blobViewUserImageSize))
+            userImageContainer = UIImageView(frame: CGRect(x: 5, y: self.blobTextViewOffsetY + self.blobTextViewHeight - Constants.Dim.blobViewUserImageSize, width: Constants.Dim.blobViewUserImageSize, height: Constants.Dim.blobViewUserImageSize))
             userImageContainer.layer.cornerRadius = Constants.Dim.blobViewUserImageSize / 2
+            userImageContainer.layer.shadowOffset = CGSize(width: 0, height: 0.2)
+            userImageContainer.layer.shadowOpacity = 0.5
+            userImageContainer.layer.shadowRadius = 2.0
             cell.addSubview(userImageContainer)
             
             userImageView = UIImageView(frame: CGRect(x: 0, y: 0, width: userImageContainer.frame.width, height: userImageContainer.frame.height))
@@ -321,89 +383,41 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
                 }
             }
             
-            // The Blob Type Indicator should be to the top right of the the User Image
-            blobTypeIndicatorView = UIView(frame: CGRect(x: 5, y: 5, width: Constants.Dim.blobViewIndicatorSize, height: Constants.Dim.blobViewIndicatorSize))
-            blobTypeIndicatorView.layer.cornerRadius = Constants.Dim.blobViewIndicatorSize / 2
-            blobTypeIndicatorView.layer.shadowOffset = CGSize(width: 0, height: 0.2)
-            blobTypeIndicatorView.layer.shadowOpacity = 0.2
-            blobTypeIndicatorView.layer.shadowRadius = 1.0
-            // Ensure blobType is not null
-            if let blobType = blob.blobType
+            // Only add the Blob Text View if the Blob has text
+            if let blobText = self.blob.blobText
             {
-                // Assign the Blob Type color to the Blob Indicator
-                blobTypeIndicatorView.backgroundColor = Constants().blobColorOpaque(blobType)
-            }
-            cell.addSubview(blobTypeIndicatorView)
-            
-            // The Date Age Label should be in small font just below the Navigation Bar at the right of the screen (right aligned text)
-            blobDateAgeLabel = UILabel(frame: CGRect(x: 0, y: 0, width: blobTypeIndicatorView.frame.width, height: blobTypeIndicatorView.frame.height))
-            blobDateAgeLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 10)
-            blobDateAgeLabel.textColor = Constants.Colors.colorTextGray
-            blobDateAgeLabel.textAlignment = .center
-            blobTypeIndicatorView.addSubview(blobDateAgeLabel)
-            
-            // The Datetime Label should be in small font just below the Navigation Bar starting at the left of the screen (left aligned text)
-            blobDatetimeLabel = UILabel(frame: CGRect(x: cell.frame.width / 2 - 2, y: 2, width: cell.frame.width / 2 - 2, height: 15))
-            blobDatetimeLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 10)
-            blobDatetimeLabel.textColor = Constants.Colors.colorTextGray
-            blobDatetimeLabel.textAlignment = .right
-            cell.addSubview(blobDatetimeLabel)
-            
-            if let datetime = blob.blobDatetime
-            {
-                let formatter = DateFormatter()
-                formatter.dateFormat = "E, H:mm" //"E, MMM d HH:mm"
-                let stringDate: String = formatter.string(from: datetime as Date)
-                blobDatetimeLabel.text = stringDate
-                let stringAge = String(-1 * Int(datetime.timeIntervalSinceNow / 3600)) + " hrs"
-                blobDateAgeLabel.text = stringAge
+                // The Text View should be in the upper right quadrant of the screen (to the right of the User Image), and should extend into the upper left quadrant nearing the User Image
+                blobTextViewContainer = UIView(frame: CGRect(x: 10 + Constants.Dim.blobViewUserImageSize, y: self.blobTextViewOffsetY, width: self.blobTextViewWidth, height: self.blobTextViewHeight))
+                blobTextViewContainer.backgroundColor = UIColor.white
+                blobTextViewContainer.layer.cornerRadius = 10
+                blobTextViewContainer.layer.shadowOffset = CGSize(width: 0, height: 0.2)
+                blobTextViewContainer.layer.shadowOpacity = 0.5
+                blobTextViewContainer.layer.shadowRadius = 2.0
+                cell.addSubview(blobTextViewContainer)
+                
+                blobTextView = UITextView(frame: CGRect(x: 0, y: 0, width: blobTextViewContainer.frame.width, height: blobTextViewContainer.frame.height))
+                blobTextView.backgroundColor = UIColor.white
+                blobTextView.layer.cornerRadius = 10
+                blobTextView.font = UIFont(name: Constants.Strings.fontRegular, size: 16)
+                blobTextView.isScrollEnabled = true
+                blobTextView.isEditable = false
+                blobTextView.isSelectable = false
+                blobTextView.isUserInteractionEnabled = false
+                blobTextView.text = blobText
+                blobTextViewContainer.addSubview(blobTextView)
             }
             
-            // The Text View should be in the upper left quadrant of the screen (to the left of the User Image), and should extend into the upper right quadrant nearing the User Image
-            if self.blobHasMedia || self.userBlob
-            {
-                blobTextViewContainer = UIView(frame: CGRect(x: 10 + Constants.Dim.blobViewUserImageSize, y: 50, width: cell.frame.width - 15 - Constants.Dim.blobViewUserImageSize, height: self.blobCellHeight - 60 - cell.frame.width))
-            }
-            else
-            {
-                blobTextViewContainer = UIView(frame: CGRect(x: 10 + Constants.Dim.blobViewUserImageSize, y: 50, width: cell.frame.width - 15 - Constants.Dim.blobViewUserImageSize, height: self.blobCellHeight - 50))
-            }
-            blobTextViewContainer.backgroundColor = UIColor.white
-            blobTextViewContainer.layer.cornerRadius = 10
-            blobTextViewContainer.layer.shadowOffset = CGSize(width: 0, height: 0.2)
-            blobTextViewContainer.layer.shadowOpacity = 0.5
-            blobTextViewContainer.layer.shadowRadius = 2.0
-            cell.addSubview(blobTextViewContainer)
-            
-            blobTextView = UITextView(frame: CGRect(x: 0, y: 0, width: blobTextViewContainer.frame.width, height: blobTextViewContainer.frame.height))
-            blobTextView.backgroundColor = UIColor.white
-            blobTextView.layer.cornerRadius = 10
-            blobTextView.font = UIFont(name: Constants.Strings.fontRegular, size: 16)
-            blobTextView.isScrollEnabled = true
-            blobTextView.isEditable = false
-            blobTextView.isSelectable = false
-            blobTextView.isUserInteractionEnabled = false
-            if let text = blob.blobText
-            {
-                blobTextView.text = text
-            }
-            blobTextViewContainer.addSubview(blobTextView)
-            
-            // The Media Content View should be in the lower half of the screen (partially extending into the upper half)
-            // It should span the width of the screen
-            // The Image View or the Video Player will be used based on the content (both are the same size, in the same position)
-            let blobImageSize = viewContainer.frame.width
-            
+            // The Media Content View should be in the lower portion of the screen
             // Only show the media section if the blob has media
             if self.blobHasMedia
             {
-                blobImageView = UIImageView(frame: CGRect(x: 0, y: self.blobCellHeight - blobImageSize, width: blobImageSize, height: blobImageSize))
+                blobImageView = UIImageView(frame: CGRect(x: 0, y: self.blobTextViewOffsetY + self.blobTextViewHeight + 5, width: self.blobMediaSize, height: self.blobMediaSize))
                 blobImageView.contentMode = UIViewContentMode.scaleAspectFill
                 blobImageView.clipsToBounds = true
                 
                 // Add a loading indicator until the Media has downloaded
                 // Give it the same size and location as the blobImageView
-                blobMediaActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: 0, y: self.blobCellHeight - cell.frame.width, width: cell.frame.width, height: cell.frame.width))
+                blobMediaActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: 0, y: self.blobTextViewOffsetY + self.blobTextViewHeight + 5, width: self.blobMediaSize, height: self.blobMediaSize))
                 blobMediaActivityIndicator.color = UIColor.black
                 
                 // Start animating the activity indicator
@@ -437,13 +451,13 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
             // Add the Map View only if the Blob being viewed was created by the current user
             if userBlob
             {
-                var mapFrame = CGRect(x: 0, y: self.blobCellHeight - 150, width: 150, height: 150)
+                var mapFrame = CGRect(x: 0, y: self.blobCellContentHeight - 150, width: 150, height: 150)
                 var mapZoom: Float = UtilityFunctions().mapZoomForBlobSize(Float(blob.blobRadius)) - 2.0
                 
                 // If the Blob has media, show the small mapView - If no media exists, show the large mapView
                 if !self.blobHasMedia
                 {
-                    mapFrame = CGRect(x: 0, y: self.blobCellHeight - blobImageSize, width: blobImageSize, height: blobImageSize)
+                    mapFrame = CGRect(x: 0, y: self.blobTextViewOffsetY + self.blobTextViewHeight + 5, width: self.blobMediaSize, height: self.blobMediaSize)
                     mapZoom = mapZoom + 2.0
                 }
                 let camera = GMSCameraPosition.camera(withLatitude: blob.blobLat, longitude: blob.blobLong, zoom: mapZoom)
@@ -475,8 +489,8 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
             
             // Using the data passed from the parent VC to create a circle on the map to represent the Blob
             let blobCircle = GMSCircle(position: CLLocationCoordinate2DMake(blob.blobLat, blob.blobLong), radius: blob.blobRadius)
-            blobCircle.fillColor = Constants().blobColor(blob.blobType)
-            blobCircle.strokeColor = Constants().blobColor(blob.blobType)
+            blobCircle.fillColor = Constants().blobColor(blob.blobType, mainMap: false)
+            blobCircle.strokeColor = Constants().blobColor(blob.blobType, mainMap: false)
             blobCircle.strokeWidth = 1
             blobCircle.map = mapView
             
@@ -484,12 +498,12 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
             let commentLabel: UILabel!
             if self.blobCommentArray.count == 0
             {
-                commentLabel = UILabel(frame: CGRect(x: 0, y: cell.frame.height - 30, width: cell.frame.width, height: 30))
+                commentLabel = UILabel(frame: CGRect(x: 0, y: self.blobCellContentHeight, width: cell.frame.width, height: 30))
                 commentLabel.text = "NO COMMENTS YET"
             }
             else
             {
-                commentLabel = UILabel(frame: CGRect(x: 0, y: cell.frame.height - 20, width: cell.frame.width, height: 20))
+                commentLabel = UILabel(frame: CGRect(x: 0, y: self.blobCellContentHeight, width: cell.frame.width, height: 20))
                 commentLabel.text = ""
             }
 //            commentLabel.backgroundColor = Constants.Colors.standardBackgroundGrayTransparent
@@ -631,9 +645,17 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
         print("BVC - SCROLL VIEW POSITION: \(scrollView.contentOffset.y)")
         
         // Ensure the Blob has media - otherwise the comment button is alreay in view
-        if self.blobHasMedia || self.userBlob
+        if blobCellContentHeight >= viewContainer.frame.height
         {
-            if scrollView.contentOffset.y > 0
+            // Calculate how far the Blob content extends past the bottom of the screen, if any
+            var blobContentExtraSize: CGFloat = 0
+            if self.blobCellContentHeight - viewContainer.frame.height > 0
+            {
+                blobContentExtraSize = self.blobCellContentHeight - viewContainer.frame.height
+            }
+            
+            // Animate the comment button when the comment section is visible
+            if scrollView.contentOffset.y > blobContentExtraSize
             {
                 // Animate the comment button into view
                 UIView.animate(withDuration: 0.2, animations:
@@ -646,7 +668,7 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
                 // Animate the comment button out of view
                 UIView.animate(withDuration: 0.2, animations:
                     {
-                        self.blobCommentsButton.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.blobViewButtonSize, y: self.viewContainer.frame.height + 5 + Constants.Dim.blobViewButtonSize, width: Constants.Dim.blobViewButtonSize, height: Constants.Dim.blobViewButtonSize)
+                        self.blobCommentsButton.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.blobViewButtonSize, y: self.viewContainer.frame.height + 5, width: Constants.Dim.blobViewButtonSize, height: Constants.Dim.blobViewButtonSize)
                     }, completion: nil)
             }
         }

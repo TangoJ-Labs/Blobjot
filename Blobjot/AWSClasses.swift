@@ -1061,7 +1061,8 @@ class AWSEditUserImage : AWSRequestObject
                     let imageID = responseData! as! String
                     print("UUI: imageID: \(imageID)")
                     
-                    let resizedImage = UtilityFunctions().resizeImage(self.newUserImage, targetSize: CGSize(width: 200, height: 200))
+//                    let resizedImage = UtilityFunctions().resizeImage(self.newUserImage, targetSize: CGSize(width: 200, height: 200))
+                    let resizedImage = self.newUserImage.resizeWithSquareSize(Constants.Settings.imageSizeUser)
                     
                     if let data = UIImagePNGRepresentation(resizedImage)
                     {

@@ -50,6 +50,7 @@
 		B8312FDE1DB3DACB00CFC715 /* LocationManagerSetting+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8312FDD1DB3DACB00CFC715 /* LocationManagerSetting+CoreDataProperties.swift */; };
 		B8312FDF1DB3DACB00CFC715 /* LocationManagerSetting+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8312FDD1DB3DACB00CFC715 /* LocationManagerSetting+CoreDataProperties.swift */; };
 		B8312FE01DB3DACB00CFC715 /* LocationManagerSetting+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8312FDD1DB3DACB00CFC715 /* LocationManagerSetting+CoreDataProperties.swift */; };
+		B84DD7841DC501CE0076B9DD /* blobjot_logo.png in Resources */ = {isa = PBXBuildFile; fileRef = B84DD7831DC501CE0076B9DD /* blobjot_logo.png */; };
 		B8541B6B1DB5C6EF00867D82 /* MV_add_icon-white.png in Resources */ = {isa = PBXBuildFile; fileRef = B8541B641DB5C6EF00867D82 /* MV_add_icon-white.png */; };
 		B8541B6C1DB5C6EF00867D82 /* MV_list_icon-white.png in Resources */ = {isa = PBXBuildFile; fileRef = B8541B651DB5C6EF00867D82 /* MV_list_icon-white.png */; };
 		B8541B6D1DB5C6EF00867D82 /* MV_location_icon-white.png in Resources */ = {isa = PBXBuildFile; fileRef = B8541B661DB5C6EF00867D82 /* MV_location_icon-white.png */; };
@@ -164,6 +165,7 @@
 		B8312FCE1DB3D9AF00CFC715 /* BlobjotUITests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "BlobjotUITests-Bridging-Header.h"; sourceTree = "<group>"; };
 		B8312FD91DB3DA8700CFC715 /* LocationManagerSetting.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocationManagerSetting.swift; sourceTree = "<group>"; };
 		B8312FDD1DB3DACB00CFC715 /* LocationManagerSetting+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "LocationManagerSetting+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		B84DD7831DC501CE0076B9DD /* blobjot_logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = blobjot_logo.png; sourceTree = "<group>"; };
 		B8541B641DB5C6EF00867D82 /* MV_add_icon-white.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "MV_add_icon-white.png"; sourceTree = "<group>"; };
 		B8541B651DB5C6EF00867D82 /* MV_list_icon-white.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "MV_list_icon-white.png"; sourceTree = "<group>"; };
 		B8541B661DB5C6EF00867D82 /* MV_location_icon-white.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "MV_location_icon-white.png"; sourceTree = "<group>"; };
@@ -272,6 +274,7 @@
 			isa = PBXGroup;
 			children = (
 				B881319C1D510EEE00021C4B /* Assets.xcassets */,
+				B84DD7831DC501CE0076B9DD /* blobjot_logo.png */,
 				B86407001D75BAE50084D6EF /* circle-small.png */,
 				B80C565C1D5117C800C4E683 /* Default-568h@2x.png */,
 				B80C56581D5116E000C4E683 /* defaultMedia.png */,
@@ -553,6 +556,7 @@
 				B86406FD1D71BDCD0084D6EF /* white.png in Resources */,
 				B82421591DA5DEE400827557 /* MV_refresh_icon.png in Resources */,
 				B80C565B1D5116E000C4E683 /* logo.png in Resources */,
+				B84DD7841DC501CE0076B9DD /* blobjot_logo.png in Resources */,
 				B8541B6F1DB5C6EF00867D82 /* MV_profile_icon-white.png in Resources */,
 				B8541B701DB5C6EF00867D82 /* MV_refresh_icon_large-white.png in Resources */,
 				B8541B6B1DB5C6EF00867D82 /* MV_add_icon-white.png in Resources */,

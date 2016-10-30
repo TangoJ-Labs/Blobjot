@@ -21,6 +21,12 @@ protocol BlobAddViewControllerDelegate {
     // When called, the parent View Controller dismisses the top VC (should be this one)
     func popViewController()
     
+    // Bring this VC back into view, if popped from the stack
+    func bringAddBlobViewControllerTopOfStack(_ newVC: Bool)
+    
+    // The parent VC will hide any activity indicators showing background activity
+    func hideBackgroundActivityView()
+    
     // Used to add the new Blob to the map
     func createBlobOnMap(_ blobCenter: CLLocationCoordinate2D, blobRadius: Double, blobType: Constants.BlobTypes, blobTitle: String)
 }
@@ -292,10 +298,11 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
             
             if let pickedImage = info[UIImagePickerControllerOriginalImage] as? UIImage
             {
-                // Store the picked image to access when uploading
-                blobImage = pickedImage
+                // Store the picked image to access when uploading AND RESIZE IMAGE
+//                blobImage = pickedImage
+                self.blobImage = pickedImage.resizeWithSquareSize(Constants.Settings.imageSizeBlob)
                 
-                print("BLOB IMAGE IS: \(blobImage)")
+                print("BLOB IMAGE IS: \(self.blobImage)")
                 
                 // Save the thumbnail locally
                 if let randomMediaID = self.randomMediaID
@@ -304,7 +311,7 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
                     self.usableMediaID = randomMediaID
                     
                     // Create and locally save the mediaImage
-                    if let data = UIImagePNGRepresentation(pickedImage)
+                    if let data = UIImagePNGRepresentation(self.blobImage!)
                     {
                         print("CREATED THUMBNAIL")
                         uploadImageFilePath = NSTemporaryDirectory() + (randomMediaID + ".png")
@@ -320,7 +327,8 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
         // If the blobImage was successfully saved, create a low-quality thumbnail and save it locally
         if let blobImage = self.blobImage
         {
-            blobThumbnail = blobImage.resizeWithWidth(Constants.Dim.blobsActiveTableViewContentSize)
+//            blobThumbnail = blobImage.resizeWithWidth(Constants.Dim.blobsActiveTableViewContentSize)
+            blobThumbnail = blobImage.resizeWithSquareSize(Constants.Settings.imageSizeThumbnail)
             
             // Save the thumbnail locally
             if let randomMediaID = self.randomMediaID
@@ -360,14 +368,14 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
         self.blobType = type
         
         // Set the settings to default before evaluating the type
-        var color = Constants().blobColor(.temporary)
+        var color = Constants().blobColor(.temporary, mainMap: false)
         var resetSelectAllMessage = false
         
         // Evaluate the type and mark the correct selection with a check mark and change the circle color
         // Be sure to reset the Select All Message on the User Tag Page View if a specific color is selected
         switch type {
         case .temporary:
-            color = Constants().blobColor(.temporary)
+            color = Constants().blobColor(.temporary, mainMap: false)
             
             vc1.typeContainer1CheckLabel.text = "\u{2713}"
             vc1.typeContainer2CheckLabel.text = ""
@@ -376,7 +384,7 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
             resetSelectAllMessage = true
             
         case .permanent:
-            color = Constants().blobColor(.permanent)
+            color = Constants().blobColor(.permanent, mainMap: false)
             
             vc1.typeContainer1CheckLabel.text = ""
             vc1.typeContainer2CheckLabel.text = "\u{2713}"
@@ -385,14 +393,14 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
             resetSelectAllMessage = true
             
         case .public:
-            color = Constants().blobColor(.public)
+            color = Constants().blobColor(.public, mainMap: false)
             
             vc1.typeContainer1CheckLabel.text = ""
             vc1.typeContainer2CheckLabel.text = ""
             vc1.typeContainer3CheckLabel.text = ""
             
         case .invisible:
-            color = Constants().blobColor(.invisible)
+            color = Constants().blobColor(.invisible, mainMap: false)
             
             vc1.typeContainer1CheckLabel.text = ""
             vc1.typeContainer2CheckLabel.text = ""
@@ -402,7 +410,7 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
         
         // Default to a Temporary Blob in case of an error
         default:
-            color = Constants().blobColor(.temporary)
+            color = Constants().blobColor(.temporary, mainMap: false)
             
             vc1.typeContainer1CheckLabel.text = "\u{2713}"
             vc1.typeContainer2CheckLabel.text = ""
@@ -499,6 +507,10 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
             {
                 AWSPrepRequest(requestToCall: AWSUploadMediaToBucket(bucket: Constants.Strings.S3BucketThumbnails, uploadMediaFilePath: thumbnailFilePath, mediaID: self.usableMediaID, uploadKey: uploadMediaKey, currentTime: nowTime, deleteWhenFinished: true), delegate: self as AWSRequestDelegate).prepRequest()
             }
+            
+            // Set the global indicator to show that a Blob is currently being uploaded and remove the VC from the top of the stack
+            Constants.Data.stillSendingBlob = true
+            self.popVC()
         }
     }
     
@@ -606,6 +618,12 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
                     }
                     else
                     {
+                        // Call the parent VC to add the current VC to the stack
+                        if let parentVC = self.blobAddViewDelegate
+                        {
+                            parentVC.bringAddBlobViewControllerTopOfStack(false)
+                        }
+                        
                         // Show the error message
                         let alertController = UtilityFunctions().createAlertOkView("On no!", message: "We had a problem uploading your Blob.  Please try again.")
                         self.present(alertController, animated: true, completion: nil)
@@ -619,8 +637,15 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
                 case _ as AWSUploadBlobData:
                     if success
                     {
-                        // Remove the current View Controller from the stack
-                        self.popVC()
+//                        // Remove the current View Controller from the stack
+//                        self.popVC()
+                        
+                        // Call the parent VC
+                        if let parentVC = self.blobAddViewDelegate
+                        {
+                            // Have the parent VC hide any background activity indicator(s)
+                            parentVC.hideBackgroundActivityView()
+                        }
                     }
                     else
                     {

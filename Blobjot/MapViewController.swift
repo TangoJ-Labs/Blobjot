@@ -71,7 +71,8 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     var buttonRefreshMap: UIView!
     var buttonRefreshMapImage: UIImageView!
     var buttonRefreshMapActivityIndicator: UIActivityIndicatorView!
-    var refreshMapActivityIndicator: UIActivityIndicatorView!
+    var backgroundActivityView: UIView!
+    var backgroundActivityIndicator: UIActivityIndicatorView!
     
     var lowAccuracyView: UIView!
     var lowAccuracyLabel: UILabel!
@@ -163,6 +164,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // Create a local property to hold the child VC
     var blobVC: BlobViewController!
     
+    // Track the recent location changes in location and time changed
+    var lastLocation: CLLocation?
+    var lastLocationTime: Double = Date().timeIntervalSince1970
     
     override func viewDidLoad()
     {
@@ -181,7 +185,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         defaultBlobUser.userID = "default"
         defaultBlobUser.userName = "default"
         defaultBlobUser.userImageKey = "default"
-        defaultBlobUser.userImage = UIImage(named: "logo.png")
+        defaultBlobUser.userImage = UIImage(named: "blobjot_logo.png")
         defaultBlobUser.userStatus = Constants.UserStatusTypes.connected
         
         // Record the status bar settings to adjust the view if needed
@@ -256,9 +260,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         selectorSlider.minimumValue = sliderCircleSize / 2
         selectorSlider.maximumValue = Float(mapView.frame.width) / 2 - (sliderCircleSize / 2)
         selectorSlider.setValue(Float(circleInitialSize) / 2 - (sliderCircleSize / 2), animated: false)
-        selectorSlider.tintColor = Constants.Colors.blobGrayOpaque
-        selectorSlider.thumbTintColor = Constants.Colors.blobGrayOpaque
-//        let sliderImage = getImageWithColor(Constants.Colors.blobGrayOpaque.colorWithAlphaComponent(0.5), size: CGSize(width: 60, height: 60))
+        selectorSlider.tintColor = Constants.Colors.colorGrayDark
+        selectorSlider.thumbTintColor = Constants.Colors.colorGrayDark
+//        let sliderImage = getImageWithColor(Constants.Colors.colorGrayDark.colorWithAlphaComponent(0.5), size: CGSize(width: 60, height: 60))
 //        selectorSlider.setThumbImage(sliderImage, forState: UIControlState.Normal)
         selectorSlider.addTarget(self, action: #selector(MapViewController.sliderValueDidChange(_:)), for: .valueChanged)
         
@@ -371,8 +375,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         lowAccuracyView = UIView(frame: CGRect(x: viewContainer.frame.width - 5 - lavSize, y: (viewContainer.frame.height / 2) - (lavSize / 2), width: lavSize, height: lavSize))
         lowAccuracyView.layer.cornerRadius = lavSize / 2
         lowAccuracyView.backgroundColor = UIColor.white
-//        lowAccuracyView.layer.borderWidth = 2
-//        lowAccuracyView.layer.borderColor = UIColor.red.cgColor
         lowAccuracyView.layer.shadowOffset = Constants.Dim.mapViewShadowOffset
         lowAccuracyView.layer.shadowOpacity = Constants.Dim.mapViewShadowOpacity
         lowAccuracyView.layer.shadowRadius = Constants.Dim.mapViewShadowRadius
@@ -557,11 +559,18 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         loginProcessLabel.textAlignment = .center
         
         // Add a loading indicator to display on the map, so users can see when data is downloading without having to reveal the refresh button
-        let refreshMapAISize: CGFloat = 100
-        refreshMapActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: (viewContainer.frame.width / 2) - (refreshMapAISize / 2) , y: viewContainer.frame.height - 5 - refreshMapAISize, width: refreshMapAISize, height: refreshMapAISize))
-        refreshMapActivityIndicator.transform = CGAffineTransform(scaleX: 1.5, y: 1.5)
-        refreshMapActivityIndicator.color = UIColor.black
-        viewContainer.addSubview(refreshMapActivityIndicator)
+        backgroundActivityView = UIView(frame: CGRect(x: (viewContainer.frame.width / 2) - (Constants.Dim.mapViewBackgroundActivityViewSize / 2) , y: viewContainer.frame.height - 5 - Constants.Dim.mapViewBackgroundActivityViewSize, width: Constants.Dim.mapViewBackgroundActivityViewSize, height: Constants.Dim.mapViewBackgroundActivityViewSize))
+        backgroundActivityView.layer.cornerRadius = Constants.Dim.mapViewBackgroundActivityViewSize / 2
+        backgroundActivityView.backgroundColor = UIColor.white
+        backgroundActivityView.layer.shadowOffset = Constants.Dim.mapViewShadowOffset
+        backgroundActivityView.layer.shadowOpacity = Constants.Dim.mapViewShadowOpacity
+        backgroundActivityView.layer.shadowRadius = Constants.Dim.mapViewShadowRadius
+        
+        backgroundActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: 0, y: 0, width: backgroundActivityView.frame.width, height: backgroundActivityView.frame.height))
+//        backgroundActivityIndicator.transform = CGAffineTransform(scaleX: 1.5, y: 1.5)
+        backgroundActivityIndicator.color = UIColor.black
+        backgroundActivityView.addSubview(backgroundActivityIndicator)
+        backgroundActivityIndicator.startAnimating()
         
         
         // Add the Status Bar, Top Bar and Search Bar last so that they are placed above (z-index) all other views
@@ -618,6 +627,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         // Add the Key Path Observers for changes in the user's location and for when the map is moved (the map camera)
         mapView.addObserver(self, forKeyPath: "myLocation", options:NSKeyValueObservingOptions(), context: nil)
         mapView.addObserver(self, forKeyPath: "camera", options:NSKeyValueObservingOptions(), context: nil)
+        
+        // Setup the Blob list
+        Constants.Data.locationBlobs = [Constants.Data.defaultBlob]
         
 //        // Request login the user
 //        AWSPrepRequest(requestToCall: AWSLoginUser(secondaryAwsRequestObject: nil), delegate: self as AWSRequestDelegate).prepRequest()
@@ -838,67 +850,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 // If the addingBlob indicator is true, the user has already started the Add Blob process and has chosen a location and radius for the Blob
                 // Instantiate the BlobAddViewController and a Nav Controller and present the View Controller
                 
-                addBlobVC = BlobAddViewController()
-                addBlobVC.blobAddViewDelegate = self
-                // Pass the Blob coordinates and the current map zoom to the new View Controller
-                addBlobVC.blobCoords = mapView.camera.target
-//                addBlobVC.mapZoom = mapView.camera.zoom
-                
-                // Create a Nav Bar Back Button and Title
-                let backButtonItem = UIBarButtonItem(title: "CANCEL",
-                                                     style: UIBarButtonItemStyle.plain,
-                                                     target: self,
-                                                     action: #selector(self.popViewController(_:)))
-                backButtonItem.tintColor = Constants.Colors.colorTextNavBar
-                
-                let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
-                let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
-                ncTitleText.text = "Create Blob"
-                ncTitleText.textColor = Constants.Colors.colorTextNavBar
-                ncTitleText.textAlignment = .center
-                ncTitle.addSubview(ncTitleText)
-                
-                // Calculate the slider point location and extrapolate the Blob radius based on the map zoom
-                let sliderPoint = CGPoint(x: (mapView.frame.width / 2) + (selectorCircle.frame.width / 2), y: mapView.frame.height / 2)
-                let point = self.mapView.projection.coordinate(for: sliderPoint)
-                
-                let mapCenterLocation = CLLocation(latitude: mapView.camera.target.latitude, longitude: mapView.camera.target.longitude)
-                let sliderLocation = CLLocation(latitude: point.latitude, longitude: point.longitude)
-                
-                // Pass the Blob Radius to the View Controller
-                addBlobVC.blobRadius = mapCenterLocation.distance(from: sliderLocation)
-                addBlobVC.navigationItem.setLeftBarButton(backButtonItem, animated: true)
-                addBlobVC.navigationItem.titleView = ncTitle
-                
-                // Add the View Controller to the Nav Controller and present the Nav Controller
-                let navController = UINavigationController(rootViewController: addBlobVC)
-                navController.navigationBar.barTintColor = Constants.Colors.colorStatusBar
-                self.modalPresentationStyle = .popover
-                self.present(navController, animated: true, completion: nil)
-                
-                // Reset the button settings and remove the elements used in the Add Blob Process
-//                buttonAddImage.text = "\u{002B}"
-                buttonCancelAdd.removeFromSuperview()
-                selectorCircle.removeFromSuperview()
-                selectorSlider.removeFromSuperview()
-                
-                // Double-check that the Blob menu buttons are still expanded, and hide them if they are visible
-                if menuButtonBlobOpen
-                {
-                    menuButtonBlobOpen = false
-                    
-                    // Add an animation to hide the buttons
-                    UIView.animate(withDuration: 0.2, animations:
-                        {
-                            self.buttonListView.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonListSize, y: self.viewContainer.frame.height - 5 - Constants.Dim.mapViewButtonListSize, width: Constants.Dim.mapViewButtonListSize, height: Constants.Dim.mapViewButtonListSize)
-                        }, completion: nil)
-                }
-                
-                // Change the add blob indicator back to false efore calling adjustMapViewCamera
-                addingBlob = false
-                
-                // Adjust the Map Camera back to allow the map can be viewed at an angle
-                adjustMapViewCamera()
+                self.bringAddBlobViewControllerTopOfStack(true)
             }
             else
             {
@@ -994,7 +946,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         print("MVC - START THE MAP REFRESH BUTTON INDICATOR")
         // Show the Map refreshing indicator
         self.buttonRefreshMapActivityIndicator.startAnimating()
-        self.refreshMapActivityIndicator.startAnimating()
+        self.viewContainer.addSubview(backgroundActivityView)
         
         // PREPARE DATA
         // Request the Map Data for the logged in user
@@ -1138,176 +1090,32 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // Reload Blob data based on the user's new location
     func refreshBlobsForCurrentLocation()
     {
-        print("MVC - REFRESHING BLOBS FOR CURRENT LOCATION")
+        print("MVC - REFRESHING BLOBS FOR CURRENT LOCATION - CHECK 1")
         
         // Check that the user's current location is accessible
-        if let userCurrentLocation = mapView.myLocation
+        if let userLocationCurrent = mapView.myLocation
         {
-            // If the user's initial location has not been centered on the map, do so
-            if !userLocationInitialSet
-            {
-                let newCamera = GMSCameraPosition.camera(withLatitude: userCurrentLocation.coordinate.latitude, longitude: userCurrentLocation.coordinate.longitude, zoom: 18)
-                mapView.camera = newCamera
-                userLocationInitialSet = true
-            }
+            print("MVC - REFRESHING BLOBS FOR CURRENT LOCATION - CHECK 2")
             
-            // Determine the user's new coordinates and the range of accuracy around those coordinates
-            let userLocation = CLLocation(latitude: userCurrentLocation.coordinate.latitude, longitude: userCurrentLocation.coordinate.longitude)
-            let userRangeRadius = userCurrentLocation.horizontalAccuracy
-//            accuracyLabel.text = String(userRangeRadius) + " m"
-            
-            // Check to ensure that the location accuracy is reasonable - if too high, do not update data and wait for more accuracy
-            if userRangeRadius <= Constants.Settings.locationAccuracyMax
+            if let userLocationPrevious = self.lastLocation
             {
-                // Reset the accuracy indicator
-                locationInaccurate = false
+                print("MVC - REFRESHING BLOBS FOR CURRENT LOCATION - CHECK 3a")
                 
-                // Hide the low accuracy view
-                self.lowAccuracyView.removeFromSuperview()
+                let locationDistance = userLocationCurrent.distance(from: userLocationPrevious)
+                let timeSinceLocationChange = Date().timeIntervalSince1970 - self.lastLocationTime
                 
-                // Clear the array of current location Blobs and add the default Blob as the first element
-                Constants.Data.locationBlobs = [Constants.Data.defaultBlob]
-                
-                // Loop through the array of map Blobs to find which Blobs are in range of the user's current location
-                for blob in Constants.Data.mapBlobs
+                // Ensure that the distance change is greater than the minimum setting
+                if locationDistance >= Constants.Settings.locationDistanceMinChange || timeSinceLocationChange >= Constants.Settings.locationTimeMinChange
                 {
-                    // Find the minimum distance possible to the Blob center from the user's location
-                    // Determine the raw distance from the Blob center to the user's location
-                    // Then subtract the user's location range radius to find the distance from the Blob center to the edge of
-                    // the user location range circle closest to the Blob
-                    let blobLocation = CLLocation(latitude: blob.blobLat, longitude: blob.blobLong)
-                    let userDistanceFromBlobCenter = userLocation.distance(from: blobLocation)
-                    let minUserDistanceFromBlobCenter = userDistanceFromBlobCenter - userRangeRadius
-                    
-                    // If the minimum distance from the Blob's center to the user is equal to or less than the Blob radius,
-                    // request the extra Blob data (Blob Text and/or Blob Media)
-                    if minUserDistanceFromBlobCenter <= blob.blobRadius
-                    {
-//                        print("MVC - WITHIN RANGE OF BLOB: \(blob.blobID)")
-                        
-                        // Ensure that the Blob data has not already been requested
-                        // If so, append the Blob to the Location Blob Array
-                        if !blob.blobExtraRequested
-                        {
-                            blob.blobExtraRequested = true
-//                            print("MVC - REQUESTING BLOB EXTRA")
-                            
-                            AWSPrepRequest(requestToCall: AWSGetBlobExtraData(blob: blob), delegate: self as AWSRequestDelegate).prepRequest()
-                            
-                            // When downloading Blob data, always request the user data if it does not already exist
-                            // Find the correct User Object in the global list
-                            var userExists = false
-                            loopUserObjectCheck: for userObject in Constants.Data.userObjects
-                            {
-                                if userObject.userID == blob.blobUserID
-                                {
-                                    userExists = true
-                                    
-                                    break loopUserObjectCheck
-                                }
-                            }
-                            // If the user has not been downloaded, request the user and the userImage
-                            if !userExists
-                            {
-                                AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: blob.blobUserID, forPreviewBox: true), delegate: self as AWSRequestDelegate).prepRequest()
-                            }
-                        }
-                        else
-                        {
-                            Constants.Data.locationBlobs.append(blob)
-                            print("APPENDING BLOB")
-                        }
-                    }
-                    else
-                    {
-                        // Blob is not within user radius
-                        
-                        // If the Blob is not in range of the user's current location, but the Blob has already been viewed, then
-                        // remove the Blob from the Map Blobs and the Map Circles
-                        if blob.blobViewed
-                        {
-                            // Ensure blobType is not null
-                            if let blobType = blob.blobType
-                            {
-                                // If the Blob Type is not Permanent, remove it from the Map View and Data
-                                if blobType != Constants.BlobTypes.permanent
-                                {
-                                    // Remove the Blob from the global array of locationBlobs so that it cannot be accessed
-                                    loopLocationBlobsCheck: for (index, lBlob) in Constants.Data.locationBlobs.enumerated()
-                                    {
-                                        if lBlob.blobID == blob.blobID
-                                        {
-                                            Constants.Data.locationBlobs.remove(at: index)
-                                            
-                                            break loopLocationBlobsCheck
-                                        }
-                                    }
-                                    
-                                    // Remove the Blob from the global array of mapBlobs so that it cannot be accessed
-                                    loopMapBlobsCheck: for (index, mBlob) in Constants.Data.mapBlobs.enumerated()
-                                    {
-                                        if mBlob.blobID == blob.blobID
-                                        {
-                                            Constants.Data.mapBlobs.remove(at: index)
-                                            
-                                            break loopMapBlobsCheck
-                                        }
-                                    }
-                                    
-                                    // Remove the Blob from the list of mapCircles so that is does not show on the mapView
-                                    loopMapCirclesCheck: for (index, circle) in Constants.Data.mapCircles.enumerated()
-                                    {
-                                        if circle.title == blob.blobID
-                                        {
-                                            circle.map = nil
-                                            Constants.Data.mapCircles.remove(at: index)
-                                            
-                                            break loopMapCirclesCheck
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        
-                        // If the Blob is not in range of the user's current location, but the Blob's extra data has already been requested,
-                        // delete the extra data and indicate that the Blob's extra data has not been requested
-                        // If the Blob was deleted in the last IF statement (if viewed and not permanent), then this step is unnecessary
-                        if blob.blobExtraRequested
-                        {
-                            // Remove all of the extra data
-                            blob.blobText = nil
-                            blob.blobThumbnailID = nil
-                            blob.blobMediaType = nil
-                            blob.blobMediaID = nil
-                            
-                            // Indicate that the extra data has not been requested
-// *ISSUE ********** If the data has been requested, but not added to the Blob yet, it could be added again after this step, causing bugs
-                            blob.blobExtraRequested = false
-                        }
-                    }
+                    print("MVC - REFRESHING BLOBS FOR CURRENT LOCATION - CHECK 4")
+                    refreshBlobs(userLocationCurrent)
                 }
-//                print("SORTING LOCATION BLOBS")
-//                // Sort the Location Blobs from newest to oldest
-//                Constants.Data.locationBlobs.sortInPlace({$0.blobDatetime.timeIntervalSince1970 >  $1.blobDatetime.timeIntervalSince1970})
-                
-                // Reload the Collection View
-                self.locationBlobsCollectionView.performSelector(onMainThread: #selector(UICollectionView.reloadData), with: nil, waitUntilDone: true)
-                print("MVC - BLOB REFRESH - RELOADED COLLECTION VIEW")
-                
-                print("MVC - STOP THE MAP REFRESH BUTTON INDICATOR")
-                // Stop the refresh Map button indicator if it is running
-                self.buttonRefreshMapActivityIndicator.stopAnimating()
-                self.refreshMapActivityIndicator.stopAnimating()
             }
             else
             {
-                // Show the low accuracy view
-                self.viewContainer.addSubview(lowAccuracyView)
-                
-                // Record that the user's location is inaccurate
-                self.locationInaccurate = true
-                
-// *COMPLETE********** Clear the location blobs?
+                // The app was just initialized, so no lastLocation exists - go ahead and reload the Blobs
+                print("MVC - REFRESHING BLOBS FOR CURRENT LOCATION - CHECK 3b")
+                refreshBlobs(userLocationCurrent)
             }
             
 //******************** GMSCameraUpdate methods not being recognized ***********************
@@ -1317,6 +1125,184 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
 //                    cameraUpdate.setTarget = userLocation
 //                    mapView.animateWithCameraUpdate(cameraUpdate)
             }
+        }
+    }
+    
+    func refreshBlobs(_ userLocationCurrent: CLLocation)
+    {
+        // Update the previous location and time properties with the latest data
+        self.lastLocation = userLocationCurrent
+        self.lastLocationTime = Date().timeIntervalSince1970
+        
+        // If the user's initial location has not been centered on the map, do so
+        if !userLocationInitialSet
+        {
+            let newCamera = GMSCameraPosition.camera(withLatitude: userLocationCurrent.coordinate.latitude, longitude: userLocationCurrent.coordinate.longitude, zoom: 18)
+            mapView.camera = newCamera
+            userLocationInitialSet = true
+        }
+        
+        // Determine the user's new coordinates and the range of accuracy around those coordinates
+        let userLocation = CLLocation(latitude: userLocationCurrent.coordinate.latitude, longitude: userLocationCurrent.coordinate.longitude)
+        let userRangeRadius = userLocationCurrent.horizontalAccuracy
+//            accuracyLabel.text = String(userRangeRadius) + " m"
+        
+        // Check to ensure that the location accuracy is reasonable - if too high, do not update data and wait for more accuracy
+        if userRangeRadius <= Constants.Settings.locationAccuracyMax
+        {
+            // Reset the accuracy indicator
+            locationInaccurate = false
+            
+            // Hide the low accuracy view
+            self.lowAccuracyView.removeFromSuperview()
+            
+            // Clear the array of current location Blobs and add the default Blob as the first element
+            Constants.Data.locationBlobs = [Constants.Data.defaultBlob]
+            
+            // Loop through the array of map Blobs to find which Blobs are in range of the user's current location
+            for blob in Constants.Data.mapBlobs
+            {
+                // Find the minimum distance possible to the Blob center from the user's location
+                // Determine the raw distance from the Blob center to the user's location
+                // Then subtract the user's location range radius to find the distance from the Blob center to the edge of
+                // the user location range circle closest to the Blob
+                let blobLocation = CLLocation(latitude: blob.blobLat, longitude: blob.blobLong)
+                let userDistanceFromBlobCenter = userLocation.distance(from: blobLocation)
+                let minUserDistanceFromBlobCenter = userDistanceFromBlobCenter - userRangeRadius
+                
+                // If the minimum distance from the Blob's center to the user is equal to or less than the Blob radius,
+                // request the extra Blob data (Blob Text and/or Blob Media)
+                if minUserDistanceFromBlobCenter <= blob.blobRadius
+                {
+//                        print("MVC - WITHIN RANGE OF BLOB: \(blob.blobID)")
+                    
+                    // Ensure that the Blob data has not already been requested
+                    // If so, append the Blob to the Location Blob Array
+                    if !blob.blobExtraRequested
+                    {
+                        blob.blobExtraRequested = true
+//                            print("MVC - REQUESTING BLOB EXTRA")
+                        
+                        AWSPrepRequest(requestToCall: AWSGetBlobExtraData(blob: blob), delegate: self as AWSRequestDelegate).prepRequest()
+                        
+                        // When downloading Blob data, always request the user data if it does not already exist
+                        // Find the correct User Object in the global list
+                        var userExists = false
+                        loopUserObjectCheck: for userObject in Constants.Data.userObjects
+                        {
+                            if userObject.userID == blob.blobUserID
+                            {
+                                userExists = true
+                                
+                                break loopUserObjectCheck
+                            }
+                        }
+                        // If the user has not been downloaded, request the user and the userImage
+                        if !userExists
+                        {
+                            AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: blob.blobUserID, forPreviewBox: true), delegate: self as AWSRequestDelegate).prepRequest()
+                        }
+                    }
+                    else
+                    {
+                        Constants.Data.locationBlobs.append(blob)
+                        print("APPENDING BLOB")
+                    }
+                }
+                else
+                {
+                    // Blob is not within user radius
+                    
+                    // If the Blob is not in range of the user's current location, but the Blob has already been viewed, then
+                    // remove the Blob from the Map Blobs and the Map Circles
+                    if blob.blobViewed
+                    {
+                        // Ensure blobType is not null
+                        if let blobType = blob.blobType
+                        {
+                            // If the Blob Type is not Permanent, remove it from the Map View and Data
+                            if blobType != Constants.BlobTypes.permanent
+                            {
+                                // Remove the Blob from the global array of locationBlobs so that it cannot be accessed
+                                loopLocationBlobsCheck: for (index, lBlob) in Constants.Data.locationBlobs.enumerated()
+                                {
+                                    if lBlob.blobID == blob.blobID
+                                    {
+                                        Constants.Data.locationBlobs.remove(at: index)
+                                        
+                                        break loopLocationBlobsCheck
+                                    }
+                                }
+                                
+                                // Remove the Blob from the global array of mapBlobs so that it cannot be accessed
+                                loopMapBlobsCheck: for (index, mBlob) in Constants.Data.mapBlobs.enumerated()
+                                {
+                                    if mBlob.blobID == blob.blobID
+                                    {
+                                        Constants.Data.mapBlobs.remove(at: index)
+                                        
+                                        break loopMapBlobsCheck
+                                    }
+                                }
+                                
+                                // Remove the Blob from the list of mapCircles so that is does not show on the mapView
+                                loopMapCirclesCheck: for (index, circle) in Constants.Data.mapCircles.enumerated()
+                                {
+                                    if circle.title == blob.blobID
+                                    {
+                                        circle.map = nil
+                                        Constants.Data.mapCircles.remove(at: index)
+                                        
+                                        break loopMapCirclesCheck
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    // If the Blob is not in range of the user's current location, but the Blob's extra data has already been requested,
+                    // delete the extra data and indicate that the Blob's extra data has not been requested
+                    // If the Blob was deleted in the last IF statement (if viewed and not permanent), then this step is unnecessary
+                    if blob.blobExtraRequested
+                    {
+                        // Remove all of the extra data
+                        blob.blobText = nil
+                        blob.blobThumbnailID = nil
+                        blob.blobMediaType = nil
+                        blob.blobMediaID = nil
+                        
+                        // Indicate that the extra data has not been requested
+                        // *ISSUE ********** If the data has been requested, but not added to the Blob yet, it could be added again after this step, causing bugs
+                        blob.blobExtraRequested = false
+                    }
+                }
+            }
+//                print("SORTING LOCATION BLOBS")
+//                // Sort the Location Blobs from newest to oldest
+//                Constants.Data.locationBlobs.sortInPlace({$0.blobDatetime.timeIntervalSince1970 >  $1.blobDatetime.timeIntervalSince1970})
+            
+            // Reload the Collection View
+            self.refreshCollectionView()
+            
+            print("MVC - STOP THE MAP REFRESH BUTTON INDICATOR")
+            // Stop the refresh Map button indicator if it is running
+            self.buttonRefreshMapActivityIndicator.stopAnimating()
+            
+            // Only hide the background activity indicator if the global sending property is false
+            if !Constants.Data.stillSendingBlob
+            {
+                self.hideBackgroundActivityView()
+            }
+        }
+        else
+        {
+            // Show the low accuracy view
+            self.viewContainer.addSubview(lowAccuracyView)
+            
+            // Record that the user's location is inaccurate
+            self.locationInaccurate = true
+            
+            // *COMPLETE********** Clear the location blobs?
         }
     }
     
@@ -1430,7 +1416,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         }
         
         // Reload the Collection View to ensure that any deselections also correct the User Image placement in the collection view
-        self.locationBlobsCollectionView.performSelector(onMainThread: #selector(UICollectionView.reloadData), with: nil, waitUntilDone: true)
+        self.refreshCollectionView()
     }
     
     // Called before the map is moved
@@ -1653,7 +1639,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         }
         else
         {
-            cell.userImage.image = UIImage(named: "logo.png")
+            cell.userImage.image = UIImage(named: "blobjot_logo.png")
             cell.userImageActivityIndicator.stopAnimating()
         }
         
@@ -1694,7 +1680,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 mBlob.blobSelected = true
                 
                 // Reload the Collection View
-                self.locationBlobsCollectionView.performSelector(onMainThread: #selector(UICollectionView.reloadData), with: nil, waitUntilDone: true)
+                self.refreshCollectionView()
                 
                 loopMapCircles: for circle in Constants.Data.mapCircles
                 {
@@ -1863,6 +1849,79 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         }
     }
     
+    func hideBackgroundActivityView()
+    {
+        self.backgroundActivityView.removeFromSuperview()
+    }
+    
+    func bringAddBlobViewControllerTopOfStack(_ newVC: Bool)
+    {
+        if newVC || addBlobVC == nil
+        {
+            addBlobVC = BlobAddViewController()
+            addBlobVC.blobAddViewDelegate = self
+            // Pass the Blob coordinates and the current map zoom to the new View Controller
+            addBlobVC.blobCoords = mapView.camera.target
+//                addBlobVC.mapZoom = mapView.camera.zoom
+            
+            // Create a Nav Bar Back Button and Title
+            let backButtonItem = UIBarButtonItem(title: "CANCEL",
+                                                 style: UIBarButtonItemStyle.plain,
+                                                 target: self,
+                                                 action: #selector(self.popViewController(_:)))
+            backButtonItem.tintColor = Constants.Colors.colorTextNavBar
+            
+            let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
+            let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
+            ncTitleText.text = "Create Blob"
+            ncTitleText.textColor = Constants.Colors.colorTextNavBar
+            ncTitleText.textAlignment = .center
+            ncTitle.addSubview(ncTitleText)
+            
+            // Calculate the slider point location and extrapolate the Blob radius based on the map zoom
+            let sliderPoint = CGPoint(x: (mapView.frame.width / 2) + (selectorCircle.frame.width / 2), y: mapView.frame.height / 2)
+            let point = self.mapView.projection.coordinate(for: sliderPoint)
+            
+            let mapCenterLocation = CLLocation(latitude: mapView.camera.target.latitude, longitude: mapView.camera.target.longitude)
+            let sliderLocation = CLLocation(latitude: point.latitude, longitude: point.longitude)
+            
+            // Pass the Blob Radius to the View Controller
+            addBlobVC.blobRadius = mapCenterLocation.distance(from: sliderLocation)
+            addBlobVC.navigationItem.setLeftBarButton(backButtonItem, animated: true)
+            addBlobVC.navigationItem.titleView = ncTitle
+        }
+        
+        // Add the View Controller to the Nav Controller and present the Nav Controller
+        let navController = UINavigationController(rootViewController: addBlobVC)
+        navController.navigationBar.barTintColor = Constants.Colors.colorStatusBar
+        self.modalPresentationStyle = .popover
+        self.present(navController, animated: true, completion: nil)
+        
+        // Reset the button settings and remove the elements used in the Add Blob Process
+//                buttonAddImage.text = "\u{002B}"
+        buttonCancelAdd.removeFromSuperview()
+        selectorCircle.removeFromSuperview()
+        selectorSlider.removeFromSuperview()
+        
+        // Double-check that the Blob menu buttons are still expanded, and hide them if they are visible
+        if menuButtonBlobOpen
+        {
+            menuButtonBlobOpen = false
+            
+            // Add an animation to hide the buttons
+            UIView.animate(withDuration: 0.2, animations:
+                {
+                    self.buttonListView.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonListSize, y: self.viewContainer.frame.height - 5 - Constants.Dim.mapViewButtonListSize, width: Constants.Dim.mapViewButtonListSize, height: Constants.Dim.mapViewButtonListSize)
+                }, completion: nil)
+        }
+        
+        // Change the add blob indicator back to false efore calling adjustMapViewCamera
+        addingBlob = false
+        
+        // Adjust the Map Camera back to allow the map can be viewed at an angle
+        adjustMapViewCamera()
+    }
+    
     // Add Blob data to the Preview Box elements and animate the Preview Box lowering into view
     func showBlobPreview(_ blob: Blob)
     {
@@ -1910,7 +1969,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         // Otherwise, find the associated User Image and User Name for the Blob User ID as add them to the proper Preview Box elements
         if blob.blobID == "default"
         {
-            previewUserImageView.image = UIImage(named: "logo.png")
+            previewUserImageView.image = UIImage(named: "blobjot_logo.png")
             previewUserNameLabel.text = "Blobjot"
             previewTimeLabel.text = "Since 2016"
             
@@ -2036,8 +2095,8 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         addCircle.position = blobCenter
         addCircle.radius = blobRadius
         addCircle.title = blobTitle
-        addCircle.fillColor = Constants().blobColor(blobType)
-        addCircle.strokeColor = Constants().blobColor(blobType)
+        addCircle.fillColor = Constants().blobColor(blobType, mainMap: true)
+        addCircle.strokeColor = Constants().blobColor(blobType, mainMap: true)
         addCircle.strokeWidth = 1
         addCircle.map = self.mapView
         Constants.Data.mapCircles.append(addCircle)
@@ -2067,7 +2126,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         {
             if circle.title == blob.blobID
             {
-                circle.strokeColor = Constants().blobColor(blob.blobType)
+                circle.strokeColor = Constants().blobColor(blob.blobType, mainMap: true)
                 circle.strokeWidth = 1
                 
                 break loopMapCircles

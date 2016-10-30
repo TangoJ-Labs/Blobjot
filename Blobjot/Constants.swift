@@ -59,7 +59,7 @@ struct Constants
         }
     }
     
-    func blobColor(_ blobType: Constants.BlobTypes) -> UIColor
+    func blobColor(_ blobType: Constants.BlobTypes, mainMap: Bool) -> UIColor
     {
         switch blobType
         {
@@ -70,7 +70,14 @@ struct Constants
         case .public:
             return Constants.Colors.blobPurple
         case .invisible:
-            return Constants.Colors.blobGray
+            if mainMap
+            {
+                return Constants.Colors.blobInvisible
+            }
+            else
+            {
+                return Constants.Colors.blobGray
+            }
         default:
             return Constants.Colors.blobRed
         }
@@ -111,14 +118,16 @@ struct Constants
 //        static let colorTextNavBar = UIColor(red: 51/255, green: 51/255, blue: 51/255, alpha: 1.0) //#333333
         static let colorTextNavBar = UIColor.white
         static let colorGrayLight = UIColor(red: 204/255, green: 204/255, blue: 204/255, alpha: 1.0) //#CCC
+        static let colorGrayDark = UIColor(red: 38/255, green: 38/255, blue: 38/255, alpha: 1.0) //#262626
         
         static let colorTextStandard = UIColor(red: 0/255, green: 0/255, blue: 0/255, alpha: 0.3) //#000000
         static let colorTextGray = UIColor(red: 38/255, green: 38/255, blue: 38/255, alpha: 1.0) //#262626
         static let colorTextGrayMedium = UIColor(red: 140/255, green: 140/255, blue: 140/255, alpha: 1.0) //#8C8C8C
         static let colorTextGrayLight = UIColor(red: 154/255, green: 154/255, blue: 154/255, alpha: 1.0) //#999999
         
+        static let blobInvisible = UIColor.clear
         static let blobGray = UIColor(red: 0/255, green: 0/255, blue: 0/255, alpha: 0.3) //#000000
-        static let blobGrayOpaque = UIColor(red: 38/255, green: 38/255, blue: 38/255, alpha: 1.0) //#262626
+        static let blobGrayOpaque = UIColor(red: 154/255, green: 154/255, blue: 154/255, alpha: 1.0) //#999999
         static let blobRed = UIColor(red: 242/255, green: 105/255, blue: 99/255, alpha: 0.3) //#F26963
         static let blobRedOpaque = UIColor(red: 242/255, green: 105/255, blue: 99/255, alpha: 1.0) //#F26963
         static let blobYellow = UIColor(red: 252/255, green: 178/255, blue: 73/255, alpha: 0.3) //#FCB249
@@ -157,6 +166,7 @@ struct Constants
         static var attemptedLogin: Bool = false
         static var serverTries: Int = 0
         static var lastCredentials: TimeInterval = Date().timeIntervalSince1970
+        static var stillSendingBlob: Bool = false
         
         static var currentUser: String = "" //DON_QUIXOTE: MY9QP9I8HW6ZDMWA || THE_LADY_WITH_COFFEE: 70X4ODWM6D4AL2H4 || TEST_USER: NOLFGJEJ5KX6AIE2 // THE LOGGED IN USER
         static var currentUserName: String?
@@ -164,7 +174,7 @@ struct Constants
         
         static var mapBlobs = [Blob]()
         static var userBlobs = [Blob]()
-        static var defaultBlob = Blob(blobID: "default", blobUserID: "default", blobLat: 0.0, blobLong: 0.0, blobRadius: 0.0, blobType: Constants.BlobTypes.invisible, blobMediaType: 1, blobText: "For more information about Blobjot, check out Blobjot.com")
+        static var defaultBlob = Blob(blobID: "default", blobUserID: "default", blobLat: 0.0, blobLong: 0.0, blobRadius: 0.0, blobType: Constants.BlobTypes.invisible, blobMediaType: 1, blobText: "Check out Blobjot.com!")
         
         static var mapCircles = [GMSCircle]()
         static var locationBlobs = [Blob]()
@@ -191,6 +201,8 @@ struct Constants
         static let mapViewLocationBlobsCVItemSize: CGFloat = 40
         static let mapViewLocationBlobsCVIndicatorSize: CGFloat = 10
         static let mapViewLocationBlobsCVHighlightAdjustSize: CGFloat = 10
+        
+        static let mapViewBackgroundActivityViewSize: CGFloat = 40
         
         static let mapViewShadowOffset = CGSize(width: 0, height: 0.2)
         static let mapViewShadowOpacity: Float = 0.2
@@ -280,11 +292,19 @@ struct Constants
         static let gKey = "AIzaSyBdwjW6jYuPjZP7oW8NsqHkZQyMxFq_j0w"
         static let mapStyleUrl = URL(string: "mapbox://styles/tangojlabs/ciqwaddsl0005b7m0xwctftow")
         static let maxServerTries: Int = 5
+        
+        static let imageSizeUser: CGFloat = 200
+        static let imageSizeThumbnail: CGFloat = 200
+        static let imageSizeBlob: CGFloat = 1080
+        
         static let locationDistanceFilter: Double = 100 // In meters
         static let locationAccuracyMax: Double = 100 // In meters
         static let locationAccuracyMaxBackground: Double = 200 // In meters
         static let locationAccuracyDeferredDistance: Double = 100 // In meters
         static let locationAccuracyDeferredInterval: Double = 180 // In seconds
+        
+        static let locationDistanceMinChange: Double = 20 // In meters
+        static let locationTimeMinChange: Double = 3 // In seconds
         
         static var locationManagerConstant: Bool = true
         static var statusBarStyle: UIStatusBarStyle = UIStatusBarStyle.lightContent

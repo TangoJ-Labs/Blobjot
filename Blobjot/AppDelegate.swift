@@ -260,7 +260,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         Constants.appDelegateLocationManager.delegate = self
         Constants.appDelegateLocationManager.requestAlwaysAuthorization()
         Constants.appDelegateLocationManager.activityType = .other
-        Constants.appDelegateLocationManager.pausesLocationUpdatesAutomatically = true
+        Constants.appDelegateLocationManager.pausesLocationUpdatesAutomatically = false
         Constants.appDelegateLocationManager.allowsBackgroundLocationUpdates = true
         Constants.appDelegateLocationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
         Constants.appDelegateLocationManager.distanceFilter = Constants.Settings.locationDistanceFilter
