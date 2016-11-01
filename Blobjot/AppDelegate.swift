@@ -166,7 +166,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
                         if blob.blobID == tappedBlobID
                         {
                             // Center the map on the Blob location
-                            self.mapViewController.setMapCamera(CLLocationCoordinate2D(latitude: blob.blobLat, longitude: blob.blobLong))
+                            // TODO: adjust the zoom based on the Blob size
+                            self.mapViewController.setMapCamera(CLLocationCoordinate2D(latitude: blob.blobLat, longitude: blob.blobLong), zoom: 18, viewingAngle: nil)
                             self.mapViewController.mapView.animate(toZoom: UtilityFunctions().mapZoomForBlobSize(Float(blob.blobRadius)))
                             
                             break checkMapBlobLoop
