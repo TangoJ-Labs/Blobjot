@@ -21,7 +21,7 @@ class AccountTableViewCell: UITableViewCell {
     override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
-        cellBlobTypeIndicator = UIView(frame: CGRect(x: 0 - 5, y: 2, width: Constants.Dim.blobsActiveTableViewIndicatorSize, height: Constants.Dim.blobsActiveTableViewIndicatorSize))
+        cellBlobTypeIndicator = UIView(frame: CGRect(x: 2, y: 2, width: Constants.Dim.blobsActiveTableViewIndicatorSize, height: Constants.Dim.blobsActiveTableViewIndicatorSize))
         cellBlobTypeIndicator.layer.cornerRadius = Constants.Dim.blobsActiveTableViewIndicatorSize / 2
         cellBlobTypeIndicator.layer.shadowOffset = CGSize(width: 0, height: 0.2)
         cellBlobTypeIndicator.layer.shadowOpacity = 0.2

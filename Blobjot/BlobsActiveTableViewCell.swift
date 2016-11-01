@@ -25,7 +25,7 @@ class BlobsActiveTableViewCell: UITableViewCell {
     override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
-        cellBlobTypeIndicator = UIView(frame: CGRect(x: 0 - 5, y: 2, width: Constants.Dim.blobsActiveTableViewIndicatorSize, height: Constants.Dim.blobsActiveTableViewIndicatorSize))
+        cellBlobTypeIndicator = UIView(frame: CGRect(x: 2, y: 2, width: Constants.Dim.blobsActiveTableViewIndicatorSize, height: Constants.Dim.blobsActiveTableViewIndicatorSize))
         cellBlobTypeIndicator.layer.cornerRadius = Constants.Dim.blobsActiveTableViewIndicatorSize / 2
         cellBlobTypeIndicator.layer.shadowOffset = CGSize(width: 0, height: 0.2)
         cellBlobTypeIndicator.layer.shadowOpacity = 0.2
@@ -64,14 +64,15 @@ class BlobsActiveTableViewCell: UITableViewCell {
         cellDatetime.font = UIFont(name: Constants.Strings.fontRegular, size: 10)
         cellContainer.addSubview(cellDatetime)
         
-        cellText = UILabel(frame: CGRect(x: cellContainer.frame.width - 5 - Constants.Dim.blobsActiveTableViewContentSize, y: 5, width: Constants.Dim.blobsActiveTableViewContentSize, height: Constants.Dim.blobsActiveTableViewContentSize))
-        cellText.font = UIFont(name: Constants.Strings.fontRegular, size: 16)
+        cellText = UILabel(frame: CGRect(x: cellContainer.frame.width - cellContainer.frame.height, y: 0, width: cellContainer.frame.height, height: cellContainer.frame.height))
+        cellText.font = UIFont(name: Constants.Strings.fontRegular, size: 10)
+        cellText.textAlignment = .center
         cellText.numberOfLines = 4
         cellText.lineBreakMode = NSLineBreakMode.byWordWrapping
         cellContainer.addSubview(cellText)
         
         // Add a loading indicator to display when the user has selected the row
-        cellSelectedActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: cellContainer.frame.width - 5 - (Constants.Dim.blobsActiveTableViewContentSize * 2), y: 0, width: Constants.Dim.blobsActiveTableViewContentSize, height: Constants.Dim.blobsActiveTableViewContentSize))
+        cellSelectedActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: cellContainer.frame.width - cellContainer.frame.height, y: 0, width: cellContainer.frame.height, height: cellContainer.frame.height))
         cellSelectedActivityIndicator.color = UIColor.black
         cellContainer.addSubview(cellSelectedActivityIndicator)
         

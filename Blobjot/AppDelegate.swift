@@ -368,10 +368,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
                     }
                 }
             }
-// *COMPLETE******** SORT THE LOCATION BLOBS?
-//            print("SORTING LOCATION BLOBS")
-//            // Sort the Location Blobs from newest to oldest
-//            Constants.Data.locationBlobs.sortInPlace({$0.blobDatetime.timeIntervalSince1970 >  $1.blobDatetime.timeIntervalSince1970})
         }
     }
     

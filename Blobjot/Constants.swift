@@ -83,7 +83,7 @@ struct Constants
         }
     }
     
-    func blobColorOpaque(_ blobType: Constants.BlobTypes) -> UIColor
+    func blobColorOpaque(_ blobType: Constants.BlobTypes, mainMap: Bool) -> UIColor
     {
         switch blobType
         {
@@ -94,7 +94,14 @@ struct Constants
         case .public:
             return Constants.Colors.blobPurpleOpaque
         case .invisible:
-            return Constants.Colors.blobGrayOpaque
+            if mainMap
+            {
+                return Constants.Colors.blobInvisible
+            }
+            else
+            {
+                return Constants.Colors.blobGrayOpaque
+            }
         default:
             return Constants.Colors.blobRedOpaque
         }
@@ -187,6 +194,7 @@ struct Constants
         
         static let statusBarStandardHeight: CGFloat = 20
         
+        static let mapViewButtonSize: CGFloat = 40
         static let mapViewButtonAddSize: CGFloat = 40
         static let mapViewButtonSearchSize: CGFloat = 40
         static let mapViewButtonListSize: CGFloat = 40
@@ -236,7 +244,7 @@ struct Constants
         static let peopleSearchBarHeight: CGFloat = 40
         static let peopleTableViewCellHeight: CGFloat = 80
         static let peopleTableViewUserImageSize: CGFloat = 40
-        static let peopleConnectIndicatorSize: CGFloat = 40
+        static let peopleConnectIndicatorSize: CGFloat = 30
         
         static let accountProfileBoxHeight: CGFloat = 120
         static let accountSearchBarHeight: CGFloat = 40
@@ -273,9 +281,24 @@ struct Constants
         
         static let cacheSessionViewHistory = "sessionViewHistory"
         
-        static let imageStringStarFilled = "star_yellow.png"
-        static let imageStringStarHalfFilled = "star_clear.png"
-        static let imageStringStarEmpty = "star_clear.png"
+        static let iconStringBlobjotLogo = "TAB_ICON_location_blobs.png"
+        static let iconStringDefaultMedia = "defaultMedia.png"
+        static let iconStringMapViewAddCombo = "MV_add_combo_icon.png"
+        static let iconStringMapViewAdd = "MV_add_icon.png"
+        static let iconStringMapViewCheck = "MV_check_icon.png"
+        static let iconStringMapViewClose = "MV_close_icon.png"
+        static let iconStringMapViewList = "MV_list_icon.png"
+        static let iconStringMapViewLocation = "MV_location_icon.png"
+        static let iconStringMapViewRefresh = "MV_refresh_icon.png"
+        static let iconStringMapViewSearchCombo = "MV_search_combo_icon.png"
+        static let iconStringMapViewSearch = "MV_search_icon.png"
+        static let iconStringBlobViewAddComment = "BV_add_comment_icon.png"
+        static let iconStringConnectionViewAddConnection = "CV_add_connection_icon.png"
+        static let iconStringConnectionViewCheck = "CV_check_icon.png"
+        static let iconStringConnectionViewPending = "CV_pending_icon.png"
+        static let iconStringTabIconLocation = "TAB_ICON_location_blobs.png"
+        static let iconStringTabIconConnections = "TAB_ICON_connections.png"
+        static let iconStringTabIconAccount = "TAB_ICON_account.png"
         
         static let awsRegion = AWSRegionType.usEast1
 //        static let awsCognitoIdentityPoolID = "us-east-1:6db4d1c8-f3f5-4466-b135-535279ff6077"

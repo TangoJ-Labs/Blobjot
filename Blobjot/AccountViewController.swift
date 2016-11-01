@@ -610,7 +610,7 @@ class AccountViewController: UIViewController, UITextViewDelegate, UITableViewDa
         cell.cellTime.text = stringTime
         
         // Interpret the Blob Type Indicator color from the conversion function
-        cell.cellBlobTypeIndicator.backgroundColor = Constants().blobColorOpaque(cellBlob.blobType)
+        cell.cellBlobTypeIndicator.backgroundColor = Constants().blobColorOpaque(cellBlob.blobType, mainMap: false)
         
         // If the Blob has a thumbnail, assign it to the Blob image view, or assign the Blob text if no thumbnail exists (and call for the image if the ID exists)
         if let thumbnail = cellBlob.blobThumbnail

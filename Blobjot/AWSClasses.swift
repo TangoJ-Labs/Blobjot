@@ -505,6 +505,9 @@ class AWSGetBlobMinimumData : AWSRequestObject
                         
                         Constants.Data.mapBlobs.append(minBlob)
                         
+                        // A new Blob was added, so sort the global mapBlobs array
+                        UtilityFunctions().sortMapBlobs()
+                        
                         // Check if the user has already been downloaded
                         var userExists = false
                         loopUserCheck: for user in Constants.Data.userObjects
@@ -547,7 +550,7 @@ class AWSGetBlobExtraData : AWSRequestObject
     // Use this request function when a Blob is within range of the user's location and the extra Blob data is needed
     override func makeRequest()
     {
-        print("REQUESTING GBD FOR BLOB: \(self.blob.blobID)")
+        print("AWSM-GBD: REQUESTING GBD FOR BLOB: \(self.blob.blobID)")
         
         // Create a JSON object with the passed Blob ID
         let json: NSDictionary = ["blob_id" : self.blob.blobID, "filter" : 0]
@@ -558,7 +561,7 @@ class AWSGetBlobExtraData : AWSRequestObject
                 
                 if (err != nil)
                 {
-                    print("GET BLOB DATA ERROR: \(err)")
+                    print("AWSM-GBD: GET BLOB DATA ERROR: \(err)")
                     // Record the server request attempt
                     Constants.Data.serverTries += 1
                     
@@ -584,28 +587,28 @@ class AWSGetBlobExtraData : AWSRequestObject
                         {
                             if mBlob.blobID == extraBlobID
                             {
-                                print("ASSIGNING EXTRA MAP BLOB DATA")
+                                print("AWSM-GBD: ASSIGNING EXTRA MAP BLOB DATA")
                                 mBlob.blobMediaType = checkBlob["blobMediaType"] as? Int
                                 mBlob.blobMediaID = checkBlob["blobMediaID"] as? String
                                 mBlob.blobThumbnailID = checkBlob["blobThumbnailID"] as? String
                                 mBlob.blobText = checkBlob["blobText"] as? String
-                                print("ASSIGNED EXTRA MAP BLOB DATA")
+                                print("AWSM-GBD: ASSIGNED EXTRA MAP BLOB DATA")
                                 
                                 // ...and request the Thumbnail image data if the Thumbnail ID is not null
                                 if let thumbnailID = mBlob.blobThumbnailID
                                 {
-                                    print("ABOUT TO CALL GET THUMBNAIL FOR: \(thumbnailID)")
+                                    print("AWSM-GBD: ABOUT TO CALL GET THUMBNAIL FOR: \(thumbnailID)")
                                     
                                     // Ensure the thumbnail does not already exist
                                     var thumbnailExists = false
                                     loopThumbnailCheck: for tObject in Constants.Data.blobThumbnailObjects
                                     {
-                                        print("GET THUMBNAIL - CHECK 2")
+                                        print("AWSM-GBD: GET THUMBNAIL - CHECK 2")
                                         
                                         // Check to see if the thumbnail Object ID matches
                                         if tObject.blobThumbnailID == thumbnailID
                                         {
-                                            print("GET THUMBNAIL - CHECK 3")
+                                            print("AWSM-GBD: GET THUMBNAIL - CHECK 3")
                                             thumbnailExists = true
                                             
                                             break loopThumbnailCheck
@@ -628,22 +631,23 @@ class AWSGetBlobExtraData : AWSRequestObject
                                     {
                                         blobExistsInLocationBlobs = true
                                         
-                                        print("ASSIGNING EXTRA LOC BLOB DATA")
+                                        print("AWSM-GBD: ASSIGNING EXTRA LOC BLOB DATA")
                                         lBlob.blobMediaType = checkBlob["blobMediaType"] as? Int
                                         lBlob.blobMediaID = checkBlob["blobMediaID"] as? String
                                         lBlob.blobThumbnailID = checkBlob["blobThumbnailID"] as? String
                                         lBlob.blobText = checkBlob["blobText"] as? String
-                                        print("ASSIGNED EXTRA LOC BLOB DATA")
+                                        print("AWSM-GBD: ASSIGNED EXTRA LOC BLOB DATA")
                                         
                                         break loopLocationBlobCheck
                                     }
                                 }
                                 
+                                print("AWSM-GBD: LOCATION BLOB COUNT: \(Constants.Data.locationBlobs.count)")
                                 // If the Blob does not exist, append it to the Location Blobs array
                                 if !blobExistsInLocationBlobs
                                 {
                                     Constants.Data.locationBlobs.append(mBlob)
-                                    print("APPENDED BLOB AFTER DOWNLOAD: \(mBlob.blobText)")
+                                    print("AWSM-GBD: APPENDED BLOB AFTER DOWNLOAD: \(mBlob.blobText)")
                                 }
                                 
                                 // Notify the parent view that the AWS call completed successfully

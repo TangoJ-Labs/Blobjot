@@ -171,7 +171,7 @@ class BlobsActiveTableViewController: UIViewController, UITableViewDataSource, U
                     break loopUserObjectCheck
                 }
             }
-            cell.cellBlobTypeIndicator.backgroundColor = Constants().blobColorOpaque(Constants.Data.locationBlobs[blobIndex].blobType)
+            cell.cellBlobTypeIndicator.backgroundColor = Constants().blobColorOpaque(Constants.Data.locationBlobs[blobIndex].blobType, mainMap: false)
             cell.cellUserName.text = Constants.Data.locationBlobs[blobIndex].blobText
             
             let formatter = DateFormatter()
@@ -202,6 +202,9 @@ class BlobsActiveTableViewController: UIViewController, UITableViewDataSource, U
             else
             {
                 cell.cellText.text = Constants.Data.locationBlobs[blobIndex].blobText
+                
+                // Stop animating the activity indicator
+                cell.thumbnailActivityIndicator.stopAnimating()
             }
         }
         else

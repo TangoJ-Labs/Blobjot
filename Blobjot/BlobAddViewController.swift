@@ -551,6 +551,9 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
                 print("ADDING TO MAP BLOBS")
                 Constants.Data.mapBlobs.append(newBlob)
                 
+                // A new Blob was added, so sort the global mapBlobs array
+                UtilityFunctions().sortMapBlobs()
+                
                 // Call the parent VC to add the new Blob to the map of the Map View
                 if let parentVC = self.blobAddViewDelegate {
                     parentVC.createBlobOnMap(CLLocationCoordinate2DMake(self.blobCoords.latitude, self.blobCoords.longitude), blobRadius: self.blobRadius, blobType: self.blobType, blobTitle: mediaID)

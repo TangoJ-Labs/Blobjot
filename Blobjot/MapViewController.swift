@@ -61,7 +61,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     var buttonAdd: UIView!
     var buttonAddImage: UIImageView!
     var buttonCancelAdd: UIView!
-    var buttonCancelAddImage: UILabel!
+    var buttonCancelAddImage: UIImageView!
     var buttonSearchView: UIView!
     var buttonSearchViewImage: UIImageView!
     var buttonListView: UIView!
@@ -175,17 +175,12 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         
         self.edgesForExtendedLayout = UIRectEdge.all
         
-//        // Hide the navigation controller
-//        if let navController = navigationController {
-//            navController.isNavigationBarHidden = true
-//        }
-        
         // Create a fake user for the default blob
         defaultBlobUser = User()
         defaultBlobUser.userID = "default"
         defaultBlobUser.userName = "default"
         defaultBlobUser.userImageKey = "default"
-        defaultBlobUser.userImage = UIImage(named: "blobjot_logo.png")
+        defaultBlobUser.userImage = UIImage(named: Constants.Strings.iconStringBlobjotLogo)
         defaultBlobUser.userStatus = Constants.UserStatusTypes.connected
         
         // Record the status bar settings to adjust the view if needed
@@ -200,8 +195,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         var vcY = statusBarHeight
         if statusBarHeight > 20 {
             vcY = 20
-        } else {
-//            vcHeight = screenSize.height - statusBarHeight
         }
         
         // Add the view container to hold all other views (allows for shadows on all subviews)
@@ -275,14 +268,10 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         buttonRefreshMap.layer.shadowRadius = Constants.Dim.mapViewShadowRadius
         viewContainer.addSubview(buttonRefreshMap)
         
-        buttonRefreshMapImage = UIImageView(frame: CGRect(x: 0, y: 0, width: Constants.Dim.mapViewButtonTrackUserSize, height: Constants.Dim.mapViewButtonTrackUserSize))
-        buttonRefreshMapImage.image = UIImage(named: "MV_refresh_icon-white.png")
+        buttonRefreshMapImage = UIImageView(frame: CGRect(x: 5, y: 5, width: Constants.Dim.mapViewButtonSize - 10, height: Constants.Dim.mapViewButtonSize - 10))
+        buttonRefreshMapImage.image = UIImage(named: Constants.Strings.iconStringMapViewRefresh)
         buttonRefreshMapImage.contentMode = UIViewContentMode.scaleAspectFit
         buttonRefreshMapImage.clipsToBounds = true
-//        buttonRefreshMapImage.font = UIFont(name: Constants.Strings.fontRegular, size: 18)
-//        buttonRefreshMapImage.text = "\u{21BB}"
-//        buttonRefreshMapImage.textColor = UIColor.white
-//        buttonRefreshMapImage.textAlignment = .center
         buttonRefreshMap.addSubview(buttonRefreshMapImage)
         
         // Add the "My Location" Tracker Button in the bottom right corner, to the left of the Add Button
@@ -294,14 +283,10 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         buttonTrackUser.layer.shadowRadius = Constants.Dim.mapViewShadowRadius
         viewContainer.addSubview(buttonTrackUser)
         
-        buttonTrackUserImage = UIImageView(frame: CGRect(x: 0, y: 0, width: Constants.Dim.mapViewButtonTrackUserSize, height: Constants.Dim.mapViewButtonTrackUserSize))
-        buttonTrackUserImage.image = UIImage(named: "MV_location_icon-white.png")
+        buttonTrackUserImage = UIImageView(frame: CGRect(x: 5, y: 5, width: Constants.Dim.mapViewButtonSize - 10, height: Constants.Dim.mapViewButtonSize - 10))
+        buttonTrackUserImage.image = UIImage(named: Constants.Strings.iconStringMapViewLocation)
         buttonTrackUserImage.contentMode = UIViewContentMode.scaleAspectFit
         buttonTrackUserImage.clipsToBounds = true
-//        buttonTrackUserImage.font = UIFont(name: Constants.Strings.fontRegular, size: 18)
-//        buttonTrackUserImage.text = "\u{25CE}"
-//        buttonTrackUserImage.textColor = UIColor.white
-//        buttonTrackUserImage.textAlignment = .center
         buttonTrackUser.addSubview(buttonTrackUserImage)
         
         // Show a loading indicator for when the Map is refreshing
@@ -318,8 +303,8 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         buttonSearchView.layer.shadowRadius = Constants.Dim.mapViewShadowRadius
         viewContainer.addSubview(buttonSearchView)
         
-        buttonSearchViewImage = UIImageView(frame: CGRect(x: 0, y: 0, width: Constants.Dim.mapViewButtonSearchSize, height: Constants.Dim.mapViewButtonSearchSize))
-        buttonSearchViewImage.image = UIImage(named: "MV_search_icon-white.png")
+        buttonSearchViewImage = UIImageView(frame: CGRect(x: 5, y: 5, width: Constants.Dim.mapViewButtonSize - 10, height: Constants.Dim.mapViewButtonSize - 10))
+        buttonSearchViewImage.image = UIImage(named: Constants.Strings.iconStringMapViewSearchCombo)
         buttonSearchViewImage.contentMode = UIViewContentMode.scaleAspectFit
         buttonSearchViewImage.clipsToBounds = true
         buttonSearchView.addSubview(buttonSearchViewImage)
@@ -333,8 +318,8 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         buttonListView.layer.shadowRadius = Constants.Dim.mapViewShadowRadius
         viewContainer.addSubview(buttonListView)
         
-        buttonListViewImage = UIImageView(frame: CGRect(x: 0, y: 0, width: Constants.Dim.mapViewButtonListSize, height: Constants.Dim.mapViewButtonListSize))
-        buttonListViewImage.image = UIImage(named: "MV_list_icon-white.png")
+        buttonListViewImage = UIImageView(frame: CGRect(x: 5, y: 5, width: Constants.Dim.mapViewButtonSize - 10, height: Constants.Dim.mapViewButtonSize - 10))
+        buttonListViewImage.image = UIImage(named: Constants.Strings.iconStringMapViewList)
         buttonListViewImage.contentMode = UIViewContentMode.scaleAspectFit
         buttonListViewImage.clipsToBounds = true
         buttonListView.addSubview(buttonListViewImage)
@@ -348,8 +333,8 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         buttonAdd.layer.shadowRadius = Constants.Dim.mapViewShadowRadius
         viewContainer.addSubview(buttonAdd)
         
-        buttonAddImage = UIImageView(frame: CGRect(x: 0, y: 0, width: Constants.Dim.mapViewButtonAddSize, height: Constants.Dim.mapViewButtonAddSize))
-        buttonAddImage.image = UIImage(named: "MV_add_icon-white.png")
+        buttonAddImage = UIImageView(frame: CGRect(x: 5, y: 5, width: Constants.Dim.mapViewButtonSize - 10, height: Constants.Dim.mapViewButtonSize - 10))
+        buttonAddImage.image = UIImage(named: Constants.Strings.iconStringMapViewAddCombo)
         buttonAddImage.contentMode = UIViewContentMode.scaleAspectFit
         buttonAddImage.clipsToBounds = true
         buttonAdd.addSubview(buttonAddImage)
@@ -363,11 +348,10 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         buttonCancelAdd.layer.shadowOpacity = Constants.Dim.mapViewShadowOpacity
         buttonCancelAdd.layer.shadowRadius = Constants.Dim.mapViewShadowRadius
         
-        buttonCancelAddImage = UILabel(frame: CGRect(x: 0, y: 0, width: Constants.Dim.mapViewButtonAddSize, height: Constants.Dim.mapViewButtonAddSize))
-        buttonCancelAddImage.font = UIFont(name: Constants.Strings.fontRegular, size: 20)
-        buttonCancelAddImage.text = "\u{2717}"
-        buttonCancelAddImage.textColor = UIColor.white
-        buttonCancelAddImage.textAlignment = .center
+        buttonCancelAddImage = UIImageView(frame: CGRect(x: 5, y: 5, width: Constants.Dim.mapViewButtonSize - 10, height: Constants.Dim.mapViewButtonSize - 10))
+        buttonCancelAddImage.image = UIImage(named: Constants.Strings.iconStringMapViewClose)
+        buttonCancelAddImage.contentMode = UIViewContentMode.scaleAspectFit
+        buttonCancelAddImage.clipsToBounds = true
         buttonCancelAdd.addSubview(buttonCancelAddImage)
         
         // The small icon that indicates that the current user location accuracy is too low to enable Blob viewing
@@ -536,7 +520,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         loginScreen = UIView(frame: CGRect(x: 0, y: 0, width: viewContainer.frame.width, height: viewContainer.frame.height))
         loginScreen.backgroundColor = Constants.Colors.standardBackgroundGrayTransparent
         
-        loginBox = UIView(frame: CGRect(x: (loginScreen.frame.width / 2) - 140, y: (loginScreen.frame.height / 2) - 40, width: 280, height: 120))
+        loginBox = UIView(frame: CGRect(x: (loginScreen.frame.width / 2) - 140, y: (loginScreen.frame.height / 2) - 80, width: 280, height: 160))
         loginBox.layer.cornerRadius = 5
         loginBox.backgroundColor = Constants.Colors.standardBackground
         loginScreen.addSubview(loginBox)
@@ -548,11 +532,11 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         loginBox.addSubview(fbLoginButton)
         
         // Add a loading indicator for the pause showing the "Log out" button after the FBSDK is logged in and before the Account VC loads
-        loginActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: 0, y: loginBox.frame.height / 2 + 15, width: loginBox.frame.width, height: 30))
+        loginActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: 0, y: loginBox.frame.height / 2 + 30, width: loginBox.frame.width, height: 20))
         loginActivityIndicator.color = UIColor.black
         loginBox.addSubview(loginActivityIndicator)
         
-        loginProcessLabel = UILabel(frame: CGRect(x: 0, y: loginBox.frame.height - 15, width: loginBox.frame.width, height: 14))
+        loginProcessLabel = UILabel(frame: CGRect(x: 0, y: loginBox.frame.height / 2 + 55, width: loginBox.frame.width, height: 14))
         loginProcessLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 12)
         loginProcessLabel.text = "Logging you in..."
         loginProcessLabel.textColor = UIColor.black
@@ -619,10 +603,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         previewContentTapGesture = UITapGestureRecognizer(target: self, action: #selector(MapViewController.previewContentTap(_:)))
         previewContentTapGesture.numberOfTapsRequired = 1  // add single tap
         previewContainer.addGestureRecognizer(previewContentTapGesture)
-//        previewUserNameLabel.addGestureRecognizer(previewContentTapGesture)
-//        previewTimeLabel.addGestureRecognizer(previewContentTapGesture)
-//        previewTextBox.addGestureRecognizer(previewContentTapGesture)
-//        previewThumbnailView.addGestureRecognizer(previewContentTapGesture)
         
         // Add the Key Path Observers for changes in the user's location and for when the map is moved (the map camera)
         mapView.addObserver(self, forKeyPath: "myLocation", options:NSKeyValueObservingOptions(), context: nil)
@@ -631,19 +611,18 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         // Setup the Blob list
         Constants.Data.locationBlobs = [Constants.Data.defaultBlob]
         
-//        // Request login the user
-//        AWSPrepRequest(requestToCall: AWSLoginUser(secondaryAwsRequestObject: nil), delegate: self as AWSRequestDelegate).prepRequest()
+        self.refreshMap()
     }
     
     override func viewWillAppear(_ animated: Bool)
     {
         print("MVC - VIEW WILL APPEAR")
         
-        self.refreshMap()
+//        self.refreshMap()
         
         if showLoginScreenBool
         {
-            print("MVC - SHOW LOGIN SCREEN")
+            print("LOGIN - MVC - SHOW LOGIN SCREEN")
             self.showLoginScreen()
         }
     }
@@ -730,7 +709,10 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 {
                     self.buttonTrackUser.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonTrackUserSize, y: 10 + Constants.Dim.mapViewButtonTrackUserSize, width: Constants.Dim.mapViewButtonTrackUserSize, height: Constants.Dim.mapViewButtonTrackUserSize)
                     self.buttonRefreshMap.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonTrackUserSize, y: 15 + Constants.Dim.mapViewButtonTrackUserSize * 2, width: Constants.Dim.mapViewButtonTrackUserSize, height: Constants.Dim.mapViewButtonTrackUserSize)
-                }, completion: nil)
+                }, completion:
+                { (finished: Bool) -> Void in
+                    self.buttonSearchViewImage.image = UIImage(named: Constants.Strings.iconStringMapViewSearch)
+            })
         }
         else
         {
@@ -770,23 +752,30 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             unhighlightMapCircleForBlob(mBlob)
         }
         
+        self.loadTabViewController(false)
+    }
+    
+    func loadTabViewController(_ goToAccountTab: Bool)
+    {
         // Prepare both of the Table View Controller and add Tab Bar Items to them
         activeBlobsVC = BlobsActiveTableViewController()
         let activeBlobsTabBarItem = UITabBarItem(title: "LOCAL BLOBS", image: nil, tag: 1)
 //        activeBlobsTabBarItem.setTitleTextAttributes([NSForegroundColorAttributeName: UIColor.grayColor()], forState:.Normal)
+//        activeBlobsTabBarItem.image = UIImage(named: Constants.Strings.iconStringTabIconLocation)
         activeBlobsVC.tabBarItem = activeBlobsTabBarItem
         
         peopleVC = PeopleViewController()
         peopleVC.peopleViewDelegate = self
         peopleVC.tabBarUsed = true
         let connectionsTabBarItem = UITabBarItem(title: "CONNECTIONS", image: nil, tag: 2)
+//        connectionsTabBarItem.image = UIImage(named: Constants.Strings.iconStringTabIconConnections)
         peopleVC.tabBarItem = connectionsTabBarItem
         
         accountVC = AccountViewController()
         accountVC.accountViewDelegate = self
         let accountTabBarItem = UITabBarItem() //UITabBarItem(title: "ACCOUNT", image: nil, tag: 3)
         accountTabBarItem.title = "ACCOUNT"
-//        accountTabBarItem.image = UIImage(named: "MV_profile_icon-white.png")
+//        accountTabBarItem.image = UIImage(named: Constants.Strings.iconStringTabIconAccount)
 //        accountTabBarItem.image?.draw(in: CGRect(x: 0, y: 0, width: 30, height: 30))
 //        accountTabBarItem.imageInsets = UIEdgeInsets(top: 2, left: 2, bottom: 2, right: 2)
         accountVC.tabBarItem = accountTabBarItem
@@ -797,6 +786,12 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         tabBarController.tabBar.tintColor = Constants.Colors.colorTextNavBar
         tabBarController.viewControllers = [activeBlobsVC, peopleVC, accountVC]
 //        tabBarController.modalTransitionStyle = .FlipHorizontal
+        
+        // If the account tab should be loaded, set the last (2) index to load
+        if goToAccountTab
+        {
+            tabBarController.selectedIndex = 2
+        }
         
         // Create the Back Button Item and Title View for the Tab View
         // These settings will be passed up to the assigned Navigation Controller for the Tab View Controller
@@ -836,11 +831,14 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         {
             menuButtonBlobOpen = true
             
-            // Add an animation to lower the hidden buttons
+            // Add an animation to raise the hidden button
             UIView.animate(withDuration: 0.2, animations:
                 {
                     self.buttonListView.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonListSize, y: self.viewContainer.frame.height - 10 - Constants.Dim.mapViewButtonListSize * 2, width: Constants.Dim.mapViewButtonListSize, height: Constants.Dim.mapViewButtonListSize)
-                }, completion: nil)
+                }, completion:
+                {(finished: Bool) -> Void in
+                    self.buttonAddImage.image = UIImage(named: Constants.Strings.iconStringMapViewAdd)
+            })
         }
         else
         {
@@ -861,8 +859,8 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 addingBlob = true
                 print("addView Tap Gesture - add Circle")
                 
-                // Change the text of the Add Button to a check mark and add the needed other Views
-//                buttonAddImage.text = "\u{2713}" //check mark
+                buttonAddImage.image = UIImage(named: Constants.Strings.iconStringMapViewCheck)
+                
                 viewContainer.addSubview(buttonCancelAdd)
                 mapView.addSubview(selectorCircle)
                 mapView.addSubview(selectorSlider)
@@ -878,7 +876,8 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // If the Cancel Add Blob button is tapped, show the buttons that were hidden and hide the elements used in the add blob process
     func tapCancelAddView(_ gesture: UITapGestureRecognizer)
     {
-//        buttonAddImage.text = "\u{002B}" // plus sign
+        buttonAddImage.image = UIImage(named: Constants.Strings.iconStringMapViewAdd)
+        
         buttonCancelAdd.removeFromSuperview()
         selectorCircle.removeFromSuperview()
         selectorSlider.removeFromSuperview()
@@ -1059,6 +1058,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 // Change the Nav Bar color and present the view
                 navController.navigationBar.barTintColor = Constants.Colors.colorStatusBar
                 self.present(navController, animated: true, completion: nil)
+                
+                // Reload the collectionView so that the previously selected Blob is no longer sticking out
+                self.refreshCollectionView()
             }
         }
     }
@@ -1208,6 +1210,21 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                         Constants.Data.locationBlobs.append(blob)
                         print("APPENDING BLOB")
                     }
+                    
+                    // If the Blob is invisible, change the circle to gray
+                    if blob.blobType == Constants.BlobTypes.invisible
+                    {
+                        loopMapCirclesCheck: for circle in Constants.Data.mapCircles
+                        {
+                            if circle.title == blob.blobID
+                            {
+                                // Indicate that it is "not used on the main map" to get the gray color returned
+                                circle.fillColor = Constants().blobColor(blob.blobType, mainMap: false)
+                                
+                                break loopMapCirclesCheck
+                            }
+                        }
+                    }
                 }
                 else
                 {
@@ -1259,27 +1276,46 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                             }
                         }
                     }
-                    
-                    // If the Blob is not in range of the user's current location, but the Blob's extra data has already been requested,
-                    // delete the extra data and indicate that the Blob's extra data has not been requested
-                    // If the Blob was deleted in the last IF statement (if viewed and not permanent), then this step is unnecessary
-                    if blob.blobExtraRequested
+                    else
                     {
-                        // Remove all of the extra data
-                        blob.blobText = nil
-                        blob.blobThumbnailID = nil
-                        blob.blobMediaType = nil
-                        blob.blobMediaID = nil
+                        // If the Blob was not viewed, remove the extra data and change the color, if it is an invisible Blob
                         
-                        // Indicate that the extra data has not been requested
-                        // *ISSUE ********** If the data has been requested, but not added to the Blob yet, it could be added again after this step, causing bugs
-                        blob.blobExtraRequested = false
+                        // If the Blob is not in range of the user's current location, but the Blob's extra data has already been requested,
+                        // delete the extra data and indicate that the Blob's extra data has not been requested
+                        // If the Blob was deleted in the last IF statement (if viewed and not permanent), then this step is unnecessary
+                        if blob.blobExtraRequested
+                        {
+                            // Remove all of the extra data
+                            blob.blobText = nil
+                            blob.blobThumbnailID = nil
+                            blob.blobMediaType = nil
+                            blob.blobMediaID = nil
+                            
+                            // Indicate that the extra data has not been requested
+// *ISSUE ********** If the data has been requested, but not added to the Blob yet, it could be added again after this step, causing bugs
+                            blob.blobExtraRequested = false
+                        }
+                        // If the Blob is invisible, change the circle back to clear
+                        if blob.blobType == Constants.BlobTypes.invisible
+                        {
+                            loopMapCirclesCheck: for circle in Constants.Data.mapCircles
+                            {
+                                if circle.title == blob.blobID
+                                {
+                                    circle.fillColor = Constants().blobColor(blob.blobType, mainMap: true)
+                                    
+                                    break loopMapCirclesCheck
+                                }
+                            }
+                        }
                     }
                 }
             }
-//                print("SORTING LOCATION BLOBS")
-//                // Sort the Location Blobs from newest to oldest
-//                Constants.Data.locationBlobs.sortInPlace({$0.blobDatetime.timeIntervalSince1970 >  $1.blobDatetime.timeIntervalSince1970})
+            
+            loopLocationBlobsCheck: for lBlob in Constants.Data.locationBlobs
+            {
+                print("MVC - LOCATIONS BLOB TEXT: \(lBlob.blobText), TYPE: \(lBlob.blobType), DATE: \(lBlob.blobDatetime)")
+            }
             
             // Reload the Collection View
             self.refreshCollectionView()
@@ -1301,8 +1337,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             
             // Record that the user's location is inaccurate
             self.locationInaccurate = true
-            
-            // *COMPLETE********** Clear the location blobs?
         }
     }
     
@@ -1323,7 +1357,10 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 {
                     self.buttonTrackUser.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonTrackUserSize, y: 5, width: Constants.Dim.mapViewButtonTrackUserSize, height: Constants.Dim.mapViewButtonTrackUserSize)
                     self.buttonRefreshMap.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonTrackUserSize, y: 5, width: Constants.Dim.mapViewButtonTrackUserSize, height: Constants.Dim.mapViewButtonTrackUserSize)
-                }, completion: nil)
+                }, completion:
+                {(finished: Bool) -> Void in
+                    self.buttonSearchViewImage.image = UIImage(named: Constants.Strings.iconStringMapViewSearchCombo)
+            })
         }
         // However, only close the Blob menu buttons if the addingBlob indicator is false - if adding a Blob, the Blob menu buttons should remain expanded
         if menuButtonBlobOpen && !addingBlob
@@ -1334,7 +1371,10 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             UIView.animate(withDuration: 0.2, animations:
                 {
                     self.buttonListView.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonListSize, y: self.viewContainer.frame.height - 5 - Constants.Dim.mapViewButtonListSize, width: Constants.Dim.mapViewButtonListSize, height: Constants.Dim.mapViewButtonListSize)
-                }, completion: nil)
+                }, completion:
+                {(finished: Bool) -> Void in
+                    self.buttonAddImage.image = UIImage(named: Constants.Strings.iconStringMapViewAddCombo)
+            })
         }
         
         /*
@@ -1344,10 +1384,11 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 - If so, show the full Preview AND highlight the userImage in the collection view
                 - If not, show the short Preview
         */
+        // Create a tapped Blob indicator property so only the hightest tapped Blob is selected, but all others are deselected
         var tappedBlob = false
         loopMapBlobs: for (mbIndex, mBlob) in Constants.Data.mapBlobs.enumerated()
         {
-            print("LOOPING THROUGH MAP BLOBS, CURRENT BLOB INDEX: \(mbIndex)")
+            print("MVC - LOOPING THROUGH MAP BLOBS, CURRENT BLOB INDEX: \(mbIndex)")
             
             // Mark all Blobs as not selected so that any map tap can deselect a currently selected Blob
             mBlob.blobSelected = false
@@ -1359,8 +1400,10 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             let tapFromBlobCenterDistance = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude).distance(from: CLLocation(latitude: mBlob.blobLat, longitude: mBlob.blobLong))
             
             // Check to see if the tap distance from the Blob is equal to or less than the Blob radius
-            // If so, highlight the edge of the Blob, show the Preview Box with the Blob
-            if tapFromBlobCenterDistance <= mBlob.blobRadius
+            // and another Blob has not been tapped (the highest Blob should only be highlighted)
+            // and the Blob is not invisible (unless the user is within the invisible Blob's radius)
+            // If all that is true, highlight the edge of the Blob, show the Preview Box with the Blob
+            if tapFromBlobCenterDistance <= mBlob.blobRadius && !tappedBlob && (mBlob.blobType != Constants.BlobTypes.invisible || mBlob.blobExtraRequested)
             {
                 tappedBlob = true
                 print("TAPPED MAP BLOB: \(mBlob.blobID)")
@@ -1385,7 +1428,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 // Show the Preview Box with the selected Blob data
                 showBlobPreview(mBlob)
                 
-                // Loop through the Location Blob array to mark all Blobs within tap range
+                // Loop through the Location Blob array to mark the top Blobs within tap range
                 loopLocationBlobCheck: for lBlob in Constants.Data.locationBlobs
                 {
                     // Mark all Blobs as not selected so that any map tap can deselect a currently selected Blob
@@ -1408,6 +1451,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 // DO NOT STOP highlighting Blobs after the first matched Blob - other Blobs may need to be unhighlighted
             }
         }
+        
         // If a Blob was not tapped on the map, close the Preview Box
         if !tappedBlob
         {
@@ -1435,7 +1479,10 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 {
                     self.buttonTrackUser.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonTrackUserSize, y: 5, width: Constants.Dim.mapViewButtonTrackUserSize, height: Constants.Dim.mapViewButtonTrackUserSize)
                     self.buttonRefreshMap.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonTrackUserSize, y: 5, width: Constants.Dim.mapViewButtonTrackUserSize, height: Constants.Dim.mapViewButtonTrackUserSize)
-                }, completion: nil)
+                }, completion:
+                {(finished: Bool) -> Void in
+                    self.buttonSearchViewImage.image = UIImage(named: Constants.Strings.iconStringMapViewSearchCombo)
+            })
         }
         // However, only close the Blob menu buttons if the addingBlob indicator is false - if adding a Blob, the Blob menu buttons should remain expanded
         if menuButtonBlobOpen && !addingBlob
@@ -1446,7 +1493,10 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             UIView.animate(withDuration: 0.2, animations:
                 {
                     self.buttonListView.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonListSize, y: self.viewContainer.frame.height - 5 - Constants.Dim.mapViewButtonListSize, width: Constants.Dim.mapViewButtonListSize, height: Constants.Dim.mapViewButtonListSize)
-                }, completion: nil)
+                }, completion:
+                {(finished: Bool) -> Void in
+                    self.buttonAddImage.image = UIImage(named: Constants.Strings.iconStringMapViewAddCombo)
+            })
         }
         
 //        // Close the Preview Box - the user is not interacting with the Preview Box anymore
@@ -1492,13 +1542,11 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     func addMarker(_ blob: Blob)
     {
         let dotDiameter: CGFloat = 6
-        let dot = UIImage(color: Constants().blobColorOpaque(blob.blobType), size: CGSize(width: dotDiameter, height: dotDiameter))
-//        let dot = UIImage(named: "circle-small.png")!.withRenderingMode(.alwaysTemplate)
+        let dot = UIImage(color: Constants().blobColorOpaque(blob.blobType, mainMap: true), size: CGSize(width: dotDiameter, height: dotDiameter))
         let markerView = UIImageView(image: dot)
         markerView.layer.cornerRadius = dotDiameter
         markerView.contentMode = UIViewContentMode.scaleAspectFill
         markerView.clipsToBounds = true
-//        markerView.tintColor = Constants().blobColorOpaque(blob.blobType)
         
         let position = CLLocationCoordinate2DMake(blob.blobLat, blob.blobLong)
         let marker = GMSMarker(position: position)
@@ -1639,7 +1687,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         }
         else
         {
-            cell.userImage.image = UIImage(named: "blobjot_logo.png")
+            cell.userImage.image = UIImage(named: Constants.Strings.iconStringBlobjotLogo)
             cell.userImageActivityIndicator.stopAnimating()
         }
         
@@ -1898,7 +1946,8 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         self.present(navController, animated: true, completion: nil)
         
         // Reset the button settings and remove the elements used in the Add Blob Process
-//                buttonAddImage.text = "\u{002B}"
+        buttonAddImage.image = UIImage(named: Constants.Strings.iconStringMapViewAdd)
+        
         buttonCancelAdd.removeFromSuperview()
         selectorCircle.removeFromSuperview()
         selectorSlider.removeFromSuperview()
@@ -1912,7 +1961,10 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             UIView.animate(withDuration: 0.2, animations:
                 {
                     self.buttonListView.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonListSize, y: self.viewContainer.frame.height - 5 - Constants.Dim.mapViewButtonListSize, width: Constants.Dim.mapViewButtonListSize, height: Constants.Dim.mapViewButtonListSize)
-                }, completion: nil)
+                }, completion:
+                {(finished: Bool) -> Void in
+                    self.buttonAddImage.image = UIImage(named: Constants.Strings.iconStringMapViewAddCombo)
+            })
         }
         
         // Change the add blob indicator back to false efore calling adjustMapViewCamera
@@ -1920,6 +1972,16 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         
         // Adjust the Map Camera back to allow the map can be viewed at an angle
         adjustMapViewCamera()
+    }
+    
+    // The function to lower the previewBox
+    func lowerPreviewBox()
+    {
+        //Stop animating the activity indicator (if not already stopped)
+        self.previewThumbnailActivityIndicator.stopAnimating()
+        
+        self.previewTimeLabel.frame = CGRect(x: previewContainer.frame.width - 5 - self.previewTimeLabelWidth, y: 5, width: self.previewTimeLabelWidth, height: 15)
+        self.previewTextBox.frame = CGRect(x: 50, y: 10 + previewUserNameLabel.frame.height, width: previewContainer.frame.width - 65, height: 15)
     }
     
     // Add Blob data to the Preview Box elements and animate the Preview Box lowering into view
@@ -1937,39 +1999,53 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         // otherwise, move the Blob age and text all the way to the right side of the Preview Box
         if blob.blobExtraRequested
         {
-            print("BLOB EXTRA REQUESTED")
+            print("MVC - BLOB EXTRA REQUESTED")
             
             // Check whether the Blob has media - if not, do not show the Thumbnail box
             if blob.blobMediaType != nil && blob.blobMediaType == 0
             {
-                //Stop animating the activity indicator (if not already stopped)
-                self.previewThumbnailActivityIndicator.stopAnimating()
-                
-                self.previewTimeLabel.frame = CGRect(x: previewContainer.frame.width - 5 - self.previewTimeLabelWidth, y: 5, width: self.previewTimeLabelWidth, height: 15)
-                self.previewTextBox.frame = CGRect(x: 50, y: 10 + previewUserNameLabel.frame.height, width: previewContainer.frame.width - 65, height: 15)
+                self.lowerPreviewBox()
             }
             else
             {
-                print("BLOB EXTRA REQUESTED - CALLING SET THUMBNAIL")
-                // Request and set the thumbnail image
-                setPreviewThumbnail()
+                print("MVC - BLOB EXTRA REQUESTED - TRYING TO FIND THUMBNAIL")
+                // Check to see if the thumbnail was already downloaded
+                // If not, the return function from AWS will apply the thumbnail to the preview box
+                // Loop through the BlobThumbnailObjects array
+                loopThumbnail: for tObject in Constants.Data.blobThumbnailObjects
+                {
+                    // Check each thumbnail object to see if matches
+                    if tObject.blobThumbnailID == blob.blobThumbnailID
+                    {
+                        // Check to make sure the thumbnail has already been downloaded
+                        if let thumbnailImage = tObject.blobThumbnail
+                        {
+                            // Setthe Preview Thumbnail image
+                            self.previewThumbnailView.image = thumbnailImage
+                            
+                            // Stop animating the activity indicator
+                            self.previewThumbnailActivityIndicator.stopAnimating()
+                            
+                            // Assign the thumbnail image to the previewBlob
+                            self.previewBlob?.blobThumbnail = thumbnailImage
+                            
+                            break loopThumbnail
+                        }
+                    }
+                }
             }
         }
         else
         {
-            print("BLOB EXTRA NOT REQUESTED")
-            //Stop animating the activity indicator (if not already stopped)
-            self.previewThumbnailActivityIndicator.stopAnimating()
-            
-            self.previewTimeLabel.frame = CGRect(x: previewContainer.frame.width - 5 - self.previewTimeLabelWidth, y: 5, width: self.previewTimeLabelWidth, height: 15)
-            self.previewTextBox.frame = CGRect(x: 50, y: 10 + previewUserNameLabel.frame.height, width: previewContainer.frame.width - 65, height: 15)
+            print("MVC - BLOB EXTRA NOT REQUESTED")
+            self.lowerPreviewBox()
         }
         
         // Check whether the Blob is the default (first) Blob in the Location Blob list
         // Otherwise, find the associated User Image and User Name for the Blob User ID as add them to the proper Preview Box elements
         if blob.blobID == "default"
         {
-            previewUserImageView.image = UIImage(named: "blobjot_logo.png")
+            previewUserImageView.image = UIImage(named: Constants.Strings.iconStringBlobjotLogo)
             previewUserNameLabel.text = "Blobjot"
             previewTimeLabel.text = "Since 2016"
             
@@ -2146,73 +2222,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         self.present(alertController, animated: true, completion: nil)
     }
     
-    // Set the Preview Box Thumbnail using the locally assigned Preview Blob
-    func setPreviewThumbnail()
-    {
-        print("SET THUMBNAIL - CHECK 1")
-        
-        // First check to make sure the Preview Blob was properly assigned
-        if let pBlob = self.previewBlob
-        {
-            print("SET THUMBNAIL - CHECK 2")
-            
-            // Use a background thread to loop until the image is available
-//            let priority = DispatchQueue.GlobalQueuePriority.default
-//            DispatchQueue.global(priority: priority).async {
-            DispatchQueue.global(qos: DispatchQoS.QoSClass.default).async
-                {
-                print("SET THUMBNAIL - CHECK 3")
-                
-// **** CORRECT: change this so that a local boolean is set to indicate that the preview box is waiting for the image - when the completion is returned,
-// check the image array again for the image, if found, use it and reset the boolean
-                
-                // Look for the correct thumbnail until it is available - it may be downloading still
-                // Only check for ten seconds - after that, the download is taking too long
-                let startTime: Double = Date().timeIntervalSince1970 //fetch starting time
-                let loopMaxTime: Double = 10.0
-                while self.previewThumbnailView.image == nil && Date().timeIntervalSince1970 - startTime < loopMaxTime
-                {
-                    print("SET THUMBNAIL - CHECK 4")
-                    print("WHILE LOOP RUNNING FOR: \(Date().timeIntervalSince1970 - startTime)")
-                    
-                    // Loop through the BlobThumbnailObjects array
-                    for tObject in Constants.Data.blobThumbnailObjects
-                    {
-                        print("SET THUMBNAIL - CHECK 5")
-                        
-                        // Check each thumbnail object to see if matches
-                        if tObject.blobThumbnailID == pBlob.blobThumbnailID
-                        {
-                            print("SET THUMBNAIL - CHECK 6")
-                            
-                            // Check to make sure the thumbnail has already been downloaded
-                            if let thumbnailImage = tObject.blobThumbnail
-                            {
-                                print("SET THUMBNAIL - CHECK 7")
-                                
-                                // Perform UI changes on the main thread
-                                DispatchQueue.main.async
-                                    {
-                                        print("SET THUMBNAIL - CHECK 8")
-                                        
-                                        // Setthe Preview Thumbnail image
-                                        self.previewThumbnailView.image = thumbnailImage
-                                        
-                                        // Stop animating the activity indicator
-                                        self.previewThumbnailActivityIndicator.stopAnimating()
-                                        
-                                        // Assign the thumbnail image to the previewBlob
-                                        self.previewBlob?.blobThumbnail = thumbnailImage
-                                }
-                                break
-                            }
-                        }
-                    }
-                } // The while loop
-            }
-        }
-    }
-    
     
     // MARK: OTHER DELEGATE METHODS
     func logoutUser()
@@ -2228,9 +2237,16 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     
     func refreshCollectionView()
     {
+        
         // Reload the Collection View
         self.locationBlobsCollectionView.performSelector(onMainThread: #selector(UICollectionView.reloadData), with: nil, waitUntilDone: true)
         print("BLOB REFRESH AFTER DOWNLOAD - RELOADED COLLECTION VIEW")
+        
+        // Reload the current location blob view table if it is not nil
+        if self.activeBlobsVC != nil
+        {
+            self.activeBlobsVC.reloadTableView()
+        }
     }
     
     func updateBlobActionTable()
@@ -2266,7 +2282,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     
     func showLoginScreen()
     {
-        print("MVC - SHOW LOGIN SCREEN")
+        print("LOGIN - MVC - SHOW LOGIN SCREEN")
         self.showLoginScreenBool = true
         
         self.viewContainer.addSubview(loginScreen)
@@ -2285,12 +2301,16 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                         if self.newLogin
                         {
                             // Load the account view to show the logged in user
-//                            self.tapButtonAccount()
-//                            print("LOGIN - CALLED TAP ACCOUNT")
+                            self.loadTabViewController(true)
+                            print("LOGIN - MVC - LOADING ACCOUNT TAB")
                             
-                            // Hide the logging in indicator and label
+                            self.showLoginScreenBool = false
+                            
+                            // Hide the logging in screen, indicator, and label
+                            self.loginScreen.removeFromSuperview()
                             self.loginActivityIndicator.stopAnimating()
                             self.loginProcessLabel.removeFromSuperview()
+                            print("LOGIN - MVC - REMOVED LOGIN SCREEN")
                         }
                         else
                         {
@@ -2307,7 +2327,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                         // Show the error message
                         self.createAlertOkView("Login Error", message: "We're sorry, but we seem to have an issue logging you in.  Please tap the \"Log out\" button and try logging in again.")
                         
-                        print("***** LOG IN ERROR *****")
+                        print("LOGIN - MVC - ***** LOG IN ERROR *****")
                         
                         // Show the login screen for manual login
                         self.showLoginScreen()
@@ -2322,7 +2342,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                     else
                     {
                         // Show the error message
-                        self.createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please refresh the map to try again.")
+                        self.createAlertOkView("AWSGetMapData Network Error", message: "I'm sorry, you appear to be having network issues.  Please refresh the map to try again.")
                     }
                 case let awsGetBlobData as AWSGetBlobExtraData:
                     if success
@@ -2340,13 +2360,40 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                     else
                     {
                         // Show the error message
-                        self.createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                        self.createAlertOkView("AWSGetBlobExtraData Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                     }
-                case _ as AWSGetThumbnailImage:
-                    if !success
+                case let awsGetThumbnailImage as AWSGetThumbnailImage:
+                    if success
+                    {
+                        print("MVC - ADDING THUMBNAIL FOR: \(awsGetThumbnailImage.blob.blobID)")
+                        
+                        // Loop through the BlobThumbnailObjects array
+                        loopThumbnail: for tObject in Constants.Data.blobThumbnailObjects
+                        {
+                            // Check each thumbnail object to see if matches
+                            if tObject.blobThumbnailID == awsGetThumbnailImage.blob.blobThumbnailID
+                            {
+                                // Check to make sure the thumbnail has already been downloaded
+                                if let thumbnailImage = tObject.blobThumbnail
+                                {
+                                    // Setthe Preview Thumbnail image
+                                    self.previewThumbnailView.image = thumbnailImage
+                                    
+                                    // Stop animating the activity indicator
+                                    self.previewThumbnailActivityIndicator.stopAnimating()
+                                    
+                                    // Assign the thumbnail image to the previewBlob
+                                    self.previewBlob?.blobThumbnail = thumbnailImage
+                                    
+                                    break loopThumbnail
+                                }
+                            }
+                        }
+                    }
+                    else
                     {
                         // Show the error message
-                        self.createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                        self.createAlertOkView("AWSGetThumbnailImage Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                     }
                 case let awsGetSingleUserData as AWSGetSingleUserData:
                     if success
@@ -2372,7 +2419,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                     else
                     {
                         // Show the error message
-                        self.createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                        self.createAlertOkView("AWSGetSingleUserData Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                     }
                 case let awsGetUserImage as AWSGetUserImage:
                     if success

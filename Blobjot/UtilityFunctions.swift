@@ -20,6 +20,44 @@ class UtilityFunctions
         return zoom
     }
     
+    // Sort the global mapBlobs array
+    func sortMapBlobs()
+    {
+        print("UF - SORTING MAP BLOBS")
+        // Sort the Map Blobs first by blobType, then from newest to oldest
+        Constants.Data.mapBlobs.sort(by: {
+            if $0.blobType !=  $1.blobType
+            {
+                return $0.blobType.rawValue <  $1.blobType.rawValue
+            }
+            else
+            {
+                return $0.blobDatetime.timeIntervalSince1970 > $1.blobDatetime.timeIntervalSince1970
+            }
+        })
+        for mBlob in Constants.Data.mapBlobs
+        {
+            print("UF - SORTED BLOB TYPE: \(mBlob.blobType), DATE: \(mBlob.blobDatetime)")
+        }
+    }
+    
+//    // Sort the Global mapBlobs array
+//    // Sort first by type (see enumeration raw values), and then by date added (latest on top)
+//    func sortMapBlobs()
+//    {
+//        Constants.Data.mapBlobs.sort
+//            { b1, b2 in
+//                if b1.blobType == b2.blobType
+//                {
+//                    return b1.blobDatetime > b2.blobDatetime
+//                }
+//                else
+//                {
+//                    return b1.blobType.rawValue < b2.blobType.rawValue
+//                }
+//        }
+//    }
+    
     // Calculate the needed textview height for text - need to use font size 10
     func textHeightForAttributedText(text: NSAttributedString, width: CGFloat) -> CGFloat
     {
@@ -199,23 +237,6 @@ class UtilityFunctions
         }
         
         return path
-    }
-    
-    // Sort the Global mapBlobs array
-    // Sort first by type (see enumeration raw values), and then by date added (latest on top)
-    func sortMapBlobs()
-    {
-        Constants.Data.mapBlobs.sort
-            { b1, b2 in
-                if b1.blobType == b2.blobType
-                {
-                    return b1.blobDatetime > b2.blobDatetime
-                }
-                else
-                {
-                    return b1.blobType.rawValue < b2.blobType.rawValue
-                }
-        }
     }
     
     

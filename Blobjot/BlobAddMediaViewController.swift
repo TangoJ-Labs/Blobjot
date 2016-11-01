@@ -50,7 +50,7 @@ class BlobAddMediaViewController: UIViewController {
         mediaPickerImage = UIImageView(frame: CGRect(x: (viewContainer.frame.width / 2) - ((viewContainer.frame.height - 20) / 2), y: 10, width: viewContainer.frame.height - 20, height: viewContainer.frame.height - 20))
         mediaPickerImage.contentMode = UIViewContentMode.scaleAspectFill
         mediaPickerImage.clipsToBounds = true
-        mediaPickerImage.image = UIImage(named: "defaultMedia.png")
+        mediaPickerImage.image = UIImage(named: Constants.Strings.iconStringDefaultMedia)
         viewContainer.addSubview(mediaPickerImage)
         
         videoPlayIndicator = UILabel(frame: CGRect(x: 5, y: 5, width: 25, height: 25))

@@ -113,20 +113,6 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
         peopleTableView.showsVerticalScrollIndicator = false
         viewContainer.addSubview(peopleTableView)
         
-//        peopleViewContainer = UIView(frame: CGRect(x: 0, y: searchBar.frame.height, width: viewContainer.frame.width, height: viewContainer.frame.height - searchBar.frame.height))
-//        peopleViewContainer.backgroundColor = UIColor.redColor()
-//        viewContainer.addSubview(peopleViewContainer)
-//        
-//        let peopleViewController = PeopleViewController()
-//        peopleViewController.loadConnectionsOnly = true
-//        peopleViewController.useBarHeights = false
-//        peopleViewController.printCheck = "CHILD"
-//        addChildViewController(peopleViewController)
-//        print("BAPVC - PEOPLE VIEW CONTAINER: \(peopleViewContainer.frame)")
-//        peopleViewController.view.frame = CGRect(x: 0, y: 0, width: peopleViewContainer.frame.width, height: peopleViewContainer.frame.height)
-//        peopleViewContainer.addSubview(peopleViewController.view)
-//        peopleViewController.didMoveToParentViewController(self)
-        
         selectAllMessage = UITextView(frame: CGRect(x: 0, y: searchBar.frame.height, width: viewContainer.frame.width, height: viewContainer.frame.height - searchBar.frame.height))
         selectAllMessage.backgroundColor = Constants.Colors.colorBlobAddPeopleSearchBar
         selectAllMessage.isEditable = false

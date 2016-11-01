@@ -115,11 +115,11 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
         searchExitLabel.textColor = Constants.Colors.colorTextNavBar
         searchExitView.addSubview(searchExitLabel)
         
-        //        // Add a loading indicator while downloading the logged in user image
-        //        peopleTableViewActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: 0, y: searchBarContainer.frame.height, width: viewContainer.frame.width, height: Constants.Dim.peopleTableViewCellHeight))
-        //        peopleTableViewActivityIndicator.color = UIColor.blackColor()
-        //        viewContainer.addSubview(peopleTableViewActivityIndicator)
-        //        peopleTableViewActivityIndicator.startAnimating()
+        // Add a loading indicator while downloading the logged in user image
+        peopleTableViewActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: 0, y: searchBarContainer.frame.height, width: viewContainer.frame.width, height: Constants.Dim.peopleTableViewCellHeight))
+        peopleTableViewActivityIndicator.color = UIColor.black
+        viewContainer.addSubview(peopleTableViewActivityIndicator)
+        peopleTableViewActivityIndicator.startAnimating()
         
         var tableViewHeightAdjust: CGFloat = 0
         if self.tabBarUsed
@@ -169,8 +169,8 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
     override func viewWillAppear(_ animated: Bool) {
         print("PVC - VIEW WILL APPEAR")
         
-        self.refreshControl.beginRefreshing()
-        self.peopleTableView.setContentOffset(CGPoint(x: 0, y: self.peopleTableView.contentOffset.y - self.refreshControl.frame.size.height), animated: true)
+//        self.refreshControl.beginRefreshing()
+//        self.peopleTableView.setContentOffset(CGPoint(x: 0, y: self.peopleTableView.contentOffset.y - self.refreshControl.frame.size.height), animated: true)
     }
 
     override func didReceiveMemoryWarning()
@@ -207,7 +207,7 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
         
         cell.cellUserName.text = ""
         cell.cellUserImage.image = nil
-        cell.cellConnectIndicator.text = "\u{002B}"
+        cell.cellConnectIndicator.image = UIImage(named: Constants.Strings.iconStringConnectionViewAddConnection)
         cell.cellActionMessage.text = ""
         cell.cellUserImageActivityIndicator.startAnimating()
         
@@ -235,27 +235,27 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
         print("USER STATUS: \(cellUserObject.userStatus)")
         if cellUserObject.userStatus == Constants.UserStatusTypes.pending
         {
-            cell.cellConnectIndicator.text = "\u{231B}"
+            cell.cellConnectIndicator.image = UIImage(named: Constants.Strings.iconStringConnectionViewPending)
             cell.cellActionMessage.text = "Pending Request..."
         }
         else if cellUserObject.userStatus == Constants.UserStatusTypes.waiting
         {
-            cell.cellConnectIndicator.text = "\u{231B}"
+            cell.cellConnectIndicator.image = UIImage(named: Constants.Strings.iconStringConnectionViewPending)
             cell.cellActionMessage.text = "Waiting for Response..."
         }
         else if cellUserObject.userStatus == Constants.UserStatusTypes.connected
         {
-            cell.cellConnectIndicator.text = "\u{2713}"
+            cell.cellConnectIndicator.image = UIImage(named: Constants.Strings.iconStringConnectionViewCheck)
             cell.cellActionMessage.text = ""
         }
         else if cellUserObject.userStatus == Constants.UserStatusTypes.blocked
         {
-            cell.cellConnectIndicator.text = "\u{002B}"
+            cell.cellConnectIndicator.image = UIImage(named: Constants.Strings.iconStringConnectionViewAddConnection)
             cell.cellActionMessage.text = "User Blocked"
         }
         else
         {
-            cell.cellConnectIndicator.text = "\u{002B}"
+            cell.cellConnectIndicator.image = UIImage(named: Constants.Strings.iconStringConnectionViewAddConnection)
             cell.cellActionMessage.text = ""
         }
         
@@ -539,19 +539,10 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
                 updateUserStatusType(self.peopleList[(indexPath as NSIndexPath).row].userID, peopleListIndex: (indexPath as NSIndexPath).row, userStatus: userStatus)
                 
             }
-            else if cell.cellUserImage.frame.contains(pointInCell)
-            {
-                print("PVC - TOUCH IN USER IMAGE")
-// *COMPLETE*********FIX REFERENCE TO USER ID FROM USER OBJECT ITEM
-//                loadPeopleViewControllerWithTopUser(peopleList[indexPath!.row])
-            }
             
             print("PVC - PEOPLE TABLE VIEW: RELOADING TABLE VIEW")
             // Reload the Table View
             self.refreshTableViewAndEndSpinner(false)
-            
-// *COMPLETE******** ADD UPLOAD & DATA METHODS TO UPDATE CONNECTED USERS
-
         }
     }
     
@@ -598,7 +589,16 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
     func refreshTableViewAndEndSpinner(_ endSpinner: Bool)
     {
         // Sort the list in case the userStatuses were changed
-//        self.peopleList.sortInPlace({$0.userStatus.rawValue <  $1.userStatus.rawValue})
+        self.peopleList.sort(by: {
+            if $0.userStatus.rawValue !=  $1.userStatus.rawValue
+            {
+                return $0.userStatus.rawValue <  $1.userStatus.rawValue
+            }
+            else
+            {
+                return $0.userName <  $1.userName
+            }
+        })
         
         // Reload the Table View
         print("PVC - GET DATA - RELOAD TABLE VIEW")
@@ -608,7 +608,7 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
         {
             print("PVC - RELOAD TABLE VIEW - END REFRESHING")
             self.refreshControl.endRefreshing()
-//            self.peopleTableViewActivityIndicator.stopAnimating()
+            self.peopleTableViewActivityIndicator.stopAnimating()
 //            self.peopleTableViewActivityIndicator.removeFromSuperview()
         }
     }

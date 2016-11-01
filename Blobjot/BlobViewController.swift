@@ -161,6 +161,12 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
         blobCommentsButton.layer.shadowRadius = Constants.Dim.mapViewShadowRadius
         viewContainer.addSubview(blobCommentsButton)
         
+        blobCommentsButtonIcon = UIImageView(frame: CGRect(x: 5, y: 5, width: Constants.Dim.mapViewButtonSize - 10, height: Constants.Dim.mapViewButtonSize - 10))
+        blobCommentsButtonIcon.image = UIImage(named: Constants.Strings.iconStringBlobViewAddComment)
+        blobCommentsButtonIcon.contentMode = UIViewContentMode.scaleAspectFit
+        blobCommentsButtonIcon.clipsToBounds = true
+        blobCommentsButton.addSubview(blobCommentsButtonIcon)
+        
         // The Comment Container should start below the screen and not be visible until called
         blobCommentsContainer = UIView(frame: CGRect(x: 0, y: viewContainer.frame.height, width: viewContainer.frame.width, height: viewContainer.frame.height))
         blobCommentsContainer.backgroundColor = UIColor.white
@@ -221,6 +227,23 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
         
         // Request all needed data
         self.refreshDataManually()
+        
+        // Indicate the local blob has been viewed
+        self.blob.blobViewed = true
+        
+        // Indicate the global blob has been viewed
+        loopMapBlobsCheck: for mBlob in Constants.Data.mapBlobs
+        {
+            if mBlob.blobID == blob.blobID
+            {
+                mBlob.blobViewed = true
+                
+                break loopMapBlobsCheck
+            }
+        }
+        
+        // Add a Blob view in AWS
+        AWSPrepRequest(requestToCall: AWSAddBlobView(blobID: self.blob.blobID, userID: Constants.Data.currentUser), delegate: self as AWSRequestDelegate).prepRequest()
     }
 
     override func didReceiveMemoryWarning()
@@ -323,7 +346,7 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
             if let blobType = blob.blobType
             {
                 // Assign the Blob Type color to the Blob Indicator
-                blobTypeIndicatorView.backgroundColor = Constants().blobColorOpaque(blobType)
+                blobTypeIndicatorView.backgroundColor = Constants().blobColorOpaque(blobType, mainMap: false)
             }
             cell.addSubview(blobTypeIndicatorView)
             
@@ -377,7 +400,6 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
                     {
                         userImageView.image = userImage
                     }
-// *COMPLETE******** RECEIVE A NOTIFICATION FROM THE MAP VIEW WHEN THE USER IMAGE HAS BEEN DOWNLOADED (IF NOT ALREADY)
                     
                     break loopUserCheck
                 }
@@ -437,12 +459,6 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
                 else if let thumbnailImage = blob.blobThumbnail
                 {
                     blobImageView.image = thumbnailImage
-                }
-                else
-                {
-                    // Stop animating the activity indicator
-                    blobMediaActivityIndicator.stopAnimating()
-                    print("BVC - MEDIA INDICATOR STOP")
                 }
                 cell.addSubview(blobImageView)
                 cell.addSubview(blobMediaActivityIndicator)
@@ -774,7 +790,7 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
                 self.blobCommentArray.append(addBlobComment)
                 
                 // Reload the TableView
-                self.blobTableView.performSelector(onMainThread: #selector(UITableView.reloadData), with: nil, waitUntilDone: true)
+                self.refreshBlobViewTable()
             }
         }
         

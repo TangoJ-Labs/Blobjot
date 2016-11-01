@@ -11,7 +11,7 @@ import UIKit
 class PeopleTableViewCell: UITableViewCell {
 
     var cellContainer: UIView!
-    var cellConnectIndicator: UILabel!
+    var cellConnectIndicator: UIImageView!
     var cellUserImage: UIImageView!
     var cellUserImageActivityIndicator: UIActivityIndicatorView!
     var cellActionMessage: UILabel!
@@ -29,11 +29,10 @@ class PeopleTableViewCell: UITableViewCell {
         
         print("CELL CONTAINER FRAME: \(cellContainer.frame)")
         
-        cellConnectIndicator = UILabel(frame: CGRect(x: 10, y: (cellContainer.frame.height / 2) - (Constants.Dim.peopleConnectIndicatorSize / 2), width: Constants.Dim.peopleConnectIndicatorSize, height: Constants.Dim.peopleConnectIndicatorSize))
-        cellConnectIndicator.font = UIFont(name: Constants.Strings.fontRegular, size: 28)
-        cellConnectIndicator.text = "\u{002B}"
-        cellConnectIndicator.textColor = Constants.Colors.colorTextGray
-        cellConnectIndicator.textAlignment = .center
+        cellConnectIndicator = UIImageView(frame: CGRect(x: 10, y: (cellContainer.frame.height / 2) - (Constants.Dim.peopleConnectIndicatorSize / 2), width: Constants.Dim.peopleConnectIndicatorSize, height: Constants.Dim.peopleConnectIndicatorSize))
+        cellConnectIndicator.image = UIImage(named: Constants.Strings.iconStringConnectionViewAddConnection)
+        cellConnectIndicator.contentMode = UIViewContentMode.scaleAspectFit
+        cellConnectIndicator.clipsToBounds = true
         cellContainer.addSubview(cellConnectIndicator)
         
         let imageSize = Constants.Dim.peopleTableViewUserImageSize
