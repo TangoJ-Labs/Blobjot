@@ -141,7 +141,7 @@ class BlobAddTypeViewController: UIViewController {
         
         typeContainer3SubLabel = UILabel(frame: CGRect(x: 20, y: typeContainer3.frame.height / 2, width: typeContainer3.frame.width * (3/4) - 20, height: typeContainer3.frame.height / 2))
         typeContainer3SubLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 10)
-        typeContainer3SubLabel.text = "A Temporary Blob and not visible on the map"
+        typeContainer3SubLabel.text = "A Temporary Blob but not visible on the map"
         typeContainer3SubLabel.textAlignment = .left
         typeContainer3SubLabel.textColor = Constants.Colors.colorTextGray
         typeContainer3.addSubview(typeContainer3SubLabel)

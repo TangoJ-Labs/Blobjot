@@ -316,6 +316,10 @@ struct Constants
         static let mapStyleUrl = URL(string: "mapbox://styles/tangojlabs/ciqwaddsl0005b7m0xwctftow")
         static let maxServerTries: Int = 5
         
+        static let userNameMaxLength: Int = 18
+        static let userNameDisallowedCharacterSet = NSCharacterSet(charactersIn: "!@#$%^&*()-+={}|[]\\:;\'\"<>?,/~`").inverted
+        static let mapViewAddBlobMinZoom: Float = 18
+        
         static let imageSizeUser: CGFloat = 200
         static let imageSizeThumbnail: CGFloat = 200
         static let imageSizeBlob: CGFloat = 1080

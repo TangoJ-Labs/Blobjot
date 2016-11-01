@@ -23,7 +23,7 @@ class UtilityFunctions
     // Sort the global mapBlobs array
     func sortMapBlobs()
     {
-        print("UF - SORTING MAP BLOBS")
+//        print("UF - SORTING MAP BLOBS")
         // Sort the Map Blobs first by blobType, then from newest to oldest
         Constants.Data.mapBlobs.sort(by: {
             if $0.blobType !=  $1.blobType
@@ -35,28 +35,11 @@ class UtilityFunctions
                 return $0.blobDatetime.timeIntervalSince1970 > $1.blobDatetime.timeIntervalSince1970
             }
         })
-        for mBlob in Constants.Data.mapBlobs
-        {
-            print("UF - SORTED BLOB TYPE: \(mBlob.blobType), DATE: \(mBlob.blobDatetime)")
-        }
-    }
-    
-//    // Sort the Global mapBlobs array
-//    // Sort first by type (see enumeration raw values), and then by date added (latest on top)
-//    func sortMapBlobs()
-//    {
-//        Constants.Data.mapBlobs.sort
-//            { b1, b2 in
-//                if b1.blobType == b2.blobType
-//                {
-//                    return b1.blobDatetime > b2.blobDatetime
-//                }
-//                else
-//                {
-//                    return b1.blobType.rawValue < b2.blobType.rawValue
-//                }
+//        for mBlob in Constants.Data.mapBlobs
+//        {
+//            print("UF - SORTED BLOB TYPE: \(mBlob.blobType), DATE: \(mBlob.blobDatetime)")
 //        }
-//    }
+    }
     
     // Calculate the needed textview height for text - need to use font size 10
     func textHeightForAttributedText(text: NSAttributedString, width: CGFloat) -> CGFloat
@@ -95,8 +78,6 @@ class UtilityFunctions
     
     func displayLocalBlobNotification(_ blob: Blob)
     {
-        print("UF-DLBN - SHOWING NOTIFICATION FOR BLOB: \(blob.blobID) WITH TEXT: \(blob.blobText)")
-        
         // Find the user for the Blob
         loopUserObjectCheck: for userObject in Constants.Data.userObjects
         {
@@ -157,7 +138,6 @@ class UtilityFunctions
     // Process a notification for a new blob
     func displayNewBlobNotification(newBlobID: String)
     {
-        print("UF-DNBN - NOTIFICATION FOR: \(newBlobID)")
         // Recall the Blob data
         loopBlobCheck: for blob in Constants.Data.mapBlobs
         {
@@ -330,8 +310,6 @@ class UtilityFunctions
     // Save the LocationManagerSetting
     func cdLocationManagerSettingSave(_ locationManagerConstant: Bool)
     {
-        print("UF-CDLMS - LOCATION MANAGER CONSTANT: \(locationManagerConstant)")
-        
         // Try to retrieve the locationManagerSetting from Core Data
         let locationManagerSettingObjects = UtilityFunctions().cdLocationManagerSetting()
         let locationManagerSettingArray = locationManagerSettingObjects[0] as! [LocationManagerSetting]

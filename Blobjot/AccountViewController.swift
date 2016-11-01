@@ -22,7 +22,7 @@ protocol AccountViewControllerDelegate
     func popViewController()
 }
 
-class AccountViewController: UIViewController, UITextViewDelegate, UITableViewDataSource, UITableViewDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, AWSRequestDelegate
+class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewDataSource, UITableViewDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, AWSRequestDelegate
 {
     // Add a delegate variable which the parent view controller can pass its own delegate instance to and have access to the protocol
     // (and have its own functions called that are listed in the protocol)
@@ -50,9 +50,10 @@ class AccountViewController: UIViewController, UITextViewDelegate, UITableViewDa
     var locationButtonLabel: UILabel!
     
     var displayUserEditNameView: UIView!
-    var editNameCurrentName: UITextView!
+    var editNameCurrentNameLabel: UILabel!
+    var editNameCurrentName: UILabel!
     var editNameNewNameLabel: UILabel!
-    var editNameNewName: UITextView!
+    var editNameNewName: UITextField!
     var editNameSaveButton: UIView!
     var editNameSaveButtonLabel: UILabel!
     var viewScreen: UIView!
@@ -278,30 +279,41 @@ class AccountViewController: UIViewController, UITextViewDelegate, UITableViewDa
         displayUserEditNameView.layer.shadowOpacity = 0.5
         displayUserEditNameView.layer.shadowRadius = 1.0
         
-        editNameCurrentName = UITextView(frame: CGRect(x: 10, y: 10, width: displayUserEditNameView.frame.width - 20, height: 50))
+        editNameCurrentNameLabel = UILabel(frame: CGRect(x: 10, y: 10, width: displayUserEditNameView.frame.width - 20, height: 15))
+        editNameCurrentNameLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 12)
+        editNameCurrentNameLabel.text = "Current User Name:"
+        editNameCurrentNameLabel.textColor = Constants.Colors.colorTextGray
+        editNameCurrentNameLabel.textAlignment = NSTextAlignment.center
+        editNameCurrentNameLabel.numberOfLines = 1
+        editNameCurrentNameLabel.isUserInteractionEnabled = false
+        displayUserEditNameView.addSubview(editNameCurrentNameLabel)
+        
+        editNameCurrentName = UILabel(frame: CGRect(x: 10, y: 30, width: displayUserEditNameView.frame.width - 20, height: 20))
         editNameCurrentName.font = UIFont(name: Constants.Strings.fontRegular, size: 16)
-        editNameCurrentName.text = "Current User Name:"
+        editNameCurrentName.text = ""
         editNameCurrentName.textColor = Constants.Colors.colorTextGray
         editNameCurrentName.textAlignment = NSTextAlignment.center
+        editNameCurrentName.numberOfLines = 1
         editNameCurrentName.isUserInteractionEnabled = false
         displayUserEditNameView.addSubview(editNameCurrentName)
         
-        editNameNewNameLabel = UILabel(frame: CGRect(x: 10, y: 75, width: displayUserEditNameView.frame.width - 20, height: 20))
-        editNameNewNameLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 16)
+        editNameNewNameLabel = UILabel(frame: CGRect(x: 10, y: 75, width: displayUserEditNameView.frame.width - 20, height: 15))
+        editNameNewNameLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 12)
         editNameNewNameLabel.text = "New Name:"
         editNameNewNameLabel.textColor = Constants.Colors.colorTextGray
         editNameNewNameLabel.textAlignment = NSTextAlignment.center
         displayUserEditNameView.addSubview(editNameNewNameLabel)
         
-        editNameNewName = UITextView(frame: CGRect(x: 10, y: 100, width: displayUserEditNameView.frame.width - 20, height: 26))
-        editNameNewName.layer.borderWidth = 2
-        editNameNewName.layer.borderColor = Constants.Colors.standardBackgroundGray.cgColor
+        editNameNewName = UITextField(frame: CGRect(x: 10, y: 100, width: displayUserEditNameView.frame.width - 20, height: 26))
+        editNameNewName.backgroundColor = Constants.Colors.standardBackgroundGrayUltraLight
+//        editNameNewName.layer.borderWidth = 2
+//        editNameNewName.layer.borderColor = Constants.Colors.standardBackgroundGray.cgColor
         editNameNewName.font = UIFont(name: Constants.Strings.fontRegular, size: 16)
         editNameNewName.textColor = Constants.Colors.colorTextGray
         editNameNewName.text = ""
         editNameNewName.textAlignment = NSTextAlignment.center
         editNameNewName.isUserInteractionEnabled = true
-        editNameNewName.returnKeyType = UIReturnKeyType.done
+        editNameNewName.returnKeyType = UIReturnKeyType.default
         editNameNewName.delegate = self
         displayUserEditNameView.addSubview(editNameNewName)
         
@@ -403,14 +415,43 @@ class AccountViewController: UIViewController, UITextViewDelegate, UITableViewDa
         
         DispatchQueue.main.async(execute:
             {
-                self.editNameCurrentName.text = "Current User Name:\n " + self.currentUserName
+                self.editNameCurrentName.text = self.currentUserName
         })
         
         // Add an animation to bring the edit user name screen into view
         UIView.animate(withDuration: 0.2, animations:
             {
-                self.displayUserEditNameView.frame = CGRect(x: 50, y: 50, width: self.viewContainer.frame.width - 100, height: 200)
+                self.displayUserEditNameView.frame = CGRect(x: 50, y: 10, width: self.viewContainer.frame.width - 100, height: 200)
             }, completion: nil)
+    }
+    
+    
+    // MARK: UITextField Delegate Methods
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool
+    {
+        var returnBool: Bool = true
+        
+        print("AVC - SHOULD CHANGE CHARACTERS: \(textField.text), AND ADD: \(string)")
+        // Control the characters being entered
+        if let currentText = textField.text
+        {
+            // Ensure that the username is not longer than 18 characters
+            let currentString: NSString = currentText as NSString
+            let newString: NSString = currentString.replacingCharacters(in: range, with: string) as NSString
+            returnBool = newString.length <= Constants.Settings.userNameMaxLength
+            
+            // If the string is empty, a backspace was passed, else if the character passed is forbidden, do not allow it
+            if string == ""
+            {
+                returnBool = true
+            }
+            else if string.rangeOfCharacter(from: Constants.Settings.userNameDisallowedCharacterSet) == nil
+            {
+                returnBool = false
+            }
+        }
+        
+        return returnBool
     }
     
     // Log out the user from the app and facebook

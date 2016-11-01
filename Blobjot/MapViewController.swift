@@ -115,6 +115,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     
     // View controller variables for temporary user settings and view controls
     
+    // Indicates that map data was requested from AWS, and is still downloading
+    var waitingForMapData: Bool = false
+    
     // The Google Maps Coordinate Object for the current center of the map
     var mapCenter: CLLocationCoordinate2D!
     
@@ -936,13 +939,17 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // Reset the MapView and re-download the Blob data
     func refreshMap(_ gesture: UITapGestureRecognizer? = nil)
     {
+        print("MVC - AI - START REFRESH MAP")
+        
         // Show the Map refreshing indicator
         self.buttonRefreshMapActivityIndicator.startAnimating()
-        self.viewContainer.addSubview(backgroundActivityView)
+        self.mapView.addSubview(backgroundActivityView)
         
         // PREPARE DATA
         // Request the Map Data for the logged in user
         AWSPrepRequest(requestToCall: AWSGetMapData(), delegate: self as AWSRequestDelegate).prepRequest()
+        
+        self.waitingForMapData = true
     }
     
     // If the Preview Box User Image is tapped, load the people view with the selected person at the top of the list
@@ -1108,7 +1115,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         // If the user's initial location has not been centered on the map, do so
         if !userLocationInitialSet
         {
-            let newCamera = GMSCameraPosition.camera(withLatitude: userLocationCurrent.coordinate.latitude, longitude: userLocationCurrent.coordinate.longitude, zoom: 18)
+            let newCamera = GMSCameraPosition.camera(withLatitude: userLocationCurrent.coordinate.latitude, longitude: userLocationCurrent.coordinate.longitude, zoom: Constants.Settings.mapViewAddBlobMinZoom)
             mapView.camera = newCamera
             userLocationInitialSet = true
         }
@@ -1277,21 +1284,18 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 }
             }
             
-            loopLocationBlobsCheck: for lBlob in Constants.Data.locationBlobs
-            {
-                print("MVC - LOCATIONS BLOB TEXT: \(lBlob.blobText), TYPE: \(lBlob.blobType), DATE: \(lBlob.blobDatetime)")
-            }
+//            loopLocationBlobsCheck: for lBlob in Constants.Data.locationBlobs
+//            {
+//                print("MVC - LOCATIONS BLOB TEXT: \(lBlob.blobText), TYPE: \(lBlob.blobType), DATE: \(lBlob.blobDatetime)")
+//            }
             
             // Reload the Collection View
             self.refreshCollectionView()
             
-            print("MVC - STOP THE MAP REFRESH BUTTON INDICATOR")
-            // Stop the refresh Map button indicator if it is running
-            self.buttonRefreshMapActivityIndicator.stopAnimating()
-            
             // Only hide the background activity indicator if the global sending property is false
-            if !Constants.Data.stillSendingBlob
+            if !Constants.Data.stillSendingBlob && !self.waitingForMapData
             {
+                print("MVC - AI - STOP REFRESH MAP")
                 self.hideBackgroundActivityView()
             }
         }
@@ -1453,17 +1457,17 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             })
         }
         
-        // If the user is adding a Blob, do not allow them to zoom lower than 18 (higher view)
+        // If the user is adding a Blob, do not allow them to zoom lower than mapViewAddBlobMinZoom (higher view)
         if addingBlob
         {
-            if mapView.camera.zoom < 18
+            if mapView.camera.zoom < Constants.Settings.mapViewAddBlobMinZoom
             {
-                mapView.animate(toZoom: 18)
+                mapView.animate(toZoom: Constants.Settings.mapViewAddBlobMinZoom)
                 
                 // Display the message box to explain the zoom minimum
                 self.showSelectorMessageBox()
             }
-            else if mapView.camera.zoom == 18
+            else if mapView.camera.zoom == Constants.Settings.mapViewAddBlobMinZoom
             {
                 // Display the message box to explain the zoom minimum
                 self.showSelectorMessageBox()
@@ -1479,8 +1483,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // Called after the map is moved
     func mapView(_ mapView: GMSMapView, didChange position: GMSCameraPosition)
     {
-        print("MVC - MAP VIEW ZOOM: \(position.zoom)")
-        
         // Adjust the Map Camera back to apply the correct camera angle
         adjustMapViewCamera()
         
@@ -1531,8 +1533,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // Show the selectorMessageBox
     func showSelectorMessageBox()
     {
-        print("MVC - SHOW SELECTOR MESSAGE BOX")
-        
         // Add an animation to show and then hide the selectorMessageBox //0 - (self.selectorBoxHeight + 10)
         UIView.animate(withDuration: 0.5, animations:
             {
@@ -1542,8 +1542,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // Hide the selectorMessageBox
     func hideSelectorMessageBox()
     {
-        print("MVC - HIDE SELECTOR MESSAGE BOX")
-        
         // Add an animation to show and then hide the selectorMessageBox //0 - (self.selectorBoxHeight + 10)
         UIView.animate(withDuration: 0.5, animations:
             {
@@ -1577,12 +1575,12 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             let desiredAngle = Double(0)
             mapView.animate(toViewingAngle: desiredAngle)
             
-            // If the zoom is less than 18, zoom in to 18 (enough to allow a Blob to encompass a city block)
-            if mapView.camera.zoom < 18
+            // If the zoom is less than mapViewAddBlobMinZoom, zoom in to mapViewAddBlobMinZoom (enough to allow a Blob to encompass a city block)
+            if mapView.camera.zoom < Constants.Settings.mapViewAddBlobMinZoom
             {
-                mapView.animate(toZoom: 18)
+                mapView.animate(toZoom: Constants.Settings.mapViewAddBlobMinZoom)
             }
-            else if mapView.camera.zoom == 18
+            else if mapView.camera.zoom == Constants.Settings.mapViewAddBlobMinZoom
             {
                 // Display the message box to explain the zoom minimum
                 self.showSelectorMessageBox()
@@ -1613,8 +1611,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // This is the listener for the slider used in the Add Blob process
     func sliderValueDidChange(_ sender: UISlider!)
     {
-        print("Slider value changed: \(sender.value)")
-        
         // Use the slider value as the new radius for the Add Blob circle
         let circleNewSize: CGFloat = CGFloat(sender.value) * 2
         
@@ -1895,6 +1891,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     
     func hideBackgroundActivityView()
     {
+        print("MVC - AI - HIDE BGD AI")
+        // Stop the refresh Map button indicator if it is running
+//        self.buttonRefreshMapActivityIndicator.stopAnimating()
         self.backgroundActivityView.removeFromSuperview()
     }
     
@@ -1905,8 +1904,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             addBlobVC = BlobAddViewController()
             addBlobVC.blobAddViewDelegate = self
             // Pass the Blob coordinates and the current map zoom to the new View Controller
-//            addBlobVC.blobCoords = mapView.camera.target
+            addBlobVC.blobCoords = mapView.camera.target
             addBlobVC.mapZoom = mapView.camera.zoom
+//            addBlobVC.mapZoom = UtilityFunctions().mapZoomForBlobSize(Float(self.blobRadius))
             
             // Create a Nav Bar Back Button and Title
             let backButtonItem = UIBarButtonItem(title: "CANCEL",
@@ -2325,6 +2325,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                         print("MVC-AGMD - GOT MAP DATA")
                         // Attempt to call the local function to add the Map Blobs to the Map
                         self.addMapBlobsToMap()
+                        
+                        // Reset the waiting for map data indicator
+                        self.waitingForMapData = false
                     }
                     else
                     {
@@ -2363,14 +2366,21 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                                 // Check to make sure the thumbnail has already been downloaded
                                 if let thumbnailImage = tObject.blobThumbnail
                                 {
-                                    // Setthe Preview Thumbnail image
-                                    self.previewThumbnailView.image = thumbnailImage
-                                    
-                                    // Stop animating the activity indicator
-                                    self.previewThumbnailActivityIndicator.stopAnimating()
-                                    
-                                    // Assign the thumbnail image to the previewBlob
-                                    self.previewBlob?.blobThumbnail = thumbnailImage
+                                    // Ensure that the same Blob is being previewed
+                                    if let previewBlob = self.previewBlob
+                                    {
+                                        if previewBlob.blobID == awsGetThumbnailImage.blob.blobID
+                                        {
+                                            // Setthe Preview Thumbnail image
+                                            self.previewThumbnailView.image = thumbnailImage
+                                            
+                                            // Stop animating the activity indicator
+                                            self.previewThumbnailActivityIndicator.stopAnimating()
+                                            
+                                            // Assign the thumbnail image to the previewBlob
+                                            self.previewBlob?.blobThumbnail = thumbnailImage
+                                        }
+                                    }
                                     
                                     break loopThumbnail
                                 }

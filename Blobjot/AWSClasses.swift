@@ -1095,20 +1095,20 @@ class AWSEditUserImage : AWSRequestObject
                                 {
                                     if error._domain == AWSS3TransferManagerErrorDomain as String
                                         && AWSS3TransferManagerErrorType(rawValue: error._code) == AWSS3TransferManagerErrorType.paused {
-                                        print("Upload paused.")
+                                        print("UUI: Upload paused.")
                                     }
                                     else
                                     {
-                                        print("Upload failed: [\(error)]")
+                                        print("UUI: Upload failed: [\(error)]")
                                         // Delete the user image from temporary memory
                                         do
                                         {
-                                            print("Deleting image: \(imageID)")
+                                            print("UUI: Deleting image: \(imageID)")
                                             try FileManager.default.removeItem(atPath: filePath)
                                         }
                                         catch let error as NSError
                                         {
-                                            print("Ooops! Something went wrong: \(error)")
+                                            print("UUI: Ooops! Something went wrong: \(error)")
                                         }
                                     }
                                     
@@ -1121,16 +1121,16 @@ class AWSEditUserImage : AWSRequestObject
                                 }
                                 else if let exception = task.exception
                                 {
-                                    print("Upload failed: [\(exception)]")
+                                    print("UUI: Upload failed: [\(exception)]")
                                     // Delete the user image from temporary memory
                                     do
                                     {
-                                        print("Deleting image: \(imageID)")
+                                        print("UUI: Deleting image: \(imageID)")
                                         try FileManager.default.removeItem(atPath: filePath)
                                     }
                                     catch let error as NSError
                                     {
-                                        print("Ooops! Something went wrong: \(error)")
+                                        print("UUI: Ooops! Something went wrong: \(error)")
                                     }
                                     
                                     // Notify the parent view that the AWS call completed with an error
@@ -1142,16 +1142,16 @@ class AWSEditUserImage : AWSRequestObject
                                 }
                                 else
                                 {
-                                    print("Upload succeeded")
+                                    print("UUI: Upload succeeded")
                                     // Delete the user image from temporary memory
                                     do
                                     {
-                                        print("Deleting image: \(imageID)")
+                                        print("UUI: Deleting image: \(imageID)")
                                         try FileManager.default.removeItem(atPath: filePath)
                                     }
                                     catch let error as NSError
                                     {
-                                        print("Ooops! Something went wrong: \(error)")
+                                        print("UUI: Ooops! Something went wrong: \(error)")
                                     }
                                     
                                     // Notify the parent view that the AWS call completed successfully

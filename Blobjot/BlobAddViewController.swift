@@ -145,7 +145,6 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
         // Add the Map View under the page controller, and extend it to the bottom of the view
         // The Map View should be on the bottom of the view so that if the keyboard is opened, it covers the Map View
         // and not the Page Viewer (which is what needs to use the keyboard)
-        self.mapZoom = UtilityFunctions().mapZoomForBlobSize(Float(self.blobRadius))
         let camera = GMSCameraPosition.camera(withLatitude: blobCoords.latitude, longitude: blobCoords.longitude, zoom: self.mapZoom)
         mapView = GMSMapView.map(withFrame: CGRect(x: 0, y: viewContainer.frame.height - viewContainer.frame.width, width: viewContainer.frame.width, height: viewContainer.frame.width), camera: camera)
         mapView.delegate = self
@@ -642,6 +641,8 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
                     {
 //                        // Remove the current View Controller from the stack
 //                        self.popVC()
+                        print("BAVC - UPLOAD COMPLETED - HIDE MAP AI")
+                        Constants.Data.stillSendingBlob = false
                         
                         // Call the parent VC
                         if let parentVC = self.blobAddViewDelegate
