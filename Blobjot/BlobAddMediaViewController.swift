@@ -32,6 +32,7 @@ class BlobAddMediaViewController: UIViewController {
     var viewContainer: UIView!
     var mediaPickerImage: UIImageView!
     var videoPlayIndicator: UILabel!
+    var updateLabel: UILabel!
     
     var mediaPickerTapGesture: UITapGestureRecognizer!
     
@@ -59,6 +60,15 @@ class BlobAddMediaViewController: UIViewController {
         videoPlayIndicator.textAlignment = .center
         videoPlayIndicator.font = UIFont(name: Constants.Strings.fontRegular, size: 18)
         mediaPickerImage.addSubview(videoPlayIndicator)
+        
+        updateLabel = UILabel(frame: CGRect(x: viewContainer.frame.width - 70, y: (viewContainer.frame.height / 2) - 25, width: 65, height: 50))
+        updateLabel.backgroundColor = Constants.Colors.standardBackgroundGrayUltraLight
+        updateLabel.text = "Camera and\nVideo options\ncoming soon!"
+        updateLabel.textColor = Constants.Colors.colorTextGray
+        updateLabel.textAlignment = .center
+        updateLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 10)
+        updateLabel.numberOfLines = 3
+        viewContainer.addSubview(updateLabel)
         
         mediaPickerTapGesture = UITapGestureRecognizer(target: self, action: #selector(BlobAddMediaViewController.showMediaPicker(_:)))
         mediaPickerTapGesture.numberOfTapsRequired = 1  // add single tap

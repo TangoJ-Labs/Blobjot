@@ -132,6 +132,7 @@ class AWSPrepRequest
                     if (task.error != nil)
                     {
                         print("AC - AWS COGNITO GET IDENTITY ID - ERROR: " + task.error!.localizedDescription)
+                        AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: task.error.debugDescription), delegate: self.awsRequestDelegate!).prepRequest()
                         
                         // Record the server request attempt
                         Constants.Data.serverTries += 1
@@ -230,6 +231,7 @@ class AWSLoginUser : AWSRequestObject
                 if error != nil
                 {
                     print("FBSDK - Error Getting Info \(error)")
+                    AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: error.debugDescription), delegate: self.awsRequestDelegate!).prepRequest()
                     
                     // Record the server request attempt
                     Constants.Data.serverTries += 1
@@ -285,21 +287,6 @@ class AWSLoginUser : AWSRequestObject
         let json: NSDictionary = ["facebook_id" : self.facebookToken!.userID, "facebook_name": facebookName, "facebook_thumbnail_url": facebookThumbnailUrl]
         print("AC - USER LOGIN DATA: \(json)")
         
-//        // If the secondary request object is not nil, process the carried (second) request; no need to
-//        // pass the login response to the parent view controller since it did not explicitly call the login request
-//        if let secondaryAwsRequestObject = self.secondaryAwsRequestObject
-//        {
-//            AWSPrepRequest(requestToCall: secondaryAwsRequestObject, delegate: self.awsRequestDelegate!).prepRequest()
-//        }
-//        else
-//        {
-//            // Notify the parent view that the AWS Login call completed successfully
-//            if let parentVC = self.awsRequestDelegate
-//            {
-//                parentVC.processAwsReturn(self, success: true)
-//            }
-//        }
-        
         let lambdaInvoker = AWSLambdaInvoker.default()
         lambdaInvoker.invokeFunction("Blobjot-LoginUser", jsonObject: json, completionHandler:
             { (responseData, err) -> Void in
@@ -307,6 +294,7 @@ class AWSLoginUser : AWSRequestObject
                 if (err != nil)
                 {
                     print("AC - FBSDK LOGIN - ERROR: \(err)")
+                    AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: err.debugDescription), delegate: self.awsRequestDelegate!).prepRequest()
                     
                     // Record the login attempt
                     Constants.Data.serverTries += 1
@@ -375,6 +363,7 @@ class AWSGetMapData : AWSRequestObject
                 {
                     print("AC-GMD - GET MAP DATA ERROR: \(err)")
                     print("AC-GMD - GET MAP DATA ERROR CODE: \(err!._code)")
+                    AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: err.debugDescription), delegate: self.awsRequestDelegate!).prepRequest()
                     
                     // Process the error codes and alert the user if needed
                     if err!._code == 1 && Constants.Data.currentUser != ""
@@ -475,6 +464,8 @@ class AWSGetBlobMinimumData : AWSRequestObject
                 if (err != nil)
                 {
                     print("GET BLOB MINIMUM DATA ERROR: \(err)")
+                    AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: err.debugDescription), delegate: self.awsRequestDelegate!).prepRequest()
+                    
                     // Record the server request attempt
                     Constants.Data.serverTries += 1
                     
@@ -562,6 +553,8 @@ class AWSGetBlobExtraData : AWSRequestObject
                 if (err != nil)
                 {
                     print("AWSM-GBD: GET BLOB DATA ERROR: \(err)")
+                    AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: err.debugDescription), delegate: self.awsRequestDelegate!).prepRequest()
+                    
                     // Record the server request attempt
                     Constants.Data.serverTries += 1
                     
@@ -704,6 +697,7 @@ class AWSGetThumbnailImage : AWSRequestObject
                         else
                         {
                             print("GTFT: DOWNLOAD FAILED: [\(error)]")
+                            AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: error.localizedDescription), delegate: self.awsRequestDelegate!).prepRequest()
                             
                             // Record the server request attempt
                             Constants.Data.serverTries += 1
@@ -718,6 +712,8 @@ class AWSGetThumbnailImage : AWSRequestObject
                     else if let exception = task.exception
                     {
                         print("GTFT: DOWNLOAD FAILED: [\(exception)]")
+                        AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: exception.description), delegate: self.awsRequestDelegate!).prepRequest()
+                        
                         // Record the server request attempt
                         Constants.Data.serverTries += 1
                         
@@ -812,6 +808,8 @@ class AWSGetSingleUserData : AWSRequestObject
                 if (err != nil)
                 {
                     print("MVC: GET USER CONNECTIONS DATA ERROR: \(err)")
+                    AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: err.debugDescription), delegate: self.awsRequestDelegate!).prepRequest()
+                    
                     // Record the server request attempt
                     Constants.Data.serverTries += 1
                     
@@ -829,9 +827,6 @@ class AWSGetSingleUserData : AWSRequestObject
                         let userID = userJson["user_id"] as! String
                         let userName = userJson["user_name"] as! String
                         let userImageKey = userJson["user_image_key"] as! String
-                        print("MVC: USER ID: \(userID)")
-                        print("MVC: USER NAME: \(userName)")
-                        print("MVC: USER IMAGE KEY: \(userImageKey)")
                         
                         // Create a User Object and add it to the global User array
                         self.user.userName = userName
@@ -912,10 +907,13 @@ class AWSGetUserImage : AWSRequestObject
                         && AWSS3TransferManagerErrorType(rawValue: error._code) == AWSS3TransferManagerErrorType.paused
                     {
                         print("MVC: DOWNLOAD PAUSED")
+                        AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: "USER IMAGE DOWNLOAD PAUSED"), delegate: self.awsRequestDelegate!).prepRequest()
                     }
                     else
                     {
                         print("MVC: DOWNLOAD FAILED: [\(error)]")
+                        AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: error.localizedDescription), delegate: self.awsRequestDelegate!).prepRequest()
+                        
                         // Record the server request attempt
                         Constants.Data.serverTries += 1
                     }
@@ -929,6 +927,8 @@ class AWSGetUserImage : AWSRequestObject
                 else if let exception = task.exception
                 {
                     print("MVC: DOWNLOAD FAILED: [\(exception)]")
+                    AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: exception.description), delegate: self.awsRequestDelegate!).prepRequest()
+                    
                     // Record the server request attempt
                     Constants.Data.serverTries += 1
                     
@@ -1011,6 +1011,8 @@ class AWSEditUserName : AWSRequestObject
                 if (err != nil)
                 {
                     print("Error: \(err)")
+                    AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: err.debugDescription), delegate: self.awsRequestDelegate!).prepRequest()
+                    
                     // Record the server request attempt
                     Constants.Data.serverTries += 1
                     
@@ -1065,7 +1067,6 @@ class AWSEditUserImage : AWSRequestObject
                     let imageID = responseData! as! String
                     print("UUI: imageID: \(imageID)")
                     
-//                    let resizedImage = UtilityFunctions().resizeImage(self.newUserImage, targetSize: CGSize(width: 200, height: 200))
                     let resizedImage = self.newUserImage.resizeWithSquareSize(Constants.Settings.imageSizeUser)
                     
                     if let data = UIImagePNGRepresentation(resizedImage)
@@ -1096,10 +1097,13 @@ class AWSEditUserImage : AWSRequestObject
                                     if error._domain == AWSS3TransferManagerErrorDomain as String
                                         && AWSS3TransferManagerErrorType(rawValue: error._code) == AWSS3TransferManagerErrorType.paused {
                                         print("UUI: Upload paused.")
+                                        AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: "NEW USER IMAGE UPLOAD PAUSED"), delegate: self.awsRequestDelegate!).prepRequest()
                                     }
                                     else
                                     {
                                         print("UUI: Upload failed: [\(error)]")
+                                        AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: error.localizedDescription), delegate: self.awsRequestDelegate!).prepRequest()
+                                        
                                         // Delete the user image from temporary memory
                                         do
                                         {
@@ -1109,6 +1113,7 @@ class AWSEditUserImage : AWSRequestObject
                                         catch let error as NSError
                                         {
                                             print("UUI: Ooops! Something went wrong: \(error)")
+                                            AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: error.description), delegate: self.awsRequestDelegate!).prepRequest()
                                         }
                                     }
                                     
@@ -1122,6 +1127,8 @@ class AWSEditUserImage : AWSRequestObject
                                 else if let exception = task.exception
                                 {
                                     print("UUI: Upload failed: [\(exception)]")
+                                    AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: exception.description), delegate: self.awsRequestDelegate!).prepRequest()
+                                    
                                     // Delete the user image from temporary memory
                                     do
                                     {
@@ -1131,6 +1138,7 @@ class AWSEditUserImage : AWSRequestObject
                                     catch let error as NSError
                                     {
                                         print("UUI: Ooops! Something went wrong: \(error)")
+                                        AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: error.description), delegate: self.awsRequestDelegate!).prepRequest()
                                     }
                                     
                                     // Notify the parent view that the AWS call completed with an error
@@ -1152,6 +1160,7 @@ class AWSEditUserImage : AWSRequestObject
                                     catch let error as NSError
                                     {
                                         print("UUI: Ooops! Something went wrong: \(error)")
+                                        AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: error.description), delegate: self.awsRequestDelegate!).prepRequest()
                                     }
                                     
                                     // Notify the parent view that the AWS call completed successfully
@@ -1186,6 +1195,8 @@ class AWSGetUserConnections : AWSRequestObject
                 if (err != nil)
                 {
                     print("AC - GET USER CONNECTIONS DATA ERROR: \(err)")
+                    AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: err.debugDescription), delegate: self.awsRequestDelegate!).prepRequest()
+                    
                     // Record the server request attempt
                     Constants.Data.serverTries += 1
                     
@@ -1245,6 +1256,8 @@ class AWSGetRandomID : AWSRequestObject
                 if (err != nil)
                 {
                     print("GET RANDOM ID ERROR: \(err)")
+                    AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: err.debugDescription), delegate: self.awsRequestDelegate!).prepRequest()
+                    
                     // Record the server request attempt
                     Constants.Data.serverTries += 1
                     
@@ -1313,10 +1326,13 @@ class AWSUploadMediaToBucket : AWSRequestObject
                         && AWSS3TransferManagerErrorType(rawValue: error._code) == AWSS3TransferManagerErrorType.paused
                     {
                         print("Upload paused.")
+                        AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: "MEDIA UPLOAD PAUSED"), delegate: self.awsRequestDelegate!).prepRequest()
                     }
                     else
                     {
                         print("Upload failed: [\(error)]")
+                        AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: error.localizedDescription), delegate: self.awsRequestDelegate!).prepRequest()
+                        
                         // Record the server request attempt
                         Constants.Data.serverTries += 1
                     }
@@ -1331,6 +1347,8 @@ class AWSUploadMediaToBucket : AWSRequestObject
                 else if let exception = task.exception
                 {
                     print("Upload failed: [\(exception)]")
+                    AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: exception.description), delegate: self.awsRequestDelegate!).prepRequest()
+                    
                     // Record the server request attempt
                     Constants.Data.serverTries += 1
                     
@@ -1362,6 +1380,7 @@ class AWSUploadMediaToBucket : AWSRequestObject
                         catch let error as NSError
                         {
                             print("ERROR DELETING FILE: \(error)")
+                            AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: error.description), delegate: self.awsRequestDelegate!).prepRequest()
                         }
                     }
                 }
@@ -1429,6 +1448,8 @@ class AWSUploadBlobData : AWSRequestObject
                 if (err != nil)
                 {
                     print("SENDING DATA TO LAMBDA ERROR: \(err)")
+                    AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: err.debugDescription), delegate: self.awsRequestDelegate!).prepRequest()
+                    
                     // Record the server request attempt
                     Constants.Data.serverTries += 1
                     
@@ -1467,12 +1488,6 @@ class AWSHideBlob : AWSRequestObject
     override func makeRequest()
     {
         print("ADDING BLOB VIEW: \(self.blobID), \(self.userID), \(Date().timeIntervalSince1970)")
-//        let json: NSDictionary = [
-//            "blob_id"       : self.blobID
-//            , "user_id"     : self.userID
-//            , "timestamp"   : String(Date().timeIntervalSince1970)
-//            , "action_type" : "hide"
-//        ]
         var json = [String: Any]()
         json["blob_id"]     = self.blobID
         json["user_id"]     = self.userID
@@ -1486,6 +1501,8 @@ class AWSHideBlob : AWSRequestObject
                 if (err != nil)
                 {
                     print("ADD BLOB VIEW ERROR: \(err)")
+                    AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: err.debugDescription), delegate: self.awsRequestDelegate!).prepRequest()
+                    
                     // Record the server request attempt
                     Constants.Data.serverTries += 1
                     
@@ -1518,12 +1535,6 @@ class AWSDeleteBlob : AWSRequestObject
     override func makeRequest()
     {
         print("ADDING BLOB DELETE: \(self.blobID), \(self.userID), \(Date().timeIntervalSince1970)")
-//        let json: NSDictionary = [
-//            "blob_id"       : self.blobID
-//            , "user_id"     : self.userID
-//            , "timestamp"   : String(Date().timeIntervalSince1970)
-//            , "action_type" : "delete"
-//        ]
         var json = [String: Any]()
         json["blob_id"]     = self.blobID
         json["user_id"]     = self.userID
@@ -1537,6 +1548,8 @@ class AWSDeleteBlob : AWSRequestObject
                 if (err != nil)
                 {
                     print("ADD BLOB DELETE ERROR: \(err)")
+                    AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: err.debugDescription), delegate: self.awsRequestDelegate!).prepRequest()
+                    
                     // Record the server request attempt
                     Constants.Data.serverTries += 1
                     
@@ -1573,6 +1586,8 @@ class AWSGetUserBlobs : AWSRequestObject
                 if (err != nil)
                 {
                     print("GET USER BLOBS DATA ERROR: \(err)")
+                    AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: err.debugDescription), delegate: self.awsRequestDelegate!).prepRequest()
+                    
                     // Record the server request attempt
                     Constants.Data.serverTries += 1
                     
@@ -1645,6 +1660,8 @@ class AWSAddBlobView : AWSRequestObject
                 if (err != nil)
                 {
                     print("ADD BLOB VIEW ERROR: \(err)")
+                    AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: err.debugDescription), delegate: self.awsRequestDelegate!).prepRequest()
+                    
                     // Record the server request attempt
                     Constants.Data.serverTries += 1
                     
@@ -1705,10 +1722,13 @@ class AWSGetBlobImage : AWSRequestObject
                                 && AWSS3TransferManagerErrorType(rawValue: error._code) == AWSS3TransferManagerErrorType.paused
                             {
                                 print("3: Download paused.")
+                                AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: "IMAGE DOWNLOAD PAUSED"), delegate: self.awsRequestDelegate!).prepRequest()
                             }
                             else
                             {
                                 print("3: Download failed: [\(error)]")
+                                AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: error.localizedDescription), delegate: self.awsRequestDelegate!).prepRequest()
+                                
                                 // Record the server request attempt
                                 Constants.Data.serverTries += 1
                             }
@@ -1722,6 +1742,8 @@ class AWSGetBlobImage : AWSRequestObject
                         else if let exception = task.exception
                         {
                             print("3: Download failed: [\(exception)]")
+                            AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: exception.description), delegate: self.awsRequestDelegate!).prepRequest()
+                            
                             // Record the server request attempt
                             Constants.Data.serverTries += 1
                             
@@ -1753,6 +1775,7 @@ class AWSGetBlobImage : AWSRequestObject
                             else
                             {
                                 print("FRAME FILE NOT AVAILABLE")
+                                AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: "IMAGE NOT DOWNLOADED"), delegate: self.awsRequestDelegate!).prepRequest()
                                 
                                 // Notify the parent view that the AWS call completed with an error
                                 if let parentVC = self.awsRequestDelegate
@@ -1801,6 +1824,8 @@ class AWSAddUserConnectionAction : AWSRequestObject
                 if (err != nil)
                 {
                     print("ADD CONNECTION ACTION ERROR: \(err)")
+                    AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: err.debugDescription), delegate: self.awsRequestDelegate!).prepRequest()
+                    
                     // Record the server request attempt
                     Constants.Data.serverTries += 1
                     
@@ -1818,63 +1843,6 @@ class AWSAddUserConnectionAction : AWSRequestObject
         })
     }
 }
-
-//class AWSRegisterForPushNotifications : AWSRequestObject
-//{
-//    var deviceToken: String!
-//    
-//    required init(deviceToken: String)
-//    {
-//        self.deviceToken = deviceToken
-//    }
-//    
-//    override func makeRequest()
-//    {
-//        print("AC-RPN - COGNITO ID: \(Constants.credentialsProvider.identityId)")
-//        
-//        // Create some JSON to send the logged in userID
-//        var json = [String: Any]()
-//        json["device_token"] = self.deviceToken
-//        json["user_id"] = Constants.Data.currentUser
-//        
-//        let lambdaInvoker = AWSLambdaInvoker.default()
-//        lambdaInvoker.invokeFunction("Blobjot-RegisterForPushNotifications", jsonObject: json, completionHandler:
-//            { (response, err) -> Void in
-//                
-//                if (err != nil)
-//                {
-//                    print("AC-RPN - GET MAP DATA ERROR: \(err)")
-//                    print("AC-RPN - GET MAP DATA ERROR CODE: \(err!._code)")
-//                    
-//                    // Process the error codes and alert the user if needed
-//                    if err!._code == 1 && Constants.Data.currentUser != ""
-//                    {
-//                        // Notify the parent view that the AWS call completed with an error
-//                        if let parentVC = self.awsRequestDelegate
-//                        {
-//                            parentVC.processAwsReturn(self, success: false)
-//                        }
-//                    }
-//                }
-//                else if (response != nil)
-//                {
-//                    // Convert the response to an array of AnyObjects
-//                    if let newMapBlobs = response as? [AnyObject]
-//                    {
-//                        print("AC-RPN: jsonData: \(newMapBlobs)")
-//                        print("AC-RPN - BLOB COUNT: \(newMapBlobs.count)")
-//                        
-//                        // Notify the parent view that the AWS call completed successfully
-//                        if let parentVC = self.awsRequestDelegate
-//                        {
-//                            parentVC.processAwsReturn(self, success: true)
-//                        }
-//                    }
-//                }
-//        })
-//        print("AC-RPN - AFTER REQUEST")
-//    }
-//}
 
 class AWSRegisterForPushNotifications : AWSRequestObject
 {
@@ -1911,6 +1879,8 @@ class AWSRegisterForPushNotifications : AWSRequestObject
                     if let error = task.error
                     {
                         print("AC-RPN - ERROR: \(error)")
+                        AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: error.localizedDescription), delegate: self.awsRequestDelegate!).prepRequest()
+                        
                         // Record the server request attempt
                         Constants.Data.serverTries += 1
                         
@@ -1923,6 +1893,8 @@ class AWSRegisterForPushNotifications : AWSRequestObject
                     else if let exception = task.exception
                     {
                         print("AC-RPN: exception: \(exception)")
+                        AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: exception.description), delegate: self.awsRequestDelegate!).prepRequest()
+                        
                         // Record the server request attempt
                         Constants.Data.serverTries += 1
                         
@@ -1983,6 +1955,8 @@ class AWSAddCommentForBlob : AWSRequestObject
                 if (err != nil)
                 {
                     print("AC-ACFB - ADD COMMENT ERROR: \(err)")
+                    AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: err.debugDescription), delegate: self.awsRequestDelegate!).prepRequest()
+                    
                     // Record the server request attempt
                     Constants.Data.serverTries += 1
                     
@@ -2026,6 +2000,8 @@ class AWSGetBlobComments : AWSRequestObject
                 if (err != nil)
                 {
                     print("AC-GBC - GET BLOB COMMENTS ERROR: \(err)")
+                    AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: err.debugDescription), delegate: self.awsRequestDelegate!).prepRequest()
+                    
                     // Record the server request attempt
                     Constants.Data.serverTries += 1
                     
@@ -2066,6 +2042,44 @@ class AWSGetBlobComments : AWSRequestObject
                             parentVC.processAwsReturn(self, success: true)
                         }
                     }
+                }
+        })
+    }
+}
+
+class AWSLogError : AWSRequestObject
+{
+    var function: String!
+    var errorString: String!
+    
+    required init(function: String, errorString: String)
+    {
+        self.function = function
+        self.errorString = errorString
+    }
+    
+    // The initial request for User's Blob data - called when the View Controller is instantiated
+    override func makeRequest()
+    {
+        print("AC-LOGE - LOGGING ERROR: \(self.function)")
+        
+        // Create some JSON to send the logged in userID
+        var json = [String: Any]()
+        json["timestamp"]    = String(Date().timeIntervalSince1970)
+        json["function"]     = self.function
+        json["errorString"]  = self.errorString
+        
+        let lambdaInvoker = AWSLambdaInvoker.default()
+        lambdaInvoker.invokeFunction("Blobjot-ADMIN-DeviceLogs-Errors", jsonObject: json, completionHandler:
+            { (response, err) -> Void in
+                
+                if (err != nil)
+                {
+                    print("AC-LOGE - UNABLE TO SUBMIT LOG: \(err)")
+                }
+                else if (response != nil)
+                {
+                    print("AC-LOGE - SUBMITTED LOG: \(response)")
                 }
         })
     }

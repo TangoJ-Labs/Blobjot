@@ -133,6 +133,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         {
             let nserror = error as NSError
             NSLog("Unresolved error \(nserror), \(nserror.userInfo)")
+            AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: error.localizedDescription), delegate: self).prepRequest()
         }
     }
     
@@ -196,6 +197,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error)
     {
         print("AD-RN - ERROR: \(error)")
+        AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: error.localizedDescription), delegate: self).prepRequest()
     }
     
     func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any])
@@ -242,6 +244,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error)
     {
         print("Error while updating location " + error.localizedDescription)
+        AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: error.localizedDescription), delegate: self).prepRequest()
     }
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation])
@@ -294,6 +297,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         catch
         {
             fatalError("Failed to fetch frames: \(error)")
+            AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: error.localizedDescription), delegate: self).prepRequest()
         }
         
         // Determine the range of accuracy around those coordinates

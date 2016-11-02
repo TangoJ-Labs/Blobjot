@@ -492,11 +492,13 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
                     else
                     {
                         NSLog("Unable to find style.json")
+                        AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: "Unable to find style.json"), delegate: self).prepRequest()
                     }
                 }
                 catch
                 {
                     NSLog("The style definition could not be loaded: \(error)")
+                    AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: error.localizedDescription), delegate: self).prepRequest()
                 }
                 cell.addSubview(mapView)
                 

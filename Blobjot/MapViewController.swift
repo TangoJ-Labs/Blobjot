@@ -110,7 +110,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     let previewTimeLabelWidth: CGFloat = 100
     
     // Set the selectionMessageBox dimensions
-    let selectorBoxWidth: CGFloat = 200
+    let selectorBoxWidth: CGFloat = 160
     let selectorBoxHeight: CGFloat = 40
     
     // View controller variables for temporary user settings and view controls
@@ -228,11 +228,13 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             else
             {
                 NSLog("Unable to find style.json")
+                AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: "Unable to find style.json"), delegate: self).prepRequest()
             }
         }
         catch
         {
             NSLog("The style definition could not be loaded: \(error)")
+            AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: error.localizedDescription), delegate: self).prepRequest()
         }
         viewContainer.addSubview(mapView)
         
@@ -665,6 +667,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     {
         // TODO: handle the error.
         print("Error: ", error)
+        AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: error.localizedDescription), delegate: self).prepRequest()
     }
     
     // Turn the network activity indicator on and off again.
@@ -1758,10 +1761,12 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         if ((error) != nil)
         {
             print("MVC - FBSDK ERROR: \(error)")
+            AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: error.localizedDescription), delegate: self).prepRequest()
         }
         else if result.isCancelled
         {
             print("MVC - FBSDK IS CANCELLED: \(result.description)")
+            AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: result.description), delegate: self).prepRequest()
         }
         else
         {
