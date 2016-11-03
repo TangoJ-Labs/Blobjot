@@ -126,6 +126,18 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
         selectAllTapGesture.numberOfTapsRequired = 1  // add single tap
         selectAllContainer.addGestureRecognizer(selectAllTapGesture)
         
+        // Go ahead and use the global array, if it has content
+        for userObject in Constants.Data.userObjects {
+            
+            // Add the User Object to the local list if they are a connection
+            if userObject.userStatus == Constants.UserStatusTypes.connected {
+                self.peopleList.append(userObject)
+            }
+        }
+        // Sort the list alphabetically and copy the peopleList to the peopleList to use in the table
+        self.peopleList.sort(by: {$0.userName <  $1.userName})
+        self.peopleListUse = self.peopleList
+        
         AWSPrepRequest(requestToCall: AWSGetUserConnections(), delegate: self as AWSRequestDelegate).prepRequest()
     }
 

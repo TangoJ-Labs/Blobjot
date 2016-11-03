@@ -48,8 +48,7 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
     var searchExitTapGesture: UITapGestureRecognizer!
     
     var peopleListTopPerson: String?
-    var peopleList = [User]()
-    var selectedPeopleList = [User]()
+    var peopleList = Constants.Data.userObjects
     
     var printCheck = ""
     
@@ -421,8 +420,7 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
     {
         print("PVC - MANUALLY REFRESH TABLE")
         // Clear the current peopleList and any selections
-        self.peopleList = [User]()
-        self.selectedPeopleList = [User]()
+        self.peopleList = Constants.Data.userObjects
         
         // Clear the Table View
         self.refreshTableViewAndEndSpinner(false)
@@ -511,33 +509,36 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
                 let rowUser = self.peopleList[(indexPath as NSIndexPath).row]
                 print("PVC - IN ROW ACTIONS FOR ROW: \((indexPath as NSIndexPath).row) AND USER: \(rowUser.userName)")
                 
-                // Set default userStatus settings
-                var userStatus = Constants.UserStatusTypes.waiting
-                
-                if rowUser.userStatus == Constants.UserStatusTypes.pending
+                // Ensure that the tapped user is not the current user
+                if rowUser.userID != Constants.Data.currentUser
                 {
-                    // PENDING USERS
-                    print("PVC - TAPPED PENDING USER STAR")
-                    // Change the userStatus to 3 (Other) and set the actionType to delete
-                    userStatus = Constants.UserStatusTypes.connected
+                    // Set default userStatus settings
+                    var userStatus = Constants.UserStatusTypes.waiting
                     
-                }
-                else if rowUser.userStatus == Constants.UserStatusTypes.waiting || rowUser.userStatus == Constants.UserStatusTypes.connected || rowUser.userStatus == Constants.UserStatusTypes.blocked
-                {
-                    // WAITING, CONNECTED, OR BLOCKED USERS
-                    print("PVC - TAPPED WAITING, CONNECTED, OR BLOCKED USER STAR")
-                    // Change the userStatus to 3 (Other) and set the actionType to delete
-                    userStatus = Constants.UserStatusTypes.notConnected
+                    if rowUser.userStatus == Constants.UserStatusTypes.pending
+                    {
+                        // PENDING USERS
+                        print("PVC - TAPPED PENDING USER STAR")
+                        // Change the userStatus to 3 (Other) and set the actionType to delete
+                        userStatus = Constants.UserStatusTypes.connected
+                        
+                    }
+                    else if rowUser.userStatus == Constants.UserStatusTypes.waiting || rowUser.userStatus == Constants.UserStatusTypes.connected || rowUser.userStatus == Constants.UserStatusTypes.blocked
+                    {
+                        // WAITING, CONNECTED, OR BLOCKED USERS
+                        print("PVC - TAPPED WAITING, CONNECTED, OR BLOCKED USER STAR")
+                        // Change the userStatus to 3 (Other) and set the actionType to delete
+                        userStatus = Constants.UserStatusTypes.notConnected
+                        
+                    }
+                    else
+                    {
+                        // NOT CONNECTED USERS - will keep default "Waiting" status type set above
+                        print("PVC - TAPPED NOT CONNECTED USER STAR")
+                    }
                     
+                    updateUserStatusType(self.peopleList[(indexPath as NSIndexPath).row].userID, peopleListIndex: (indexPath as NSIndexPath).row, userStatus: userStatus)
                 }
-                else
-                {
-                    // NOT CONNECTED USERS - will keep default "Waiting" status type set above
-                    print("PVC - TAPPED NOT CONNECTED USER STAR")
-                }
-                
-                updateUserStatusType(self.peopleList[(indexPath as NSIndexPath).row].userID, peopleListIndex: (indexPath as NSIndexPath).row, userStatus: userStatus)
-                
             }
             
             print("PVC - PEOPLE TABLE VIEW: RELOADING TABLE VIEW")
@@ -600,9 +601,17 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
             }
         })
         
-        // Reload the Table View
-        print("PVC - GET DATA - RELOAD TABLE VIEW")
-        self.peopleTableView.performSelector(onMainThread: #selector(UITableView.reloadData), with: nil, waitUntilDone: true)
+        // Pull the selected user back to the top of the list
+        if self.peopleListTopPerson != nil
+        {
+            self.bringTopPersonToFrontOfPeopleList()
+        }
+        else
+        {
+            // Reload the Table View
+            print("PVC - GET DATA - RELOAD TABLE VIEW")
+            self.peopleTableView.performSelector(onMainThread: #selector(UITableView.reloadData), with: nil, waitUntilDone: true)
+        }
         
         if endSpinner
         {
@@ -615,6 +624,8 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
     
     func bringTopPersonToFrontOfPeopleList()
     {
+        print("PVC - TP - BRING USER TO FRONT: \(self.peopleListTopPerson)")
+        
         // Ensure that the person was assigned
         if self.peopleListTopPerson != nil
         {
@@ -628,6 +639,7 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
             {
                 if person.userID == self.peopleListTopPerson
                 {
+                    print("PVC - TP - BRINGING USER TO FRONT: \(person.userName)")
                     peopleList.remove(at: index)
                     peopleList.insert(person, at: 0)
                 }
@@ -637,11 +649,11 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
         print("PVC - NEW PEOPLE LIST ORDER")
         for (index, person) in peopleList.enumerated()
         {
-            print("PERSON: \(person) AT INDEX: \(index)")
+            print("PERSON: \(person.userName) AT INDEX: \(index)")
         }
         
-        // Reload the Table View
-        self.refreshTableViewAndEndSpinner(true)
+        // Reload the Table View - DO NOT REPLACE THIS WITH LOCAL FUNCTION (function resorts users)
+        self.peopleTableView.performSelector(onMainThread: #selector(UITableView.reloadData), with: nil, waitUntilDone: true)
     }
     
     
@@ -709,7 +721,16 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
                                         {
                                             userObject.userName = userName
                                             userObject.userImageKey = userImageKey
-                                            userObject.userStatus = Constants.UserStatusTypes(rawValue: arrayIndex)
+                                            
+                                            // If the user is the currently logged in user, ensure that the user is connected to themselves
+                                            if userObject.userID == Constants.Data.currentUser
+                                            {
+                                                userObject.userStatus = Constants.UserStatusTypes.connected
+                                            }
+                                            else
+                                            {
+                                                userObject.userStatus = Constants.UserStatusTypes(rawValue: arrayIndex)
+                                            }
                                             
                                             userObjectExists = true
                                             break loopUserObjectCheck
@@ -721,16 +742,6 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
                                         Constants.Data.userObjects.append(addUser)
                                     }
                                     
-//                                    //Alert the parent view controller (if needed) that the logged in user should be in the global array
-//                                    if addUser.userID == Constants.Data.currentUser {
-//                                        
-//                                        // Call the parent VC to alert that the logged in user has been added to the global user list
-//                                        if let parentVC = self.peopleViewDelegate {
-//                                            parentVC.userObjectListUpdatedWithCurrentUser()
-//                                            print("FOUND LOGGED IN USER \(addUser.userName)")
-//                                        }
-//                                    }
-                                    
                                     // Check to ensure the user does not already exist in the local User array
                                     var personExists = false
                                     loopPersonCheck: for personObject in self.peopleList
@@ -739,7 +750,16 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
                                         {
                                             personObject.userName = userName
                                             personObject.userImageKey = userImageKey
-                                            personObject.userStatus = Constants.UserStatusTypes(rawValue: arrayIndex)
+                                            
+                                            // If the user is the currently logged in user, ensure that the user is connected to themselves
+                                            if personObject.userID == Constants.Data.currentUser
+                                            {
+                                                personObject.userStatus = Constants.UserStatusTypes.connected
+                                            }
+                                            else
+                                            {
+                                                personObject.userStatus = Constants.UserStatusTypes(rawValue: arrayIndex)
+                                            }
                                             
                                             personExists = true
                                             break loopPersonCheck
@@ -749,15 +769,6 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
                                     {
                                         self.peopleList.append(addUser)
                                         print("PVC - \(self.printCheck): ADDED USER \(addUser.userName) TO PEOPLE LIST")
-                                        
-//                                        // Add the User Object to the local list only if it is not the currently logged in user
-//                                        // If it is the logged in user, assign the userName to the displayUserTextField
-//                                        if addUser.userID != Constants.Data.currentUser {
-//                                            
-//                                            self.peopleList.append(addUser)
-//                                            print("PVC - \(self.printCheck): ADDED USER \(addUser.userName) TO PEOPLE LIST")
-//                                            
-//                                        }
                                     }
                                     print("PVC - \(self.printCheck): PEOPLE LIST COUNT: \(self.peopleList.count)")
                                 }

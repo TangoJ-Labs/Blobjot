@@ -2047,6 +2047,57 @@ class AWSGetBlobComments : AWSRequestObject
     }
 }
 
+class AWSCheckUsername : AWSRequestObject
+{
+    var userName: String!
+    var usernameCheckTimestamp: TimeInterval!
+    var response: String?
+    
+    required init(userName: String, usernameCheckTimestamp: TimeInterval)
+    {
+        self.userName = userName
+        self.usernameCheckTimestamp = usernameCheckTimestamp
+    }
+    
+    // The initial request for User's Blob data - called when the View Controller is instantiated
+    override func makeRequest()
+    {
+        print("AC-CU - USERNAME: \(self.userName)")
+        
+        // Create some JSON to send the logged in userID
+        var json = [String: Any]()
+        json["user_name"] = self.userName
+        
+        let lambdaInvoker = AWSLambdaInvoker.default()
+        lambdaInvoker.invokeFunction("Blobjot-CheckUsername", jsonObject: json, completionHandler:
+            { (response, err) -> Void in
+                
+                if (err != nil)
+                {
+                    print("AC-CU - UNABLE TO CHECK USERNAME: \(err)")
+                    AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: err.debugDescription), delegate: self.awsRequestDelegate!).prepRequest()
+                    
+                    // Notify the parent view that the AWS call completed with an error
+                    if let parentVC = self.awsRequestDelegate
+                    {
+                        parentVC.processAwsReturn(self, success: false)
+                    }
+                }
+                else if (response != nil)
+                {
+                    print("AC-CU - USERNAME CHECK RESPONSE: \(response)")
+                    self.response = response as? String
+                    
+                    // Notify the parent view that the AWS call completed successfully
+                    if let parentVC = self.awsRequestDelegate
+                    {
+                        parentVC.processAwsReturn(self, success: true)
+                    }
+                }
+        })
+    }
+}
+
 class AWSLogError : AWSRequestObject
 {
     var function: String!

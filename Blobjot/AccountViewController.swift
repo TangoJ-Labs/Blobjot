@@ -54,6 +54,7 @@ class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewD
     var editNameCurrentName: UILabel!
     var editNameNewNameLabel: UILabel!
     var editNameNewName: UITextField!
+    var editNameNewNameCheckLabel: UILabel!
     var editNameSaveButton: UIView!
     var editNameSaveButtonLabel: UILabel!
     var viewScreen: UIView!
@@ -70,6 +71,9 @@ class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewD
     var blobUserActivityIndicator: UIActivityIndicatorView!
     var blobsTableViewBackgroundLabel: UILabel!
     var blobsUserTableView: UITableView!
+    
+    var usernameAvailable: Bool = false
+    var usernameCheckTimestamp: TimeInterval = Date().timeIntervalSince1970
     
 //    var userBlobs = [Blob]()
     
@@ -317,6 +321,13 @@ class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewD
         editNameNewName.delegate = self
         displayUserEditNameView.addSubview(editNameNewName)
         
+        editNameNewNameCheckLabel = UILabel(frame: CGRect(x: 10, y: 130, width: displayUserEditNameView.frame.width - 20, height: 12))
+        editNameNewNameCheckLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 10)
+        editNameNewNameCheckLabel.text = ""
+        editNameNewNameCheckLabel.textColor = Constants.Colors.colorTextGray
+        editNameNewNameCheckLabel.textAlignment = NSTextAlignment.center
+        displayUserEditNameView.addSubview(editNameNewNameCheckLabel)
+        
         let editNameSaveButtonHeight: CGFloat = 50
         editNameSaveButton = UIView(frame: CGRect(x: 0, y: displayUserEditNameView.frame.height - editNameSaveButtonHeight, width: displayUserEditNameView.frame.width, height: editNameSaveButtonHeight))
         let cornerShape = CAShapeLayer()
@@ -445,9 +456,23 @@ class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewD
             {
                 returnBool = true
             }
-            else if string.rangeOfCharacter(from: Constants.Settings.userNameDisallowedCharacterSet) == nil
+            else if string.rangeOfCharacter(from: Constants.Settings.userNameAllowedCharacterSet) != nil
             {
                 returnBool = false
+            }
+            
+            // Ensure the text was changed
+            if returnBool
+            {
+                // Since the name changed, change the usernameAvailable property to false and hide the available label
+                self.usernameAvailable = false
+                self.editNameNewNameCheckLabel.text = ""
+                self.editNameNewNameCheckLabel.textColor = Constants.Colors.colorTextGray
+                
+                // Save the latest username check timestamp to only use the latest change response
+                self.usernameCheckTimestamp = Date().timeIntervalSince1970
+                
+                AWSPrepRequest(requestToCall: AWSCheckUsername(userName: newString as String, usernameCheckTimestamp: self.usernameCheckTimestamp), delegate: self as AWSRequestDelegate).prepRequest()
             }
         }
         
@@ -521,29 +546,33 @@ class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewD
     // Save the newly typed user name
     func editNameSaveButtonTapGesture(_ sender: UITapGestureRecognizer)
     {
-        // Save the userName to AWS and show in the display user label
-        if let newUserName = self.editNameNewName.text
+        // Ensure that the username is available
+        if self.usernameAvailable
         {
-            // Ensure that the new username is not blank
-            if newUserName != ""
+            // Save the userName to AWS and show in the display user label
+            if let newUserName = self.editNameNewName.text
             {
-                // Close the keyboard and hide the screen and edit name box
-                self.view.endEditing(true)
-                self.hideScreenAndEditNameBox()
-                
-                // Show the new name in the display user label
-                self.displayUserLabel.text = newUserName
-                
-                // Upload the new username to AWS
-                AWSPrepRequest(requestToCall: AWSEditUserName(newUserName: newUserName), delegate: self as AWSRequestDelegate).prepRequest()
-                
-                // Edit the logged in user's userName in the global list
-                userLoop: for userObject in Constants.Data.userObjects
+                // Ensure that the new username is not blank
+                if newUserName != ""
                 {
-                    if userObject.userID == Constants.Data.currentUser
+                    // Close the keyboard and hide the screen and edit name box
+                    self.view.endEditing(true)
+                    self.hideScreenAndEditNameBox()
+                    
+                    // Show the new name in the display user label
+                    self.displayUserLabel.text = newUserName
+                    
+                    // Upload the new username to AWS
+                    AWSPrepRequest(requestToCall: AWSEditUserName(newUserName: newUserName), delegate: self as AWSRequestDelegate).prepRequest()
+                    
+                    // Edit the logged in user's userName in the global list
+                    userLoop: for userObject in Constants.Data.userObjects
                     {
-                        userObject.userName = newUserName
-                        break userLoop
+                        if userObject.userID == Constants.Data.currentUser
+                        {
+                            userObject.userName = newUserName
+                            break userLoop
+                        }
                     }
                 }
             }
@@ -941,6 +970,34 @@ class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewD
                         let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                         self.present(alertController, animated: true, completion: nil)
                     }
+                case let awsCheckUsername as AWSCheckUsername:
+                    if success
+                    {
+                        // Ensure that the username check timestamp is the same as the current timestamp, to ensure that the latest request is being returned
+                        if awsCheckUsername.usernameCheckTimestamp == self.usernameCheckTimestamp
+                        {
+                            // Display the response
+                            if let response = awsCheckUsername.response
+                            {
+                                // Assign the response property indicator and change the response text and color
+                                if response == "available"
+                                {
+                                    self.usernameAvailable = true
+                                    
+                                    self.editNameNewNameCheckLabel.text = "available"
+                                    self.editNameNewNameCheckLabel.textColor = Constants.Colors.colorUsernameAvailable
+                                }
+                                else
+                                {
+                                    self.usernameAvailable = false
+                                    
+                                    self.editNameNewNameCheckLabel.text = "not available"
+                                    self.editNameNewNameCheckLabel.textColor = Constants.Colors.colorUsernameNotAvailable
+                                }
+                            }
+                        }
+                    }
+                    // Don't show the error message for AWSCheckUsername - it is really annoying
                 case _ as AWSEditUserName:
                     if !success
                     {

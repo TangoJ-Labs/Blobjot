@@ -15,7 +15,7 @@ import GooglePlacePicker
 import UIKit
 
 
-class MapViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, GMSMapViewDelegate, BlobAddViewControllerDelegate, GMSAutocompleteResultsViewControllerDelegate, FBSDKLoginButtonDelegate, AWSRequestDelegate, PeopleViewControllerDelegate, AccountViewControllerDelegate
+class MapViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, GMSMapViewDelegate, BlobAddViewControllerDelegate, GMSAutocompleteResultsViewControllerDelegate, FBSDKLoginButtonDelegate, AWSRequestDelegate, PeopleViewControllerDelegate, AccountViewControllerDelegate, HoleViewDelegate
 {
     // Save device settings to adjust view if needed
     var screenSize: CGRect!
@@ -375,6 +375,8 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         lowAccuracyView.layer.shadowOffset = Constants.Dim.mapViewShadowOffset
         lowAccuracyView.layer.shadowOpacity = Constants.Dim.mapViewShadowOpacity
         lowAccuracyView.layer.shadowRadius = Constants.Dim.mapViewShadowRadius
+        viewContainer.addSubview(lowAccuracyView)
+        lowAccuracyView.isHidden = true
         
         lowAccuracyLabel = UILabel(frame: CGRect(x: 0, y: 0, width: lavSize, height: lavSize))
         lowAccuracyLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 34)
@@ -614,6 +616,10 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         Constants.Data.locationBlobs = [Constants.Data.defaultBlob]
         
         self.refreshMap()
+
+        let holeView = HoleView(holeViewPosition: 1, frame: viewContainer.bounds, circleOffsetX: viewContainer.bounds.width - 25, circleOffsetY: 25, circleRadius: 30, textOffsetX: (viewContainer.bounds.width / 2) - 100, textOffsetY: 50, textWidth: 200, textFontSize: 24, text: "You can search for locations, center the map on your location, or refresh your Blobs.")
+        holeView.holeViewDelegate = self
+        viewContainer.addSubview(holeView)
     }
     
     override func viewWillAppear(_ animated: Bool)
@@ -637,6 +643,22 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     override var prefersStatusBarHidden : Bool
     {
         return self.statusBarHidden
+    }
+    
+    
+    // MARK: HOLE VIEW DELEGATE
+    func holeViewRemoved(removingViewAtPosition: Int)
+    {
+        switch removingViewAtPosition
+        {
+        case 1:
+            let holeView = HoleView(holeViewPosition: 2, frame: viewContainer.bounds, circleOffsetX: viewContainer.bounds.width - 25, circleOffsetY: viewContainer.bounds.height - 25, circleRadius: 30, textOffsetX: (viewContainer.bounds.width / 2) - 100, textOffsetY: 50, textWidth: 200, textFontSize: 24, text: "You can add a new Blob, see area Blobs in a list, search for friends, and access your account.")
+            holeView.holeViewDelegate = self
+            viewContainer.addSubview(holeView)
+            
+        default:
+            print("MVC - FINISHED ALL HOLE VIEWS")
+        }
     }
     
     
@@ -958,36 +980,40 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // If the Preview Box User Image is tapped, load the people view with the selected person at the top of the list
     func previewUserTap(_ gesture: UITapGestureRecognizer)
     {
-        // Create a back button and title for the Nav Bar
-        let backButtonItem = UIBarButtonItem(title: "MAP \u{2193}",
-                                             style: UIBarButtonItemStyle.plain,
-                                             target: self,
-                                             action: #selector(MapViewController.popViewController(_:)))
-        backButtonItem.tintColor = Constants.Colors.colorTextNavBar
-        
-        let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
-        let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
-        ncTitleText.text = "All People"
-        ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 12)
-        ncTitleText.textColor = Constants.Colors.colorTextNavBar
-        ncTitleText.textAlignment = .center
-        ncTitle.addSubview(ncTitleText)
-        
-        // Instantiate the PeopleViewController and pass the Preview Blob UserID to the VC
-        let peopleVC = PeopleViewController()
         if let previewBlob = self.previewBlob
         {
-            peopleVC.peopleListTopPerson = previewBlob.blobUserID
+            // Ensure that the previewBlob is not the default Blob (Blobjot Blob)
+            if previewBlob.blobExtraRequested
+            {
+                // Create a back button and title for the Nav Bar
+                let backButtonItem = UIBarButtonItem(title: "MAP \u{2193}",
+                                                     style: UIBarButtonItemStyle.plain,
+                                                     target: self,
+                                                     action: #selector(MapViewController.popViewController(_:)))
+                backButtonItem.tintColor = Constants.Colors.colorTextNavBar
+                
+                let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
+                let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
+                ncTitleText.text = "All People"
+                ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 12)
+                ncTitleText.textColor = Constants.Colors.colorTextNavBar
+                ncTitleText.textAlignment = .center
+                ncTitle.addSubview(ncTitleText)
+                
+                // Instantiate the PeopleViewController and pass the Preview Blob UserID to the VC
+                let peopleVC = PeopleViewController()
+                peopleVC.peopleListTopPerson = previewBlob.blobUserID
+                
+                // Instantiate the Nav Controller and attach the Nav Bar items to the view controller settings
+                let navController = UINavigationController(rootViewController: peopleVC)
+                peopleVC.navigationItem.setLeftBarButton(backButtonItem, animated: true)
+                peopleVC.navigationItem.titleView = ncTitle
+                
+                // Change the Nav Bar color and present the view
+                navController.navigationBar.barTintColor = Constants.Colors.colorStatusBar
+                self.present(navController, animated: true, completion: nil)
+            }
         }
-        
-        // Instantiate the Nav Controller and attach the Nav Bar items to the view controller settings
-        let navController = UINavigationController(rootViewController: peopleVC)
-        peopleVC.navigationItem.setLeftBarButton(backButtonItem, animated: true)
-        peopleVC.navigationItem.titleView = ncTitle
-        
-        // Change the Nav Bar color and present the view
-        navController.navigationBar.barTintColor = Constants.Colors.colorStatusBar
-        self.present(navController, animated: true, completion: nil)
     }
     
     // If the Preview Box Content (Text or Thumbnail) is tapped, load the blob view with the selected blob data
@@ -1134,7 +1160,8 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             locationInaccurate = false
             
             // Hide the low accuracy view
-            self.lowAccuracyView.removeFromSuperview()
+//            self.lowAccuracyView.removeFromSuperview()
+            self.lowAccuracyView.isHidden = true
             
             // Clear the array of current location Blobs and add the default Blob as the first element
             Constants.Data.locationBlobs = [Constants.Data.defaultBlob]
@@ -1305,7 +1332,8 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         else
         {
             // Show the low accuracy view
-            self.viewContainer.addSubview(lowAccuracyView)
+//            self.viewContainer.addSubview(lowAccuracyView)
+            self.lowAccuracyView.isHidden = false
             
             // Record that the user's location is inaccurate
             self.locationInaccurate = true

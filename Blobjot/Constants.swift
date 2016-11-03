@@ -132,6 +132,9 @@ struct Constants
         static let colorTextGrayMedium = UIColor(red: 140/255, green: 140/255, blue: 140/255, alpha: 1.0) //#8C8C8C
         static let colorTextGrayLight = UIColor(red: 154/255, green: 154/255, blue: 154/255, alpha: 1.0) //#999999
         
+        static let colorUsernameAvailable = UIColor(red: 138/255, green: 112/255, blue: 178/255, alpha: 1.0) //#8A70B2
+        static let colorUsernameNotAvailable = UIColor(red: 242/255, green: 105/255, blue: 99/255, alpha: 1.0) //#F26963
+        
         static let blobInvisible = UIColor.clear
         static let blobGray = UIColor(red: 0/255, green: 0/255, blue: 0/255, alpha: 0.3) //#000000
         static let blobGrayOpaque = UIColor(red: 154/255, green: 154/255, blue: 154/255, alpha: 1.0) //#999999
@@ -317,7 +320,8 @@ struct Constants
         static let maxServerTries: Int = 5
         
         static let userNameMaxLength: Int = 18
-        static let userNameDisallowedCharacterSet = NSCharacterSet(charactersIn: "!@#$%^&*()-+={}|[]\\:;\'\"<>?,/~`").inverted
+//        static let userNameDisallowedCharacterSet = NSCharacterSet(charactersIn: "!@#$%^&*()-+={}|[]\\:;\'\"<>?,/~`").inverted
+        static let userNameAllowedCharacterSet = NSCharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_1234567890").inverted
         static let mapViewAddBlobMinZoom: Float = 18
         
         static let imageSizeUser: CGFloat = 200

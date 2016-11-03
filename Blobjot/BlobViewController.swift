@@ -195,7 +195,7 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
         blobCommentAddSendLabel.isUserInteractionEnabled = true
         blobCommentAddContainer.addSubview(blobCommentAddSendLabel)
         
-        blobCommentAddTextView = UITextView(frame: CGRect(x: 5, y: 50, width: blobCommentAddContainer.bounds.width - 10, height: blobCommentAddContainer.bounds.height - 35))
+        blobCommentAddTextView = UITextView(frame: CGRect(x: 5, y: 50, width: blobCommentAddContainer.bounds.width - 10, height: blobCommentAddContainer.bounds.height - 40))
         blobCommentAddTextView.backgroundColor = UIColor.white
         blobCommentAddTextView.delegate = self
         blobCommentAddTextView.font = UIFont(name: Constants.Strings.fontRegular, size: 16)
@@ -290,12 +290,12 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
             var contentSize: CGFloat = Constants.Dim.blobViewCommentCellHeight - 4
             if let text = self.blobCommentArray[indexPath.row - 1].comment
             {
-                contentSize = textHeightForAttributedText(text: NSAttributedString(string: text), width: commentBoxWidth)
+                contentSize = 10 + textHeightForAttributedText(text: NSAttributedString(string: text), width: commentBoxWidth)
             }
             print("BVC - CONTENT SIZE FOR CELL: \(indexPath.row): \(contentSize)")
             if contentSize > Constants.Dim.blobViewCommentCellHeight - 4
             {
-                cellHeight = contentSize + 4
+                cellHeight = contentSize + 14
             }
             
             return cellHeight
@@ -544,23 +544,24 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
             
             print("BTC - CELL HEIGHT: \(cell.frame.height)")
             
-            let addCommentView: UITextView!
+            var addCommentView: UITextView!
+            var commentDatetimeLabel: UILabel!
             
             // If the comment's user is the logged in user, format the comment differently
             if self.blobCommentArray[indexPath.row - 1].userID == Constants.Data.currentUser
             {
-                addCommentView = UITextView(frame: CGRect(x: cell.frame.width - 5 - self.commentBoxWidth, y: 2, width: self.commentBoxWidth, height: Constants.Dim.blobViewCommentCellHeight - 4))
+                addCommentView = UITextView(frame: CGRect(x: cell.frame.width - 5 - self.commentBoxWidth, y: 12, width: self.commentBoxWidth, height: Constants.Dim.blobViewCommentCellHeight - 4))
                 addCommentView.backgroundColor = Constants.Colors.standardBackground
                 cell.addSubview(addCommentView)
             }
             else
             {
-                addCommentView = UITextView(frame: CGRect(x: self.addCommentViewOffsetX, y: 2, width: self.commentBoxWidth, height: Constants.Dim.blobViewCommentCellHeight - 4))
+                addCommentView = UITextView(frame: CGRect(x: self.addCommentViewOffsetX, y: 12, width: self.commentBoxWidth, height: Constants.Dim.blobViewCommentCellHeight - 4))
                 addCommentView.backgroundColor = Constants.Colors.colorPurpleLight
                 cell.addSubview(addCommentView)
                 
                 // Add an imageview for the user image for the comment (ONLY IF THE USER IS NOT THE CURRENT USER)
-                let userImageView = UIImageView(frame: CGRect(x: 5, y: 5, width: Constants.Dim.blobViewCommentUserImageSize, height: Constants.Dim.blobViewCommentUserImageSize))
+                let userImageView = UIImageView(frame: CGRect(x: 5, y: 15, width: Constants.Dim.blobViewCommentUserImageSize, height: Constants.Dim.blobViewCommentUserImageSize))
                 userImageView.layer.cornerRadius = Constants.Dim.blobViewCommentUserImageSize / 2
                 userImageView.contentMode = UIViewContentMode.scaleAspectFill
                 userImageView.clipsToBounds = true
@@ -589,6 +590,21 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
             addCommentView.isEditable = false
             addCommentView.isSelectable = true
             addCommentView.isUserInteractionEnabled = false
+            
+            // The Datetime Label should be in small font just below the Navigation Bar starting at the left of the screen (left aligned text)
+            commentDatetimeLabel = UILabel(frame: CGRect(x: 0, y: 0, width: cell.frame.width - 10, height: 10))
+            commentDatetimeLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 8)
+            commentDatetimeLabel.textColor = Constants.Colors.colorTextGray
+            commentDatetimeLabel.textAlignment = .right
+            cell.addSubview(commentDatetimeLabel)
+            
+            if let commentDatetime = self.blobCommentArray[indexPath.row - 1].commentDatetime
+            {
+                let formatter = DateFormatter()
+                formatter.dateFormat = "MMM d"
+                let stringDate: String = formatter.string(from: commentDatetime as Date)
+                commentDatetimeLabel.text = stringDate
+            }
             
             // Check the content size, if it is more than the normal height, resize the textview and cell to match the height
             var contentSize: CGFloat = Constants.Dim.blobViewCommentCellHeight - 4
