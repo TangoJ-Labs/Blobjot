@@ -197,6 +197,9 @@ class BlobAddTypeViewController: UIViewController {
         if let parentVC = self.blobAddTypeDelegate {
             parentVC.changeMapCircleType(Constants.BlobTypes.temporary)
         }
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
     func tapCheckLabel2(_ gesture: UIGestureRecognizer) {
@@ -207,6 +210,9 @@ class BlobAddTypeViewController: UIViewController {
         if let parentVC = self.blobAddTypeDelegate {
             parentVC.changeMapCircleType(Constants.BlobTypes.permanent)
         }
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
     func tapCheckLabel3(_ gesture: UIGestureRecognizer) {
@@ -217,6 +223,9 @@ class BlobAddTypeViewController: UIViewController {
         if let parentVC = self.blobAddTypeDelegate {
             parentVC.changeMapCircleType(Constants.BlobTypes.invisible)
         }
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
 
 }

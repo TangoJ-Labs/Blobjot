@@ -153,6 +153,12 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
         searchExitTapGesture = UITapGestureRecognizer(target: self, action: #selector(MapViewController.tapSearchExit(_:)))
         searchExitTapGesture.numberOfTapsRequired = 1  // add single tap
         searchExitView.addGestureRecognizer(searchExitTapGesture)
+        
+        UtilityFunctions().resetUserListWithCoreData()
+        
+        // Populate the local User list with the global User list
+        // The global User list was populated from Core Data upon initiation, and was updated with new data upon download
+        peopleList = Constants.Data.userObjects
     }
     
     override func viewWillLayoutSubviews()
@@ -165,7 +171,8 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
 //        self.peopleTableView.setContentOffset(CGPoint(x: 0, y: self.peopleTableView.contentOffset.y - self.refreshControl.frame.size.height), animated: true)
     }
     
-    override func viewWillAppear(_ animated: Bool) {
+    override func viewWillAppear(_ animated: Bool)
+    {
         print("PVC - VIEW WILL APPEAR")
         
 //        self.refreshControl.beginRefreshing()
@@ -485,6 +492,9 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
     func tapSearchExit(_ gesture: UITapGestureRecognizer)
     {
         searchBar.resignFirstResponder()
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
     func tapPeopleTableView(_ gesture: UITapGestureRecognizer)
@@ -545,6 +555,9 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
             // Reload the Table View
             self.refreshTableViewAndEndSpinner(false)
         }
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
     
@@ -585,6 +598,9 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
         
         // Add a user connection action in AWS
         AWSPrepRequest(requestToCall: AWSAddUserConnectionAction(userID: Constants.Data.currentUser, connectionUserID: counterpartUserID, actionType: actionType), delegate: self as AWSRequestDelegate).prepRequest()
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
     func refreshTableViewAndEndSpinner(_ endSpinner: Bool)
@@ -678,107 +694,21 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
                         let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                         self.present(alertController, animated: true, completion: nil)
                     }
-                case let awsGetUserConnections as AWSGetUserConnections:
+                case _ as AWSGetUserConnections:
                     if success
                     {
-                        // Loop through the arrays and add each user - the arrays should be in the proper order by user type
-                        for (arrayIndex, userArray) in awsGetUserConnections.userConnectionArrays.enumerated()
-                        {
-                            print("PVC - GUC - \(self.printCheck): array: \(arrayIndex): jsonData: \(userArray)")
-                            print("PVC - \(self.printCheck): USER COUNT: \(userArray.count)")
-                            
-                            // Stop the table loading spinner before adding data so that it does not show up in front of the user list
-                            //                        self.accountTableActivityIndicator.stopAnimating()
-                            
-                            // Loop through each AnyObject (User) in the array
-                            for user in userArray {
-                                print("PVC - \(self.printCheck): USER: \(user)")
-                                
-                                // Convert the AnyObject to JSON with keys and AnyObject values
-                                // Then convert the AnyObject values to Strings or Numbers depending on their key
-                                if let checkUser = user as? [String: AnyObject] {
-                                    let userID = checkUser["user_id"] as! String
-                                    let userName = checkUser["user_name"] as! String
-                                    let userImageKey = checkUser["user_image_key"] as! String
-                                    print("PVC - \(self.printCheck): USER ID: \(userID)")
-                                    print("PVC - \(self.printCheck): USER NAME: \(userName)")
-                                    print("PVC - \(self.printCheck): USER IMAGE KEY: \(userImageKey)")
-                                    
-                                    // Create a User Object and add it to the global User array
-                                    let addUser = User()
-                                    addUser.userID = userID
-                                    addUser.userName = userName
-                                    addUser.userImageKey = userImageKey
-                                    addUser.userStatus = Constants.UserStatusTypes(rawValue: arrayIndex)
-                                    
-                                    print("PVC - TRYING TO ADD DOWNLOADED USER: \(userName)")
-                                    
-                                    // Check to ensure the user does not already exist in the global User array
-                                    var userObjectExists = false
-                                    loopUserObjectCheck: for userObject in Constants.Data.userObjects
-                                    {
-                                        if userObject.userID == userID
-                                        {
-                                            userObject.userName = userName
-                                            userObject.userImageKey = userImageKey
-                                            
-                                            // If the user is the currently logged in user, ensure that the user is connected to themselves
-                                            if userObject.userID == Constants.Data.currentUser
-                                            {
-                                                userObject.userStatus = Constants.UserStatusTypes.connected
-                                            }
-                                            else
-                                            {
-                                                userObject.userStatus = Constants.UserStatusTypes(rawValue: arrayIndex)
-                                            }
-                                            
-                                            userObjectExists = true
-                                            break loopUserObjectCheck
-                                        }
-                                    }
-                                    if userObjectExists == false
-                                    {
-                                        print("PVC - USER: \(userName) DOES NOT EXIST - ADDING")
-                                        Constants.Data.userObjects.append(addUser)
-                                    }
-                                    
-                                    // Check to ensure the user does not already exist in the local User array
-                                    var personExists = false
-                                    loopPersonCheck: for personObject in self.peopleList
-                                    {
-                                        if personObject.userID == userID
-                                        {
-                                            personObject.userName = userName
-                                            personObject.userImageKey = userImageKey
-                                            
-                                            // If the user is the currently logged in user, ensure that the user is connected to themselves
-                                            if personObject.userID == Constants.Data.currentUser
-                                            {
-                                                personObject.userStatus = Constants.UserStatusTypes.connected
-                                            }
-                                            else
-                                            {
-                                                personObject.userStatus = Constants.UserStatusTypes(rawValue: arrayIndex)
-                                            }
-                                            
-                                            personExists = true
-                                            break loopPersonCheck
-                                        }
-                                    }
-                                    if personExists == false
-                                    {
-                                        self.peopleList.append(addUser)
-                                        print("PVC - \(self.printCheck): ADDED USER \(addUser.userName) TO PEOPLE LIST")
-                                    }
-                                    print("PVC - \(self.printCheck): PEOPLE LIST COUNT: \(self.peopleList.count)")
-                                }
-                            }
-                        }
+                        print("PVC - AWSGetUserConnections COMPLETED, USER LIST COUNT: \(Constants.Data.userObjects.count)")
+                        
+                        // Stop the table loading spinner before adding data so that it does not show up in front of the user list
+//                        self.accountTableActivityIndicator.stopAnimating()
+                        
+                        // Replace the local User list with the global one
+                        self.peopleList = Constants.Data.userObjects
+                        
                         // Find the passed person, remove them from their position in the list and place them at the top (index: 0) position
                         self.bringTopPersonToFrontOfPeopleList()
                         
-//                        // Reload the Table View
-//                        self.refreshTableViewAndEndSpinner(true)
+                        // DO NOT RELOAD THE TABLE VIEW - "bringTopPersonToFrontOfPeopleList" WILL REFRESH
                     }
                     else
                     {
@@ -807,6 +737,20 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
                             // Reload the Table View
                             self.refreshTableViewAndEndSpinner(false)
                         }
+                    }
+                    else
+                    {
+                        // Show the error message
+                        let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                        self.present(alertController, animated: true, completion: nil)
+                    }
+                case _ as FBGetUserData:
+                    if success
+                    {
+                        print("PVC - GOT FACEBOOK DATA)")
+                        
+                        // Reload the Table View
+                        self.refreshTableViewAndEndSpinner(false)
                     }
                     else
                     {

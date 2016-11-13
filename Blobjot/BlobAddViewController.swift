@@ -161,13 +161,13 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
             else
             {
                 NSLog("Unable to find style.json")
-                AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: "Unable to find style.json"), delegate: self).prepRequest()
+                CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: "Unable to find style.json")
             }
         }
         catch
         {
             NSLog("The style definition could not be loaded: \(error)")
-            AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: error.localizedDescription), delegate: self).prepRequest()
+            CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: error.localizedDescription)
         }
         viewContainer.addSubview(mapView)
         
@@ -346,6 +346,9 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
             // Show the blobImage in the Media View in the Page View
             vc3.mediaPickerImage.image = blobImage
         }
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
     // If the user cancels picking media, dismiss the Media Picker
@@ -353,6 +356,9 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
     {
         print("CANCELLED MEDIA PICKER")
         self.dismiss(animated: true, completion: nil)
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
 

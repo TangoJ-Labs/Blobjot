@@ -25,6 +25,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool
     {
+        let thisClass: String = NSStringFromClass(type(of: self))
+        print("GET CLASS NAME: \(thisClass)")
+        print("GET FUNCTION NAME: \(#function.description)")
+        
         // Register the device with Apple's Push Notification Service
         let notificationTypes: UIUserNotificationType = [UIUserNotificationType.alert, UIUserNotificationType.badge, UIUserNotificationType.sound]
         let pushNotificationSettings = UIUserNotificationSettings(types: notificationTypes, categories: nil)
@@ -60,6 +64,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         
         UIApplication.shared.applicationIconBadgeNumber = Constants.Data.badgeNumber
         
+        // Reset the global User list with Core Data
+        UtilityFunctions().resetUserListWithCoreData()
+        
         return true
     }
     
@@ -69,6 +76,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         // Use this method to pause ongoing tasks, disable timers, and throttle down OpenGL ES frame rates. Games should use this method to pause the game.
         
         print("IN APP WILL RESIGN ACTIVE")
+        
+        CoreDataFunctions().processLogs()
         
         Constants.inBackground = true
         
@@ -120,21 +129,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         
         print("AD - SAVING CONTEXT IN CORE DATA")
         
-        // Create a new DataController instance
-        let dataController = DataController()
-        let moc = dataController.managedObjectContext
-        
-        // Try to save the context
-        do
-        {
-            try moc.save()
-        }
-        catch
-        {
-            let nserror = error as NSError
-            NSLog("Unresolved error \(nserror), \(nserror.userInfo)")
-            AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: error.localizedDescription), delegate: self).prepRequest()
-        }
+//        // Create a new DataController instance
+//        let dataController = DataController()
+//        let moc = dataController.managedObjectContext
+//        
+//        // Try to save the context
+//        do
+//        {
+//            try moc.save()
+//        }
+//        catch
+//        {
+//            let nserror = error as NSError
+//            NSLog("Unresolved error \(nserror), \(nserror.userInfo)")
+//            CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: error.localizedDescription)
+//        }
     }
     
     
@@ -197,7 +206,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error)
     {
         print("AD-RN - ERROR: \(error)")
-        AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: error.localizedDescription), delegate: self).prepRequest()
+        CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: error.localizedDescription)
     }
     
     func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any])
@@ -244,7 +253,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error)
     {
         print("Error while updating location " + error.localizedDescription)
-        AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: error.localizedDescription), delegate: self).prepRequest()
+        CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: error.localizedDescription)
     }
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation])
@@ -264,41 +273,29 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         Constants.appDelegateLocationManager.delegate = self
         Constants.appDelegateLocationManager.requestAlwaysAuthorization()
         Constants.appDelegateLocationManager.activityType = .other
-        Constants.appDelegateLocationManager.pausesLocationUpdatesAutomatically = false
         Constants.appDelegateLocationManager.allowsBackgroundLocationUpdates = true
         Constants.appDelegateLocationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
         Constants.appDelegateLocationManager.distanceFilter = Constants.Settings.locationDistanceFilter
         
         if Constants.Settings.locationManagerConstant
         {
+            Constants.appDelegateLocationManager.pausesLocationUpdatesAutomatically = false
             Constants.appDelegateLocationManager.startUpdatingLocation()
             Constants.appDelegateLocationManager.disallowDeferredLocationUpdates()
         }
         else
         {
+            Constants.appDelegateLocationManager.pausesLocationUpdatesAutomatically = true
             Constants.appDelegateLocationManager.startMonitoringSignificantLocationChanges()
-            Constants.appDelegateLocationManager.allowDeferredLocationUpdates(untilTraveled: Constants.Settings.locationAccuracyDeferredDistance, timeout: Constants.Settings.locationAccuracyDeferredInterval)
+//            Constants.appDelegateLocationManager.allowDeferredLocationUpdates(untilTraveled: Constants.Settings.locationAccuracyDeferredDistance, timeout: Constants.Settings.locationAccuracyDeferredInterval)
         }
     }
     
     // Process the new location data passed by the locationManager to create new notifications if needed
     func processNewLocationDataForNotifications(_ userLocation: CLLocation)
     {
-        // Retrieve the Blob notification data from Core Data
-        let moc = DataController().managedObjectContext
-        let blobFetch = NSFetchRequest<NSFetchRequestResult>(entityName: "BlobNotification")
-        
         // Create an empty blobNotifications list in case the Core Data request fails
-        var blobNotifications = [BlobNotification]()
-        do
-        {
-            blobNotifications = try moc.fetch(blobFetch) as! [BlobNotification]
-        }
-        catch
-        {
-            fatalError("Failed to fetch frames: \(error)")
-            AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: error.localizedDescription), delegate: self).prepRequest()
-        }
+        let blobNotifications = CoreDataFunctions().blobNotificationRetrieve()
         
         // Determine the range of accuracy around those coordinates
         let userRangeRadius = userLocation.horizontalAccuracy
@@ -318,7 +315,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
                 // the user location range circle closest to the Blob
                 let blobLocation = CLLocation(latitude: blob.blobLat, longitude: blob.blobLong)
                 let userDistanceFromBlobCenter = userLocation.distance(from: blobLocation)
-                let minUserDistanceFromBlobCenter = userDistanceFromBlobCenter - userRangeRadius
+                let minUserDistanceFromBlobCenter: Double! = userDistanceFromBlobCenter - userRangeRadius
                 
                 // If the minimum distance from the Blob's center to the user is equal to or less than the Blob radius,
                 // request the extra Blob data (Blob Text and/or Blob Media)

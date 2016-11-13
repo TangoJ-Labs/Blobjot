@@ -58,10 +58,10 @@ class SearchViewController: UIViewController, GMSAutocompleteResultsViewControll
                            didAutocompleteWith place: GMSPlace) {
         searchController?.isActive = false
         // Do something with the selected place.
-        print("Place name: ", place.name)
-        print("Place address: ", place.formattedAddress)
-        print("Place attributions: ", place.attributions)
-        print("Place location: ", place.coordinate)
+//        print("Place name: ", place.name)
+//        print("Place address: ", place.formattedAddress)
+//        print("Place attributions: ", place.attributions)
+//        print("Place location: ", place.coordinate)
     }
     
     func resultsController(_ resultsController: GMSAutocompleteResultsViewController,

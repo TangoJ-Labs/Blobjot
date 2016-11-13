@@ -228,13 +228,13 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             else
             {
                 NSLog("Unable to find style.json")
-                AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: "Unable to find style.json"), delegate: self).prepRequest()
+                CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: "Unable to find style.json")
             }
         }
         catch
         {
             NSLog("The style definition could not be loaded: \(error)")
-            AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: error.localizedDescription), delegate: self).prepRequest()
+            CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: error.localizedDescription)
         }
         viewContainer.addSubview(mapView)
         
@@ -683,13 +683,16 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         // Use the place coordinate to center the map
         mapCenter = CLLocationCoordinate2D(latitude: place.coordinate.latitude, longitude: place.coordinate.longitude)
         mapView.camera = GMSCameraPosition(target: mapCenter, zoom: mapView.camera.zoom, bearing: CLLocationDirection(0), viewingAngle: mapView.camera.viewingAngle)
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
     func resultsController(_ resultsController: GMSAutocompleteResultsViewController, didFailAutocompleteWithError error: Error)
     {
         // TODO: handle the error.
         print("Error: ", error)
-        AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: error.localizedDescription), delegate: self).prepRequest()
+        CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: error.localizedDescription)
     }
     
     // Turn the network activity indicator on and off again.
@@ -716,12 +719,15 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     {
         // Show a notification that the user's location is too inaccurate to update data
         createAlertOkView("Bad Signal!", message: "Your location is too inaccurate to gather data.  Try moving to an area with better reception.")
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
     // When the Search Button is tapped, check to see if the search bar is visible
     // If it is not visible, and add it to the view and animate in down into view
     func tapButtonSearch(_ gesture: UITapGestureRecognizer)
-    {
+    {        
         // Check whether the button has already been pushed - if not, expand the hidden buttons
         // else, display the search bar
         if !menuButtonMapOpen
@@ -753,12 +759,18 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                     }, completion: nil)
             }
         }
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
     // If the Search Box Exit Button is tapped, call the custom function to hide the box
     func tapSearchExit(_ gesture: UITapGestureRecognizer)
     {
         self.closeSearchBox()
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
     // If the List View Button is tapped, prepare a Navigation Controller and a Tab View Controller
@@ -775,6 +787,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         }
         
         self.loadTabViewController(false)
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: "tapListView")
     }
     
     func loadTabViewController(_ goToAccountTab: Bool)
@@ -840,6 +855,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         navController.navigationBar.barTintColor = Constants.Colors.colorStatusBar
         self.present(navController, animated: true, completion: nil)
 //        self.navigationController!.pushViewController(tabBarController, animated: true)
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
     // If the Add Button is tapped, check to see if the addingBlob indicator has already been activated (true)
@@ -894,6 +912,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 adjustMapViewCamera()
             }
         }
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
     // If the Cancel Add Blob button is tapped, show the buttons that were hidden and hide the elements used in the add blob process
@@ -911,6 +932,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         
         // Adjust the Map Camera back to allow the map can be viewed at an angle
         adjustMapViewCamera()
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
     // Dismiss the latest View Controller presented from this VC
@@ -959,6 +983,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 mapView.camera = GMSCameraPosition(target: mapCenter, zoom: mapView.camera.zoom, bearing: CLLocationDirection(0), viewingAngle: mapView.camera.viewingAngle)
             }
         }
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
     // Reset the MapView and re-download the Blob data
@@ -975,6 +1002,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         AWSPrepRequest(requestToCall: AWSGetMapData(), delegate: self as AWSRequestDelegate).prepRequest()
         
         self.waitingForMapData = true
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
     // If the Preview Box User Image is tapped, load the people view with the selected person at the top of the list
@@ -1014,6 +1044,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 self.present(navController, animated: true, completion: nil)
             }
         }
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
     // If the Preview Box Content (Text or Thumbnail) is tapped, load the blob view with the selected blob data
@@ -1078,6 +1111,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 self.refreshCollectionView()
             }
         }
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
     
@@ -1175,7 +1211,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 // the user location range circle closest to the Blob
                 let blobLocation = CLLocation(latitude: blob.blobLat, longitude: blob.blobLong)
                 let userDistanceFromBlobCenter = userLocation.distance(from: blobLocation)
-                let minUserDistanceFromBlobCenter = userDistanceFromBlobCenter - userRangeRadius
+                let minUserDistanceFromBlobCenter: Double! = userDistanceFromBlobCenter - userRangeRadius
                 
                 // If the minimum distance from the Blob's center to the user is equal to or less than the Blob radius,
                 // request the extra Blob data (Blob Text and/or Blob Media)
@@ -1393,7 +1429,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             unhighlightMapCircleForBlob(mBlob)
             
             // Calculate the distance from the tap to the center of the Blob
-            let tapFromBlobCenterDistance = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude).distance(from: CLLocation(latitude: mBlob.blobLat, longitude: mBlob.blobLong))
+            let tapFromBlobCenterDistance: Double! = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude).distance(from: CLLocation(latitude: mBlob.blobLat, longitude: mBlob.blobLong))
             
             // Check to see if the tap distance from the Blob is equal to or less than the Blob radius
             // and another Blob has not been tapped (the highest Blob should only be highlighted)
@@ -1428,7 +1464,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                     lBlob.blobSelected = false
                     
                     // Calculate the distance from the tap to the center of the Blob
-                    let tapFromBlobCenterDistance = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude).distance(from: CLLocation(latitude: lBlob.blobLat, longitude: lBlob.blobLong))
+                    let tapFromBlobCenterDistance: Double! = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude).distance(from: CLLocation(latitude: lBlob.blobLat, longitude: lBlob.blobLong))
                     
                     // Check to see if the tap distance from the Blob is equal to or less than the Blob radius and
                     // if so, indicate that the Blob was tapped (this variable can be used to highlight the Blob within the Collection View)
@@ -1769,6 +1805,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         
         // Call the function to prepare and show the Preview Box using the data from the Location Blob at the selected index
         showBlobPreview(Constants.Data.locationBlobs[(indexPath as NSIndexPath).row])
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
     // Cell Touch Blob
@@ -1789,12 +1828,12 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         if ((error) != nil)
         {
             print("MVC - FBSDK ERROR: \(error)")
-            AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: error.localizedDescription), delegate: self).prepRequest()
+            CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: error.localizedDescription)
         }
         else if result.isCancelled
         {
             print("MVC - FBSDK IS CANCELLED: \(result.description)")
-            AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: result.description), delegate: self).prepRequest()
+            CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: result.debugDescription)
         }
         else
         {
@@ -1823,6 +1862,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     
     func loginButtonWillLogin(_ loginButton: FBSDKLoginButton!) -> Bool
     {
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
+        
         print("MVC - FBSDK WILL LOG IN: \(loginButton)")
         return true
     }
@@ -1833,6 +1875,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         
         Constants.credentialsProvider.clearCredentials()
         Constants.credentialsProvider.clearKeychain()
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
     
@@ -2002,6 +2047,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         
         // Adjust the Map Camera back to allow the map can be viewed at an angle
         adjustMapViewCamera()
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
     // The function to lower the previewBox
@@ -2153,8 +2201,10 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             {
                 self.previewContainer.frame = CGRect(x: 0, y: 0, width: self.viewContainer.frame.width, height: Constants.Dim.mapViewPreviewContainerHeight)
             }, completion: nil)
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
-    
     
     // Loop through the Map Blobs, check if they have already been added as Map Circles, and create a Map Circle if needed
     func addMapBlobsToMap()

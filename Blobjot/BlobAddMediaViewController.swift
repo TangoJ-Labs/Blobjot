@@ -79,6 +79,9 @@ class BlobAddMediaViewController: UIViewController {
             print("CALLING PARENT DELEGATE")
             parentVC.pickMediaPicker()
         }
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
 
     

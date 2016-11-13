@@ -10,20 +10,22 @@ import UIKit
 import CoreData
 
 
-class DataController: NSObject {
-    
+class DataController: NSObject
+{
     var managedObjectContext: NSManagedObjectContext
     var psc: NSPersistentStoreCoordinator
     
-    override  init() {
-        
+    override  init()
+    {
         // This resource is the same name as your xcdatamodeld contained in your project.
-        guard let modelURL = Bundle.main.url(forResource: "DataModel", withExtension:"momd") else {
+        guard let modelURL = Bundle.main.url(forResource: "DataModel", withExtension:"momd") else
+        {
             fatalError("Error loading model from bundle")
         }
         
         // The managed object model for the application. It is a fatal error for the application not to be able to find and load its model.
-        guard let mom = NSManagedObjectModel(contentsOf: modelURL) else {
+        guard let mom = NSManagedObjectModel(contentsOf: modelURL) else
+        {
             fatalError("Error initializing mom from: \(modelURL)")
         }
         
@@ -41,9 +43,13 @@ class DataController: NSObject {
         
         let storeURL = docURL.appendingPathComponent("DataModel.sqlite")
         
-        do {
-            try psc.addPersistentStore(ofType: NSSQLiteStoreType, configurationName: nil, at: storeURL, options: nil)
-        } catch {
+        // Try to migrate the data store, if it fails (the store model changed, reset the store)
+        do
+        {
+            try psc.addPersistentStore(ofType: NSSQLiteStoreType, configurationName: nil, at: storeURL, options: [NSMigratePersistentStoresAutomaticallyOption: true, NSInferMappingModelAutomaticallyOption: true])
+        }
+        catch
+        {
             fatalError("Error migrating store: \(error)")
         }
         

@@ -242,6 +242,17 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
             }
         }
         
+        // Save to Core Data
+        CoreDataFunctions().blobSave(blob: blob)
+        
+        // Display saved Blobs
+        let savedBlobs = CoreDataFunctions().blobRetrieve()
+        print("BVC - SAVED BLOB COUNT: \(savedBlobs.count)")
+        for sBlob in savedBlobs
+        {
+            print("BVC - SAVED BLOB: \(sBlob.blobText)")
+        }
+        
         // Add a Blob view in AWS
         AWSPrepRequest(requestToCall: AWSAddBlobView(blobID: self.blob.blobID, userID: Constants.Data.currentUser), delegate: self as AWSRequestDelegate).prepRequest()
     }
@@ -492,13 +503,13 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
                     else
                     {
                         NSLog("Unable to find style.json")
-                        AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: "Unable to find style.json"), delegate: self).prepRequest()
+                        CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: "Unable to find style.json")
                     }
                 }
                 catch
                 {
                     NSLog("The style definition could not be loaded: \(error)")
-                    AWSPrepRequest(requestToCall: AWSLogError(function: String(describing: self), errorString: error.localizedDescription), delegate: self).prepRequest()
+                    CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: error.localizedDescription)
                 }
                 cell.addSubview(mapView)
                 
@@ -627,33 +638,40 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
     {
         print("DID SELECT ROW #\((indexPath as NSIndexPath).item)!")
         
-        // Create a back button and title for the Nav Bar
-        let backButtonItem = UIBarButtonItem(title: "BLOB \u{2193}",
-                                             style: UIBarButtonItemStyle.plain,
-                                             target: self,
-                                             action: #selector(BlobViewController.popViewController(_:)))
-        backButtonItem.tintColor = Constants.Colors.colorTextNavBar
-        
-        let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
-        let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
-        ncTitleText.text = "All People"
-        ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 12)
-        ncTitleText.textColor = Constants.Colors.colorTextNavBar
-        ncTitleText.textAlignment = .center
-        ncTitle.addSubview(ncTitleText)
-        
-        // Instantiate the PeopleViewController and pass the Preview Blob UserID to the VC
-        let peopleVC = PeopleViewController()
-        peopleVC.peopleListTopPerson = self.blobCommentArray[indexPath.row - 1].userID
-        
-        // Instantiate the Nav Controller and attach the Nav Bar items to the view controller settings
-        let navController = UINavigationController(rootViewController: peopleVC)
-        peopleVC.navigationItem.setLeftBarButton(backButtonItem, animated: true)
-        peopleVC.navigationItem.titleView = ncTitle
-        
-        // Change the Nav Bar color and present the view
-        navController.navigationBar.barTintColor = Constants.Colors.colorStatusBar
-        self.present(navController, animated: true, completion: nil)
+        // Ensure that a comment was selected (not the Blob content in cell 0)
+        if indexPath.row > 0
+        {
+            // Create a back button and title for the Nav Bar
+            let backButtonItem = UIBarButtonItem(title: "BLOB \u{2193}",
+                                                 style: UIBarButtonItemStyle.plain,
+                                                 target: self,
+                                                 action: #selector(BlobViewController.popViewController(_:)))
+            backButtonItem.tintColor = Constants.Colors.colorTextNavBar
+            
+            let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
+            let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
+            ncTitleText.text = "All People"
+            ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 12)
+            ncTitleText.textColor = Constants.Colors.colorTextNavBar
+            ncTitleText.textAlignment = .center
+            ncTitle.addSubview(ncTitleText)
+            
+            // Instantiate the PeopleViewController and pass the Preview Blob UserID to the VC
+            let peopleVC = PeopleViewController()
+            peopleVC.peopleListTopPerson = self.blobCommentArray[indexPath.row - 1].userID
+            
+            // Instantiate the Nav Controller and attach the Nav Bar items to the view controller settings
+            let navController = UINavigationController(rootViewController: peopleVC)
+            peopleVC.navigationItem.setLeftBarButton(backButtonItem, animated: true)
+            peopleVC.navigationItem.titleView = ncTitle
+            
+            // Change the Nav Bar color and present the view
+            navController.navigationBar.barTintColor = Constants.Colors.colorStatusBar
+            self.present(navController, animated: true, completion: nil)
+            
+            // Save an action in Core Data
+            CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
+        }
     }
     
     func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath)
@@ -784,6 +802,9 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
         print("BVC - COMMENT CANCEL")
         // Close the comment box and clear the text view
         self.closeCommentBox()
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
     func blobCommentAddSendLabelTap(_ gesture: UITapGestureRecognizer)

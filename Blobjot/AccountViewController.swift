@@ -75,7 +75,8 @@ class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewD
     var usernameAvailable: Bool = false
     var usernameCheckTimestamp: TimeInterval = Date().timeIntervalSince1970
     
-//    var userBlobs = [Blob]()
+    // MUST USE a local array, in case the global array is updated in the background
+    var userBlobs = [Blob]()
     
     // Create a local property to hold the child VC
     var blobVC: BlobViewController!
@@ -149,9 +150,7 @@ class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewD
         displayUserImageContainer.addSubview(displayUserImage)
         
         // Try to retrieve the current user data from Core Data
-        var currentUserObjects = UtilityFunctions().cdCurrentUser()
-        let currentUserArray = currentUserObjects[0] as! [CurrentUser]
-        //        let moc = currentUserObjects[1] as! NSManagedObjectContext
+        let currentUserArray = CoreDataFunctions().currentUserRetrieve()
         
         // If the return has content, the current user is saved - use that data
         if currentUserArray.count > 0
@@ -201,9 +200,7 @@ class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewD
         // Retrieve the LocationManagerSettings in Core Data and assign that setting to the global locationManagerConstant property
         // If Core Data does not have that setting data, assign the default setting "constant" to Core Data
         // Also set the locationManager toggle button color and text based on the global setting
-        let locationManagerSettingObjects = UtilityFunctions().cdLocationManagerSetting()
-        let locationManagerSettingArray = locationManagerSettingObjects[0] as! [LocationManagerSetting]
-        //        let moc = locationManagerSettingObjects[1] as! NSManagedObjectContext
+        let locationManagerSettingArray = CoreDataFunctions().locationManagerSettingRetrieve()
         print("AVC - CD Location Manager Setting Count: \(locationManagerSettingArray.count)")
         
         if locationManagerSettingArray.count > 0
@@ -226,7 +223,7 @@ class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewD
             locationButtonLabel.text = Constants.Strings.stringLMConstant
             
             // Now save the default to Core Data
-            UtilityFunctions().cdLocationManagerSettingSave(true)
+            CoreDataFunctions().locationManagerSettingSave(true)
         }
         
         if Constants.Data.currentUser != ""
@@ -381,6 +378,17 @@ class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewD
         // Refresh the Current User Elements
         self.refreshCurrentUserElements()
         
+        // Reset the userBlobs array and try to load the userBlobs from Core Data
+        userBlobs = [Blob]()
+        let savedBlobs = CoreDataFunctions().blobRetrieve()
+        for sBlob in savedBlobs
+        {
+            if sBlob.blobUserID == Constants.Data.currentUser
+            {
+                userBlobs.append(sBlob)
+            }
+        }
+        
         // Go ahead and request the user data from AWS again in case the data has been updated
         AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: Constants.Data.currentUser, forPreviewBox: false), delegate: self as AWSRequestDelegate).prepRequest()
     }
@@ -398,6 +406,9 @@ class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewD
     func viewScreenTapGesture(_ sender: UITapGestureRecognizer)
     {
         hideScreenAndEditNameBox()
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
     func hideScreenAndEditNameBox()
@@ -413,6 +424,9 @@ class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewD
             { (finished: Bool) -> Void in
                 self.displayUserEditNameView.removeFromSuperview()
         })
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
     // Reveal the popup screen to edit the userName
@@ -434,6 +448,9 @@ class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewD
             {
                 self.displayUserEditNameView.frame = CGRect(x: 50, y: 10, width: self.viewContainer.frame.width - 100, height: 200)
             }, completion: nil)
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
     
@@ -499,6 +516,10 @@ class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewD
         Constants.Data.blobThumbnailObjects = [BlobThumbnailObject]()
         Constants.Data.userObjects = [User]()
         
+        // Remove the userBlobs from the local array and refresh the tableView
+        self.userBlobs = [Blob]()
+        self.blobsUserTableView.performSelector(onMainThread: #selector(UITableView.reloadData), with: nil, waitUntilDone: true)
+        
         for circle in Constants.Data.mapCircles
         {
             circle.map = nil
@@ -511,6 +532,9 @@ class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewD
             parentVC.popViewController()
             parentVC.logoutUser()
         }
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
     // Toggle the location manager type
@@ -528,7 +552,7 @@ class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewD
             locationButtonLabel.text = Constants.Strings.stringLMSignificant
             
             // Save the locationManagerSetting in Core Data
-            UtilityFunctions().cdLocationManagerSettingSave(false)
+            CoreDataFunctions().locationManagerSettingSave(false)
         }
         else
         {
@@ -539,8 +563,11 @@ class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewD
             locationButtonLabel.text = Constants.Strings.stringLMConstant
             
             // Save the locationManagerSetting in Core Data
-            UtilityFunctions().cdLocationManagerSettingSave(true)
+            CoreDataFunctions().locationManagerSettingSave(true)
         }
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
     // Save the newly typed user name
@@ -577,6 +604,9 @@ class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewD
                 }
             }
         }
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
     // Update the User Image using a media picker
@@ -590,6 +620,9 @@ class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewD
         imagePicker.delegate = self
         imagePicker.sourceType = UIImagePickerControllerSourceType.photoLibrary
         self.present(imagePicker, animated: true, completion: nil)
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
     // ImagePicker Delegate Methods
@@ -626,6 +659,9 @@ class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewD
         self.viewScreen.removeFromSuperview()
         
         self.dismiss(animated: true, completion: nil)
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
     
@@ -640,7 +676,7 @@ class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewD
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int
     {
         // #warning Incomplete implementation, return the number of rows
-        return Constants.Data.userBlobs.count
+        return self.userBlobs.count
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat
@@ -665,7 +701,7 @@ class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewD
         cell.selectedBackgroundView = sbv
         
         // Retrieve the Blob associated with this cell
-        let cellBlob = Constants.Data.userBlobs[(indexPath as NSIndexPath).row]
+        let cellBlob = self.userBlobs[(indexPath as NSIndexPath).row]
         
         // Convert the Blob timestamp to readable format and assign
         let dateFormatter = DateFormatter()
@@ -705,7 +741,7 @@ class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewD
     func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]?
     {
         // Retrieve the Blob associated with this cell
-        let cellBlob = Constants.Data.userBlobs[(indexPath as NSIndexPath).row]
+        let cellBlob = self.userBlobs[(indexPath as NSIndexPath).row]
         
         // Create a dummy action to add to the initial action array
         let actionReturn = UITableViewRowAction()
@@ -718,10 +754,20 @@ class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewD
                 print("delete button tapped")
                 
                 // Remove the Blob from the userBlobs array (so it disappears from the Table View)
-                Constants.Data.userBlobs.remove(at: (indexPath as NSIndexPath).row)
+                self.userBlobs.remove(at: (indexPath as NSIndexPath).row)
                 
                 // Refresh the Table View to no longer show that row
                 self.blobsUserTableView.performSelector(onMainThread: #selector(UITableView.reloadData), with: nil, waitUntilDone: true)
+                
+                // Remove the Blob from the global array as well
+                for (uIndex, uBlob) in Constants.Data.userBlobs.enumerated()
+                {
+                    if uBlob.blobID == cellBlob.blobID
+                    {
+                        // Remove the Blob from the global userBlobs array
+                        Constants.Data.userBlobs.remove(at: uIndex)
+                    }
+                }
                 
                 // Record the Blob deletion in AWS so that the Blob no longer is downloaded for anyone
                 AWSPrepRequest(requestToCall: AWSDeleteBlob(blobID: cellBlob.blobID, userID: Constants.Data.currentUser), delegate: self as AWSRequestDelegate).prepRequest()
@@ -759,16 +805,19 @@ class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewD
         tableView.deselectRow(at: indexPath, animated: true)
         
         // Load the Blob View Controller with the selected Blob
-        print("USER BLOB COUNT: \(Constants.Data.userBlobs.count)")
-        if Constants.Data.userBlobs.count >= (indexPath as NSIndexPath).row
+        print("USER BLOB COUNT: \(self.userBlobs.count)")
+        if self.userBlobs.count >= (indexPath as NSIndexPath).row
         {
-            self.loadBlobViewWithBlob(Constants.Data.userBlobs[(indexPath as NSIndexPath).row])
+            self.loadBlobViewWithBlob(self.userBlobs[(indexPath as NSIndexPath).row])
         }
         
         // Reference the cell and start the loading indicator
         let cell = tableView.dequeueReusableCell(withIdentifier: Constants.Strings.accountTableViewCellReuseIdentifier, for: indexPath) as! AccountTableViewCell
         print("SELECTED CELL \((indexPath as NSIndexPath).row): \(cell)")
         cell.cellSelectedActivityIndicator.startAnimating()
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
     func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath)
@@ -820,9 +869,6 @@ class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewD
     func loadBlobViewWithBlob(_ blob: Blob)
     {
         print("LOADING USER LIST BLOB")
-        print(blob.blobExtraRequested)
-        print(blob.blobText)
-        print(blob.blobThumbnailID)
         if blob.blobText != nil || blob.blobThumbnailID != nil
         {
             // Create a back button and title for the Nav Bar
@@ -862,6 +908,9 @@ class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewD
             navController.navigationBar.barTintColor = Constants.Colors.colorStatusBar
             self.present(navController, animated: true, completion: nil)
         }
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
     // The Child View Controller will call this function when the logged in user has been added to the global user list
@@ -869,8 +918,7 @@ class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewD
     {
         // Check to see if the current user data is already in Core Data
         // Try to retrieve the current user data from Core Data
-        var currentUserObjects = UtilityFunctions().cdCurrentUser()
-        let currentUserArray = currentUserObjects[0] as! [CurrentUser]
+        let currentUserArray = CoreDataFunctions().currentUserRetrieve()
         
         print("CHECKING CORE DATA - CURRENT USER COUNT: \(currentUserArray.count)")
         
@@ -917,7 +965,7 @@ class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewD
                     print("ADDED IMAGE TO DISPLAY USER IMAGE: \(userObject.userImageKey))")
                     
                     // Store the new image in Core Data for immediate access in next VC loading
-                    UtilityFunctions().cdCurrentUserSave(userObject)
+                    CoreDataFunctions().currentUserSave(user: userObject)
                 }
                 
                 break userLoop
@@ -1019,55 +1067,22 @@ class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewD
                         let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                         self.present(alertController, animated: true, completion: nil)
                     }
-                case let awsGetUserBlobs as AWSGetUserBlobs:
+                case _ as AWSGetUserBlobs:
                     if success
                     {
-                        if let newUserBlobs = awsGetUserBlobs.newUserBlobs {
-                            if newUserBlobs.count <= 0
-                            {
-                                // The User has not created any Blobs, so stop the loading animation and show the message
-                                self.blobUserActivityIndicator.stopAnimating()
-                                self.blobsTableViewBackgroundLabel.text = "You have not yet created a Blob.  Tap the add button on the Map Screen to create a new Blob!"
-                            }
-                            else
-                            {
-                                Constants.Data.userBlobs = [Blob]()
-                                
-                                // Loop through each AnyObject (Blob) in the array
-                                for newBlob in newUserBlobs
-                                {
-                                    print("NEW BLOB: \(newBlob)")
-                                    
-                                    // Convert the AnyObject to JSON with keys and AnyObject values
-                                    // Then convert the AnyObject values to Strings or Numbers depending on their key
-                                    if let checkBlob = newBlob as? [String: AnyObject]
-                                    {
-                                        // Finish converting the JSON AnyObjects and assign the data to a new Blob Object
-                                        print("ASSIGNING DATA")
-                                        let addBlob = Blob()
-                                        addBlob.blobID = checkBlob["blobID"] as! String
-                                        addBlob.blobDatetime = Date(timeIntervalSince1970: checkBlob["blobTimestamp"] as! Double)
-                                        addBlob.blobLat = checkBlob["blobLat"] as! Double
-                                        addBlob.blobLong = checkBlob["blobLong"] as! Double
-                                        addBlob.blobRadius = checkBlob["blobRadius"] as! Double
-                                        addBlob.blobType = Constants().blobTypes(checkBlob["blobType"] as! Int)
-                                        addBlob.blobUserID = checkBlob["blobUserID"] as! String
-                                        addBlob.blobText = checkBlob["blobText"] as? String
-                                        addBlob.blobThumbnailID = checkBlob["blobThumbnailID"] as? String
-                                        addBlob.blobMediaType = checkBlob["blobMediaType"] as? Int
-                                        addBlob.blobMediaID = checkBlob["blobMediaID"] as? String
-                                        
-                                        // Append the new Blob Object to the local User Blobs Array
-                                        Constants.Data.userBlobs.append(addBlob)
-                                        print("APPENDED BLOB: \(addBlob.blobID)")
-                                    }
-                                }
-                                // Sort the User Blobs from newest to oldest
-                                Constants.Data.userBlobs.sort(by: {$0.blobDatetime.timeIntervalSince1970 > $1.blobDatetime.timeIntervalSince1970})
-                                
-                                // Refresh the Table View
-                                self.blobsUserTableView.performSelector(onMainThread: #selector(UITableView.reloadData), with: nil, waitUntilDone: true)
-                            }
+                        if Constants.Data.userBlobs.count <= 0
+                        {
+                            // The User has not created any Blobs, so stop the loading animation and show the message
+                            self.blobUserActivityIndicator.stopAnimating()
+                            self.blobsTableViewBackgroundLabel.text = "You have not yet created a Blob.  Tap the add button on the Map Screen to create a new Blob!"
+                        }
+                        else
+                        {
+                            // Assign the global User Blobs to the local array
+                            self.userBlobs = Constants.Data.userBlobs
+                            
+                            // Refresh the Table View
+                            self.blobsUserTableView.performSelector(onMainThread: #selector(UITableView.reloadData), with: nil, waitUntilDone: true)
                         }
                     }
                     else
@@ -1079,12 +1094,12 @@ class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewD
                 case let awsGetThumbnailImage as AWSGetThumbnailImage:
                     if success
                     {
-                        // Find the correct User Object in the global list and assign the newly downloaded Image
-                        loopUserObjectCheck: for blobObject in Constants.Data.userBlobs {
+                        // Find the correct User Object in the local list and assign the newly downloaded Image
+                        loopLocalUserObjectCheck: for blobObject in self.userBlobs {
                             if blobObject.blobID == awsGetThumbnailImage.blob.blobID {
                                 blobObject.blobThumbnail = awsGetThumbnailImage.blob.blobThumbnail
                                 
-                                break loopUserObjectCheck
+                                break loopLocalUserObjectCheck
                             }
                         }
                         
@@ -1093,6 +1108,15 @@ class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewD
                         // Reload the Table View
                         print("GET IMAGE - RELOAD TABLE VIEW")
                         self.blobsUserTableView.performSelector(onMainThread: #selector(UITableView.reloadData), with: nil, waitUntilDone: true)
+                        
+                        // Find the correct User Object in the global list and assign the newly downloaded Image
+                        loopGlobalUserObjectCheck: for blobObject in Constants.Data.userBlobs {
+                            if blobObject.blobID == awsGetThumbnailImage.blob.blobID {
+                                blobObject.blobThumbnail = awsGetThumbnailImage.blob.blobThumbnail
+                                
+                                break loopGlobalUserObjectCheck
+                            }
+                        }
                         
                         // Refresh child VCs
                         if self.blobVC != nil

@@ -6,10 +6,11 @@
 //  Copyright © 2016 blobjot. All rights reserved.
 //
 
+import CoreData
 import UIKit
 
-class Blob {
-    
+class Blob
+{
     var blobID: String!
     var blobDatetime: Date!
     var blobLat: Double!
@@ -27,7 +28,8 @@ class Blob {
     var blobSelected = false
     var blobViewed = false
     
-    convenience init(blobID: String, blobUserID: String, blobLat: Double, blobLong: Double, blobRadius: Double, blobType: Constants.BlobTypes, blobMediaType: Int, blobText: String) {
+    convenience init(blobID: String, blobUserID: String, blobLat: Double, blobLong: Double, blobRadius: Double, blobType: Constants.BlobTypes, blobMediaType: Int, blobText: String)
+    {
         self.init()
         
         self.blobID = blobID

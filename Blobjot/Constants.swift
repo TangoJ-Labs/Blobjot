@@ -18,6 +18,12 @@ struct Constants
     
     static var credentialsProvider = AWSCognitoCredentialsProvider(regionType: Constants.Strings.awsRegion, identityPoolId: Constants.Strings.awsCognitoIdentityPoolID)
     
+    enum LogType: String
+    {
+        case error = "error"
+        case userflow = "userflow"
+    }
+    
     enum BlobTypes: Int
     {
         case temporary = 1
@@ -35,6 +41,20 @@ struct Constants
         case connected = 2
         case notConnected = 3
         case blocked = 4
+    }
+    
+    func logType(_ logType: String) -> Constants.LogType
+    {
+        // Evaluate the blobType Integer received and convert it to the appropriate BlobType Class
+        switch logType
+        {
+        case "error":
+            return Constants.LogType.error
+        case "userflow":
+            return Constants.LogType.userflow
+        default:
+            return Constants.LogType.error
+        }
     }
     
     func blobTypes(_ blobTypeInt: Int) -> Constants.BlobTypes

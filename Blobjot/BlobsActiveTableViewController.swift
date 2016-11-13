@@ -145,6 +145,9 @@ class BlobsActiveTableViewController: UIViewController, UITableViewDataSource, U
         sbv.backgroundColor = UIColor.clear
         cell.selectedBackgroundView = sbv
         
+        // Clear the content, if needed
+        cell.cellThumbnail.image = nil
+        
         // Start animating the activity indicators
         cell.userImageActivityIndicator.startAnimating()
         cell.thumbnailActivityIndicator.startAnimating()
@@ -287,6 +290,9 @@ class BlobsActiveTableViewController: UIViewController, UITableViewDataSource, U
         let cell = tableView.dequeueReusableCell(withIdentifier: Constants.Strings.blobsActiveTableViewCellReuseIdentifier, for: indexPath) as! BlobsActiveTableViewCell
         print("CELL \((indexPath as NSIndexPath).row): \(cell)")
 //        cell.cellSelectedActivityIndicator.startAnimating()
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
     func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath)
@@ -342,9 +348,6 @@ class BlobsActiveTableViewController: UIViewController, UITableViewDataSource, U
     func loadBlobViewWithBlob(_ blob: Blob)
     {
         print("LOADING VIEW BLOB")
-        print(blob.blobExtraRequested)
-        print(blob.blobText)
-        print(blob.blobThumbnailID)
         if blob.blobExtraRequested && (blob.blobText != nil || blob.blobThumbnailID != nil)
         {
             // Create a back button and title for the Nav Bar
@@ -383,6 +386,9 @@ class BlobsActiveTableViewController: UIViewController, UITableViewDataSource, U
             navController.navigationBar.barTintColor = Constants.Colors.colorStatusBar
             self.present(navController, animated: true, completion: nil)
         }
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
     

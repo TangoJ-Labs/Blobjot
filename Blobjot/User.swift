@@ -11,6 +11,7 @@ import UIKit
 class User {
     
     var userID: String!
+    var facebookID: String!
     var userName: String!
     var userImageKey: String!
     var userImage: UIImage?

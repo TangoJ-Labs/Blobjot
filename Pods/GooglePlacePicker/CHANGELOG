@@ -1,3 +1,8 @@
+Version 2.1.1 - November 2016
+=============================
+Resolved Issues:
+  - Fixes an issue which caused rotation of the place picker to move the marker.
+
 Version 2.1.0 - September 2016
 ==============================
 

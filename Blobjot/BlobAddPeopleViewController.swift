@@ -222,6 +222,9 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
         for person in peopleListSelected {
             print("PERSON SELECTED: \(person.userName)")
         }
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
     func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
@@ -250,6 +253,9 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
         for person in peopleListSelected {
             print("PERSON SELECTED: \(person.userName)")
         }
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
     func tableView(_ tableView: UITableView, didHighlightRowAt indexPath: IndexPath) {
@@ -298,54 +304,66 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
     
     // MARK: GESTURE METHODS
     
-    func tapSelectAll(_ gesture: UIGestureRecognizer) {
-        if selectAll {
+    func tapSelectAll(_ gesture: UIGestureRecognizer)
+    {
+        if selectAll
+        {
             selectAll = false
             selectAllBox.text = ""
             selectAllMessage.removeFromSuperview()
             searchBarContainer.addSubview(searchBar)
             
-            if let parentVC = self.blobAddPeopleDelegate {
+            if let parentVC = self.blobAddPeopleDelegate
+            {
                 parentVC.changeMapCircleType(Constants.BlobTypes.temporary)
             }
             
             // Toggle the Send button
-            if let parentVC = self.blobAddPeopleDelegate {
+            if let parentVC = self.blobAddPeopleDelegate
+            {
                 parentVC.deselectedAllPeople()
             }
             
-        } else {
+        }
+        else
+        {
             selectAll = true
             selectAllBox.text = "\u{2713}"
             viewContainer.addSubview(selectAllMessage)
             searchBar.removeFromSuperview()
             
-            if let parentVC = self.blobAddPeopleDelegate {
+            if let parentVC = self.blobAddPeopleDelegate
+            {
                 parentVC.changeMapCircleType(Constants.BlobTypes.public)
             }
             
             // Toggle the Send button
-            if let parentVC = self.blobAddPeopleDelegate {
+            if let parentVC = self.blobAddPeopleDelegate
+            {
                 parentVC.selectedPerson()
             }
         }
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
     
     // MARK: CUSTOM FUNCTIONS
     
     // Refresh the collectionView and highlight any users that were previously highlighted
-    func refreshTableAndHighlights() {
-        
+    func refreshTableAndHighlights()
+    {
         // Reload the Table View
         print("BAPVC - REFRESH TABLE AND HIGHLIGHTS - RELOAD TABLE VIEW")
         self.peopleTableView.performSelector(onMainThread: #selector(UITableView.reloadData), with: nil, waitUntilDone: true)
         
         // Loop through the Selected People list and highlight the associated people in the Use People list
-        for selectedPerson in peopleListSelected {
-            loopUsePeopleList: for (useIndex, usePerson) in self.peopleListUse.enumerated() {
-                if usePerson.userID == selectedPerson.userID {
-                    
+        for selectedPerson in peopleListSelected
+        {
+            loopUsePeopleList: for (useIndex, usePerson) in self.peopleListUse.enumerated()
+            {
+                if usePerson.userID == selectedPerson.userID
+                {
                     // Highlight that person in the table view
                     self.peopleTableView.selectRow(at: IndexPath(row: useIndex, section: 0), animated: false, scrollPosition: UITableViewScrollPosition.none)
                     break loopUsePeopleList
@@ -357,7 +375,8 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
     
     // MARK: AWS DELEGATE METHODS
     
-    func showLoginScreen() {
+    func showLoginScreen()
+    {
         print("BAPVC - SHOW LOGIN SCREEN")
     }
     
@@ -368,64 +387,14 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
                 // Process the return data based on the method used
                 switch objectType
                 {
-                case let awsGetUserConnections as AWSGetUserConnections:
+                case _ as AWSGetUserConnections:
                     if success
                     {
-                        // Loop through the arrays and add each user - the arrays should be in the proper order by user type
-                        for (arrayIndex, userArray) in awsGetUserConnections.userConnectionArrays.enumerated() {
-                            print("BAPVC - array: \(arrayIndex): jsonData: \(userArray)")
-                            print("BAPVC - USER COUNT: \(userArray.count)")
-                            
-                            // Stop the table loading spinner before adding data so that it does not show up in front of the user list
-                            //                        self.accountTableActivityIndicator.stopAnimating()
-                            
-                            // Loop through each AnyObject (User) in the array
-                            for user in userArray {
-                                print("BAPVC - USER: \(user)")
-                                
-                                // Convert the AnyObject to JSON with keys and AnyObject values
-                                // Then convert the AnyObject values to Strings or Numbers depending on their key
-                                if let checkUser = user as? [String: AnyObject] {
-                                    let userID = checkUser["user_id"] as! String
-                                    let userName = checkUser["user_name"] as! String
-                                    let userImageKey = checkUser["user_image_key"] as! String
-                                    print("BAPVC - USER ID: \(userID)")
-                                    print("BAPVC - USER NAME: \(userName)")
-                                    print("BAPVC - USER IMAGE KEY: \(userImageKey)")
-                                    
-                                    // Create a User Object and add it to the global User array
-                                    let addUser = User()
-                                    addUser.userID = userID
-                                    addUser.userName = userName
-                                    addUser.userImageKey = userImageKey
-                                    addUser.userStatus = Constants.UserStatusTypes(rawValue: arrayIndex)
-                                    
-                                    print("BAPVC - TRYING TO ADD DOWNLOADED USER: \(userName)")
-                                    
-                                    // Check to ensure the user does not already exist in the local User array
-                                    var personExists = false
-                                    loopPersonCheck: for personObject in self.peopleList {
-                                        if personObject.userID == userID {
-                                            personObject.userName = userName
-                                            personObject.userImageKey = userImageKey
-                                            personObject.userStatus = Constants.UserStatusTypes(rawValue: arrayIndex)
-                                            
-                                            personExists = true
-                                            break loopPersonCheck
-                                        }
-                                    }
-                                    if personExists == false {
-                                        
-                                        // Add the User Object to the local list if they are a connection
-                                        if addUser.userStatus == Constants.UserStatusTypes.connected {
-                                            self.peopleList.append(addUser)
-                                            print("AC - ADDED CONNECTED USER \(addUser.userName) TO PEOPLE LIST")
-                                        }
-                                    }
-                                    print("BAPVC - PEOPLE LIST COUNT: \(self.peopleList.count)")
-                                }
-                            }
-                        }
+                        // Stop the table loading spinner before adding data so that it does not show up in front of the user list
+//                        self.accountTableActivityIndicator.stopAnimating()
+                        
+                        // Replace the local User list with the global one
+                        self.peopleList = Constants.Data.userObjects
                         
                         // Sort the list alphabetically and copy the peopleList to the peopleList to use in the table
                         self.peopleList.sort(by: {$0.userName <  $1.userName})
