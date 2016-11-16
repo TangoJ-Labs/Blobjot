@@ -67,8 +67,6 @@
 		B86407081D7B13EB0084D6EF /* DataModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = B86407061D7B13EB0084D6EF /* DataModel.xcdatamodeld */; };
 		B864070D1D7B14A40084D6EF /* BlobNotifications+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B86407091D7B14A40084D6EF /* BlobNotifications+CoreDataProperties.swift */; };
 		B864070E1D7B14A40084D6EF /* BlobNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B864070A1D7B14A40084D6EF /* BlobNotification.swift */; };
-		B864070F1D7B14A40084D6EF /* CurrentUser+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B864070B1D7B14A40084D6EF /* CurrentUser+CoreDataProperties.swift */; };
-		B86407101D7B14A40084D6EF /* CurrentUser.swift in Sources */ = {isa = PBXBuildFile; fileRef = B864070C1D7B14A40084D6EF /* CurrentUser.swift */; };
 		B88131931D510EEE00021C4B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88131921D510EEE00021C4B /* AppDelegate.swift */; };
 		B881319D1D510EEE00021C4B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B881319C1D510EEE00021C4B /* Assets.xcassets */; };
 		B88131AB1D510EEF00021C4B /* BlobjotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88131AA1D510EEF00021C4B /* BlobjotTests.swift */; };
@@ -88,7 +86,9 @@
 		B8B109011DCFE52300EA3B41 /* BlobCD+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B108FD1DCFE52200EA3B41 /* BlobCD+CoreDataClass.swift */; };
 		B8B109021DCFE52300EA3B41 /* BlobCD+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B108FE1DCFE52200EA3B41 /* BlobCD+CoreDataProperties.swift */; };
 		B8B109031DCFE52300EA3B41 /* UserCD+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B108FF1DCFE52200EA3B41 /* UserCD+CoreDataClass.swift */; };
-		B8B109041DCFE52300EA3B41 /* UserCD+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B109001DCFE52200EA3B41 /* UserCD+CoreDataProperties.swift */; };
+		B8B1090A1DDB46D100EA3B41 /* CurrentUser+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B109071DDB46D100EA3B41 /* CurrentUser+CoreDataClass.swift */; };
+		B8B1090B1DDB46D100EA3B41 /* CurrentUser+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B109081DDB46D100EA3B41 /* CurrentUser+CoreDataProperties.swift */; };
+		B8B1090D1DDB472000EA3B41 /* UserCD+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B1090C1DDB472000EA3B41 /* UserCD+CoreDataProperties.swift */; };
 		B8B533A51DC9A50200B9ACC1 /* HoleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B533A41DC9A50200B9ACC1 /* HoleView.swift */; };
 		B8C8C59D1D57544C004D773E /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C8C59C1D57544C004D773E /* Extensions.swift */; };
 		F0218AC95EF86C2A827CA39C /* Pods_Blobjot.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BCF8CA5237DDB608651A853C /* Pods_Blobjot.framework */; };
@@ -189,8 +189,6 @@
 		B86407071D7B13EB0084D6EF /* DataModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = DataModel.xcdatamodel; sourceTree = "<group>"; };
 		B86407091D7B14A40084D6EF /* BlobNotifications+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "BlobNotifications+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		B864070A1D7B14A40084D6EF /* BlobNotification.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlobNotification.swift; sourceTree = "<group>"; };
-		B864070B1D7B14A40084D6EF /* CurrentUser+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CurrentUser+CoreDataProperties.swift"; sourceTree = "<group>"; };
-		B864070C1D7B14A40084D6EF /* CurrentUser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CurrentUser.swift; sourceTree = "<group>"; };
 		B881318F1D510EEE00021C4B /* Blobjot.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Blobjot.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B88131921D510EEE00021C4B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B881319C1D510EEE00021C4B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -218,7 +216,10 @@
 		B8B108FD1DCFE52200EA3B41 /* BlobCD+CoreDataClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "BlobCD+CoreDataClass.swift"; path = "../BlobCD+CoreDataClass.swift"; sourceTree = "<group>"; };
 		B8B108FE1DCFE52200EA3B41 /* BlobCD+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "BlobCD+CoreDataProperties.swift"; path = "../BlobCD+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		B8B108FF1DCFE52200EA3B41 /* UserCD+CoreDataClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "UserCD+CoreDataClass.swift"; path = "../UserCD+CoreDataClass.swift"; sourceTree = "<group>"; };
-		B8B109001DCFE52200EA3B41 /* UserCD+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "UserCD+CoreDataProperties.swift"; path = "../UserCD+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		B8B109051DDB469500EA3B41 /* Blobjot_DataModel_1.2.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Blobjot_DataModel_1.2.xcdatamodel; sourceTree = "<group>"; };
+		B8B109071DDB46D100EA3B41 /* CurrentUser+CoreDataClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "CurrentUser+CoreDataClass.swift"; path = "../CurrentUser+CoreDataClass.swift"; sourceTree = "<group>"; };
+		B8B109081DDB46D100EA3B41 /* CurrentUser+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "CurrentUser+CoreDataProperties.swift"; path = "../CurrentUser+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		B8B1090C1DDB472000EA3B41 /* UserCD+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "UserCD+CoreDataProperties.swift"; path = "../UserCD+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		B8B533A41DC9A50200B9ACC1 /* HoleView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HoleView.swift; sourceTree = "<group>"; };
 		B8C8C59C1D57544C004D773E /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		BCF8CA5237DDB608651A853C /* Pods_Blobjot.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Blobjot.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -429,8 +430,8 @@
 				B864070A1D7B14A40084D6EF /* BlobNotification.swift */,
 				B86407091D7B14A40084D6EF /* BlobNotifications+CoreDataProperties.swift */,
 				B8B108F01DCB673700EA3B41 /* CoreDataFunctions.swift */,
-				B864070C1D7B14A40084D6EF /* CurrentUser.swift */,
-				B864070B1D7B14A40084D6EF /* CurrentUser+CoreDataProperties.swift */,
+				B8B109071DDB46D100EA3B41 /* CurrentUser+CoreDataClass.swift */,
+				B8B109081DDB46D100EA3B41 /* CurrentUser+CoreDataProperties.swift */,
 				B86407041D7B0E710084D6EF /* DataController.swift */,
 				B8312FD91DB3DA8700CFC715 /* LocationManagerSetting.swift */,
 				B8312FDD1DB3DACB00CFC715 /* LocationManagerSetting+CoreDataProperties.swift */,
@@ -439,7 +440,7 @@
 				B8B108F51DCB718200EA3B41 /* LogUserflow+CoreDataClass.swift */,
 				B8B108F61DCB718200EA3B41 /* LogUserflow+CoreDataProperties.swift */,
 				B8B108FF1DCFE52200EA3B41 /* UserCD+CoreDataClass.swift */,
-				B8B109001DCFE52200EA3B41 /* UserCD+CoreDataProperties.swift */,
+				B8B1090C1DDB472000EA3B41 /* UserCD+CoreDataProperties.swift */,
 			);
 			name = CoreData;
 			path = Blobjot;
@@ -740,16 +741,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				B8541B751DBBD0B900867D82 /* BlobComment.swift in Sources */,
-				B864070F1D7B14A40084D6EF /* CurrentUser+CoreDataProperties.swift in Sources */,
 				B8B109021DCFE52300EA3B41 /* BlobCD+CoreDataProperties.swift in Sources */,
 				B8C8C59D1D57544C004D773E /* Extensions.swift in Sources */,
 				B80C56551D51158000C4E683 /* PeopleTableViewCell.swift in Sources */,
 				B8B108FA1DCB718200EA3B41 /* LogUserflow+CoreDataProperties.swift in Sources */,
 				B8312FDE1DB3DACB00CFC715 /* LocationManagerSetting+CoreDataProperties.swift in Sources */,
-				B86407101D7B14A40084D6EF /* CurrentUser.swift in Sources */,
-				B8B109041DCFE52300EA3B41 /* UserCD+CoreDataProperties.swift in Sources */,
 				B8B533A51DC9A50200B9ACC1 /* HoleView.swift in Sources */,
 				B80D17771D922FF20032B0D8 /* AWSClasses.swift in Sources */,
+				B8B1090A1DDB46D100EA3B41 /* CurrentUser+CoreDataClass.swift in Sources */,
 				B864070E1D7B14A40084D6EF /* BlobNotification.swift in Sources */,
 				B80C56341D5112F100C4E683 /* Constants.swift in Sources */,
 				B85FDE891D7DC2BA002A8FC7 /* CustomIdentityProvider.swift in Sources */,
@@ -764,6 +763,7 @@
 				B80C56491D51158000C4E683 /* BlobAddMediaViewController.swift in Sources */,
 				B8B109011DCFE52300EA3B41 /* BlobCD+CoreDataClass.swift in Sources */,
 				B80C56561D51158000C4E683 /* PeopleViewController.swift in Sources */,
+				B8B1090B1DDB46D100EA3B41 /* CurrentUser+CoreDataProperties.swift in Sources */,
 				B80C56501D51158000C4E683 /* BlobsActiveTableViewController.swift in Sources */,
 				B80C56611D5183B100C4E683 /* User.swift in Sources */,
 				B8B108F81DCB718200EA3B41 /* LogError+CoreDataProperties.swift in Sources */,
@@ -783,6 +783,7 @@
 				B88131931D510EEE00021C4B /* AppDelegate.swift in Sources */,
 				B88DFD881DBD50DF00255BA5 /* BlobTableViewCellBlob.swift in Sources */,
 				B8312FDA1DB3DA8700CFC715 /* LocationManagerSetting.swift in Sources */,
+				B8B1090D1DDB472000EA3B41 /* UserCD+CoreDataProperties.swift in Sources */,
 				B80C564A1D51158000C4E683 /* BlobAddPeopleTableViewCell.swift in Sources */,
 				B8B108F11DCB673700EA3B41 /* CoreDataFunctions.swift in Sources */,
 				B86407081D7B13EB0084D6EF /* DataModel.xcdatamodeld in Sources */,
@@ -1082,11 +1083,12 @@
 		B86407061D7B13EB0084D6EF /* DataModel.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				B8B109051DDB469500EA3B41 /* Blobjot_DataModel_1.2.xcdatamodel */,
 				B8B108FC1DCFE29600EA3B41 /* Blobjot_DataModel_1.1.xcdatamodel */,
 				B8B108F21DCB6FDC00EA3B41 /* Blobjot_DataModel_1.0.xcdatamodel */,
 				B86407071D7B13EB0084D6EF /* DataModel.xcdatamodel */,
 			);
-			currentVersion = B8B108FC1DCFE29600EA3B41 /* Blobjot_DataModel_1.1.xcdatamodel */;
+			currentVersion = B8B109051DDB469500EA3B41 /* Blobjot_DataModel_1.2.xcdatamodel */;
 			path = DataModel.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;

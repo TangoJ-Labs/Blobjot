@@ -22,7 +22,7 @@ protocol AccountViewControllerDelegate
     func popViewController()
 }
 
-class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewDataSource, UITableViewDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, AWSRequestDelegate
+class AccountViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, AWSRequestDelegate
 {
     // Add a delegate variable which the parent view controller can pass its own delegate instance to and have access to the protocol
     // (and have its own functions called that are listed in the protocol)
@@ -49,22 +49,22 @@ class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewD
     var locationButton: UIView!
     var locationButtonLabel: UILabel!
     
-    var displayUserEditNameView: UIView!
-    var editNameCurrentNameLabel: UILabel!
-    var editNameCurrentName: UILabel!
-    var editNameNewNameLabel: UILabel!
-    var editNameNewName: UITextField!
-    var editNameNewNameCheckLabel: UILabel!
-    var editNameSaveButton: UIView!
-    var editNameSaveButtonLabel: UILabel!
-    var viewScreen: UIView!
+//    var displayUserEditNameView: UIView!
+//    var editNameCurrentNameLabel: UILabel!
+//    var editNameCurrentName: UILabel!
+//    var editNameNewNameLabel: UILabel!
+//    var editNameNewName: UITextField!
+//    var editNameNewNameCheckLabel: UILabel!
+//    var editNameSaveButton: UIView!
+//    var editNameSaveButtonLabel: UILabel!
+//    var viewScreen: UIView!
     
     var userImageTapGesture: UITapGestureRecognizer!
     var userNameTapGesture: UITapGestureRecognizer!
     var logoutButtonTapGesture: UITapGestureRecognizer!
     var locationButtonTapGesture: UITapGestureRecognizer!
-    var editNameSaveButtonTapGesture: UITapGestureRecognizer!
-    var viewScreenTapGesture: UITapGestureRecognizer!
+//    var editNameSaveButtonTapGesture: UITapGestureRecognizer!
+//    var viewScreenTapGesture: UITapGestureRecognizer!
     
     var currentUserName: String = ""
     
@@ -162,7 +162,7 @@ class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewD
             
             if let imageData = currentUserArray[0].userImage
             {
-                displayUserImage.image = UIImage(data: imageData)
+                displayUserImage.image = UIImage(data: imageData as Data)
             }
         }
         
@@ -270,85 +270,77 @@ class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewD
         // Now add the profile box so that it is on top of all other sub-views
         viewContainer.addSubview(displayUserContainer)
         
-        viewScreen = UIView(frame: CGRect(x: 0, y: 0, width: viewContainer.frame.width, height: viewContainer.frame.height))
-        viewScreen.backgroundColor = Constants.Colors.standardBackgroundGrayTransparent
-        
-        displayUserEditNameView = UIView(frame: CGRect(x: 50, y: viewContainer.frame.height, width: viewContainer.frame.width - 100, height: 200))
-        displayUserEditNameView.layer.cornerRadius = 5
-        displayUserEditNameView.backgroundColor = Constants.Colors.standardBackground
-        displayUserEditNameView.layer.shadowOffset = CGSize(width: 0.5, height: 2)
-        displayUserEditNameView.layer.shadowOpacity = 0.5
-        displayUserEditNameView.layer.shadowRadius = 1.0
-        
-        editNameCurrentNameLabel = UILabel(frame: CGRect(x: 10, y: 10, width: displayUserEditNameView.frame.width - 20, height: 15))
-        editNameCurrentNameLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 12)
-        editNameCurrentNameLabel.text = "Current User Name:"
-        editNameCurrentNameLabel.textColor = Constants.Colors.colorTextGray
-        editNameCurrentNameLabel.textAlignment = NSTextAlignment.center
-        editNameCurrentNameLabel.numberOfLines = 1
-        editNameCurrentNameLabel.isUserInteractionEnabled = false
-        displayUserEditNameView.addSubview(editNameCurrentNameLabel)
-        
-        editNameCurrentName = UILabel(frame: CGRect(x: 10, y: 30, width: displayUserEditNameView.frame.width - 20, height: 20))
-        editNameCurrentName.font = UIFont(name: Constants.Strings.fontRegular, size: 16)
-        editNameCurrentName.text = ""
-        editNameCurrentName.textColor = Constants.Colors.colorTextGray
-        editNameCurrentName.textAlignment = NSTextAlignment.center
-        editNameCurrentName.numberOfLines = 1
-        editNameCurrentName.isUserInteractionEnabled = false
-        displayUserEditNameView.addSubview(editNameCurrentName)
-        
-        editNameNewNameLabel = UILabel(frame: CGRect(x: 10, y: 75, width: displayUserEditNameView.frame.width - 20, height: 15))
-        editNameNewNameLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 12)
-        editNameNewNameLabel.text = "New Name:"
-        editNameNewNameLabel.textColor = Constants.Colors.colorTextGray
-        editNameNewNameLabel.textAlignment = NSTextAlignment.center
-        displayUserEditNameView.addSubview(editNameNewNameLabel)
-        
-        editNameNewName = UITextField(frame: CGRect(x: 10, y: 100, width: displayUserEditNameView.frame.width - 20, height: 26))
-        editNameNewName.backgroundColor = Constants.Colors.standardBackgroundGrayUltraLight
-//        editNameNewName.layer.borderWidth = 2
-//        editNameNewName.layer.borderColor = Constants.Colors.standardBackgroundGray.cgColor
-        editNameNewName.font = UIFont(name: Constants.Strings.fontRegular, size: 16)
-        editNameNewName.textColor = Constants.Colors.colorTextGray
-        editNameNewName.text = ""
-        editNameNewName.textAlignment = NSTextAlignment.center
-        editNameNewName.isUserInteractionEnabled = true
-        editNameNewName.returnKeyType = UIReturnKeyType.default
-        editNameNewName.delegate = self
-        displayUserEditNameView.addSubview(editNameNewName)
-        
-        editNameNewNameCheckLabel = UILabel(frame: CGRect(x: 10, y: 130, width: displayUserEditNameView.frame.width - 20, height: 12))
-        editNameNewNameCheckLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 10)
-        editNameNewNameCheckLabel.text = ""
-        editNameNewNameCheckLabel.textColor = Constants.Colors.colorTextGray
-        editNameNewNameCheckLabel.textAlignment = NSTextAlignment.center
-        displayUserEditNameView.addSubview(editNameNewNameCheckLabel)
-        
-        let editNameSaveButtonHeight: CGFloat = 50
-        editNameSaveButton = UIView(frame: CGRect(x: 0, y: displayUserEditNameView.frame.height - editNameSaveButtonHeight, width: displayUserEditNameView.frame.width, height: editNameSaveButtonHeight))
-        let cornerShape = CAShapeLayer()
-        cornerShape.bounds = editNameSaveButton.frame
-        cornerShape.position = editNameSaveButton.center
-        cornerShape.path = UIBezierPath(roundedRect: editNameSaveButton.bounds, byRoundingCorners: [UIRectCorner.bottomLeft , UIRectCorner.bottomRight], cornerRadii: CGSize(width: 5, height: 5)).cgPath
-        editNameSaveButton.layer.mask = cornerShape
-        editNameSaveButton.backgroundColor = Constants.Colors.blobPurpleOpaque
-        displayUserEditNameView.addSubview(editNameSaveButton)
-        
-        editNameSaveButtonLabel = UILabel(frame: CGRect(x: 0, y: 0, width: editNameSaveButton.frame.width, height: editNameSaveButtonHeight))
-        editNameSaveButtonLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 16)
-        editNameSaveButtonLabel.text = "SAVE"
-        editNameSaveButtonLabel.textColor = UIColor.white
-        editNameSaveButtonLabel.textAlignment = NSTextAlignment.center
-        editNameSaveButton.addSubview(editNameSaveButtonLabel)
-        
-        userImageTapGesture = UITapGestureRecognizer(target: self, action: #selector(AccountViewController.imageTapGesture(_:)))
-        userImageTapGesture.numberOfTapsRequired = 1  // add single tap
-        displayUserImageContainer.addGestureRecognizer(userImageTapGesture)
-        
-        userNameTapGesture = UITapGestureRecognizer(target: self, action: #selector(AccountViewController.userNameTapGesture(_:)))
-        userNameTapGesture.numberOfTapsRequired = 1  // add single tap
-        displayUserLabel.addGestureRecognizer(userNameTapGesture)
+//        viewScreen = UIView(frame: CGRect(x: 0, y: 0, width: viewContainer.frame.width, height: viewContainer.frame.height))
+//        viewScreen.backgroundColor = Constants.Colors.standardBackgroundGrayTransparent
+//        
+//        displayUserEditNameView = UIView(frame: CGRect(x: 50, y: viewContainer.frame.height, width: viewContainer.frame.width - 100, height: 200))
+//        displayUserEditNameView.layer.cornerRadius = 5
+//        displayUserEditNameView.backgroundColor = Constants.Colors.standardBackground
+//        displayUserEditNameView.layer.shadowOffset = CGSize(width: 0.5, height: 2)
+//        displayUserEditNameView.layer.shadowOpacity = 0.5
+//        displayUserEditNameView.layer.shadowRadius = 1.0
+//        
+//        editNameCurrentNameLabel = UILabel(frame: CGRect(x: 10, y: 10, width: displayUserEditNameView.frame.width - 20, height: 15))
+//        editNameCurrentNameLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 12)
+//        editNameCurrentNameLabel.text = "Current User Name:"
+//        editNameCurrentNameLabel.textColor = Constants.Colors.colorTextGray
+//        editNameCurrentNameLabel.textAlignment = NSTextAlignment.center
+//        editNameCurrentNameLabel.numberOfLines = 1
+//        editNameCurrentNameLabel.isUserInteractionEnabled = false
+//        displayUserEditNameView.addSubview(editNameCurrentNameLabel)
+//        
+//        editNameCurrentName = UILabel(frame: CGRect(x: 10, y: 30, width: displayUserEditNameView.frame.width - 20, height: 20))
+//        editNameCurrentName.font = UIFont(name: Constants.Strings.fontRegular, size: 16)
+//        editNameCurrentName.text = ""
+//        editNameCurrentName.textColor = Constants.Colors.colorTextGray
+//        editNameCurrentName.textAlignment = NSTextAlignment.center
+//        editNameCurrentName.numberOfLines = 1
+//        editNameCurrentName.isUserInteractionEnabled = false
+//        displayUserEditNameView.addSubview(editNameCurrentName)
+//        
+//        editNameNewNameLabel = UILabel(frame: CGRect(x: 10, y: 75, width: displayUserEditNameView.frame.width - 20, height: 15))
+//        editNameNewNameLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 12)
+//        editNameNewNameLabel.text = "New Name:"
+//        editNameNewNameLabel.textColor = Constants.Colors.colorTextGray
+//        editNameNewNameLabel.textAlignment = NSTextAlignment.center
+//        displayUserEditNameView.addSubview(editNameNewNameLabel)
+//        
+//        editNameNewName = UITextField(frame: CGRect(x: 10, y: 100, width: displayUserEditNameView.frame.width - 20, height: 26))
+//        editNameNewName.backgroundColor = Constants.Colors.standardBackgroundGrayUltraLight
+////        editNameNewName.layer.borderWidth = 2
+////        editNameNewName.layer.borderColor = Constants.Colors.standardBackgroundGray.cgColor
+//        editNameNewName.font = UIFont(name: Constants.Strings.fontRegular, size: 16)
+//        editNameNewName.textColor = Constants.Colors.colorTextGray
+//        editNameNewName.text = ""
+//        editNameNewName.textAlignment = NSTextAlignment.center
+//        editNameNewName.isUserInteractionEnabled = true
+//        editNameNewName.returnKeyType = UIReturnKeyType.default
+//        editNameNewName.delegate = self
+//        displayUserEditNameView.addSubview(editNameNewName)
+//        
+//        editNameNewNameCheckLabel = UILabel(frame: CGRect(x: 10, y: 130, width: displayUserEditNameView.frame.width - 20, height: 12))
+//        editNameNewNameCheckLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 10)
+//        editNameNewNameCheckLabel.text = ""
+//        editNameNewNameCheckLabel.textColor = Constants.Colors.colorTextGray
+//        editNameNewNameCheckLabel.textAlignment = NSTextAlignment.center
+//        displayUserEditNameView.addSubview(editNameNewNameCheckLabel)
+//        
+//        let editNameSaveButtonHeight: CGFloat = 50
+//        editNameSaveButton = UIView(frame: CGRect(x: 0, y: displayUserEditNameView.frame.height - editNameSaveButtonHeight, width: displayUserEditNameView.frame.width, height: editNameSaveButtonHeight))
+//        let cornerShape = CAShapeLayer()
+//        cornerShape.bounds = editNameSaveButton.frame
+//        cornerShape.position = editNameSaveButton.center
+//        cornerShape.path = UIBezierPath(roundedRect: editNameSaveButton.bounds, byRoundingCorners: [UIRectCorner.bottomLeft , UIRectCorner.bottomRight], cornerRadii: CGSize(width: 5, height: 5)).cgPath
+//        editNameSaveButton.layer.mask = cornerShape
+//        editNameSaveButton.backgroundColor = Constants.Colors.blobPurpleOpaque
+//        displayUserEditNameView.addSubview(editNameSaveButton)
+//        
+//        editNameSaveButtonLabel = UILabel(frame: CGRect(x: 0, y: 0, width: editNameSaveButton.frame.width, height: editNameSaveButtonHeight))
+//        editNameSaveButtonLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 16)
+//        editNameSaveButtonLabel.text = "SAVE"
+//        editNameSaveButtonLabel.textColor = UIColor.white
+//        editNameSaveButtonLabel.textAlignment = NSTextAlignment.center
+//        editNameSaveButton.addSubview(editNameSaveButtonLabel)
         
         logoutButtonTapGesture = UITapGestureRecognizer(target: self, action: #selector(AccountViewController.logoutButtonTapGesture(_:)))
         logoutButtonTapGesture.numberOfTapsRequired = 1  // add single tap
@@ -358,13 +350,9 @@ class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewD
         locationButtonTapGesture.numberOfTapsRequired = 1  // add single tap
         locationButton.addGestureRecognizer(locationButtonTapGesture)
         
-        editNameSaveButtonTapGesture = UITapGestureRecognizer(target: self, action: #selector(AccountViewController.editNameSaveButtonTapGesture(_:)))
-        editNameSaveButtonTapGesture.numberOfTapsRequired = 1  // add single tap
-        editNameSaveButton.addGestureRecognizer(editNameSaveButtonTapGesture)
-        
-        viewScreenTapGesture = UITapGestureRecognizer(target: self, action: #selector(AccountViewController.viewScreenTapGesture(_:)))
-        viewScreenTapGesture.numberOfTapsRequired = 1  // add single tap
-        viewScreen.addGestureRecognizer(viewScreenTapGesture)
+//        viewScreenTapGesture = UITapGestureRecognizer(target: self, action: #selector(AccountViewController.viewScreenTapGesture(_:)))
+//        viewScreenTapGesture.numberOfTapsRequired = 1  // add single tap
+//        viewScreen.addGestureRecognizer(viewScreenTapGesture)
         
         // Add the Status Bar, Top Bar and Search Bar
         statusBarView = UIView(frame: CGRect(x: 0, y: 0, width: screenSize.width, height: 20))
@@ -402,99 +390,33 @@ class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewD
     
     // MARK: GESTURE RECOGNIZERS
     
-    // Reveal the popup screen to edit the userName
-    func viewScreenTapGesture(_ sender: UITapGestureRecognizer)
-    {
-        hideScreenAndEditNameBox()
-        
-        // Save an action in Core Data
-        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
-    }
+//    // Reveal the popup screen to edit the userName
+//    func viewScreenTapGesture(_ sender: UITapGestureRecognizer)
+//    {
+//        hideScreenAndEditNameBox()
+//        
+//        // Save an action in Core Data
+//        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
+//    }
+//    
+//    func hideScreenAndEditNameBox()
+//    {
+//        // Remove the gray screen
+//        self.viewScreen.removeFromSuperview()
+//        
+//        // Animate the user name edit popup out of view
+//        UIView.animate(withDuration: 0.2, animations:
+//            {
+//                self.displayUserEditNameView.frame = CGRect(x: 50, y: self.viewContainer.frame.height, width: self.viewContainer.frame.width - 100, height: self.viewContainer.frame.width - 50)
+//            }, completion:
+//            { (finished: Bool) -> Void in
+//                self.displayUserEditNameView.removeFromSuperview()
+//        })
+//        
+//        // Save an action in Core Data
+//        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
+//    }
     
-    func hideScreenAndEditNameBox()
-    {
-        // Remove the gray screen
-        self.viewScreen.removeFromSuperview()
-        
-        // Animate the user name edit popup out of view
-        UIView.animate(withDuration: 0.2, animations:
-            {
-                self.displayUserEditNameView.frame = CGRect(x: 50, y: self.viewContainer.frame.height, width: self.viewContainer.frame.width - 100, height: self.viewContainer.frame.width - 50)
-            }, completion:
-            { (finished: Bool) -> Void in
-                self.displayUserEditNameView.removeFromSuperview()
-        })
-        
-        // Save an action in Core Data
-        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
-    }
-    
-    // Reveal the popup screen to edit the userName
-    func userNameTapGesture(_ sender: UITapGestureRecognizer)
-    {
-        print("EDIT USER NAME: \(currentUserName)")
-        
-        // Show the gray screen to highlight the name editor popup
-        self.viewContainer.addSubview(viewScreen)
-        self.viewContainer.addSubview(displayUserEditNameView)
-        
-        DispatchQueue.main.async(execute:
-            {
-                self.editNameCurrentName.text = self.currentUserName
-        })
-        
-        // Add an animation to bring the edit user name screen into view
-        UIView.animate(withDuration: 0.2, animations:
-            {
-                self.displayUserEditNameView.frame = CGRect(x: 50, y: 10, width: self.viewContainer.frame.width - 100, height: 200)
-            }, completion: nil)
-        
-        // Save an action in Core Data
-        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
-    }
-    
-    
-    // MARK: UITextField Delegate Methods
-    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool
-    {
-        var returnBool: Bool = true
-        
-        print("AVC - SHOULD CHANGE CHARACTERS: \(textField.text), AND ADD: \(string)")
-        // Control the characters being entered
-        if let currentText = textField.text
-        {
-            // Ensure that the username is not longer than 18 characters
-            let currentString: NSString = currentText as NSString
-            let newString: NSString = currentString.replacingCharacters(in: range, with: string) as NSString
-            returnBool = newString.length <= Constants.Settings.userNameMaxLength
-            
-            // If the string is empty, a backspace was passed, else if the character passed is forbidden, do not allow it
-            if string == ""
-            {
-                returnBool = true
-            }
-            else if string.rangeOfCharacter(from: Constants.Settings.userNameAllowedCharacterSet) != nil
-            {
-                returnBool = false
-            }
-            
-            // Ensure the text was changed
-            if returnBool
-            {
-                // Since the name changed, change the usernameAvailable property to false and hide the available label
-                self.usernameAvailable = false
-                self.editNameNewNameCheckLabel.text = ""
-                self.editNameNewNameCheckLabel.textColor = Constants.Colors.colorTextGray
-                
-                // Save the latest username check timestamp to only use the latest change response
-                self.usernameCheckTimestamp = Date().timeIntervalSince1970
-                
-                AWSPrepRequest(requestToCall: AWSCheckUsername(userName: newString as String, usernameCheckTimestamp: self.usernameCheckTimestamp), delegate: self as AWSRequestDelegate).prepRequest()
-            }
-        }
-        
-        return returnBool
-    }
     
     // Log out the user from the app and facebook
     func logoutButtonTapGesture(_ sender: UITapGestureRecognizer)
@@ -565,100 +487,6 @@ class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewD
             // Save the locationManagerSetting in Core Data
             CoreDataFunctions().locationManagerSettingSave(true)
         }
-        
-        // Save an action in Core Data
-        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
-    }
-    
-    // Save the newly typed user name
-    func editNameSaveButtonTapGesture(_ sender: UITapGestureRecognizer)
-    {
-        // Ensure that the username is available
-        if self.usernameAvailable
-        {
-            // Save the userName to AWS and show in the display user label
-            if let newUserName = self.editNameNewName.text
-            {
-                // Ensure that the new username is not blank
-                if newUserName != ""
-                {
-                    // Close the keyboard and hide the screen and edit name box
-                    self.view.endEditing(true)
-                    self.hideScreenAndEditNameBox()
-                    
-                    // Show the new name in the display user label
-                    self.displayUserLabel.text = newUserName
-                    
-                    // Upload the new username to AWS
-                    AWSPrepRequest(requestToCall: AWSEditUserName(newUserName: newUserName), delegate: self as AWSRequestDelegate).prepRequest()
-                    
-                    // Edit the logged in user's userName in the global list
-                    userLoop: for userObject in Constants.Data.userObjects
-                    {
-                        if userObject.userID == Constants.Data.currentUser
-                        {
-                            userObject.userName = newUserName
-                            break userLoop
-                        }
-                    }
-                }
-            }
-        }
-        
-        // Save an action in Core Data
-        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
-    }
-    
-    // Update the User Image using a media picker
-    func imageTapGesture(_ sender: UITapGestureRecognizer)
-    {
-        // Show the gray screen to indicate that the picker is loading
-        viewContainer.addSubview(viewScreen)
-        
-        // Load the image picker - allow only photos
-        let imagePicker = UIImagePickerController()
-        imagePicker.delegate = self
-        imagePicker.sourceType = UIImagePickerControllerSourceType.photoLibrary
-        self.present(imagePicker, animated: true, completion: nil)
-        
-        // Save an action in Core Data
-        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
-    }
-    
-    // ImagePicker Delegate Methods
-    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any])
-    {
-        // Remove the gray screen
-        self.viewScreen.removeFromSuperview()
-        
-        // Process the picked image
-        if let pickedImage = info[UIImagePickerControllerOriginalImage] as? UIImage
-        {
-            // Assign the new image to the local userImage view
-            displayUserImage.image = pickedImage
-            
-            // Update the global userObject with the new image
-            loopUserObjectCheck: for userObject in Constants.Data.userObjects
-            {
-                if userObject.userID == Constants.Data.currentUser
-                {
-                    userObject.userImage = pickedImage
-                    
-                    break loopUserObjectCheck
-                }
-            }
-            
-            // Upload the new user image to AWS and update the userImageKey
-            AWSPrepRequest(requestToCall: AWSEditUserImage(newUserImage: pickedImage), delegate: self as AWSRequestDelegate).prepRequest()
-        }
-        self.dismiss(animated: true, completion: nil)
-    }
-    func imagePickerControllerDidCancel(_ picker: UIImagePickerController)
-    {
-        // Remove the gray screen
-        self.viewScreen.removeFromSuperview()
-        
-        self.dismiss(animated: true, completion: nil)
         
         // Save an action in Core Data
         CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
@@ -953,16 +781,18 @@ class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewD
                 print("IN PARENT - GOT CURRENT USER: \(userObject.userName)")
                 
                 // Show the logged in user's username in the display user label
-                currentUserName  = userObject.userName
-                displayUserLabel.text = userObject.userName
-                displayUserLabelActivityIndicator.stopAnimating()
+                if let username = userObject.userName
+                {
+                    currentUserName  = username
+                    displayUserLabel.text = username
+                    displayUserLabelActivityIndicator.stopAnimating()
+                }
                 
                 // Refresh the user image if it exists
                 if let userImage = userObject.userImage
                 {
                     self.displayUserImage.image = userImage
                     self.displayUserImageActivityIndicator.stopAnimating()
-                    print("ADDED IMAGE TO DISPLAY USER IMAGE: \(userObject.userImageKey))")
                     
                     // Store the new image in Core Data for immediate access in next VC loading
                     CoreDataFunctions().currentUserSave(user: userObject)
@@ -988,18 +818,6 @@ class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewD
                 // Process the return data based on the method used
                 switch objectType
                 {
-                case _ as AWSGetUserImage:
-                    if success
-                    {
-                        // Refresh the user elements
-                        self.refreshCurrentUserElements()
-                    }
-                    else
-                    {
-                        // Show the error message
-                        let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
-                        self.present(alertController, animated: true, completion: nil)
-                    }
                 case _ as AWSGetSingleUserData:
                     if success
                     {
@@ -1018,48 +836,10 @@ class AccountViewController: UIViewController, UITextFieldDelegate, UITableViewD
                         let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                         self.present(alertController, animated: true, completion: nil)
                     }
-                case let awsCheckUsername as AWSCheckUsername:
-                    if success
-                    {
-                        // Ensure that the username check timestamp is the same as the current timestamp, to ensure that the latest request is being returned
-                        if awsCheckUsername.usernameCheckTimestamp == self.usernameCheckTimestamp
-                        {
-                            // Display the response
-                            if let response = awsCheckUsername.response
-                            {
-                                // Assign the response property indicator and change the response text and color
-                                if response == "available"
-                                {
-                                    self.usernameAvailable = true
-                                    
-                                    self.editNameNewNameCheckLabel.text = "available"
-                                    self.editNameNewNameCheckLabel.textColor = Constants.Colors.colorUsernameAvailable
-                                }
-                                else
-                                {
-                                    self.usernameAvailable = false
-                                    
-                                    self.editNameNewNameCheckLabel.text = "not available"
-                                    self.editNameNewNameCheckLabel.textColor = Constants.Colors.colorUsernameNotAvailable
-                                }
-                            }
-                        }
-                    }
-                    // Don't show the error message for AWSCheckUsername - it is really annoying
-                case _ as AWSEditUserName:
-                    if !success
-                    {
-                        // Show the error message
-                        let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
-                        self.present(alertController, animated: true, completion: nil)
-                    }
-                case _ as AWSEditUserImage:
-                    if !success
-                    {
-                        // Show the error message
-                        let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
-                        self.present(alertController, animated: true, completion: nil)
-                    }
+                case _ as FBGetUserData:
+                    // Do not distinguish between success and failure for this class - both need to have the userList updated
+                    // Refresh the user elements
+                    self.refreshCurrentUserElements()
                 case _ as AWSDeleteBlob:
                     if !success
                     {

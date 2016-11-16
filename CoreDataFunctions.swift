@@ -27,7 +27,7 @@ class CoreDataFunctions: AWSRequestDelegate
             let entity = NSEntityDescription.insertNewObject(forEntityName: "CurrentUser", into: moc) as! CurrentUser
             entity.setValue(user.userID, forKey: "userID")
             entity.setValue(user.userName, forKey: "userName")
-            entity.setValue(user.userImageKey, forKey: "userImageKey")
+//            entity.setValue(user.userImageKey, forKey: "userImageKey")
             if let userImage = user.userImage
             {
                 entity.setValue(UIImagePNGRepresentation(userImage), forKey: "userImage")
@@ -38,8 +38,8 @@ class CoreDataFunctions: AWSRequestDelegate
             // Replace the current user data to ensure that the latest data is used
             currentUserArray[0].userID = user.userID
             currentUserArray[0].userName = user.userName
-            currentUserArray[0].userImageKey = user.userImageKey
-            currentUserArray[0].userImage = UIImagePNGRepresentation(user.userImage!)
+//            currentUserArray[0].userImageKey = user.userImageKey
+            currentUserArray[0].userImage = UIImagePNGRepresentation(user.userImage!) as NSData?
         }
         
         // Save the Entity
@@ -308,7 +308,7 @@ class CoreDataFunctions: AWSRequestDelegate
                 
                 // Edit the user with the new data
                 userArray[userIndex].userName = user.userName
-                userArray[userIndex].userImageKey = user.userImageKey
+//                userArray[userIndex].userImageKey = user.userImageKey
                 userArray[userIndex].userImage = user.userImage
                 userArray[userIndex].userStatus = user.userStatus
                 
@@ -322,7 +322,7 @@ class CoreDataFunctions: AWSRequestDelegate
             let entity = NSEntityDescription.insertNewObject(forEntityName: "UserCD", into: moc) as! UserCD
             entity.setValue(user.userID, forKey: "userID")
             entity.setValue(user.userName, forKey: "userName")
-            entity.setValue(user.userImageKey, forKey: "userImageKey")
+//            entity.setValue(user.userImageKey, forKey: "userImageKey")
             entity.setValue(user.userStatus.rawValue, forKey: "userStatus")
         }
         
@@ -362,8 +362,8 @@ class CoreDataFunctions: AWSRequestDelegate
             let addUser = User()
             addUser.userID = cdUser.userID
             addUser.userName = cdUser.userName
-            addUser.userImageKey = cdUser.userImageKey
-            addUser.userStatus = cdUser.userStatus.map { Constants.UserStatusTypes(rawValue: Int($0)) }!
+//            addUser.userImageKey = cdUser.userImageKey
+            addUser.userStatus = cdUser.userStatus.map { Constants.UserStatusTypes(rawValue: Int($0)) }!!
             
             if let imageData = cdUser.userImage
             {

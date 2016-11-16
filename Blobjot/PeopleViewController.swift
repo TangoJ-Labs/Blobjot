@@ -235,7 +235,8 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
         }
         else
         {
-            AWSPrepRequest(requestToCall: AWSGetUserImage(user: cellUserObject), delegate: self as AWSRequestDelegate).prepRequest()
+//            AWSPrepRequest(requestToCall: AWSGetUserImage(user: cellUserObject), delegate: self as AWSRequestDelegate).prepRequest()
+            AWSPrepRequest(requestToCall: FBGetUserData(user: cellUserObject), delegate: self as AWSRequestDelegate).prepRequest()
         }
         
         print("USER STATUS: \(cellUserObject.userStatus)")
@@ -465,15 +466,18 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
             
             for userObject in Constants.Data.userObjects
             {
-                // Convert the strings to lowercase for better matching
-                if userObject.userName.lowercased().contains(searchText.lowercased())
+                if let username = userObject.userName
                 {
-                    print("PVC - UserName Contains: \(searchText)")
-                    
-                    // Ensure the person is not the currently logged in user
-                    if userObject.userID != Constants.Data.currentUser
+                    // Convert the strings to lowercase for better matching
+                    if username.lowercased().contains(searchText.lowercased())
                     {
-                        self.peopleList.append(userObject)
+                        print("PVC - UserName Contains: \(searchText)")
+                        
+                        // Ensure the person is not the currently logged in user
+                        if userObject.userID != Constants.Data.currentUser
+                        {
+                            self.peopleList.append(userObject)
+                        }
                     }
                 }
             }
@@ -613,7 +617,14 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
             }
             else
             {
-                return $0.userName <  $1.userName
+                if $0.userName != nil && $1.userName != nil
+                {
+                    return $0.userName! <  $1.userName!
+                }
+                else
+                {
+                    return true
+                }
             }
         })
         
@@ -716,48 +727,63 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
                         let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                         self.present(alertController, animated: true, completion: nil)
                     }
-                case let awsGetUserImage as AWSGetUserImage:
-                    if success
+                case let fbGetUserData as FBGetUserData:
+                    print("PVC - AWS REQUEST - FBGetUserData")
+                    // Do not distinguish between success and failure for this class - both need to have the userList updated
+                    // Find the correct User Object in the local list and assign the newly downloaded Image
+                    loopUserObjectCheckLocal: for userObjectLocal in self.peopleList
                     {
-                        if let newImage = awsGetUserImage.user.userImage
+                        if userObjectLocal.userID == fbGetUserData.user.userID
                         {
-                            // Find the correct User Object in the local list and assign the newly downloaded Image
-                            loopUserObjectCheckLocal: for userObjectLocal in self.peopleList
+                            // If the passed user has a userImage, use it, otherwise use the default image
+                            if let newImage = fbGetUserData.user.userImage
                             {
-                                if userObjectLocal.userID == awsGetUserImage.user.userID
-                                {
-                                    userObjectLocal.userImage = newImage
-                                    
-                                    break loopUserObjectCheckLocal
-                                }
+                                userObjectLocal.userImage = newImage
+                            }
+                            else
+                            {
+                                userObjectLocal.userImage = UIImage(named: Constants.Strings.iconStringDefaultProfile)
                             }
                             
-                            print("PVC - ADDED USER IMAGE: \(awsGetUserImage.user.userImageKey))")
+                            // If the passed user has a username, use it, otherwise indicate a hidden user
+                            if let username = fbGetUserData.user.userName
+                            {
+                                userObjectLocal.userName = username
+                            }
+                            else
+                            {
+                                userObjectLocal.userName = "Hidden User"
+                            }
                             
-                            // Reload the Table View
-                            self.refreshTableViewAndEndSpinner(false)
+                            break loopUserObjectCheckLocal
                         }
                     }
-                    else
-                    {
-                        // Show the error message
-                        let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
-                        self.present(alertController, animated: true, completion: nil)
-                    }
-                case _ as FBGetUserData:
-                    if success
-                    {
-                        print("PVC - GOT FACEBOOK DATA)")
-                        
-                        // Reload the Table View
-                        self.refreshTableViewAndEndSpinner(false)
-                    }
-                    else
-                    {
-                        // Show the error message
-                        let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
-                        self.present(alertController, animated: true, completion: nil)
-                    }
+                    
+                    print("PVC - ADDED USER IMAGE FBGetUserData: \(fbGetUserData.user.userName))")
+                    
+                    // Reload the Table View
+                    self.refreshTableViewAndEndSpinner(false)
+                    
+//                case let awsSingleUserData as AWSGetSingleUserData:
+//                    print("PVC - AWS REQUEST - AWSGetSingleUserData")
+//                    // Do not distinguish between success and failure for this class - both need to have the userList updated
+//                    if let newImage = awsSingleUserData.user.userImage
+//                    {
+//                        // Find the correct User Object in the local list and assign the newly downloaded Image
+//                        loopUserObjectCheckLocal: for userObjectLocal in self.peopleList
+//                        {
+//                            if userObjectLocal.userID == awsSingleUserData.user.userID
+//                            {
+//                                userObjectLocal.userImage = newImage
+//                                
+//                                break loopUserObjectCheckLocal
+//                            }
+//                        }
+//                        
+//                        print("PVC - ADDED USER IMAGE AWSGetSingleUserData: \(awsSingleUserData.user.userName))")
+//                    }
+//                    // Reload the Table View
+//                    self.refreshTableViewAndEndSpinner(false)
                 default:
                     print("PVC - DEFAULT: THERE WAS AN ISSUE WITH THE DATA RETURNED FROM AWS")
                     // Show the error message

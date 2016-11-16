@@ -304,6 +304,7 @@ struct Constants
         
         static let cacheSessionViewHistory = "sessionViewHistory"
         
+        static let iconStringDefaultProfile = "TAB_ICON_account.png"
         static let iconStringBlobjotLogo = "TAB_ICON_location_blobs.png"
         static let iconStringDefaultMedia = "defaultMedia.png"
         static let iconStringMapViewAddCombo = "MV_add_combo_icon.png"

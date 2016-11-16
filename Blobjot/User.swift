@@ -12,9 +12,9 @@ class User {
     
     var userID: String!
     var facebookID: String!
-    var userName: String!
-    var userImageKey: String!
+    var userName: String?
+    var userImageUrl: String?
     var userImage: UIImage?
-    var userStatus: Constants.UserStatusTypes!
+    var userStatus: Constants.UserStatusTypes = Constants.UserStatusTypes.notConnected
     
 }

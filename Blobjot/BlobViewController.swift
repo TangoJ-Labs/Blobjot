@@ -1006,20 +1006,12 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
                         let alertController = UtilityFunctions().createAlertOkView("AWSGetUserImage - Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                         self.present(alertController, animated: true, completion: nil)
                     }
-                case _ as AWSGetUserImage:
-                    if success
-                    {
-                        print("BVC - AWS RETURN - AWSGetUserImage")
-                        // A new user image was just downloaded for a user in the blob comment list
-                        // Reload the TableView
-                        self.refreshBlobViewTable()
-                    }
-                    else
-                    {
-                        // Show the error message
-                        let alertController = UtilityFunctions().createAlertOkView("AWSGetUserImage - Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
-                        self.present(alertController, animated: true, completion: nil)
-                    }
+                case _ as FBGetUserData:
+                    // Do not distinguish between success and failure for this class - both need to have the userList updated
+                    print("BVC - AWS RETURN - FBGetUserData")
+                    // A new user image was just downloaded for a user in the blob comment list
+                    // Reload the TableView
+                    self.refreshBlobViewTable()
                 default:
                     print("BVC-DEFAULT: THERE WAS AN ISSUE WITH THE DATA RETURNED FROM AWS")
                     // Show the error message

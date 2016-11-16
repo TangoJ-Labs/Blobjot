@@ -284,7 +284,8 @@ class AWSLoginUser : AWSRequestObject
     {
         print("AC - LU - FACEBOOK TOKEN: \(self.facebookToken)")
         print("AC - LU - COGNITO ID: \(Constants.credentialsProvider.identityId)")
-        let json: NSDictionary = ["facebook_id" : self.facebookToken!.userID, "facebook_name": facebookName, "facebook_thumbnail_url": facebookThumbnailUrl]
+//        let json: NSDictionary = ["facebook_id" : self.facebookToken!.userID, "facebook_name": facebookName, "facebook_thumbnail_url": facebookThumbnailUrl]
+        let json: NSDictionary = ["facebook_id" : self.facebookToken!.userID]
         print("AC - USER LOGIN DATA: \(json)")
         
         let lambdaInvoker = AWSLambdaInvoker.default()
@@ -799,7 +800,7 @@ class AWSGetSingleUserData : AWSRequestObject
         print("AC-AGSUD - REQUESTING GSUD")
         
         // Create some JSON to send the logged in userID
-        let json: NSDictionary = ["user_id" : self.user.userID]
+        let json: NSDictionary = ["user_id" : self.user.userID, "requesting_user_id" : Constants.Data.currentUser]
         
         let lambdaInvoker = AWSLambdaInvoker.default()
         lambdaInvoker.invokeFunction("Blobjot-GetSingleUserData", jsonObject: json, completionHandler:
@@ -824,13 +825,15 @@ class AWSGetSingleUserData : AWSRequestObject
                     // Convert the response to an array of arrays
                     if let userJson = response as? [String: AnyObject]
                     {
-                        let userID = userJson["user_id"] as! String
-                        let userName = userJson["user_name"] as! String
-                        let userImageKey = userJson["user_image_key"] as! String
+                        print("AC-AGSUD - SINGLE USER: \(userJson)")
                         
-                        // Create a User Object and add it to the global User array
-                        self.user.userName = userName
-                        self.user.userImageKey = userImageKey
+                        let userID = userJson["user_id"] as! String
+                        let facebookID = userJson["facebook_id"] as! String
+                        let userStatus = userJson["user_status"] as! Int
+                        
+                        // Add other properties to the User object
+                        self.user.facebookID = facebookID
+                        self.user.userStatus = Constants.UserStatusTypes(rawValue: userStatus)!
                         
                         // Check to ensure the user does not already exist in the global User array
                         var userObjectExists = false
@@ -838,33 +841,32 @@ class AWSGetSingleUserData : AWSRequestObject
                         {
                             if userObject.userID == self.user.userID
                             {
-                                // Update the user data with the latest data
-                                userObject.userName = userName
-                                userObject.userImageKey = userImageKey
+                                // Replace the global user with the updated local one
+                                userObject.facebookID = self.user.facebookID
+                                userObject.userStatus = self.user.userStatus
                                 
-                                // If the userImage has not been downloaded, request a new download
+                                // Just in case - if the userImage has not been downloaded, request a new download
                                 if userObject.userImage == nil
                                 {
-                                    AWSPrepRequest(requestToCall: AWSGetUserImage(user: userObject), delegate: self.awsRequestDelegate!).prepRequest()
+                                    AWSPrepRequest(requestToCall: FBGetUserData(user: self.user), delegate: self.awsRequestDelegate!).prepRequest()
                                 }
-                                
                                 userObjectExists = true
                                 break loopUserObjectCheck
                             }
                         }
                         if !userObjectExists
                         {
-                            print("AC-AGSUD - USER: \(userName) DOES NOT EXIST - ADDING")
+                            print("AC-AGSUD - USER: \(userID) DOES NOT EXIST - ADDING")
                             Constants.Data.userObjects.append(self.user)
                             
                             // Save to Core Data
                             CoreDataFunctions().userSave(user: self.user)
                             print("AC-AGSUD - Saved user: \(self.user.userName)")
                             
-                            // Download the user image and assign to the preview user image
-                            let awsGetUserImage = AWSGetUserImage(user: self.user)
-                            awsGetUserImage.awsRequestDelegate = self.awsRequestDelegate
-                            awsGetUserImage.makeRequest()
+                            // Request the Facebook Info (Name and Image)
+                            let fbGetUserData = FBGetUserData(user: self.user)
+                            fbGetUserData.awsRequestDelegate = self.awsRequestDelegate
+                            fbGetUserData.makeRequest()
                         }
                         
                         // Notify the parent view that the AWS call completed successfully
@@ -872,309 +874,6 @@ class AWSGetSingleUserData : AWSRequestObject
                         {
                             parentVC.processAwsReturn(self, success: true)
                         }
-                    }
-                }
-        })
-    }
-}
-
-class AWSGetUserImage : AWSRequestObject
-{
-    var user: User!
-    
-    required init(user: User)
-    {
-        self.user = user
-    }
-    
-    // Download User Image
-    override func makeRequest()
-    {
-        print("MVC: GETTING IMAGE FOR: \(self.user.userImageKey)")
-        
-        let downloadingFilePath = NSTemporaryDirectory() + self.user.userImageKey // + Constants.Settings.frameImageFileType)
-        let downloadingFileURL = URL(fileURLWithPath: downloadingFilePath)
-        
-        // Download the Frame
-        let downloadRequest : AWSS3TransferManagerDownloadRequest = AWSS3TransferManagerDownloadRequest()
-        downloadRequest.bucket = Constants.Strings.S3BucketUserImages
-        downloadRequest.key =  self.user.userImageKey
-        downloadRequest.downloadingFileURL = downloadingFileURL
-        
-        let transferManager = AWSS3TransferManager.default()
-        transferManager?.download(downloadRequest).continue(
-            { (task) -> AnyObject! in
-                
-                if let error = task.error
-                {
-                    if error._domain == AWSS3TransferManagerErrorDomain as String
-                        && AWSS3TransferManagerErrorType(rawValue: error._code) == AWSS3TransferManagerErrorType.paused
-                    {
-                        print("MVC: DOWNLOAD PAUSED")
-                        CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: "USER IMAGE DOWNLOAD PAUSED")
-                    }
-                    else
-                    {
-                        print("MVC: DOWNLOAD FAILED: [\(error)]")
-                        CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: error.localizedDescription)
-                        
-                        // Record the server request attempt
-                        Constants.Data.serverTries += 1
-                    }
-                    
-                    // Notify the parent view that the AWS call completed with an error
-                    if let parentVC = self.awsRequestDelegate
-                    {
-                        parentVC.processAwsReturn(self, success: false)
-                    }
-                }
-                else if let exception = task.exception
-                {
-                    print("MVC: DOWNLOAD FAILED: [\(exception)]")
-                    CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: exception.debugDescription)
-                    
-                    // Record the server request attempt
-                    Constants.Data.serverTries += 1
-                    
-                    // Notify the parent view that the AWS call completed with an error
-                    if let parentVC = self.awsRequestDelegate
-                    {
-                        parentVC.processAwsReturn(self, success: false)
-                    }
-                }
-                else
-                {
-                    print("MVC: DOWNLOAD SUCCEEDED")
-                    // Assign the image to the Preview Image View
-                    if FileManager().fileExists(atPath: downloadingFilePath)
-                    {
-                        print("IMAGE FILE AVAILABLE")
-                        let thumbnailData = try? Data(contentsOf: URL(fileURLWithPath: downloadingFilePath))
-                        
-                        // Ensure the Thumbnail Data is not null
-                        if let tData = thumbnailData
-                        {
-                            print("GET IMAGE - CHECK 1")
-                            
-                            // Assign the image to the Object User Image
-                            self.user.userImage = UIImage(data: tData)
-                            
-                            // Find the correct User Object in the global list and assign the newly downloaded Image
-                            loopUserObjectCheck: for userObject in Constants.Data.userObjects
-                            {
-                                if userObject.userID == self.user.userID
-                                {
-                                    // Update the saved user object image for access elsewhere
-                                    userObject.userImage = UIImage(data: tData)
-                                    
-                                    // Update the local user object image to send to the response method
-                                    self.user.userImage = UIImage(data: tData)
-                                    
-                                    // Notify the parent view that the AWS call completed successfully
-                                    if let parentVC = self.awsRequestDelegate
-                                    {
-                                        parentVC.processAwsReturn(self, success: true)
-                                    }
-                                    
-                                    break loopUserObjectCheck
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        print("FRAME FILE NOT AVAILABLE")
-                    }
-                }
-                return nil
-        })
-    }
-}
-
-class AWSEditUserName : AWSRequestObject
-{
-    var userID: String!
-    var newUserName: String!
-    
-    required init(newUserName: String)
-    {
-        self.userID = Constants.Data.currentUser
-        self.newUserName = newUserName
-    }
-    
-    // Edit the logged in user's userName
-    override func makeRequest()
-    {
-        let json: NSDictionary = ["user_id" : self.userID, "user_name": self.newUserName]
-        print("EDITING USER NAME TO: \(json)")
-        
-        let lambdaInvoker = AWSLambdaInvoker.default()
-        lambdaInvoker.invokeFunction("Blobjot-EditUserName", jsonObject: json, completionHandler:
-            {(responseData, err) -> Void in
-                
-                if (err != nil)
-                {
-                    print("Error: \(err)")
-                    CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: err.debugDescription)
-                    
-                    // Record the server request attempt
-                    Constants.Data.serverTries += 1
-                    
-                    // Notify the parent view that the AWS call completed with an error
-                    if let parentVC = self.awsRequestDelegate
-                    {
-                        parentVC.processAwsReturn(self, success: false)
-                    }
-                }
-                else if (responseData != nil)
-                {
-                    print("EDIT USER NAME RESPONSE: \(responseData)")
-                    
-                    // Notify the parent view that the AWS call completed successfully
-                    if let parentVC = self.awsRequestDelegate
-                    {
-                        parentVC.processAwsReturn(self, success: true)
-                    }
-                }
-        })
-    }
-}
-
-class AWSEditUserImage : AWSRequestObject
-{
-    var userID: String!
-    var newUserImage: UIImage!
-    
-    required init(newUserImage: UIImage)
-    {
-        self.userID = Constants.Data.currentUser
-        self.newUserImage = newUserImage
-    }
-    
-    // Edit the userImage for the currently logged in user
-    override func makeRequest()
-    {
-        // Get the User Data for the userID
-        let json: NSDictionary = ["request" : "random_user_image_id"]
-        let lambdaInvoker = AWSLambdaInvoker.default()
-        lambdaInvoker.invokeFunction("Blobjot-CreateRandomID", jsonObject: json, completionHandler:
-            { (responseData, err) -> Void in
-                
-                if (err != nil)
-                {
-                    print("UUI: Error: \(err)")
-                    // Record the server request attempt
-                    Constants.Data.serverTries += 1
-                }
-                else if (responseData != nil)
-                {
-                    let imageID = responseData! as! String
-                    print("UUI: imageID: \(imageID)")
-                    
-                    let resizedImage = self.newUserImage.resizeWithSquareSize(Constants.Settings.imageSizeUser)
-                    
-                    if let data = UIImagePNGRepresentation(resizedImage)
-                    {
-                        print("UUI: INSIDE DATA")
-                        
-                        let filePath = NSTemporaryDirectory() + ("userImage" + imageID + ".png")
-                        print("UUI: FILE PATH: \("file:///" + filePath)")
-                        try? data.write(to: URL(fileURLWithPath: filePath), options: [.atomic])
-                        
-                        var uploadMetadata = [String : String]()
-                        uploadMetadata["user_id"] = Constants.Data.currentUser
-                        print("UUI: METADATA: \(uploadMetadata)")
-                        
-                        let uploadRequest = AWSS3TransferManagerUploadRequest()
-                        uploadRequest?.bucket = Constants.Strings.S3BucketUserImages
-                        uploadRequest?.metadata = uploadMetadata
-                        uploadRequest?.key =  imageID
-                        uploadRequest?.body = URL(string: "file:///" + filePath)
-                        print("UUI: UPLOAD REQUEST: \(uploadRequest)")
-                        
-                        let transferManager = AWSS3TransferManager.default()
-                        transferManager?.upload(uploadRequest).continue(
-                            { (task) -> AnyObject! in
-                                
-                                if let error = task.error
-                                {
-                                    if error._domain == AWSS3TransferManagerErrorDomain as String
-                                        && AWSS3TransferManagerErrorType(rawValue: error._code) == AWSS3TransferManagerErrorType.paused {
-                                        print("UUI: Upload paused.")
-                                        CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: "NEW USER IMAGE UPLOAD PAUSED")
-                                    }
-                                    else
-                                    {
-                                        print("UUI: Upload failed: [\(error)]")
-                                        CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: error.localizedDescription)
-                                        
-                                        // Delete the user image from temporary memory
-                                        do
-                                        {
-                                            print("UUI: Deleting image: \(imageID)")
-                                            try FileManager.default.removeItem(atPath: filePath)
-                                        }
-                                        catch let error as NSError
-                                        {
-                                            print("UUI: Ooops! Something went wrong: \(error)")
-                                            CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: error.debugDescription)
-                                        }
-                                    }
-                                    
-                                    // Notify the parent view that the AWS call completed with an error
-                                    if let parentVC = self.awsRequestDelegate
-                                    {
-                                        parentVC.processAwsReturn(self, success: false)
-                                    }
-                                    
-                                }
-                                else if let exception = task.exception
-                                {
-                                    print("UUI: Upload failed: [\(exception)]")
-                                    CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: exception.debugDescription)
-                                    
-                                    // Delete the user image from temporary memory
-                                    do
-                                    {
-                                        print("UUI: Deleting image: \(imageID)")
-                                        try FileManager.default.removeItem(atPath: filePath)
-                                    }
-                                    catch let error as NSError
-                                    {
-                                        print("UUI: Ooops! Something went wrong: \(error)")
-                                        CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: err.debugDescription)
-                                    }
-                                    
-                                    // Notify the parent view that the AWS call completed with an error
-                                    if let parentVC = self.awsRequestDelegate
-                                    {
-                                        parentVC.processAwsReturn(self, success: false)
-                                    }
-                                    
-                                }
-                                else
-                                {
-                                    print("UUI: Upload succeeded")
-                                    // Delete the user image from temporary memory
-                                    do
-                                    {
-                                        print("UUI: Deleting image: \(imageID)")
-                                        try FileManager.default.removeItem(atPath: filePath)
-                                    }
-                                    catch let error as NSError
-                                    {
-                                        print("UUI: Ooops! Something went wrong: \(error)")
-                                        CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: error.debugDescription)
-                                    }
-                                    
-                                    // Notify the parent view that the AWS call completed successfully
-                                    if let parentVC = self.awsRequestDelegate
-                                    {
-                                        parentVC.processAwsReturn(self, success: true)
-                                    }
-                                }
-                                return nil
-                        })
                     }
                 }
         })
@@ -1240,7 +939,7 @@ class AWSGetUserConnections : AWSRequestObject
                                     let addUser = User()
                                     addUser.userID = userID
                                     addUser.facebookID = facebookID
-                                    addUser.userStatus = userStatus
+                                    addUser.userStatus = userStatus!
                                     
                                     // Check to ensure the user does not already exist in the global User array
                                     // Add the minimal user data to the array
@@ -1251,7 +950,7 @@ class AWSGetUserConnections : AWSRequestObject
                                         
                                         if userObject.userID == userID
                                         {
-                                            userObject.userStatus = userStatus
+                                            userObject.userStatus = userStatus!
                                             
                                             // If the user is the currently logged in user, ensure that the user is connected to themselves
                                             if userObject.userID == Constants.Data.currentUser
@@ -1260,22 +959,22 @@ class AWSGetUserConnections : AWSRequestObject
                                             }
                                             else
                                             {
-                                                userObject.userStatus = Constants.UserStatusTypes(rawValue: arrayIndex)
+                                                userObject.userStatus = userStatus!
                                             }
                                             
                                             userObjectExists = true
                                             break loopUserObjectCheck
                                         }
                                     }
-                                    if userObjectExists == false
+                                    if !userObjectExists
                                     {
                                         Constants.Data.userObjects.append(addUser)
                                     }
                                     
-                                    // Request the Facebook Info (Name and Image)
-                                    let fbGetUserData = FBGetUserData(userID: userID, facebookID: facebookID)
-                                    fbGetUserData.awsRequestDelegate = self.awsRequestDelegate
-                                    fbGetUserData.makeRequest()
+//                                    // Request the Facebook Info (Name and Image)
+//                                    let fbGetUserData = FBGetUserData(userID: userID, facebookID: facebookID)
+//                                    fbGetUserData.awsRequestDelegate = self.awsRequestDelegate
+//                                    fbGetUserData.makeRequest()
                                 }
                             }
                         }
@@ -2238,100 +1937,148 @@ class AWSLog : AWSRequestObject
 
 class FBGetUserData : AWSRequestObject
 {
-    var userID: String!
-    var facebookID: String!
+    var user: User!
     
-    required init(userID: String, facebookID: String)
+    required init(user: User)
     {
-        self.userID = userID
-        self.facebookID = facebookID
+        self.user = user
     }
     
     // FBSDK METHOD - Get user data from FB before attempting to log in via AWS
     override func makeRequest()
     {
-        print("UF-FBSDK - MAKING GRAPH REQUEST")
-        print("UF-FBSDK - COGNITO ID: \(Constants.credentialsProvider.identityId)")
-        let fbRequest = FBSDKGraphRequest(graphPath: self.facebookID, parameters: ["fields": "id, email, name, picture"]) //parameters: ["fields": "id,email,name,picture"])
-        fbRequest?.start
-            {(connection: FBSDKGraphRequestConnection?, result: Any?, error: Error?) in
-                
-                if error != nil
-                {
-                    print("UF-FBSDK - Error Getting Info \(error)")
-                    CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: error!.localizedDescription)
+        print("UF-FBSDK - TRYING TO MAKE GRAPH REQUEST WITH USER: \(self.user.userID), USERNAME: \(self.user.userName), FB ID: \(self.user.facebookID), USER STATUS: \(self.user.userStatus)")
+        if let facebookID = self.user.facebookID
+        {
+            print("UF-FBSDK - COGNITO ID: \(Constants.credentialsProvider.identityId)")
+            let fbRequest = FBSDKGraphRequest(graphPath: facebookID, parameters: ["fields": "id, email, name, picture"]) //parameters: ["fields": "id,email,name,picture"])
+            fbRequest?.start
+                {(connection: FBSDKGraphRequestConnection?, result: Any?, error: Error?) in
                     
-                    // Record the server request attempt
-                    Constants.Data.serverTries += 1
-                }
-                else
-                {
-                    if let resultDict = result as? [String:AnyObject]
+                    if error != nil
                     {
-                        if let facebookName = resultDict["name"] as! String!
+                        print("UF-FBSDK - Error Getting Info \(error)")
+                        CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: error!.localizedDescription)
+                        
+                        // Notify the parent view that the AWS call failed
+                        if let parentVC = self.awsRequestDelegate
                         {
-                            var facebookImageUrl = "none"
-                            if let resultPicture = resultDict["picture"] as? [String:AnyObject]
+                            parentVC.processAwsReturn(self, success: false)
+                        }
+                        
+                        // Record the server request attempt
+                        Constants.Data.serverTries += 1
+                    }
+                    else
+                    {
+                        if let resultDict = result as? [String:AnyObject]
+                        {
+                            if let facebookName = resultDict["name"] as! String!
                             {
-                                if let resultPictureData = resultPicture["data"] as? [String:AnyObject]
+                                print("UF-FBSDK - Name : \(facebookName)")
+                                // Update the local username
+                                self.user.userName = facebookName
+                                
+                                var facebookImageUrl = "none"
+                                if let resultPicture = resultDict["picture"] as? [String:AnyObject]
                                 {
-                                    if resultPictureData["is_silhouette"] as! Bool == false
+                                    if let resultPictureData = resultPicture["data"] as? [String:AnyObject]
                                     {
-                                        facebookImageUrl = resultPictureData["url"]! as! String
-                                        let imgURL = URL(string: facebookImageUrl)
+                                        print("UF-FBSDK - Picture Data : \(resultPictureData)")
                                         
-                                        let task = URLSession.shared.dataTask(with: imgURL!)
-                                        { (responseData, responseUrl, error) -> Void in
+                                        if resultPictureData["is_silhouette"] as! Bool == false
+                                        {
+                                            print("UF-FBSDK - NOT SILHOUETTE")
                                             
-                                            if let data = responseData
-                                            {
-                                                // execute in UI thread
-                                                DispatchQueue.main.async(execute:
-                                                    {
-                                                        loopUserObjectCheck: for userObject in Constants.Data.userObjects
+//                                            facebookImageUrl = resultPictureData["url"]! as! String
+                                            facebookImageUrl = "https://graph.facebook.com/" + self.user.facebookID + "/picture?type=large"
+                                            let imgURL = URL(string: facebookImageUrl)
+                                            
+                                            let task = URLSession.shared.dataTask(with: imgURL!)
+                                            { (responseData, responseUrl, error) -> Void in
+                                                
+                                                if let data = responseData
+                                                {
+                                                    // execute in UI thread
+                                                    DispatchQueue.main.async(execute:
                                                         {
-                                                            if userObject.userID == self.userID
+                                                            print("UF-FBSDK - Response Data : \(data)")
+                                                            
+                                                            // Update the local user image
+                                                            self.user.userImage = UIImage(data: data)
+                                                            
+                                                            // Update the global user
+                                                            self.updateUserGlobally(user: self.user)
+                                                            
+                                                            // Notify the parent view that the AWS call completed successfully
+                                                            if let parentVC = self.awsRequestDelegate
                                                             {
-                                                                userObject.userName = facebookName
-                                                                userObject.userImage = UIImage(data: data)
-                                                                
-                                                                // Save to Core Data
-                                                                CoreDataFunctions().userSave(user: userObject)
-                                                                
-                                                                break loopUserObjectCheck
+                                                                parentVC.processAwsReturn(self, success: true)
                                                             }
-                                                        }
-                                                        
-                                                        // Notify the parent view that the AWS call completed successfully
-                                                        if let parentVC = self.awsRequestDelegate
+                                                    })
+                                                }
+                                                else
+                                                {
+                                                    DispatchQueue.main.async(execute:
                                                         {
-                                                            parentVC.processAwsReturn(self, success: true)
-                                                        }
-                                                })
+                                                            print("UF-FBSDK - Response Error: \(error)")
+                                                    })
+                                                }
                                             }
-                                            else
+                                            
+                                            // Run task
+                                            task.resume()
+                                        }
+                                        else
+                                        {
+                                            print("UF-FBSDK - Response: IS SILHOUETTE")
+                                            
+                                            // Update the global user
+                                            self.updateUserGlobally(user: self.user)
+                                            
+                                            // Notify the parent view that the AWS call completed successfully
+                                            if let parentVC = self.awsRequestDelegate
                                             {
-                                                DispatchQueue.main.async(execute:
-                                                    {
-                                                        print("UF-FBSDK - Response: \(error)")
-                                                })
+                                                parentVC.processAwsReturn(self, success: true)
                                             }
                                         }
-                                        
-                                        // Run task
-                                        task.resume()
-                                    }
-                                    else
-                                    {
-                                        print("UF-FBSDK - Response: USE DEFAULT IMAGE (SILHOUETTE)")
-                                        // *COMPLETE******* USE DEFAULT IMAGE
                                     }
                                 }
                             }
                         }
+                        
                     }
-                    
-                }
+            }
+        }
+        else
+        {
+            // Indicate a failure so that the default userName and userImage is displayed
+            // Notify the parent view that the AWS call failed
+            if let parentVC = self.awsRequestDelegate
+            {
+                parentVC.processAwsReturn(self, success: false)
+            }
+            
+            // Go ahead and request the user data from AWS again since not all data was originally downloaded
+            AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: self.user.userID, forPreviewBox: false), delegate: self.awsRequestDelegate!).prepRequest()
+        }
+    }
+    
+    // Update the user in the global userList with the new data
+    func updateUserGlobally(user: User)
+    {
+        loopUserObjectCheck: for userObject in Constants.Data.userObjects
+        {
+            if userObject.userID == self.user.userID
+            {
+                userObject.userName = user.userName
+                userObject.userImage = user.userImage
+                
+                // Save to Core Data
+                CoreDataFunctions().userSave(user: userObject)
+                
+                break loopUserObjectCheck
+            }
         }
     }
 }

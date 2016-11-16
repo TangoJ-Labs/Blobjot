@@ -1,5 +1,5 @@
 //
-//  UserCD+CoreDataProperties.swift
+//  CurrentUser+CoreDataProperties.swift
 //  Blobjot
 //
 //  Created by Sean Hart on 11/15/16.
@@ -10,16 +10,15 @@ import Foundation
 import CoreData
 
 
-extension UserCD {
+extension CurrentUser {
 
-    @nonobjc public class func fetchRequest() -> NSFetchRequest<UserCD> {
-        return NSFetchRequest<UserCD>(entityName: "UserCD");
+    @nonobjc public class func fetchRequest() -> NSFetchRequest<CurrentUser> {
+        return NSFetchRequest<CurrentUser>(entityName: "CurrentUser");
     }
 
     @NSManaged public var facebookID: String?
     @NSManaged public var userID: String?
     @NSManaged public var userImage: NSData?
     @NSManaged public var userName: String?
-    @NSManaged public var userStatus: NSNumber?
 
 }

@@ -186,7 +186,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         defaultBlobUser = User()
         defaultBlobUser.userID = "default"
         defaultBlobUser.userName = "default"
-        defaultBlobUser.userImageKey = "default"
+        defaultBlobUser.userImageUrl = "default"
         defaultBlobUser.userImage = UIImage(named: Constants.Strings.iconStringBlobjotLogo)
         defaultBlobUser.userStatus = Constants.UserStatusTypes.connected
         
@@ -1234,6 +1234,12 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                             {
                                 userExists = true
                                 
+                                // If the userImage does not exist, request it from FB
+                                if userObject.userImage == nil
+                                {
+                                    AWSPrepRequest(requestToCall: FBGetUserData(user: userObject), delegate: self as AWSRequestDelegate).prepRequest()
+                                }
+                                
                                 break loopUserObjectCheck
                             }
                         }
@@ -2161,7 +2167,8 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                     }
                     else
                     {
-                        AWSPrepRequest(requestToCall: AWSGetUserImage(user: user), delegate: self as AWSRequestDelegate).prepRequest()
+//                        AWSPrepRequest(requestToCall: AWSGetUserImage(user: user), delegate: self as AWSRequestDelegate).prepRequest()
+                        AWSPrepRequest(requestToCall: FBGetUserData(user: user), delegate: self as AWSRequestDelegate).prepRequest()
                     }
                     
                     break loopUserCheck
@@ -2501,34 +2508,21 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                         // Show the error message
                         self.createAlertOkView("AWSGetSingleUserData Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                     }
-                case let awsGetUserImage as AWSGetUserImage:
-                    if success
+                case let fbGetUserData as FBGetUserData:
+                    // Do not distinguish between success and failure for this class - both need to have the userList updated
+                    // Refresh the collection view
+                    self.refreshCollectionView()
+                    
+                    // If the Blob Active View Controller is not null, send a refresh command so that the Parent VC's Child's VC's Table View's rows look for the new data
+                    self.updateBlobActionTable()
+                    
+                    // Update the preview data
+                    self.refreshPreviewUserData(fbGetUserData.user)
+                    
+                    // Refresh child VCs
+                    if self.blobVC != nil
                     {
-                        // Refresh the collection view
-                        self.refreshCollectionView()
-                        
-                        // If the Blob Active View Controller is not null, send a refresh command so that the Parent VC's Child's VC's Table View's rows look for the new data
-                        self.updateBlobActionTable()
-                        
-                        // Update the preview data
-                        self.refreshPreviewUserData(awsGetUserImage.user)
-                        
-                        // Refresh child VCs
-                        if self.blobVC != nil
-                        {
-                            self.blobVC.refreshBlobViewTable()
-                        }
-                    }
-                    else
-                    {
-                        // Show the error message
-                        self.createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
-                    }
-                case _ as AWSEditUserName:
-                    if !success
-                    {
-                        // Show the error message
-                        self.createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try to update your username again.")
+                        self.blobVC.refreshBlobViewTable()
                     }
                 default:
                     print("MVC-DEFAULT: THERE WAS AN ISSUE WITH THE DATA RETURNED FROM AWS")

@@ -135,7 +135,16 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
             }
         }
         // Sort the list alphabetically and copy the peopleList to the peopleList to use in the table
-        self.peopleList.sort(by: {$0.userName <  $1.userName})
+        self.peopleList.sort(by: {
+            if $0.userName != nil && $1.userName != nil
+            {
+                return $0.userName! <  $1.userName!
+            }
+            else
+            {
+                return true
+            }
+        })
         self.peopleListUse = self.peopleList
         
         AWSPrepRequest(requestToCall: AWSGetUserConnections(), delegate: self as AWSRequestDelegate).prepRequest()
@@ -185,7 +194,7 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
             
             cell.cellUserImageActivityIndicator.stopAnimating()
         } else {
-            AWSPrepRequest(requestToCall: AWSGetUserImage(user: cellUserObject), delegate: self as AWSRequestDelegate).prepRequest()
+            AWSPrepRequest(requestToCall: FBGetUserData(user: cellUserObject), delegate: self as AWSRequestDelegate).prepRequest()
         }
         
         return cell
@@ -227,11 +236,14 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
         CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
-    func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
+    func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath)
+    {
         print("DID DESELECT ROW: \((indexPath as NSIndexPath).row)")
         
-        loopPeopleListSelected: for (index, person) in peopleListSelected.enumerated() {
-            if person.userID == peopleListUse[(indexPath as NSIndexPath).row].userID {
+        loopPeopleListSelected: for (index, person) in peopleListSelected.enumerated()
+        {
+            if person.userID == peopleListUse[(indexPath as NSIndexPath).row].userID
+            {
                 peopleListSelected.remove(at: index)
                 break loopPeopleListSelected
             }
@@ -239,12 +251,17 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
         
         print("PEOPLE SELECTED COUNT: \(peopleListSelected.count)")
         // Check the number of people selected
-        if peopleListSelected.count > 0 {
-            if let parentVC = self.blobAddPeopleDelegate {
+        if peopleListSelected.count > 0
+        {
+            if let parentVC = self.blobAddPeopleDelegate
+            {
                 parentVC.selectedPerson()
             }
-        } else {
-            if let parentVC = self.blobAddPeopleDelegate {
+        }
+        else
+        {
+            if let parentVC = self.blobAddPeopleDelegate
+            {
                 parentVC.deselectedAllPeople()
             }
         }
@@ -258,16 +275,19 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
         CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
-    func tableView(_ tableView: UITableView, didHighlightRowAt indexPath: IndexPath) {
+    func tableView(_ tableView: UITableView, didHighlightRowAt indexPath: IndexPath)
+    {
         print("DID HIGHLIGHT ROW: \((indexPath as NSIndexPath).row)")
     }
     
-    func tableView(_ tableView: UITableView, didUnhighlightRowAt indexPath: IndexPath) {
+    func tableView(_ tableView: UITableView, didUnhighlightRowAt indexPath: IndexPath)
+    {
         print("DID UNHIGHLIGHT ROW: \((indexPath as NSIndexPath).row)")
     }
     
     // Override to support conditional editing of the table view.
-    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool
+    {
         return false
     }
     
@@ -275,28 +295,36 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
     // MARK:  UISearchBarDelegate protocol
     
     // Edit the peopleList based on the search text filter
-    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String)
+    {
         print("BAPVC - Search Text: \(searchText)")
         
         // If the search bar is cleared, clear the peopleList and add all users
         self.peopleListUse = [User]()
-        if searchText == "" {
-            for addPerson in self.peopleList {
+        if searchText == ""
+        {
+            for addPerson in self.peopleList
+            {
                 self.peopleListUse.append(addPerson)
             }
-            
             // else filter the list by clearing the peopleList and appending only the matching Users
-        } else {
-            for userObject in self.peopleList {
-                // Convert the strings to lowercase for better matching
-                if userObject.userName.lowercased().contains(searchText.lowercased()) {
-                    print("BAPVC - UserName Contains: \(searchText)")
-                    
-                    self.peopleListUse.append(userObject)
+        }
+        else
+        {
+            for userObject in self.peopleList
+            {
+                if userObject.userName != nil
+                {
+                    // Convert the strings to lowercase for better matching
+                    if userObject.userName!.lowercased().contains(searchText.lowercased())
+                    {
+                        print("BAPVC - UserName Contains: \(searchText)")
+                        
+                        self.peopleListUse.append(userObject)
+                    }
                 }
             }
         }
-        
         // Refresh the Table
         refreshTableAndHighlights()
     }
@@ -397,7 +425,16 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
                         self.peopleList = Constants.Data.userObjects
                         
                         // Sort the list alphabetically and copy the peopleList to the peopleList to use in the table
-                        self.peopleList.sort(by: {$0.userName <  $1.userName})
+                        self.peopleList.sort(by: {
+                            if $0.userName != nil && $1.userName != nil
+                            {
+                                return $0.userName! <  $1.userName!
+                            }
+                            else
+                            {
+                                return true
+                            }
+                        })
                         self.peopleListUse = self.peopleList
                         
                         // Reload the Table View
@@ -409,17 +446,25 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
                         let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                         self.present(alertController, animated: true, completion: nil)
                     }
-                case _ as AWSGetUserImage:
-                    if success
+                case let fbGetUserData as FBGetUserData:
+                    // Do not distinguish between success and failure for this class - both need to have the userList updated
+                    if let newImage = fbGetUserData.user.userImage
                     {
+                        // Find the correct User Object in the local list and assign the newly downloaded Image
+                        loopUserObjectCheckLocal: for userObjectLocal in self.peopleList
+                        {
+                            if userObjectLocal.userID == fbGetUserData.user.userID
+                            {
+                                userObjectLocal.userImage = newImage
+                                
+                                break loopUserObjectCheckLocal
+                            }
+                        }
+                        
+                        print("PVC - ADDED USER IMAGE: \(fbGetUserData.user.userName))")
+                        
                         // Reload the Table View
                         self.refreshTableAndHighlights()
-                    }
-                    else
-                    {
-                        // Show the error message
-                        let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
-                        self.present(alertController, animated: true, completion: nil)
                     }
                 default:
                     print("BAPVC-DEFAULT: THERE WAS AN ISSUE WITH THE DATA RETURNED FROM AWS")

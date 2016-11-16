@@ -25,6 +25,7 @@ class UtilityFunctions
         for sUser in savedUsers
         {
             print("UF-RUL - ADDING CORE DATA USER: \(sUser.userName)")
+            print("UF-RUL - ADDING CORE DATA USER: \(sUser.facebookID)")
             
             Constants.Data.userObjects.append(sUser)
         }
