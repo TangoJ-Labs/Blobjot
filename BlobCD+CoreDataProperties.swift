@@ -1,8 +1,8 @@
 //
-//  Blob+CoreDataProperties.swift
+//  BlobCD+CoreDataProperties.swift
 //  Blobjot
 //
-//  Created by Sean Hart on 11/6/16.
+//  Created by Sean Hart on 11/19/16.
 //  Copyright © 2016 blobjot. All rights reserved.
 //
 
@@ -28,5 +28,6 @@ extension BlobCD {
     @NSManaged public var blobThumbnailID: String?
     @NSManaged public var blobType: NSNumber?
     @NSManaged public var blobUserID: String?
+    @NSManaged public var lastUsed: NSDate?
 
 }

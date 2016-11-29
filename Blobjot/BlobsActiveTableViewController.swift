@@ -242,6 +242,17 @@ class BlobsActiveTableViewController: UIViewController, UITableViewDataSource, U
             // Record the Blob hide in AWS so that the Blob no longer is downloaded for this user
             AWSPrepRequest(requestToCall: AWSHideBlob(blobID: actionBlob.blobID, userID: Constants.Data.currentUser), delegate: self as AWSRequestDelegate).prepRequest()
             
+            // Remove the Blob from the tagged Blobs
+            loopTaggedBlobsCheck: for (tIndex, blob) in Constants.Data.taggedBlobs.enumerated()
+            {
+                if blob.blobID == actionBlob.blobID
+                {
+                    Constants.Data.taggedBlobs.remove(at: tIndex)
+                    
+                    break loopTaggedBlobsCheck
+                }
+            }
+            
             // Remove the Blob from the map Blobs
             loopMapBlobsCheck: for (bIndex, blob) in Constants.Data.mapBlobs.enumerated()
             {

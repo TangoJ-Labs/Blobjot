@@ -64,6 +64,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         
         UIApplication.shared.applicationIconBadgeNumber = Constants.Data.badgeNumber
         
+//        CoreDataFunctions().usersDeleteOld()
+//        CoreDataFunctions().blobsDeleteOld()
+        
         // Reset the global User list with Core Data
         UtilityFunctions().resetUserListWithCoreData()
         
@@ -91,6 +94,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         Constants.inBackground = true
         
         self.updateLocationManager()
+        
+        // Delete Blobs and Users not recently used to save space
+        CoreDataFunctions().usersDeleteOld()
+        CoreDataFunctions().blobsDeleteOld()
     }
     
     func applicationWillEnterForeground(_ application: UIApplication)
@@ -277,18 +284,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         Constants.appDelegateLocationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
         Constants.appDelegateLocationManager.distanceFilter = Constants.Settings.locationDistanceFilter
         
-        if Constants.Settings.locationManagerConstant
-        {
-            Constants.appDelegateLocationManager.pausesLocationUpdatesAutomatically = false
-            Constants.appDelegateLocationManager.startUpdatingLocation()
-            Constants.appDelegateLocationManager.disallowDeferredLocationUpdates()
-        }
-        else
-        {
-            Constants.appDelegateLocationManager.pausesLocationUpdatesAutomatically = true
-            Constants.appDelegateLocationManager.startMonitoringSignificantLocationChanges()
-//            Constants.appDelegateLocationManager.allowDeferredLocationUpdates(untilTraveled: Constants.Settings.locationAccuracyDeferredDistance, timeout: Constants.Settings.locationAccuracyDeferredInterval)
-        }
+        UtilityFunctions().toggleLocationManagerSettings()
     }
     
     // Process the new location data passed by the locationManager to create new notifications if needed
@@ -344,22 +340,26 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
                             // Only request the extra Blob data if it has not already been requested
                             AWSPrepRequest(requestToCall: AWSGetBlobExtraData(blob: blob), delegate: self as AWSRequestDelegate).prepRequest()
                             
-                            // When downloading Blob data, always request the user data if it does not already exist
-                            // Find the correct User Object in the global list
-                            var userExists = false
-                            loopUserObjectCheck: for userObject in Constants.Data.userObjects
+                            // Ensure that the blob type is not a BLOBJOT BLOB
+                            if blob.blobType != Constants.BlobTypes.blobjot
                             {
-                                if userObject.userID == blob.blobUserID
+                                // When downloading Blob data, always request the user data if it does not already exist
+                                // Find the correct User Object in the global list
+                                var userExists = false
+                                loopUserObjectCheck: for userObject in Constants.Data.userObjects
                                 {
-                                    userExists = true
-                                    
-                                    break loopUserObjectCheck
+                                    if userObject.userID == blob.blobUserID
+                                    {
+                                        userExists = true
+                                        
+                                        break loopUserObjectCheck
+                                    }
                                 }
-                            }
-                            // If the user has not been downloaded, request the user and the userImage and then notify the user
-                            if !userExists
-                            {
-                                AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: blob.blobUserID, forPreviewBox: false), delegate: self as AWSRequestDelegate).prepRequest()
+                                // If the user has not been downloaded, request the user and the userImage and then notify the user
+                                if !userExists
+                                {
+                                    AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: blob.blobUserID, forPreviewBox: false), delegate: self as AWSRequestDelegate).prepRequest()
+                                }
                             }
                         }
                         else

@@ -33,6 +33,9 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
     var blobCommentAddTextView: UITextView!
     var blobCommentAddTextViewDefaultText: UILabel!
     
+//    var pointView: UIView!
+//    var pointLabel: UILabel!
+    
     var blobCommentButtonTapGesture: UITapGestureRecognizer!
     var blobCommentAddCancelLabelTapGesture: UITapGestureRecognizer!
     var blobCommentAddSendLabelTapGesture: UITapGestureRecognizer!
@@ -212,6 +215,22 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
         blobCommentAddTextViewDefaultText.text = "Add a comment."
         blobCommentAddTextView.addSubview(blobCommentAddTextViewDefaultText)
         
+//        // Add a view to display points earned
+//        pointView = UIView(frame: CGRect(x: viewContainer.frame.width + 5, y: 50, width: 100, height: 50))
+//        pointView.layer.cornerRadius = 2
+//        pointView.backgroundColor = UIColor.white
+//        pointView.layer.shadowOffset = Constants.Dim.mapViewShadowOffset
+//        pointView.layer.shadowOpacity = Constants.Dim.mapViewShadowOpacity
+//        pointView.layer.shadowRadius = Constants.Dim.mapViewShadowRadius
+//        viewContainer.addSubview(pointView)
+//        
+//        pointLabel = UILabel(frame: CGRect(x: 0, y: 0, width: pointView.frame.width, height: pointView.frame.height))
+//        pointLabel.text = ""
+//        pointLabel.textColor = Constants.Colors.colorTextGray
+//        pointLabel.textAlignment = .center
+//        pointLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 36)
+//        pointView.addSubview(pointLabel)
+        
         // Add the Tap Gesture Recognizers for the comment features
         blobCommentButtonTapGesture = UITapGestureRecognizer(target: self, action: #selector(BlobViewController.blobCommentButtonTap(_:)))
         blobCommentButtonTapGesture.numberOfTapsRequired = 1  // add single tap
@@ -231,7 +250,16 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
         // Indicate the local blob has been viewed
         self.blob.blobViewed = true
         
-        // Indicate the global blob has been viewed
+        // Indicate the global blob(s) has been viewed
+        loopTaggedBlobsCheck: for tBlob in Constants.Data.taggedBlobs
+        {
+            if tBlob.blobID == blob.blobID
+            {
+                tBlob.blobViewed = true
+                
+                break loopTaggedBlobsCheck
+            }
+        }
         loopMapBlobsCheck: for mBlob in Constants.Data.mapBlobs
         {
             if mBlob.blobID == blob.blobID
@@ -910,6 +938,31 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
         let size = calculationView.sizeThatFits(CGSize(width: width, height: CGFloat(FLT_MAX)))
         return size.height
     }
+    
+//    func displayPointViewWithText(text: String)
+//    {
+//        self.pointLabel.text = text
+//        
+//        // Add an animation to show the point view with the passed text
+//        UIView.animate(withDuration: 0.5, animations:
+//            {
+//                self.pointView.frame = CGRect(x: self.viewContainer.frame.width - 90, y: 50, width: 100, height: 50)
+//        }, completion:
+//            { (finished: Bool) -> Void in
+//                
+//                // Pause for a second to display the points
+//                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0)
+//                {
+//                    // Add an animation to hide the point view
+//                    UIView.animate(withDuration: 0.5, animations:
+//                        {
+//                            self.pointView.frame = CGRect(x: self.viewContainer.frame.width + 5, y: 50, width: 100, height: 50)
+//                    }, completion:
+//                        { (finished: Bool) -> Void in
+//                    })
+//                }
+//        })
+//    }
     
 
     // MARK: AWS DELEGATE METHODS

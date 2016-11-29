@@ -154,7 +154,7 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
         searchExitTapGesture.numberOfTapsRequired = 1  // add single tap
         searchExitView.addGestureRecognizer(searchExitTapGesture)
         
-        UtilityFunctions().resetUserListWithCoreData()
+//        UtilityFunctions().resetUserListWithCoreData()
         
         // Populate the local User list with the global User list
         // The global User list was populated from Core Data upon initiation, and was updated with new data upon download
@@ -208,6 +208,15 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell
     {
+//        for lUser in self.peopleList
+//        {
+//            print("PVC - LOCAL LIST USER: \(lUser.userID)")
+//        }
+//        for gUser in Constants.Data.userObjects
+//        {
+//            print("PVC - GLOBAL LIST USER: \(gUser.userID)")
+//        }
+        
         let cell = tableView.dequeueReusableCell(withIdentifier: Constants.Strings.peopleTableViewCellReuseIdentifier, for: indexPath) as! PeopleTableViewCell
         print("PVC - CELL \((indexPath as NSIndexPath).row): \(cell)")
         
@@ -226,17 +235,23 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
         print("PVC - USER NAME: \(cellUserObject.userName) FOR CELL: \((indexPath as NSIndexPath).row)")
         
         // Get the User Object from the list and assign data to the cell
-        cell.cellUserName.text = cellUserObject.userName
-        if let cellUserImage = cellUserObject.userImage
+        if cellUserObject.userName != nil
         {
-            cell.cellUserImage.image = cellUserImage
+            cell.cellUserName.text = cellUserObject.userName
             
-            cell.cellUserImageActivityIndicator.stopAnimating()
+            if let cellUserImage = cellUserObject.userImage
+            {
+                cell.cellUserImage.image = cellUserImage
+                cell.cellUserImageActivityIndicator.stopAnimating()
+            }
+            else
+            {
+                AWSPrepRequest(requestToCall: FBGetUserData(user: cellUserObject, downloadImage: true), delegate: self as AWSRequestDelegate).prepRequest()
+            }
         }
         else
         {
-//            AWSPrepRequest(requestToCall: AWSGetUserImage(user: cellUserObject), delegate: self as AWSRequestDelegate).prepRequest()
-            AWSPrepRequest(requestToCall: FBGetUserData(user: cellUserObject), delegate: self as AWSRequestDelegate).prepRequest()
+            AWSPrepRequest(requestToCall: FBGetUserData(user: cellUserObject, downloadImage: true), delegate: self as AWSRequestDelegate).prepRequest()
         }
         
         print("USER STATUS: \(cellUserObject.userStatus)")
@@ -645,7 +660,7 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
             print("PVC - RELOAD TABLE VIEW - END REFRESHING")
             self.refreshControl.endRefreshing()
             self.peopleTableViewActivityIndicator.stopAnimating()
-//            self.peopleTableViewActivityIndicator.removeFromSuperview()
+            self.peopleTableViewActivityIndicator.isHidden = true
         }
     }
     
@@ -681,6 +696,7 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
         
         // Reload the Table View - DO NOT REPLACE THIS WITH LOCAL FUNCTION (function resorts users)
         self.peopleTableView.performSelector(onMainThread: #selector(UITableView.reloadData), with: nil, waitUntilDone: true)
+        self.refreshControl.endRefreshing()
     }
     
     
@@ -762,28 +778,15 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
                     print("PVC - ADDED USER IMAGE FBGetUserData: \(fbGetUserData.user.userName))")
                     
                     // Reload the Table View
-                    self.refreshTableViewAndEndSpinner(false)
+                    self.refreshTableViewAndEndSpinner(true)
                     
-//                case let awsSingleUserData as AWSGetSingleUserData:
-//                    print("PVC - AWS REQUEST - AWSGetSingleUserData")
-//                    // Do not distinguish between success and failure for this class - both need to have the userList updated
-//                    if let newImage = awsSingleUserData.user.userImage
-//                    {
-//                        // Find the correct User Object in the local list and assign the newly downloaded Image
-//                        loopUserObjectCheckLocal: for userObjectLocal in self.peopleList
-//                        {
-//                            if userObjectLocal.userID == awsSingleUserData.user.userID
-//                            {
-//                                userObjectLocal.userImage = newImage
-//                                
-//                                break loopUserObjectCheckLocal
-//                            }
-//                        }
-//                        
-//                        print("PVC - ADDED USER IMAGE AWSGetSingleUserData: \(awsSingleUserData.user.userName))")
-//                    }
-//                    // Reload the Table View
-//                    self.refreshTableViewAndEndSpinner(false)
+                case _ as AWSGetSingleUserData:
+                    if !success
+                    {
+                        // Show the error message
+                        let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                        self.present(alertController, animated: true, completion: nil)
+                    }
                 default:
                     print("PVC - DEFAULT: THERE WAS AN ISSUE WITH THE DATA RETURNED FROM AWS")
                     // Show the error message

@@ -14,6 +14,10 @@ import CoreData
 
 extension LocationManagerSetting {
     
+    @nonobjc public class func fetchRequest() -> NSFetchRequest<LocationManagerSetting> {
+        return NSFetchRequest<LocationManagerSetting>(entityName: "LocationManagerSetting");
+    }
+    
     @NSManaged var locationManagerSetting: String?
     
 }

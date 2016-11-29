@@ -10,7 +10,7 @@ import Foundation
 import CoreData
 
 
-class BlobNotification: NSManagedObject {
+public class BlobNotification: NSManagedObject {
 
 // Insert code here to add functionality to your managed object subclass
 

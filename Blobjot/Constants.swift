@@ -28,8 +28,8 @@ struct Constants
     {
         case temporary = 1
         case permanent = 2
-        case `public` = 3
-        case invisible = 4
+        case invisible = 3
+        case blobjot = 4
         case sponsoredTemporary = 5
         case sponsoredPermanent = 6
     }
@@ -67,9 +67,9 @@ struct Constants
         case 2:
             return Constants.BlobTypes.permanent
         case 3:
-            return Constants.BlobTypes.public
-        case 4:
             return Constants.BlobTypes.invisible
+        case 4:
+            return Constants.BlobTypes.blobjot
         case 5:
             return Constants.BlobTypes.sponsoredTemporary
         case 6:
@@ -87,8 +87,6 @@ struct Constants
             return Constants.Colors.blobRed
         case .permanent:
             return Constants.Colors.blobYellow
-        case .public:
-            return Constants.Colors.blobPurple
         case .invisible:
             if mainMap
             {
@@ -98,6 +96,8 @@ struct Constants
             {
                 return Constants.Colors.blobGray
             }
+        case .blobjot:
+            return Constants.Colors.blobPurple
         default:
             return Constants.Colors.blobRed
         }
@@ -111,8 +111,6 @@ struct Constants
             return Constants.Colors.blobRedOpaque
         case .permanent:
             return Constants.Colors.blobYellowOpaque
-        case .public:
-            return Constants.Colors.blobPurpleOpaque
         case .invisible:
             if mainMap
             {
@@ -122,6 +120,8 @@ struct Constants
             {
                 return Constants.Colors.blobGrayOpaque
             }
+        case .blobjot:
+            return Constants.Colors.blobPurpleOpaque
         default:
             return Constants.Colors.blobRedOpaque
         }
@@ -146,6 +146,8 @@ struct Constants
         static let colorTextNavBar = UIColor.white
         static let colorGrayLight = UIColor(red: 204/255, green: 204/255, blue: 204/255, alpha: 1.0) //#CCC
         static let colorGrayDark = UIColor(red: 38/255, green: 38/255, blue: 38/255, alpha: 1.0) //#262626
+        
+        static let colorFacebookDarkBlue = UIColor(red: 59/255, green: 89/255, blue: 152/255, alpha: 1.0) //#3B5998
         
         static let colorTextStandard = UIColor(red: 0/255, green: 0/255, blue: 0/255, alpha: 0.3) //#000000
         static let colorTextGray = UIColor(red: 38/255, green: 38/255, blue: 38/255, alpha: 1.0) //#262626
@@ -194,7 +196,8 @@ struct Constants
         
         static var badgeNumber = 0
         static var attemptedLogin: Bool = false
-        static var serverTries: Int = 0
+        static var serverTries: Int = 0 // Used to prevent looping through failed requests
+        static var serverLastRefresh: TimeInterval = Date().timeIntervalSince1970 // Used to prevent looping through failed requests in a short period of time
         static var lastCredentials: TimeInterval = Date().timeIntervalSince1970
         static var stillSendingBlob: Bool = false
         
@@ -202,6 +205,8 @@ struct Constants
         static var currentUserName: String?
         static var currentUserImage: UIImage?
         
+        static var taggedBlobs = [Blob]()
+        static var blobjotBlobs = [Blob]()
         static var mapBlobs = [Blob]()
         static var userBlobs = [Blob]()
         static var defaultBlob = Blob(blobID: "default", blobUserID: "default", blobLat: 0.0, blobLong: 0.0, blobRadius: 0.0, blobType: Constants.BlobTypes.invisible, blobMediaType: 1, blobText: "Check out Blobjot.com!")
@@ -210,6 +215,7 @@ struct Constants
         static var locationBlobs = [Blob]()
         static var blobThumbnailObjects = [BlobThumbnailObject]()
         static var userObjects = [User]()
+        static var userPublicArea = User(userID: "blobjotBlob", facebookID: "blobjotBlob", userName: "Public Area", userImage: UIImage(named: Constants.Strings.iconStringBlobjotLogo))
         
     }
     
@@ -321,6 +327,7 @@ struct Constants
         static let iconStringConnectionViewCheck = "CV_check_icon.png"
         static let iconStringConnectionViewPending = "CV_pending_icon.png"
         static let iconStringTabIconLocation = "TAB_ICON_location_blobs.png"
+        static let iconStringTabIconConnectionsWhite = "TAB_ICON_connections_white.png"
         static let iconStringTabIconConnections = "TAB_ICON_connections.png"
         static let iconStringTabIconAccount = "TAB_ICON_account.png"
         
@@ -339,6 +346,13 @@ struct Constants
         static let gKey = "AIzaSyBdwjW6jYuPjZP7oW8NsqHkZQyMxFq_j0w"
         static let mapStyleUrl = URL(string: "mapbox://styles/tangojlabs/ciqwaddsl0005b7m0xwctftow")
         static let maxServerTries: Int = 5
+        static let maxServerTryRefreshTime: Double = 5000 // In milliseconds
+        static let maxUserObjectSaveWithoutUse: Double = 43200000 // 12 Hours // In milliseconds
+        static let maxBlobObjectSaveWithoutUse: Double = 43200000 // 12 Hours // In milliseconds
+        
+        static let mapViewDefaultLat: CLLocationDegrees = 29.758624
+        static let mapViewDefaultLong: CLLocationDegrees = -95.366795
+        static let mapViewDefaultZoom: Float = 10
         
         static let userNameMaxLength: Int = 18
 //        static let userNameDisallowedCharacterSet = NSCharacterSet(charactersIn: "!@#$%^&*()-+={}|[]\\:;\'\"<>?,/~`").inverted
@@ -356,6 +370,7 @@ struct Constants
         static let locationAccuracyDeferredInterval: Double = 180 // In seconds
         
         static let locationDistanceMinChange: Double = 20 // In meters
+        static let locationDistanceUpdateBlobjotBlobs: Double = 2000 // In meters
         static let locationTimeMinChange: Double = 3 // In seconds
         
         static var locationManagerConstant: Bool = true

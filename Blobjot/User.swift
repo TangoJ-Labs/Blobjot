@@ -13,8 +13,16 @@ class User {
     var userID: String!
     var facebookID: String!
     var userName: String?
-    var userImageUrl: String?
     var userImage: UIImage?
     var userStatus: Constants.UserStatusTypes = Constants.UserStatusTypes.notConnected
     
+    convenience init(userID: String, facebookID: String, userName: String?, userImage: UIImage?)
+    {
+        self.init()
+        
+        self.userID = userID
+        self.facebookID = facebookID
+        self.userName = userName
+        self.userImage = userImage
+    }
 }

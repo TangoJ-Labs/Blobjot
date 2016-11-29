@@ -71,7 +71,7 @@ class HoleView: UIView
     func createView()
     {
         let overlayView = UIView(frame: frame)
-        overlayView.alpha = 0.7
+        overlayView.alpha = 0.8
         overlayView.backgroundColor = UIColor.black
         self.addSubview(overlayView)
         
@@ -94,7 +94,7 @@ class HoleView: UIView
         overlayTextView.isEditable = false
         overlayTextView.isScrollEnabled = false
         overlayTextView.font = UIFont(name: Constants.Strings.fontRegular, size: textFontSize)
-        // overlayTextView.textAlignment = .center
+        overlayTextView.textAlignment = .center
         overlayTextView.textColor = UIColor.white
         overlayTextView.text = text
         overlayView.addSubview(overlayTextView)

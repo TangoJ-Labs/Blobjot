@@ -13,6 +13,10 @@ import Foundation
 import CoreData
 
 extension BlobNotification {
+    
+    @nonobjc public class func fetchRequest() -> NSFetchRequest<BlobNotification> {
+        return NSFetchRequest<BlobNotification>(entityName: "BlobNotification");
+    }
 
     @NSManaged var blobID: String?
 

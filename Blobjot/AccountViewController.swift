@@ -22,7 +22,7 @@ protocol AccountViewControllerDelegate
     func popViewController()
 }
 
-class AccountViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, AWSRequestDelegate
+class AccountViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, AWSRequestDelegate, HoleViewDelegate
 {
     // Add a delegate variable which the parent view controller can pass its own delegate instance to and have access to the protocol
     // (and have its own functions called that are listed in the protocol)
@@ -68,7 +68,7 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
     
     var currentUserName: String = ""
     
-    var blobUserActivityIndicator: UIActivityIndicatorView!
+//    var blobUserActivityIndicator: UIActivityIndicatorView!
     var blobsTableViewBackgroundLabel: UILabel!
     var blobsUserTableView: UITableView!
     
@@ -80,6 +80,7 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
     
     // Create a local property to hold the child VC
     var blobVC: BlobViewController!
+    
     
     override func viewDidLoad()
     {
@@ -238,11 +239,11 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
             displayUserContainer.addSubview(locationButton)
         }
         
-        // Add a loading indicator while downloading the logged in user image
-        blobUserActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: 0, y: Constants.Dim.accountProfileBoxHeight, width: viewContainer.frame.width, height: Constants.Dim.accountTableViewCellHeight))
-        blobUserActivityIndicator.color = UIColor.black
-        viewContainer.addSubview(blobUserActivityIndicator)
-        blobUserActivityIndicator.startAnimating()
+//        // Add a loading indicator while downloading the logged in user image
+//        blobUserActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: 0, y: Constants.Dim.accountProfileBoxHeight, width: viewContainer.frame.width, height: Constants.Dim.accountTableViewCellHeight))
+//        blobUserActivityIndicator.color = UIColor.black
+//        viewContainer.addSubview(blobUserActivityIndicator)
+//        blobUserActivityIndicator.startAnimating()
         
         blobsTableViewBackgroundLabel = UILabel(frame: CGRect(x: 10, y: 10 + Constants.Dim.accountProfileBoxHeight, width: viewContainer.frame.width - 20, height: Constants.Dim.accountTableViewCellHeight - 20))
         blobsTableViewBackgroundLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 20)
@@ -250,7 +251,7 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
         blobsTableViewBackgroundLabel.lineBreakMode = .byWordWrapping
         blobsTableViewBackgroundLabel.textColor = Constants.Colors.colorTextStandard
         blobsTableViewBackgroundLabel.textAlignment = .center
-        blobsTableViewBackgroundLabel.text = ""
+        blobsTableViewBackgroundLabel.text = "You haven't created any Blobs yet.  Go to the Map View to add new Blobs!"
         viewContainer.addSubview(blobsTableViewBackgroundLabel)
         
         blobsUserTableView = UITableView(frame: CGRect(x: 0, y: 0, width: viewContainer.frame.width, height: viewContainer.frame.height))
@@ -360,7 +361,7 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
         self.view.addSubview(statusBarView)
         
         // Request the Blobs that the user has posted
-        blobUserActivityIndicator.startAnimating()
+//        blobUserActivityIndicator.startAnimating()
         AWSPrepRequest(requestToCall: AWSGetUserBlobs(), delegate: self as AWSRequestDelegate).prepRequest()
         
         // Refresh the Current User Elements
@@ -369,22 +370,56 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
         // Reset the userBlobs array and try to load the userBlobs from Core Data
         userBlobs = [Blob]()
         let savedBlobs = CoreDataFunctions().blobRetrieve()
+        print("AVC - GOT SAVED BLOBS: COUNT: \(savedBlobs.count)")
         for sBlob in savedBlobs
         {
-            if sBlob.blobUserID == Constants.Data.currentUser
+            if sBlob.blobUserID == Constants.Data.currentUser && sBlob.blobType == Constants.BlobTypes.permanent
             {
+                print("AVC - SAVED BLOB: \(sBlob.blobID)")
                 userBlobs.append(sBlob)
             }
         }
         
+        // Sort the User Blobs from newest to oldest
+        userBlobs.sort(by: {$0.blobDatetime.timeIntervalSince1970 > $1.blobDatetime.timeIntervalSince1970})
+        
         // Go ahead and request the user data from AWS again in case the data has been updated
         AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: Constants.Data.currentUser, forPreviewBox: false), delegate: self as AWSRequestDelegate).prepRequest()
+        
+        // Recall the Tutorial Views data in Core Data.  If it is empty for the current ViewController's tutorial, it has not been seen by the curren user.
+        let tutorialViews = CoreDataFunctions().tutorialViewRetrieve()
+        print("AVC: TUTORIAL VIEWS ACCOUNTVIEW: \(tutorialViews.tutorialAccountViewDatetime)")
+//        if tutorialViews.tutorialAccountViewDatetime == nil
+        if 2 == 2
+        {
+            let holeView = HoleView(holeViewPosition: 1, frame: viewContainer.bounds, circleOffsetX: 10, circleOffsetY: 200, circleRadius: 100, textOffsetX: (viewContainer.bounds.width / 2) - 50, textOffsetY: 50, textWidth: 200, textFontSize: 24, text: "This list shows the permanent Blobs you have created.  No temporary Blobs are accessible for management.")
+            holeView.holeViewDelegate = self
+            viewContainer.addSubview(holeView)
+        }
     }
     
     override func didReceiveMemoryWarning()
     {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+    
+    
+    // MARK: HOLE VIEW DELEGATE
+    func holeViewRemoved(removingViewAtPosition: Int)
+    {
+        switch removingViewAtPosition
+        {
+            
+        default:
+            print("AVC - FINISHED ALL HOLE VIEWS")
+            
+            // Record the Tutorial View in Core Data
+            let moc = DataController().managedObjectContext
+            let tutorialView = NSEntityDescription.insertNewObject(forEntityName: "TutorialViews", into: moc) as! TutorialViews
+            tutorialView.setValue(NSDate(), forKey: "tutorialAccountViewDatetime")
+            CoreDataFunctions().tutorialViewSave(tutorialViews: tutorialView)
+        }
     }
     
     
@@ -433,6 +468,7 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
         
         // Clear the data from the app
         Constants.Data.mapBlobs = [Blob]()
+        Constants.Data.taggedBlobs = [Blob]()
         Constants.Data.userBlobs = [Blob]()
         Constants.Data.locationBlobs = [Blob]()
         Constants.Data.blobThumbnailObjects = [BlobThumbnailObject]()
@@ -487,6 +523,9 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
             // Save the locationManagerSetting in Core Data
             CoreDataFunctions().locationManagerSettingSave(true)
         }
+        
+        // Implement the changed settings immediately
+        UtilityFunctions().toggleLocationManagerSettings()
         
         // Save an action in Core Data
         CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
@@ -744,32 +783,7 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
     // The Child View Controller will call this function when the logged in user has been added to the global user list
     func refreshCurrentUserElements()
     {
-        // Check to see if the current user data is already in Core Data
-        // Try to retrieve the current user data from Core Data
-        let currentUserArray = CoreDataFunctions().currentUserRetrieve()
-        
-        print("CHECKING CORE DATA - CURRENT USER COUNT: \(currentUserArray.count)")
-        
-        // If the return has content, use it to populate the user elements
-        if currentUserArray.count > 0
-        {
-            print("CHECKING CORE DATA - USE PREVIOUS IMAGE DATA")
-            
-            if let userName = currentUserArray[0].userName
-            {
-                currentUserName  = userName
-                displayUserLabel.text = userName
-                displayUserLabelActivityIndicator.stopAnimating()
-            }
-            
-            // Else use the saved current user data until the data is updated
-            if let imageData = currentUserArray[0].userImage
-            {
-                print("CHECKING CORE DATA - PREVIOUS IMAGE DATA EXISTS")
-                self.displayUserImage.image = UIImage(data: imageData as Data)
-                self.displayUserImageActivityIndicator.stopAnimating()
-            }
-        }
+        // The Current User Data has already been loaded into the global user array, and possibly updated from a fresh download of user data
         
         // Find the logged in User Object in the global User list and use the data to fill out the user display views
         userLoop: for userObject in Constants.Data.userObjects
@@ -853,7 +867,7 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
                         if Constants.Data.userBlobs.count <= 0
                         {
                             // The User has not created any Blobs, so stop the loading animation and show the message
-                            self.blobUserActivityIndicator.stopAnimating()
+//                            self.blobUserActivityIndicator.stopAnimating()
                             self.blobsTableViewBackgroundLabel.text = "You have not yet created a Blob.  Tap the add button on the Map Screen to create a new Blob!"
                         }
                         else
@@ -875,8 +889,10 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
                     if success
                     {
                         // Find the correct User Object in the local list and assign the newly downloaded Image
-                        loopLocalUserObjectCheck: for blobObject in self.userBlobs {
-                            if blobObject.blobID == awsGetThumbnailImage.blob.blobID {
+                        loopLocalUserObjectCheck: for blobObject in self.userBlobs
+                        {
+                            if blobObject.blobID == awsGetThumbnailImage.blob.blobID
+                            {
                                 blobObject.blobThumbnail = awsGetThumbnailImage.blob.blobThumbnail
                                 
                                 break loopLocalUserObjectCheck
@@ -890,8 +906,10 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
                         self.blobsUserTableView.performSelector(onMainThread: #selector(UITableView.reloadData), with: nil, waitUntilDone: true)
                         
                         // Find the correct User Object in the global list and assign the newly downloaded Image
-                        loopGlobalUserObjectCheck: for blobObject in Constants.Data.userBlobs {
-                            if blobObject.blobID == awsGetThumbnailImage.blob.blobID {
+                        loopGlobalUserObjectCheck: for blobObject in Constants.Data.userBlobs
+                        {
+                            if blobObject.blobID == awsGetThumbnailImage.blob.blobID
+                            {
                                 blobObject.blobThumbnail = awsGetThumbnailImage.blob.blobThumbnail
                                 
                                 break loopGlobalUserObjectCheck

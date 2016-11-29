@@ -31,7 +31,7 @@ protocol BlobAddViewControllerDelegate {
     func createBlobOnMap(_ blobCenter: CLLocationCoordinate2D, blobRadius: Double, blobType: Constants.BlobTypes, blobTitle: String)
 }
 
-class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, UIPageViewControllerDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, GMSMapViewDelegate, BlobAddTypeViewControllerDelegate, BlobAddMediaViewControllerDelegate, BlobAddPeopleViewControllerDelegate, AWSRequestDelegate {
+class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, UIPageViewControllerDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, GMSMapViewDelegate, BlobAddTypeViewControllerDelegate, BlobAddMediaViewControllerDelegate, BlobAddPeopleViewControllerDelegate, AWSRequestDelegate, HoleViewDelegate {
     
     // Add a delegate variable which the parent view controller can pass its own delegate instance to and have access to the protocol
     // (and have its own functions called that are listed in the protocol)
@@ -190,12 +190,49 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
         addCircle.map = mapView
         
         AWSPrepRequest(requestToCall: AWSGetRandomID(randomIdType: "random_media_id"), delegate: self as AWSRequestDelegate).prepRequest()
+        
+        // Recall the Tutorial Views data in Core Data.  If it is empty for the current ViewController's tutorial, it has not been seen by the curren user.
+        let tutorialViews = CoreDataFunctions().tutorialViewRetrieve()
+        print("BAVC: TUTORIAL VIEWS ACCOUNTVIEW: \(tutorialViews.tutorialBlobAddViewDatetime)")
+//        if tutorialViews.tutorialBlobAddViewDatetime == nil
+        if 2 == 2
+        {
+            let holeView = HoleView(holeViewPosition: 1, frame: viewContainer.bounds, circleOffsetX: viewContainer.bounds.width - 15, circleOffsetY: 90, circleRadius: 100, textOffsetX: (viewContainer.bounds.width / 2) - 100, textOffsetY: 170, textWidth: 200, textFontSize: 24, text: "Create a new Blob.  Be sure to choose your Blob type.")
+            holeView.holeViewDelegate = self
+            viewContainer.addSubview(holeView)
+        }
     }
 
     override func didReceiveMemoryWarning()
     {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+    
+    
+    // MARK: HOLE VIEW DELEGATE
+    func holeViewRemoved(removingViewAtPosition: Int)
+    {
+        switch removingViewAtPosition
+        {
+        case 1:
+            let holeView = HoleView(holeViewPosition: 2, frame: viewContainer.bounds, circleOffsetX: viewContainer.bounds.width - 60, circleOffsetY: 87, circleRadius: 40, textOffsetX: (viewContainer.bounds.width / 2) - 100, textOffsetY: 170, textWidth: 200, textFontSize: 24, text: "Remember!  Only Permanent Blobs can be managed and deleted once created.")
+            holeView.holeViewDelegate = self
+            viewContainer.addSubview(holeView)
+        case 2:
+            let holeView = HoleView(holeViewPosition: 3, frame: viewContainer.bounds, circleOffsetX: viewContainer.bounds.width / 2, circleOffsetY: 30 - (viewContainer.bounds.width / 2), circleRadius: viewContainer.bounds.width, textOffsetX: (viewContainer.bounds.width / 2) - 100, textOffsetY: 195, textWidth: 200, textFontSize: 24, text: "Swipe left in the content creator to add text, photos, and tag connections.")
+            holeView.holeViewDelegate = self
+            viewContainer.addSubview(holeView)
+            
+        default:
+            print("BAVC - FINISHED ALL HOLE VIEWS")
+            
+            // Record the Tutorial View in Core Data
+            let moc = DataController().managedObjectContext
+            let tutorialView = NSEntityDescription.insertNewObject(forEntityName: "TutorialViews", into: moc) as! TutorialViews
+            tutorialView.setValue(NSDate(), forKey: "tutorialBlobAddViewDatetime")
+            CoreDataFunctions().tutorialViewSave(tutorialViews: tutorialView)
+        }
     }
     
     
@@ -399,8 +436,8 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
             
             resetSelectAllMessage = true
             
-        case .public:
-            color = Constants().blobColor(.public, mainMap: false)
+        case .blobjot:
+            color = Constants().blobColor(.blobjot, mainMap: false)
             
             vc1.typeContainer1CheckLabel.text = ""
             vc1.typeContainer2CheckLabel.text = ""
@@ -556,6 +593,7 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
             if person == Constants.Data.currentUser
             {
                 print("ADDING TO MAP BLOBS")
+                Constants.Data.taggedBlobs.append(newBlob)
                 Constants.Data.mapBlobs.append(newBlob)
                 
                 // A new Blob was added, so sort the global mapBlobs array

@@ -188,13 +188,23 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
         print("BAPVC - USER NAME: \(cellUserObject.userName) FOR CELL: \((indexPath as NSIndexPath).row)")
         
         // Get the User Object from the list and assign data to the cell
-        cell.cellUserName.text = cellUserObject.userName
-        if let cellUserImage = cellUserObject.userImage {
-            cell.cellUserImage.image = cellUserImage
+        if cellUserObject.userName != nil
+        {
+            cell.cellUserName.text = cellUserObject.userName
             
-            cell.cellUserImageActivityIndicator.stopAnimating()
-        } else {
-            AWSPrepRequest(requestToCall: FBGetUserData(user: cellUserObject), delegate: self as AWSRequestDelegate).prepRequest()
+            if let cellUserImage = cellUserObject.userImage
+            {
+                cell.cellUserImage.image = cellUserImage
+                cell.cellUserImageActivityIndicator.stopAnimating()
+            }
+            else
+            {
+                AWSPrepRequest(requestToCall: FBGetUserData(user: cellUserObject, downloadImage: true), delegate: self as AWSRequestDelegate).prepRequest()
+            }
+        }
+        else
+        {
+            AWSPrepRequest(requestToCall: FBGetUserData(user: cellUserObject, downloadImage: true), delegate: self as AWSRequestDelegate).prepRequest()
         }
         
         return cell
@@ -362,7 +372,7 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
             
             if let parentVC = self.blobAddPeopleDelegate
             {
-                parentVC.changeMapCircleType(Constants.BlobTypes.public)
+                parentVC.changeMapCircleType(Constants.BlobTypes.blobjot)
             }
             
             // Toggle the Send button
@@ -455,6 +465,7 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
                         {
                             if userObjectLocal.userID == fbGetUserData.user.userID
                             {
+                                userObjectLocal.userName = fbGetUserData.user.userName
                                 userObjectLocal.userImage = newImage
                                 
                                 break loopUserObjectCheckLocal

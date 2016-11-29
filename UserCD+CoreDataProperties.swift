@@ -2,7 +2,7 @@
 //  UserCD+CoreDataProperties.swift
 //  Blobjot
 //
-//  Created by Sean Hart on 11/15/16.
+//  Created by Sean Hart on 11/19/16.
 //  Copyright © 2016 blobjot. All rights reserved.
 //
 
@@ -21,5 +21,6 @@ extension UserCD {
     @NSManaged public var userImage: NSData?
     @NSManaged public var userName: String?
     @NSManaged public var userStatus: NSNumber?
+    @NSManaged public var lastUsed: NSDate?
 
 }

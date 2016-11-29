@@ -82,6 +82,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     
     var loginScreen: UIView!
     var loginBox: UIView!
+    var loginButtonContainer: UIView!
     var fbLoginButton: FBSDKLoginButton!
     var loginActivityIndicator: UIActivityIndicatorView!
     var loginProcessLabel: UILabel!
@@ -118,8 +119,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // Indicates that map data was requested from AWS, and is still downloading
     var waitingForMapData: Bool = false
     
-    // The Google Maps Coordinate Object for the current center of the map
+    // The Google Maps Coordinate Object for the current center of the map and the default Camera
     var mapCenter: CLLocationCoordinate2D!
+    var defaultCamera: GMSCameraPosition!
     
     // The local user setting whether or not the user has the map camera tracking and following the user's location
     var userTrackingCamera: Bool = false
@@ -174,6 +176,10 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // Track the recent location changes in location and time changed
     var lastLocation: CLLocation?
     var lastLocationTime: Double = Date().timeIntervalSince1970
+    var lastBlobjotBlobsLocation: CLLocation?
+    
+    // Properties for the tutorial
+    let tutorialCircle = GMSCircle()
     
     override func viewDidLoad()
     {
@@ -186,7 +192,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         defaultBlobUser = User()
         defaultBlobUser.userID = "default"
         defaultBlobUser.userName = "default"
-        defaultBlobUser.userImageUrl = "default"
         defaultBlobUser.userImage = UIImage(named: Constants.Strings.iconStringBlobjotLogo)
         defaultBlobUser.userStatus = Constants.UserStatusTypes.connected
         
@@ -210,8 +215,8 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         self.view.addSubview(viewContainer)
         
         // Create a camera with the default location (if location services are used, this should not be shown for long)
-        let camera = GMSCameraPosition.camera(withLatitude: 29.758624, longitude: -95.366795, zoom: 10)
-        mapView = GMSMapView.map(withFrame: viewContainer.bounds, camera: camera)
+        defaultCamera = GMSCameraPosition.camera(withLatitude: Constants.Settings.mapViewDefaultLat, longitude: Constants.Settings.mapViewDefaultLong, zoom: Constants.Settings.mapViewDefaultZoom)
+        mapView = GMSMapView.map(withFrame: viewContainer.bounds, camera: defaultCamera)
         mapView.padding = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
         mapView.delegate = self
         mapView.mapType = kGMSTypeNormal
@@ -247,7 +252,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         selectorMessageBox.layer.shadowRadius = Constants.Dim.mapViewShadowRadius
         
         selectorMessageLabel = UILabel(frame: CGRect(x: 0, y: 0, width: selectorMessageBox.frame.width, height: selectorMessageBox.frame.height))
-        selectorMessageLabel.text = "Minimum Zoom"
+        selectorMessageLabel.text = "Zoom Limit"
         selectorMessageLabel.textColor = Constants.Colors.colorTextGray
         selectorMessageLabel.textAlignment = .center
         selectorMessageLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 18)
@@ -536,6 +541,13 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         fbLoginButton.delegate = self
         loginBox.addSubview(fbLoginButton)
         
+//        let loginButtonContainerWidth = fbLoginButton.frame.width
+//        let loginButtonContainerHeight = fbLoginButton.frame.height
+//        loginButtonContainer = UIView(frame: CGRect(x: (loginBox.frame.width / 2) - (loginButtonContainerWidth / 2), y: (loginBox.frame.height / 2) - (loginButtonContainerHeight / 2), width: loginButtonContainerWidth, height: loginButtonContainerHeight))
+//        loginButtonContainer.layer.cornerRadius = 5
+//        loginButtonContainer.backgroundColor = Constants.Colors.colorFacebookDarkBlue
+//        loginBox.addSubview(loginButtonContainer)
+        
         // Add a loading indicator for the pause showing the "Log out" button after the FBSDK is logged in and before the Account VC loads
         loginActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: 0, y: loginBox.frame.height / 2 + 30, width: loginBox.frame.width, height: 20))
         loginActivityIndicator.color = UIColor.black
@@ -614,19 +626,26 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         
         // Setup the Blob list
         Constants.Data.locationBlobs = [Constants.Data.defaultBlob]
-        
-        self.refreshMap()
 
-        let holeView = HoleView(holeViewPosition: 1, frame: viewContainer.bounds, circleOffsetX: viewContainer.bounds.width - 25, circleOffsetY: 25, circleRadius: 30, textOffsetX: (viewContainer.bounds.width / 2) - 100, textOffsetY: 50, textWidth: 200, textFontSize: 24, text: "You can search for locations, center the map on your location, or refresh your Blobs.")
-        holeView.holeViewDelegate = self
-        viewContainer.addSubview(holeView)
+        // Recall the Tutorial Views data in Core Data.  If it is empty for the current ViewController's tutorial, it has not been seen by the curren user.
+        let tutorialViews = CoreDataFunctions().tutorialViewRetrieve()
+        print("MVC: TUTORIAL VIEWS MAPVIEW: \(tutorialViews.tutorialMapViewDatetime)")
+        if tutorialViews.tutorialMapViewDatetime == nil
+//        if 2 == 2
+        {
+            let holeView = HoleView(holeViewPosition: 1, frame: viewContainer.bounds, circleOffsetX: 0, circleOffsetY: 0, circleRadius: 0, textOffsetX: (viewContainer.bounds.width / 2) - 100, textOffsetY: 50, textWidth: 200, textFontSize: 24, text: "Welcome to Blobjot!\n\nBlobjot is a location-based messaging and social media service.")
+            holeView.holeViewDelegate = self
+            viewContainer.addSubview(holeView)
+        }
+        else
+        {
+            self.refreshMap()
+        }
     }
     
     override func viewWillAppear(_ animated: Bool)
     {
         print("MVC - VIEW WILL APPEAR")
-        
-//        self.refreshMap()
         
         if showLoginScreenBool
         {
@@ -652,12 +671,91 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         switch removingViewAtPosition
         {
         case 1:
-            let holeView = HoleView(holeViewPosition: 2, frame: viewContainer.bounds, circleOffsetX: viewContainer.bounds.width - 25, circleOffsetY: viewContainer.bounds.height - 25, circleRadius: 30, textOffsetX: (viewContainer.bounds.width / 2) - 100, textOffsetY: 50, textWidth: 200, textFontSize: 24, text: "You can add a new Blob, see area Blobs in a list, search for friends, and access your account.")
+            // Create the example Blob and add it to the map
+            let blobCenter = CLLocationCoordinate2DMake(Constants.Settings.mapViewDefaultLat, Constants.Settings.mapViewDefaultLong)
+            tutorialCircle.position = blobCenter
+            tutorialCircle.radius = 50
+            tutorialCircle.title = "example"
+            tutorialCircle.fillColor = Constants().blobColor(Constants.BlobTypes.blobjot, mainMap: true)
+            tutorialCircle.strokeColor = Constants().blobColor(Constants.BlobTypes.blobjot, mainMap: true)
+            tutorialCircle.strokeWidth = 1
+            tutorialCircle.map = self.mapView
+            
+            // Move the camera to see the example Blob
+            let camera = GMSCameraPosition.camera(withLatitude: Constants.Settings.mapViewDefaultLat, longitude: Constants.Settings.mapViewDefaultLong, zoom: 17)
+            self.mapView.camera = camera
+            
+            let holeView = HoleView(holeViewPosition: 2, frame: viewContainer.bounds, circleOffsetX: (viewContainer.bounds.width / 2), circleOffsetY: 275, circleRadius: 120, textOffsetX: (viewContainer.bounds.width / 2) - 100, textOffsetY: 20, textWidth: 200, textFontSize: 18, text: "Blobs are messages attached to a specific location.  Users must visit this location to view the message.")
+            holeView.holeViewDelegate = self
+            viewContainer.addSubview(holeView)
+        case 2:
+            // Change the color of the tutorial Blob
+            tutorialCircle.fillColor = Constants().blobColor(Constants.BlobTypes.invisible, mainMap: true)
+            tutorialCircle.strokeColor = Constants().blobColor(Constants.BlobTypes.invisible, mainMap: true)
+            
+            let holeView = HoleView(holeViewPosition: 3, frame: viewContainer.bounds, circleOffsetX: (viewContainer.bounds.width / 2), circleOffsetY: 275, circleRadius: 120, textOffsetX: (viewContainer.bounds.width / 2) - 100, textOffsetY: 20, textWidth: 200, textFontSize: 18, text: "Blobs can be invisible...")
+            holeView.holeViewDelegate = self
+            viewContainer.addSubview(holeView)
+        case 3:
+            // Change the color of the tutorial Blob
+            tutorialCircle.fillColor = Constants().blobColor(Constants.BlobTypes.permanent, mainMap: true)
+            tutorialCircle.strokeColor = Constants().blobColor(Constants.BlobTypes.permanent, mainMap: true)
+            
+            let holeView = HoleView(holeViewPosition: 4, frame: viewContainer.bounds, circleOffsetX: (viewContainer.bounds.width / 2), circleOffsetY: 275, circleRadius: 120, textOffsetX: (viewContainer.bounds.width / 2) - 100, textOffsetY: 20, textWidth: 200, textFontSize: 18, text: "...or visible on the map.\n\nBlobs can be permanent...")
+            holeView.holeViewDelegate = self
+            viewContainer.addSubview(holeView)
+        case 4:
+            // Change the color of the tutorial Blob
+            tutorialCircle.fillColor = Constants().blobColor(Constants.BlobTypes.temporary, mainMap: true)
+            tutorialCircle.strokeColor = Constants().blobColor(Constants.BlobTypes.temporary, mainMap: true)
+            
+            let holeView = HoleView(holeViewPosition: 5, frame: viewContainer.bounds, circleOffsetX: (viewContainer.bounds.width / 2), circleOffsetY: 275, circleRadius: 120, textOffsetX: (viewContainer.bounds.width / 2) - 100, textOffsetY: 20, textWidth: 200, textFontSize: 18, text: "...or temporary, where the Blob disappears after you visit and view the Blob content.")
+            holeView.holeViewDelegate = self
+            viewContainer.addSubview(holeView)
+        case 5:
+            let holeView = HoleView(holeViewPosition: 6, frame: viewContainer.bounds, circleOffsetX: viewContainer.bounds.width - 25, circleOffsetY: 25, circleRadius: 50, textOffsetX: (viewContainer.bounds.width / 2) - 100, textOffsetY: 50, textWidth: 200, textFontSize: 24, text: "You can search for locations, center the map on your location, or refresh your Blobs.")
+            holeView.holeViewDelegate = self
+            viewContainer.addSubview(holeView)
+        case 6:
+            let holeView = HoleView(holeViewPosition: 7, frame: viewContainer.bounds, circleOffsetX: viewContainer.bounds.width - 25, circleOffsetY: viewContainer.bounds.height - 25, circleRadius: 50, textOffsetX: (viewContainer.bounds.width / 2) - 100, textOffsetY: 50, textWidth: 200, textFontSize: 24, text: "You can add a new Blob, see area Blobs in a list, search for friends, and access your account.")
+            holeView.holeViewDelegate = self
+            viewContainer.addSubview(holeView)
+        case 7:
+            let holeView = HoleView(holeViewPosition: 8, frame: viewContainer.bounds, circleOffsetX: 25, circleOffsetY: 25, circleRadius: 50, textOffsetX: (viewContainer.bounds.width / 2) - 100, textOffsetY: 70, textWidth: 200, textFontSize: 24, text: "This list will show the Blobs at your current location.  You can tap the Blob user's image to view a preview.")
+            holeView.holeViewDelegate = self
+            viewContainer.addSubview(holeView)
+        case 8:
+            self.showBlobPreview(Constants.Data.defaultBlob)
+            
+            let holeView = HoleView(holeViewPosition: 9, frame: viewContainer.bounds, circleOffsetX: 100, circleOffsetY: -50, circleRadius: 140, textOffsetX: (viewContainer.bounds.width / 2) - 100, textOffsetY: 120, textWidth: 200, textFontSize: 24, text: "When you select a Blob, you can preview the Blob here, and tap the preview to view the entire Blob.")
             holeView.holeViewDelegate = self
             viewContainer.addSubview(holeView)
             
         default:
             print("MVC - FINISHED ALL HOLE VIEWS")
+            
+            self.closePreview()
+            
+            // Remove the tutorial Blob and refresh the Map to recall the user's Blobs
+            tutorialCircle.map = nil
+            self.refreshMap()
+            
+            // Set the map center coordinate to focus on the user's current location
+            if let userLocation = mapView.myLocation
+            {
+                mapCenter = CLLocationCoordinate2D(latitude: userLocation.coordinate.latitude, longitude: userLocation.coordinate.longitude)
+                mapView.camera = GMSCameraPosition(target: mapCenter, zoom: Constants.Settings.mapViewDefaultZoom, bearing: CLLocationDirection(0), viewingAngle: mapView.camera.viewingAngle)
+            }
+            else
+            {
+                self.mapView.camera = self.defaultCamera
+            }
+            
+            // Record the Tutorial View in Core Data
+            let moc = DataController().managedObjectContext
+            let tutorialView = NSEntityDescription.insertNewObject(forEntityName: "TutorialViews", into: moc) as! TutorialViews
+            tutorialView.setValue(NSDate(), forKey: "tutorialMapViewDatetime")
+            CoreDataFunctions().tutorialViewSave(tutorialViews: tutorialView)
         }
     }
     
@@ -673,12 +771,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         UIApplication.shared.isStatusBarHidden = false
         self.statusBarHidden = false
         self.setNeedsStatusBarAppearanceUpdate()
-        
-        // Do something with the selected place.
-        print("Place name: ", place.name)
-        print("Place address: ", place.formattedAddress)
-        print("Place attributions: ", place.attributions)
-        print("Place location: ", place.coordinate)
         
         // Use the place coordinate to center the map
         mapCenter = CLLocationCoordinate2D(latitude: place.coordinate.latitude, longitude: place.coordinate.longitude)
@@ -796,7 +888,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     {
         // Prepare both of the Table View Controller and add Tab Bar Items to them
         activeBlobsVC = BlobsActiveTableViewController()
-        let activeBlobsTabBarItem = UITabBarItem(title: "LOCAL BLOBS", image: nil, tag: 1)
+        let activeBlobsTabBarItemImage = UIImage(named: Constants.Strings.iconStringTabIconLocation)
+        let activeBlobsTabBarItem = UITabBarItem(title: "", image: nil, tag: 1)
+//        activeBlobsTabBarItem.selectedImage =
 //        activeBlobsTabBarItem.setTitleTextAttributes([NSForegroundColorAttributeName: UIColor.grayColor()], forState:.Normal)
 //        activeBlobsTabBarItem.image = UIImage(named: Constants.Strings.iconStringTabIconLocation)
         activeBlobsVC.tabBarItem = activeBlobsTabBarItem
@@ -804,14 +898,15 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         peopleVC = PeopleViewController()
         peopleVC.peopleViewDelegate = self
         peopleVC.tabBarUsed = true
-        let connectionsTabBarItem = UITabBarItem(title: "CONNECTIONS", image: nil, tag: 2)
-//        connectionsTabBarItem.image = UIImage(named: Constants.Strings.iconStringTabIconConnections)
+        let connectionsTabBarItem = UITabBarItem()
+        connectionsTabBarItem.tag = 2
+        connectionsTabBarItem.image = UIImage(named: Constants.Strings.iconStringTabIconConnectionsWhite)
         peopleVC.tabBarItem = connectionsTabBarItem
         
         accountVC = AccountViewController()
         accountVC.accountViewDelegate = self
-        let accountTabBarItem = UITabBarItem() //UITabBarItem(title: "ACCOUNT", image: nil, tag: 3)
-        accountTabBarItem.title = "ACCOUNT"
+        let accountTabBarItem = UITabBarItem()
+        accountTabBarItem.tag = 3
 //        accountTabBarItem.image = UIImage(named: Constants.Strings.iconStringTabIconAccount)
 //        accountTabBarItem.image?.draw(in: CGRect(x: 0, y: 0, width: 30, height: 30))
 //        accountTabBarItem.imageInsets = UIEdgeInsets(top: 2, left: 2, bottom: 2, right: 2)
@@ -1110,6 +1205,16 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 // Reload the collectionView so that the previously selected Blob is no longer sticking out
                 self.refreshCollectionView()
             }
+            else if pBlob.blobID == Constants.Data.defaultBlob.blobID
+            {
+                // Show the error message
+                self.createAlertOkView("Blobjot", message: "Thanks for using Blobjot!  This placeholder Blob will always be visible and does not have a full Blob view, but try tapping on some other Blobs to see more details!")
+            }
+            else
+            {
+                // Show the error message
+                self.createAlertOkView("Blob not in range", message: "This Blob is not in range.  Travel within the perimeter of the Blob to see all the details!")
+            }
         }
         
         // Save an action in Core Data
@@ -1173,6 +1278,36 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     
     func refreshBlobs(_ userLocationCurrent: CLLocation)
     {
+        print("MVC - REFRESHING BLOBS -- LAST LOCATION: \(self.lastBlobjotBlobsLocation)")
+        
+        // Ensure that the distance change is greater than the minimum setting for updating Blobjot Blobs
+        if let blobjotBlobsLocationPrevious = self.lastBlobjotBlobsLocation
+        {
+            let locationDistance = userLocationCurrent.distance(from: blobjotBlobsLocationPrevious)
+            
+            // Ensure that the distance change is greater than the minimum setting
+            if locationDistance >= Constants.Settings.locationDistanceUpdateBlobjotBlobs
+            {
+                print("MVC - REFRESHING BLOBS -- UPDATE BBs - CHANGE ADEQUATE")
+                
+                // Download the local place Blobs
+                AWSPrepRequest(requestToCall: AWSGetBlobjotBlobs(userLat: Float(userLocationCurrent.coordinate.latitude), userLng: Float(userLocationCurrent.coordinate.longitude)), delegate: self as AWSRequestDelegate).prepRequest()
+                
+                // Update the previous Blobjot Blobs location property with the latest data
+                self.lastBlobjotBlobsLocation = userLocationCurrent
+            }
+        }
+        else
+        {
+            print("MVC - REFRESHING BLOBS -- UPDATE BBs - LAST LOCATION NIL")
+            
+            // Download the local place Blobs
+            AWSPrepRequest(requestToCall: AWSGetBlobjotBlobs(userLat: Float(userLocationCurrent.coordinate.latitude), userLng: Float(userLocationCurrent.coordinate.longitude)), delegate: self as AWSRequestDelegate).prepRequest()
+            
+            // Update the previous Blobjot Blobs location property with the latest data
+            self.lastBlobjotBlobsLocation = userLocationCurrent
+        }
+        
         // Update the previous location and time properties with the latest data
         self.lastLocation = userLocationCurrent
         self.lastLocationTime = Date().timeIntervalSince1970
@@ -1225,28 +1360,35 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                         
                         AWSPrepRequest(requestToCall: AWSGetBlobExtraData(blob: blob), delegate: self as AWSRequestDelegate).prepRequest()
                         
-                        // When downloading Blob data, always request the user data if it does not already exist
-                        // Find the correct User Object in the global list
-                        var userExists = false
-                        loopUserObjectCheck: for userObject in Constants.Data.userObjects
+                        // When downloading Blob data, always request the user data if it does not already exist (ONLY IF NOT A BLOBJOT BLOB)
+                        if blob.blobType != Constants.BlobTypes.blobjot
                         {
-                            if userObject.userID == blob.blobUserID
+                            // Find the correct User Object in the global list
+                            var userExists = false
+                            loopUserObjectCheck: for userObject in Constants.Data.userObjects
                             {
-                                userExists = true
-                                
-                                // If the userImage does not exist, request it from FB
-                                if userObject.userImage == nil
+                                if userObject.userID == blob.blobUserID
                                 {
-                                    AWSPrepRequest(requestToCall: FBGetUserData(user: userObject), delegate: self as AWSRequestDelegate).prepRequest()
+                                    userExists = true
+                                    
+                                    // If the userName or userImage does not exist, request them from FB
+                                    if userObject.userName == nil || userObject.userImage == nil
+                                    {
+                                        AWSPrepRequest(requestToCall: FBGetUserData(user: userObject, downloadImage: true), delegate: self as AWSRequestDelegate).prepRequest()
+                                    }
+                                    
+                                    break loopUserObjectCheck
                                 }
-                                
-                                break loopUserObjectCheck
+                            }
+                            // If the user has not been downloaded, request the user and the userImage
+                            if !userExists
+                            {
+                                AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: blob.blobUserID, forPreviewBox: true), delegate: self as AWSRequestDelegate).prepRequest()
                             }
                         }
-                        // If the user has not been downloaded, request the user and the userImage
-                        if !userExists
+                        else
                         {
-                            AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: blob.blobUserID, forPreviewBox: true), delegate: self as AWSRequestDelegate).prepRequest()
+                            self.updatePreviewBoxData(Constants.Data.userPublicArea)
                         }
                     }
                     else
@@ -1295,7 +1437,16 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                                     }
                                 }
                                 
-                                // Remove the Blob from the global array of mapBlobs so that it cannot be accessed
+                                // Remove the Blob from the global array(s) of Blobs so that it cannot be accessed
+                                loopTaggedBlobsCheck: for (index, tBlob) in Constants.Data.taggedBlobs.enumerated()
+                                {
+                                    if tBlob.blobID == blob.blobID
+                                    {
+                                        Constants.Data.taggedBlobs.remove(at: index)
+                                        
+                                        break loopTaggedBlobsCheck
+                                    }
+                                }
                                 loopMapBlobsCheck: for (index, mBlob) in Constants.Data.mapBlobs.enumerated()
                                 {
                                     if mBlob.blobID == blob.blobID
@@ -1589,7 +1740,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         let dotDiameter: CGFloat = 6
         let dot = UIImage(color: Constants().blobColorOpaque(blob.blobType, mainMap: true), size: CGSize(width: dotDiameter, height: dotDiameter))
         let markerView = UIImageView(image: dot)
-        markerView.layer.cornerRadius = dotDiameter
+        markerView.layer.cornerRadius = markerView.frame.height / 2
         markerView.contentMode = UIViewContentMode.scaleAspectFill
         markerView.clipsToBounds = true
         
@@ -1734,23 +1885,33 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         // If the cell is the first one, it is the default blob, so show the Blobjot logo
         if (indexPath as NSIndexPath).row > 0
         {
-            // Add the associated User Image to the User Image View
-            if let userID = Constants.Data.locationBlobs[(indexPath as NSIndexPath).row].blobUserID
+            // Ensure that the blob is not a BLOBJOT BLOB
+            if Constants.Data.locationBlobs[(indexPath as NSIndexPath).row].blobType != Constants.BlobTypes.blobjot
             {
-                // Find the correct User Object in the global list and assign the User Image, if it exists
-                loopUserObjectCheck: for userObject in Constants.Data.userObjects
+                // Add the associated User Image to the User Image View
+                if let userID = Constants.Data.locationBlobs[(indexPath as NSIndexPath).row].blobUserID
                 {
-                    if userObject.userID == userID
+                    // Find the correct User Object in the global list and assign the User Image, if it exists
+                    loopUserObjectCheck: for userObject in Constants.Data.userObjects
                     {
-                        if userObject.userImage != nil
+                        if userObject.userID == userID
                         {
-                            cell.userImage.image = userObject.userImage
-                            cell.userImageActivityIndicator.stopAnimating()
+                            if userObject.userImage != nil
+                            {
+                                cell.userImage.image = userObject.userImage
+                                cell.userImageActivityIndicator.stopAnimating()
+                            }
+                            
+                            break loopUserObjectCheck
                         }
-                        
-                        break loopUserObjectCheck
                     }
                 }
+            }
+            else
+            {
+                // Assign the default Public Area Blob to the user data features
+                cell.userImage.image = Constants.Data.userPublicArea.userImage
+                cell.userImageActivityIndicator.stopAnimating()
             }
         }
         else
@@ -1847,6 +2008,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             print("MVC - FBSDK USER ID: \(result.token.userID)")
             
             // Show the logging in indicator and label
+//            loginBox.addSubview(loginButtonContainer)
             loginActivityIndicator.startAnimating()
             loginBox.addSubview(loginProcessLabel)
             
@@ -2141,43 +2303,81 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             self.previewUserImageActivityIndicator.stopAnimating()
             self.previewUserNameActivityIndicator.stopAnimating()
         }
+        else if blob.blobType == Constants.BlobTypes.blobjot
+        {
+            print("MVC - TAPPED PUBLIC BLOB: \(blob.blobText)")
+            
+            previewUserImageView.image = UIImage(named: Constants.Strings.iconStringBlobjotLogo)
+            previewUserNameLabel.text = "Public Area"
+            
+            // Display the current year
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "YYYY"
+            let stringDate: String = dateFormatter.string(from: Date())
+            previewTimeLabel.text = stringDate
+            
+            // Create and assign a user to the previewBlobUser
+            let publicAreaUser = User()
+            publicAreaUser.userID = "blobjotBlob"
+            publicAreaUser.facebookID = "blobjotBlob"
+            publicAreaUser.userName = "Public Area"
+            publicAreaUser.userImage = UIImage(named: Constants.Strings.iconStringBlobjotLogo)
+            self.previewBlobUser = publicAreaUser
+            
+            //Stop animating the activity indicator
+            self.previewThumbnailActivityIndicator.stopAnimating()
+            self.previewUserImageActivityIndicator.stopAnimating()
+            self.previewUserNameActivityIndicator.stopAnimating()
+        }
         else
         {
-            
-            // Check if the user has already been downloaded
+            // Check if the user has already been downloaded ONLY IF NOT A BLOBJOT BLOB
             // If a Blob outside the range of the user was clicked, the user may not have already been downloaded
-            var userExists = false
-            loopUserCheck: for user in Constants.Data.userObjects
+            if blob.blobType != Constants.BlobTypes.blobjot
             {
-                if user.userID == blob.blobUserID
+                var userExists = false
+                loopUserCheck: for user in Constants.Data.userObjects
                 {
-                    userExists = true
-                    
-                    // Assign the user to the previewBlobUser
-                    self.previewBlobUser = user
-                    
-                    // Assign the user's image and username to the preview
-                    previewUserNameLabel.text = user.userName
-                    self.previewUserNameActivityIndicator.stopAnimating()
-                    
-                    if user.userImage != nil
+                    if user.userID == blob.blobUserID
                     {
-                        previewUserImageView.image = user.userImage
-                        self.previewUserImageActivityIndicator.stopAnimating()
+                        userExists = true
+                        
+                        // Assign the user to the previewBlobUser
+                        self.previewBlobUser = user
+                        
+                        // Assign the user's image and username to the preview
+                        if user.userName != nil
+                        {
+                            previewUserNameLabel.text = user.userName
+                            self.previewUserNameActivityIndicator.stopAnimating()
+                            
+                            if user.userImage != nil
+                            {
+                                previewUserImageView.image = user.userImage
+                                self.previewUserImageActivityIndicator.stopAnimating()
+                            }
+                            else
+                            {
+                                AWSPrepRequest(requestToCall: FBGetUserData(user: user, downloadImage: true), delegate: self as AWSRequestDelegate).prepRequest()
+                            }
+                        }
+                        else
+                        {
+                            AWSPrepRequest(requestToCall: FBGetUserData(user: user, downloadImage: true), delegate: self as AWSRequestDelegate).prepRequest()
+                        }
+                        
+                        break loopUserCheck
                     }
-                    else
-                    {
-//                        AWSPrepRequest(requestToCall: AWSGetUserImage(user: user), delegate: self as AWSRequestDelegate).prepRequest()
-                        AWSPrepRequest(requestToCall: FBGetUserData(user: user), delegate: self as AWSRequestDelegate).prepRequest()
-                    }
-                    
-                    break loopUserCheck
+                }
+                // If the user has not been downloaded, request the user and the userImage
+                if !userExists
+                {
+                    AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: blob.blobUserID, forPreviewBox: true), delegate: self as AWSRequestDelegate).prepRequest()
                 }
             }
-            // If the user has not been downloaded, request the user and the userImage
-            if !userExists
+            else
             {
-                AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: blob.blobUserID, forPreviewBox: true), delegate: self as AWSRequestDelegate).prepRequest()
+                self.updatePreviewBoxData(Constants.Data.userPublicArea)
             }
             
             // Set the Preview Time Label to show the age of the Blob
@@ -2386,25 +2586,36 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                             // Hide the logging in screen, indicator, and label
                             self.loginScreen.removeFromSuperview()
                             self.loginActivityIndicator.stopAnimating()
+//                            self.loginButtonContainer.removeFromSuperview()
                             self.loginProcessLabel.removeFromSuperview()
                             print("LOGIN - MVC - REMOVED LOGIN SCREEN")
                         }
                         else
                         {
                             // Since the first attempt to download the map data would have failed if the user was not logged in, refresh it again
-                            self.refreshMap()
+                            // Recall the Tutorial Views data in Core Data.  If it is empty for the current ViewController's tutorial, it has not been seen by the curren user.
+                            let tutorialViews = CoreDataFunctions().tutorialViewRetrieve()
+                            print("MVC: TUTORIAL VIEWS MAPVIEW (AWS RETURN): \(tutorialViews.tutorialMapViewDatetime)")
+                            if tutorialViews.tutorialMapViewDatetime != nil
+                            {
+                                self.refreshMap()
+                            }
                         }
                     }
                     else
                     {
                         // Hide the logging in indicator and label
                         self.loginActivityIndicator.stopAnimating()
+//                        self.loginButtonContainer.removeFromSuperview()
                         self.loginProcessLabel.removeFromSuperview()
                         
                         // Show the error message
                         self.createAlertOkView("Login Error", message: "We're sorry, but we seem to have an issue logging you in.  Please tap the \"Log out\" button and try logging in again.")
                         
                         print("LOGIN - MVC - ***** LOG IN ERROR *****")
+                        
+                        // Increase the server attempt count above the maximum to immediately stop any requests
+                        Constants.Data.serverTries = 6
                         
                         // Show the login screen for manual login
                         self.showLoginScreen()
@@ -2423,6 +2634,18 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                     {
                         // Show the error message
                         self.createAlertOkView("AWSGetMapData Network Error", message: "I'm sorry, you appear to be having network issues.  Please refresh the map to try again.")
+                    }
+                case _ as AWSGetBlobjotBlobs:
+                    if success
+                    {
+                        print("MVC-AGBB - GOT BLOBJOT BLOBS")
+                        // Attempt to call the local function to add the Map Blobs to the Map
+                        self.addMapBlobsToMap()
+                    }
+                    else
+                    {
+                        // Show the error message
+                        self.createAlertOkView("AWSGetBlobjotBlobs Network Error", message: "I'm sorry, you appear to be having network issues.  Please refresh the map to try again.")
                     }
                 case let awsGetBlobData as AWSGetBlobExtraData:
                     if success

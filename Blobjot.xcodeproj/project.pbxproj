@@ -84,11 +84,17 @@
 		B8B108F91DCB718200EA3B41 /* LogUserflow+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B108F51DCB718200EA3B41 /* LogUserflow+CoreDataClass.swift */; };
 		B8B108FA1DCB718200EA3B41 /* LogUserflow+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B108F61DCB718200EA3B41 /* LogUserflow+CoreDataProperties.swift */; };
 		B8B109011DCFE52300EA3B41 /* BlobCD+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B108FD1DCFE52200EA3B41 /* BlobCD+CoreDataClass.swift */; };
-		B8B109021DCFE52300EA3B41 /* BlobCD+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B108FE1DCFE52200EA3B41 /* BlobCD+CoreDataProperties.swift */; };
 		B8B109031DCFE52300EA3B41 /* UserCD+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B108FF1DCFE52200EA3B41 /* UserCD+CoreDataClass.swift */; };
 		B8B1090A1DDB46D100EA3B41 /* CurrentUser+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B109071DDB46D100EA3B41 /* CurrentUser+CoreDataClass.swift */; };
 		B8B1090B1DDB46D100EA3B41 /* CurrentUser+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B109081DDB46D100EA3B41 /* CurrentUser+CoreDataProperties.swift */; };
-		B8B1090D1DDB472000EA3B41 /* UserCD+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B1090C1DDB472000EA3B41 /* UserCD+CoreDataProperties.swift */; };
+		B8B109251DE0B06F00EA3B41 /* BlobCD+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B109231DE0B06F00EA3B41 /* BlobCD+CoreDataProperties.swift */; };
+		B8B109261DE0B06F00EA3B41 /* UserCD+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B109241DE0B06F00EA3B41 /* UserCD+CoreDataProperties.swift */; };
+		B8B1092A1DE3D72600EA3B41 /* TutorialViews+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B109281DE3D72600EA3B41 /* TutorialViews+CoreDataClass.swift */; };
+		B8B1092B1DE3D72600EA3B41 /* TutorialViews+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B109291DE3D72600EA3B41 /* TutorialViews+CoreDataProperties.swift */; };
+		B8B1092E1DED364900EA3B41 /* HOME.png in Resources */ = {isa = PBXBuildFile; fileRef = B8B1092C1DED364900EA3B41 /* HOME.png */; };
+		B8B109311DED47B500EA3B41 /* Anywhere.gpx in Resources */ = {isa = PBXBuildFile; fileRef = B8B109301DED47B400EA3B41 /* Anywhere.gpx */; };
+		B8B109331DEDAB3200EA3B41 /* Anywhere2.gpx in Resources */ = {isa = PBXBuildFile; fileRef = B8B109321DEDAB3200EA3B41 /* Anywhere2.gpx */; };
+		B8B109351DEDBE1E00EA3B41 /* TAB_ICON_connections_white.png in Resources */ = {isa = PBXBuildFile; fileRef = B8B109341DEDBE1E00EA3B41 /* TAB_ICON_connections_white.png */; };
 		B8B533A51DC9A50200B9ACC1 /* HoleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B533A41DC9A50200B9ACC1 /* HoleView.swift */; };
 		B8C8C59D1D57544C004D773E /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C8C59C1D57544C004D773E /* Extensions.swift */; };
 		F0218AC95EF86C2A827CA39C /* Pods_Blobjot.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BCF8CA5237DDB608651A853C /* Pods_Blobjot.framework */; };
@@ -214,12 +220,20 @@
 		B8B108F61DCB718200EA3B41 /* LogUserflow+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "LogUserflow+CoreDataProperties.swift"; path = "../LogUserflow+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		B8B108FC1DCFE29600EA3B41 /* Blobjot_DataModel_1.1.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Blobjot_DataModel_1.1.xcdatamodel; sourceTree = "<group>"; };
 		B8B108FD1DCFE52200EA3B41 /* BlobCD+CoreDataClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "BlobCD+CoreDataClass.swift"; path = "../BlobCD+CoreDataClass.swift"; sourceTree = "<group>"; };
-		B8B108FE1DCFE52200EA3B41 /* BlobCD+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "BlobCD+CoreDataProperties.swift"; path = "../BlobCD+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		B8B108FF1DCFE52200EA3B41 /* UserCD+CoreDataClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "UserCD+CoreDataClass.swift"; path = "../UserCD+CoreDataClass.swift"; sourceTree = "<group>"; };
 		B8B109051DDB469500EA3B41 /* Blobjot_DataModel_1.2.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Blobjot_DataModel_1.2.xcdatamodel; sourceTree = "<group>"; };
 		B8B109071DDB46D100EA3B41 /* CurrentUser+CoreDataClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "CurrentUser+CoreDataClass.swift"; path = "../CurrentUser+CoreDataClass.swift"; sourceTree = "<group>"; };
 		B8B109081DDB46D100EA3B41 /* CurrentUser+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "CurrentUser+CoreDataProperties.swift"; path = "../CurrentUser+CoreDataProperties.swift"; sourceTree = "<group>"; };
-		B8B1090C1DDB472000EA3B41 /* UserCD+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "UserCD+CoreDataProperties.swift"; path = "../UserCD+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		B8B1090E1DE0AD7900EA3B41 /* Blobjot_DataModel_1.3.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Blobjot_DataModel_1.3.xcdatamodel; sourceTree = "<group>"; };
+		B8B109231DE0B06F00EA3B41 /* BlobCD+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "BlobCD+CoreDataProperties.swift"; path = "../BlobCD+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		B8B109241DE0B06F00EA3B41 /* UserCD+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "UserCD+CoreDataProperties.swift"; path = "../UserCD+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		B8B109271DE3D70600EA3B41 /* Blobjot_DataModel_1.4.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Blobjot_DataModel_1.4.xcdatamodel; sourceTree = "<group>"; };
+		B8B109281DE3D72600EA3B41 /* TutorialViews+CoreDataClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "TutorialViews+CoreDataClass.swift"; sourceTree = "<group>"; };
+		B8B109291DE3D72600EA3B41 /* TutorialViews+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "TutorialViews+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		B8B1092C1DED364900EA3B41 /* HOME.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = HOME.png; sourceTree = "<group>"; };
+		B8B109301DED47B400EA3B41 /* Anywhere.gpx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = Anywhere.gpx; path = Blobjot/Anywhere.gpx; sourceTree = "<group>"; };
+		B8B109321DEDAB3200EA3B41 /* Anywhere2.gpx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = Anywhere2.gpx; path = Blobjot/Anywhere2.gpx; sourceTree = "<group>"; };
+		B8B109341DEDBE1E00EA3B41 /* TAB_ICON_connections_white.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = TAB_ICON_connections_white.png; sourceTree = "<group>"; };
 		B8B533A41DC9A50200B9ACC1 /* HoleView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HoleView.swift; sourceTree = "<group>"; };
 		B8C8C59C1D57544C004D773E /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		BCF8CA5237DDB608651A853C /* Pods_Blobjot.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Blobjot.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -296,6 +310,7 @@
 				B84DD7A81DC67E4F0076B9DD /* CV_pending_icon.png */,
 				B80C565C1D5117C800C4E683 /* Default-568h@2x.png */,
 				B80C56581D5116E000C4E683 /* defaultMedia.png */,
+				B8B1092C1DED364900EA3B41 /* HOME.png */,
 				B84DD7A91DC67E4F0076B9DD /* MV_add_combo_icon.png */,
 				B84DD7AA1DC67E4F0076B9DD /* MV_add_icon.png */,
 				B84DD7AB1DC67E4F0076B9DD /* MV_check_icon.png */,
@@ -307,6 +322,7 @@
 				B84DD7B11DC67E4F0076B9DD /* MV_search_icon.png */,
 				B84DD7B21DC67E4F0076B9DD /* TAB_ICON_account.png */,
 				B84DD7B31DC67E4F0076B9DD /* TAB_ICON_connections.png */,
+				B8B109341DEDBE1E00EA3B41 /* TAB_ICON_connections_white.png */,
 				B84DD7B41DC67E4F0076B9DD /* TAB_ICON_location_blobs.png */,
 				B881319C1D510EEE00021C4B /* Assets.xcassets */,
 			);
@@ -317,6 +333,8 @@
 		B80C565E1D51599E00C4E683 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				B8B109301DED47B400EA3B41 /* Anywhere.gpx */,
+				B8B109321DEDAB3200EA3B41 /* Anywhere2.gpx */,
 				B80C56321D5112C100C4E683 /* Houston-Downtown.gpx */,
 				B88DFD891DBE9F9200255BA5 /* Houston-Downtown2.gpx */,
 				B80A84441D5AD2E1003943C3 /* Sugar_Land-Trailbrook_Front.gpx */,
@@ -338,8 +356,8 @@
 		B88131861D510EEE00021C4B = {
 			isa = PBXGroup;
 			children = (
-				B8B108FB1DCB719300EA3B41 /* CoreData */,
 				B80C56571D5116CD00C4E683 /* Assets */,
+				B8B108FB1DCB719300EA3B41 /* CoreData */,
 				B88131911D510EEE00021C4B /* Blobjot */,
 				B88131A91D510EEF00021C4B /* BlobjotTests */,
 				B88131B41D510EEF00021C4B /* BlobjotUITests */,
@@ -426,7 +444,7 @@
 			isa = PBXGroup;
 			children = (
 				B8B108FD1DCFE52200EA3B41 /* BlobCD+CoreDataClass.swift */,
-				B8B108FE1DCFE52200EA3B41 /* BlobCD+CoreDataProperties.swift */,
+				B8B109231DE0B06F00EA3B41 /* BlobCD+CoreDataProperties.swift */,
 				B864070A1D7B14A40084D6EF /* BlobNotification.swift */,
 				B86407091D7B14A40084D6EF /* BlobNotifications+CoreDataProperties.swift */,
 				B8B108F01DCB673700EA3B41 /* CoreDataFunctions.swift */,
@@ -439,8 +457,10 @@
 				B8B108F41DCB718200EA3B41 /* LogError+CoreDataProperties.swift */,
 				B8B108F51DCB718200EA3B41 /* LogUserflow+CoreDataClass.swift */,
 				B8B108F61DCB718200EA3B41 /* LogUserflow+CoreDataProperties.swift */,
+				B8B109281DE3D72600EA3B41 /* TutorialViews+CoreDataClass.swift */,
+				B8B109291DE3D72600EA3B41 /* TutorialViews+CoreDataProperties.swift */,
 				B8B108FF1DCFE52200EA3B41 /* UserCD+CoreDataClass.swift */,
-				B8B1090C1DDB472000EA3B41 /* UserCD+CoreDataProperties.swift */,
+				B8B109241DE0B06F00EA3B41 /* UserCD+CoreDataProperties.swift */,
 			);
 			name = CoreData;
 			path = Blobjot;
@@ -581,13 +601,17 @@
 				B84DD7C11DC67E4F0076B9DD /* MV_search_icon.png in Resources */,
 				B80C565A1D5116E000C4E683 /* defaultMedia.png in Resources */,
 				B80A84451D5AD2E2003943C3 /* Sugar_Land-Trailbrook_Front.gpx in Resources */,
+				B8B109331DEDAB3200EA3B41 /* Anywhere2.gpx in Resources */,
 				B80D17791D9712C60032B0D8 /* style.json in Resources */,
+				B8B109351DEDBE1E00EA3B41 /* TAB_ICON_connections_white.png in Resources */,
+				B8B1092E1DED364900EA3B41 /* HOME.png in Resources */,
 				B84DD7B61DC67E4F0076B9DD /* CV_add_connection_icon.png in Resources */,
 				B84DD7BC1DC67E4F0076B9DD /* MV_close_icon.png in Resources */,
 				B84DD7B91DC67E4F0076B9DD /* MV_add_combo_icon.png in Resources */,
 				B84DD7BE1DC67E4F0076B9DD /* MV_location_icon.png in Resources */,
 				B84DD7B71DC67E4F0076B9DD /* CV_check_icon.png in Resources */,
 				B84DD7C21DC67E4F0076B9DD /* TAB_ICON_account.png in Resources */,
+				B8B109311DED47B500EA3B41 /* Anywhere.gpx in Resources */,
 				B84DD7BD1DC67E4F0076B9DD /* MV_list_icon.png in Resources */,
 				B80C565D1D5117C800C4E683 /* Default-568h@2x.png in Resources */,
 				B881319D1D510EEE00021C4B /* Assets.xcassets in Resources */,
@@ -741,12 +765,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				B8541B751DBBD0B900867D82 /* BlobComment.swift in Sources */,
-				B8B109021DCFE52300EA3B41 /* BlobCD+CoreDataProperties.swift in Sources */,
 				B8C8C59D1D57544C004D773E /* Extensions.swift in Sources */,
 				B80C56551D51158000C4E683 /* PeopleTableViewCell.swift in Sources */,
 				B8B108FA1DCB718200EA3B41 /* LogUserflow+CoreDataProperties.swift in Sources */,
 				B8312FDE1DB3DACB00CFC715 /* LocationManagerSetting+CoreDataProperties.swift in Sources */,
 				B8B533A51DC9A50200B9ACC1 /* HoleView.swift in Sources */,
+				B8B1092B1DE3D72600EA3B41 /* TutorialViews+CoreDataProperties.swift in Sources */,
 				B80D17771D922FF20032B0D8 /* AWSClasses.swift in Sources */,
 				B8B1090A1DDB46D100EA3B41 /* CurrentUser+CoreDataClass.swift in Sources */,
 				B864070E1D7B14A40084D6EF /* BlobNotification.swift in Sources */,
@@ -763,8 +787,10 @@
 				B80C56491D51158000C4E683 /* BlobAddMediaViewController.swift in Sources */,
 				B8B109011DCFE52300EA3B41 /* BlobCD+CoreDataClass.swift in Sources */,
 				B80C56561D51158000C4E683 /* PeopleViewController.swift in Sources */,
+				B8B1092A1DE3D72600EA3B41 /* TutorialViews+CoreDataClass.swift in Sources */,
 				B8B1090B1DDB46D100EA3B41 /* CurrentUser+CoreDataProperties.swift in Sources */,
 				B80C56501D51158000C4E683 /* BlobsActiveTableViewController.swift in Sources */,
+				B8B109251DE0B06F00EA3B41 /* BlobCD+CoreDataProperties.swift in Sources */,
 				B80C56611D5183B100C4E683 /* User.swift in Sources */,
 				B8B108F81DCB718200EA3B41 /* LogError+CoreDataProperties.swift in Sources */,
 				B8B109031DCFE52300EA3B41 /* UserCD+CoreDataClass.swift in Sources */,
@@ -783,7 +809,7 @@
 				B88131931D510EEE00021C4B /* AppDelegate.swift in Sources */,
 				B88DFD881DBD50DF00255BA5 /* BlobTableViewCellBlob.swift in Sources */,
 				B8312FDA1DB3DA8700CFC715 /* LocationManagerSetting.swift in Sources */,
-				B8B1090D1DDB472000EA3B41 /* UserCD+CoreDataProperties.swift in Sources */,
+				B8B109261DE0B06F00EA3B41 /* UserCD+CoreDataProperties.swift in Sources */,
 				B80C564A1D51158000C4E683 /* BlobAddPeopleTableViewCell.swift in Sources */,
 				B8B108F11DCB673700EA3B41 /* CoreDataFunctions.swift in Sources */,
 				B86407081D7B13EB0084D6EF /* DataModel.xcdatamodeld in Sources */,
@@ -946,6 +972,7 @@
 				SWIFT_OBJC_BRIDGING_HEADER = "Blobjot-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 3.0;
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -971,6 +998,7 @@
 				PROVISIONING_PROFILE_SPECIFIER = "Blobjot-DEV-ProvProfile";
 				SWIFT_OBJC_BRIDGING_HEADER = "Blobjot-Bridging-Header.h";
 				SWIFT_VERSION = 3.0;
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -1083,12 +1111,14 @@
 		B86407061D7B13EB0084D6EF /* DataModel.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				B8B109271DE3D70600EA3B41 /* Blobjot_DataModel_1.4.xcdatamodel */,
+				B8B1090E1DE0AD7900EA3B41 /* Blobjot_DataModel_1.3.xcdatamodel */,
 				B8B109051DDB469500EA3B41 /* Blobjot_DataModel_1.2.xcdatamodel */,
 				B8B108FC1DCFE29600EA3B41 /* Blobjot_DataModel_1.1.xcdatamodel */,
 				B8B108F21DCB6FDC00EA3B41 /* Blobjot_DataModel_1.0.xcdatamodel */,
 				B86407071D7B13EB0084D6EF /* DataModel.xcdatamodel */,
 			);
-			currentVersion = B8B109051DDB469500EA3B41 /* Blobjot_DataModel_1.2.xcdatamodel */;
+			currentVersion = B8B109271DE3D70600EA3B41 /* Blobjot_DataModel_1.4.xcdatamodel */;
 			path = DataModel.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;

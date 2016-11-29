@@ -10,6 +10,7 @@ import AWSCognito
 //import Darwin
 import FBSDKLoginKit
 import GoogleMaps
+import GooglePlaces
 import UIKit
 
 class UtilityFunctions
@@ -20,6 +21,47 @@ class UtilityFunctions
     {
         // Reset the People array and try to load the people from Core Data
         Constants.Data.userObjects = [User]()
+        
+        // First load the current user data, if saved
+        // Check to see if the current user data is already in Core Data
+        // Try to retrieve the current user data from Core Data
+        let currentUserArray = CoreDataFunctions().currentUserRetrieve()
+        
+        print("UF-RUL - CHECKING CORE DATA - CURRENT USER COUNT: \(currentUserArray.count)")
+        for cUser in currentUserArray
+        {
+            print("UF-RUL - CHECKING CORE DATA - CURRENT USER: \(cUser.userID), \(cUser.userName)")
+        }
+        
+        // If the return has content, use it to populate the user elements
+        // Ensure that the saved userID is the same as the global current user (it should be - should be reset when first logged in)
+        if currentUserArray.count > 0 && currentUserArray[0].userID == Constants.Data.currentUser
+        {
+            print("UF-RUL - CHECKING CORE DATA FOR CURRENT USER: \(currentUserArray[0].userID)")
+            // Create a new User object to store the currently logged in user
+            let currentUser = User()
+            if let userID = currentUserArray[0].userID
+            {
+                currentUser.userID  = userID
+            }
+            if let facebookID = currentUserArray[0].facebookID
+            {
+                currentUser.userName  = facebookID
+            }
+            if let userName = currentUserArray[0].userName
+            {
+                currentUser.userName  = userName
+            }
+            if let imageData = currentUserArray[0].userImage
+            {
+                print("UF-RUL - CHECKING CORE DATA - PREVIOUS IMAGE DATA EXISTS")
+                currentUser.userImage = UIImage(data: imageData as Data)
+            }
+            
+            // Add the current user object to the global user object array
+            Constants.Data.userObjects.append(currentUser)
+        }
+        
         let savedUsers = CoreDataFunctions().userRetrieve()
         print("UF-RUL - GOT SAVED USERS COUNT: \(savedUsers.count)")
         for sUser in savedUsers
@@ -27,7 +69,22 @@ class UtilityFunctions
             print("UF-RUL - ADDING CORE DATA USER: \(sUser.userName)")
             print("UF-RUL - ADDING CORE DATA USER: \(sUser.facebookID)")
             
-            Constants.Data.userObjects.append(sUser)
+            // Check to ensure the user does not already exist in the global User array
+            var userObjectExists = false
+            loopUserObjectCheck: for userObject in Constants.Data.userObjects
+            {
+                print("UF-RUL - userObject: \(userObject.userID), \(userObject.userName)")
+                
+                if userObject.userID == sUser.userID
+                {
+                    userObjectExists = true
+                    break loopUserObjectCheck
+                }
+            }
+            if !userObjectExists
+            {
+                Constants.Data.userObjects.append(sUser)
+            }
         }
     }
     
@@ -37,6 +94,18 @@ class UtilityFunctions
         let zoom = (0 - (1/98)) * meters + (985/49)
         return zoom
     }
+    
+//    // Clear any place Blobs from the global mapBlobs
+//    func clearPlaceBlobsFromMapBlobs()
+//    {
+//        for (bIndex, blob) in Constants.Data.mapBlobs.enumerated()
+//        {
+//            if blob.blobType == Constants.BlobTypes.blobjot
+//            {
+//                Constants.Data.mapBlobs.remove(at: bIndex)
+//            }
+//        }
+//    }
     
     // Sort the global mapBlobs array
     func sortMapBlobs()
@@ -53,10 +122,13 @@ class UtilityFunctions
                 return $0.blobDatetime.timeIntervalSince1970 > $1.blobDatetime.timeIntervalSince1970
             }
         })
-//        for mBlob in Constants.Data.mapBlobs
-//        {
-//            print("UF - SORTED BLOB TYPE: \(mBlob.blobType), DATE: \(mBlob.blobDatetime)")
-//        }
+    }
+    
+    // Sort the global userBlobs array
+    func sortUserBlobs()
+    {
+        // Sort the User Blobs from newest to oldest
+        Constants.Data.userBlobs.sort(by: {$0.blobDatetime.timeIntervalSince1970 > $1.blobDatetime.timeIntervalSince1970})
     }
     
     // Calculate the needed textview height for text - need to use font size 10
@@ -66,6 +138,28 @@ class UtilityFunctions
         calculationView.attributedText = text
         let size = calculationView.sizeThatFits(CGSize(width: width, height: CGFloat(FLT_MAX)))
         return size.height
+    }
+    
+    func toggleLocationManagerSettings()
+    {
+        if Constants.Settings.locationManagerConstant
+        {
+            Constants.appDelegateLocationManager.pausesLocationUpdatesAutomatically = false
+            Constants.appDelegateLocationManager.startUpdatingLocation()
+            Constants.appDelegateLocationManager.disallowDeferredLocationUpdates()
+            
+            // Save an action in Core Data
+            CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: "LOCATION MANAGER: CONSTANT")
+        }
+        else
+        {
+            Constants.appDelegateLocationManager.pausesLocationUpdatesAutomatically = true
+            Constants.appDelegateLocationManager.startMonitoringSignificantLocationChanges()
+//            Constants.appDelegateLocationManager.allowDeferredLocationUpdates(untilTraveled: Constants.Settings.locationAccuracyDeferredDistance, timeout: Constants.Settings.locationAccuracyDeferredInterval)
+            
+            // Save an action in Core Data
+            CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: "LOCATION MANAGER: BATTERY SAVE")
+        }
     }
     
     // Create an alert screen with only an acknowledgment option (an "OK" button)
