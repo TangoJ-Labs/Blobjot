@@ -691,18 +691,44 @@ class CoreDataFunctions: AWSRequestDelegate
         {
             fatalError("Failed to fetch CurrentUser: \(error)")
         }
-        print("CD-TVR: CHECK 5")
+        print("CD-TVR: CHECK 5 - COUNT: \(tutorialViewsArray.count)")
         if tutorialViewsArray.count > 0
         {
-            if let tutorialMapViewDatetime = tutorialViewsArray[0].tutorialMapViewDatetime
+            print("CD-TVR: CHECK 6: ASSIGNING tutorialViews KEYS")
+            // Sometimes more than one record may be saved - use the one with the most data
+            var tutorialViewHighestDataCount: Int = 0
+            var tutorialViewArrayIndexUse: Int = 0
+            for (tvIndex, tutorialView) in tutorialViewsArray.enumerated()
+            {
+                var tutorialViewDataCount: Int = 0
+                if tutorialView.tutorialMapViewDatetime != nil
+                {
+                    tutorialViewDataCount += 1
+                }
+                if tutorialView.tutorialAccountViewDatetime != nil
+                {
+                    tutorialViewDataCount += 1
+                }
+                if tutorialView.tutorialBlobAddViewDatetime != nil
+                {
+                    tutorialViewDataCount += 1
+                }
+                if tutorialViewDataCount > tutorialViewHighestDataCount
+                {
+                    tutorialViewHighestDataCount = tutorialViewDataCount
+                    tutorialViewArrayIndexUse = tvIndex
+                }
+            }
+            
+            if let tutorialMapViewDatetime = tutorialViewsArray[tutorialViewArrayIndexUse].tutorialMapViewDatetime
             {
                 tutorialViews.setValue(tutorialMapViewDatetime, forKey: "tutorialMapViewDatetime")
             }
-            if let tutorialAccountViewDatetime = tutorialViewsArray[0].tutorialAccountViewDatetime
+            if let tutorialAccountViewDatetime = tutorialViewsArray[tutorialViewArrayIndexUse].tutorialAccountViewDatetime
             {
                 tutorialViews.setValue(tutorialAccountViewDatetime, forKey: "tutorialAccountViewDatetime")
             }
-            if let tutorialBlobAddViewDatetime = tutorialViewsArray[0].tutorialBlobAddViewDatetime
+            if let tutorialBlobAddViewDatetime = tutorialViewsArray[tutorialViewArrayIndexUse].tutorialBlobAddViewDatetime
             {
                 tutorialViews.setValue(tutorialBlobAddViewDatetime, forKey: "tutorialBlobAddViewDatetime")
             }
