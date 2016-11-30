@@ -140,6 +140,7 @@ struct Constants
 //        static let colorStatusBar = UIColor(red: 242/255, green: 242/255, blue: 242/255, alpha: 1.0) //#F2F2F2
 //        static let colorTopBar = UIColor(red: 242/255, green: 242/255, blue: 242/255, alpha: 1.0) //#F2F2F2
         static let colorStatusBar = UIColor(red: 138/255, green: 112/255, blue: 178/255, alpha: 1.0) //#8A70B2
+        static let colorStatusBarLight = UIColor(red: 187/255, green: 172/255, blue: 210/255, alpha: 1.0) //#BBACD2
         static let colorTopBar = UIColor(red: 138/255, green: 112/255, blue: 178/255, alpha: 1.0) //#8A70B2
         static let colorBorderGrayLight = UIColor(red: 204/255, green: 204/255, blue: 204/255, alpha: 1.0) //#CCC
 //        static let colorTextNavBar = UIColor(red: 51/255, green: 51/255, blue: 51/255, alpha: 1.0) //#333333
@@ -310,8 +311,8 @@ struct Constants
         
         static let cacheSessionViewHistory = "sessionViewHistory"
         
-        static let iconStringDefaultProfile = "TAB_ICON_account.png"
-        static let iconStringBlobjotLogo = "TAB_ICON_location_blobs.png"
+        static let iconStringDefaultProfile = "PROFILE_DEFAULT.png"
+        static let iconStringBlobjotLogo = "BLOBJOT_purple.png"
         static let iconStringDefaultMedia = "defaultMedia.png"
         static let iconStringMapViewAddCombo = "MV_add_combo_icon.png"
         static let iconStringMapViewAdd = "MV_add_icon.png"
@@ -326,10 +327,12 @@ struct Constants
         static let iconStringConnectionViewAddConnection = "CV_add_connection_icon.png"
         static let iconStringConnectionViewCheck = "CV_check_icon.png"
         static let iconStringConnectionViewPending = "CV_pending_icon.png"
-        static let iconStringTabIconLocation = "TAB_ICON_location_blobs.png"
+        static let iconStringTabIconActiveBlobsGray = "TAB_ICON_active_blobs_gray.png"
+        static let iconStringTabIconActiveBlobsWhite = "TAB_ICON_active_blobs_white.png"
+        static let iconStringTabIconConnectionsGray = "TAB_ICON_connections_gray.png"
         static let iconStringTabIconConnectionsWhite = "TAB_ICON_connections_white.png"
-        static let iconStringTabIconConnections = "TAB_ICON_connections.png"
-        static let iconStringTabIconAccount = "TAB_ICON_account.png"
+        static let iconStringTabIconAccountGray = "TAB_ICON_account_gray.png"
+        static let iconStringTabIconAccountWhite = "TAB_ICON_account_white.png"
         
         static let awsRegion = AWSRegionType.usEast1
 //        static let awsCognitoIdentityPoolID = "us-east-1:6db4d1c8-f3f5-4466-b135-535279ff6077"

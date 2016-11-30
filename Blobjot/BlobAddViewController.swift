@@ -194,8 +194,8 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
         // Recall the Tutorial Views data in Core Data.  If it is empty for the current ViewController's tutorial, it has not been seen by the curren user.
         let tutorialViews = CoreDataFunctions().tutorialViewRetrieve()
         print("BAVC: TUTORIAL VIEWS ACCOUNTVIEW: \(tutorialViews.tutorialBlobAddViewDatetime)")
-//        if tutorialViews.tutorialBlobAddViewDatetime == nil
-        if 2 == 2
+        if tutorialViews.tutorialBlobAddViewDatetime == nil
+//        if 2 == 2
         {
             let holeView = HoleView(holeViewPosition: 1, frame: viewContainer.bounds, circleOffsetX: viewContainer.bounds.width - 15, circleOffsetY: 90, circleRadius: 100, textOffsetX: (viewContainer.bounds.width / 2) - 100, textOffsetY: 170, textWidth: 200, textFontSize: 24, text: "Create a new Blob.  Be sure to choose your Blob type.")
             holeView.holeViewDelegate = self
@@ -563,10 +563,24 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
         print("PROCESSING BLOB DATA")
         
         // Save the list of tagged users
+        // If all users are selected, apply all connected users in the global user array
         var taggedUsers = [String]()
-        for selectUser in self.vc4.peopleListSelected
+        if self.vc4.selectAll
         {
-            taggedUsers.append(selectUser.userID)
+            for user in Constants.Data.userObjects
+            {
+                if user.userStatus == Constants.UserStatusTypes.connected
+                {
+                    taggedUsers.append(user.userID)
+                }
+            }
+        }
+        else
+        {
+            for selectUser in self.vc4.peopleListSelected
+            {
+                taggedUsers.append(selectUser.userID)
+            }
         }
         
         // Upload the Blob data to Lamda and then DynamoDB

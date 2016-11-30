@@ -178,6 +178,8 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
         print("BAPVC - CELL \((indexPath as NSIndexPath).row): \(cell)")
         
         cell.cellUserImageActivityIndicator.startAnimating()
+        cell.cellUserName.text = ""
+        cell.cellUserImage.image = nil
         
         // Add a clear background for the selectedBackgroundView so that the row is not highlighted when selected
         let sbv = UIView(frame: CGRect(x: 0, y: 0, width: cell.frame.width, height: cell.frame.height))
@@ -351,10 +353,10 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
             selectAllMessage.removeFromSuperview()
             searchBarContainer.addSubview(searchBar)
             
-            if let parentVC = self.blobAddPeopleDelegate
-            {
-                parentVC.changeMapCircleType(Constants.BlobTypes.temporary)
-            }
+//            if let parentVC = self.blobAddPeopleDelegate
+//            {
+//                parentVC.changeMapCircleType(Constants.BlobTypes.temporary)
+//            }
             
             // Toggle the Send button
             if let parentVC = self.blobAddPeopleDelegate
@@ -370,10 +372,10 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
             viewContainer.addSubview(selectAllMessage)
             searchBar.removeFromSuperview()
             
-            if let parentVC = self.blobAddPeopleDelegate
-            {
-                parentVC.changeMapCircleType(Constants.BlobTypes.blobjot)
-            }
+//            if let parentVC = self.blobAddPeopleDelegate
+//            {
+//                parentVC.changeMapCircleType(Constants.BlobTypes.blobjot)
+//            }
             
             // Toggle the Send button
             if let parentVC = self.blobAddPeopleDelegate

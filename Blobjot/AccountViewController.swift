@@ -49,22 +49,10 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
     var locationButton: UIView!
     var locationButtonLabel: UILabel!
     
-//    var displayUserEditNameView: UIView!
-//    var editNameCurrentNameLabel: UILabel!
-//    var editNameCurrentName: UILabel!
-//    var editNameNewNameLabel: UILabel!
-//    var editNameNewName: UITextField!
-//    var editNameNewNameCheckLabel: UILabel!
-//    var editNameSaveButton: UIView!
-//    var editNameSaveButtonLabel: UILabel!
-//    var viewScreen: UIView!
-    
     var userImageTapGesture: UITapGestureRecognizer!
     var userNameTapGesture: UITapGestureRecognizer!
     var logoutButtonTapGesture: UITapGestureRecognizer!
     var locationButtonTapGesture: UITapGestureRecognizer!
-//    var editNameSaveButtonTapGesture: UITapGestureRecognizer!
-//    var viewScreenTapGesture: UITapGestureRecognizer!
     
     var currentUserName: String = ""
     
@@ -271,78 +259,6 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
         // Now add the profile box so that it is on top of all other sub-views
         viewContainer.addSubview(displayUserContainer)
         
-//        viewScreen = UIView(frame: CGRect(x: 0, y: 0, width: viewContainer.frame.width, height: viewContainer.frame.height))
-//        viewScreen.backgroundColor = Constants.Colors.standardBackgroundGrayTransparent
-//        
-//        displayUserEditNameView = UIView(frame: CGRect(x: 50, y: viewContainer.frame.height, width: viewContainer.frame.width - 100, height: 200))
-//        displayUserEditNameView.layer.cornerRadius = 5
-//        displayUserEditNameView.backgroundColor = Constants.Colors.standardBackground
-//        displayUserEditNameView.layer.shadowOffset = CGSize(width: 0.5, height: 2)
-//        displayUserEditNameView.layer.shadowOpacity = 0.5
-//        displayUserEditNameView.layer.shadowRadius = 1.0
-//        
-//        editNameCurrentNameLabel = UILabel(frame: CGRect(x: 10, y: 10, width: displayUserEditNameView.frame.width - 20, height: 15))
-//        editNameCurrentNameLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 12)
-//        editNameCurrentNameLabel.text = "Current User Name:"
-//        editNameCurrentNameLabel.textColor = Constants.Colors.colorTextGray
-//        editNameCurrentNameLabel.textAlignment = NSTextAlignment.center
-//        editNameCurrentNameLabel.numberOfLines = 1
-//        editNameCurrentNameLabel.isUserInteractionEnabled = false
-//        displayUserEditNameView.addSubview(editNameCurrentNameLabel)
-//        
-//        editNameCurrentName = UILabel(frame: CGRect(x: 10, y: 30, width: displayUserEditNameView.frame.width - 20, height: 20))
-//        editNameCurrentName.font = UIFont(name: Constants.Strings.fontRegular, size: 16)
-//        editNameCurrentName.text = ""
-//        editNameCurrentName.textColor = Constants.Colors.colorTextGray
-//        editNameCurrentName.textAlignment = NSTextAlignment.center
-//        editNameCurrentName.numberOfLines = 1
-//        editNameCurrentName.isUserInteractionEnabled = false
-//        displayUserEditNameView.addSubview(editNameCurrentName)
-//        
-//        editNameNewNameLabel = UILabel(frame: CGRect(x: 10, y: 75, width: displayUserEditNameView.frame.width - 20, height: 15))
-//        editNameNewNameLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 12)
-//        editNameNewNameLabel.text = "New Name:"
-//        editNameNewNameLabel.textColor = Constants.Colors.colorTextGray
-//        editNameNewNameLabel.textAlignment = NSTextAlignment.center
-//        displayUserEditNameView.addSubview(editNameNewNameLabel)
-//        
-//        editNameNewName = UITextField(frame: CGRect(x: 10, y: 100, width: displayUserEditNameView.frame.width - 20, height: 26))
-//        editNameNewName.backgroundColor = Constants.Colors.standardBackgroundGrayUltraLight
-////        editNameNewName.layer.borderWidth = 2
-////        editNameNewName.layer.borderColor = Constants.Colors.standardBackgroundGray.cgColor
-//        editNameNewName.font = UIFont(name: Constants.Strings.fontRegular, size: 16)
-//        editNameNewName.textColor = Constants.Colors.colorTextGray
-//        editNameNewName.text = ""
-//        editNameNewName.textAlignment = NSTextAlignment.center
-//        editNameNewName.isUserInteractionEnabled = true
-//        editNameNewName.returnKeyType = UIReturnKeyType.default
-//        editNameNewName.delegate = self
-//        displayUserEditNameView.addSubview(editNameNewName)
-//        
-//        editNameNewNameCheckLabel = UILabel(frame: CGRect(x: 10, y: 130, width: displayUserEditNameView.frame.width - 20, height: 12))
-//        editNameNewNameCheckLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 10)
-//        editNameNewNameCheckLabel.text = ""
-//        editNameNewNameCheckLabel.textColor = Constants.Colors.colorTextGray
-//        editNameNewNameCheckLabel.textAlignment = NSTextAlignment.center
-//        displayUserEditNameView.addSubview(editNameNewNameCheckLabel)
-//        
-//        let editNameSaveButtonHeight: CGFloat = 50
-//        editNameSaveButton = UIView(frame: CGRect(x: 0, y: displayUserEditNameView.frame.height - editNameSaveButtonHeight, width: displayUserEditNameView.frame.width, height: editNameSaveButtonHeight))
-//        let cornerShape = CAShapeLayer()
-//        cornerShape.bounds = editNameSaveButton.frame
-//        cornerShape.position = editNameSaveButton.center
-//        cornerShape.path = UIBezierPath(roundedRect: editNameSaveButton.bounds, byRoundingCorners: [UIRectCorner.bottomLeft , UIRectCorner.bottomRight], cornerRadii: CGSize(width: 5, height: 5)).cgPath
-//        editNameSaveButton.layer.mask = cornerShape
-//        editNameSaveButton.backgroundColor = Constants.Colors.blobPurpleOpaque
-//        displayUserEditNameView.addSubview(editNameSaveButton)
-//        
-//        editNameSaveButtonLabel = UILabel(frame: CGRect(x: 0, y: 0, width: editNameSaveButton.frame.width, height: editNameSaveButtonHeight))
-//        editNameSaveButtonLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 16)
-//        editNameSaveButtonLabel.text = "SAVE"
-//        editNameSaveButtonLabel.textColor = UIColor.white
-//        editNameSaveButtonLabel.textAlignment = NSTextAlignment.center
-//        editNameSaveButton.addSubview(editNameSaveButtonLabel)
-        
         logoutButtonTapGesture = UITapGestureRecognizer(target: self, action: #selector(AccountViewController.logoutButtonTapGesture(_:)))
         logoutButtonTapGesture.numberOfTapsRequired = 1  // add single tap
         logoutButton.addGestureRecognizer(logoutButtonTapGesture)
@@ -350,10 +266,6 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
         locationButtonTapGesture = UITapGestureRecognizer(target: self, action: #selector(AccountViewController.locationButtonTapGesture(_:)))
         locationButtonTapGesture.numberOfTapsRequired = 1  // add single tap
         locationButton.addGestureRecognizer(locationButtonTapGesture)
-        
-//        viewScreenTapGesture = UITapGestureRecognizer(target: self, action: #selector(AccountViewController.viewScreenTapGesture(_:)))
-//        viewScreenTapGesture.numberOfTapsRequired = 1  // add single tap
-//        viewScreen.addGestureRecognizer(viewScreenTapGesture)
         
         // Add the Status Bar, Top Bar and Search Bar
         statusBarView = UIView(frame: CGRect(x: 0, y: 0, width: screenSize.width, height: 20))
@@ -389,8 +301,8 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
         // Recall the Tutorial Views data in Core Data.  If it is empty for the current ViewController's tutorial, it has not been seen by the curren user.
         let tutorialViews = CoreDataFunctions().tutorialViewRetrieve()
         print("AVC: TUTORIAL VIEWS ACCOUNTVIEW: \(tutorialViews.tutorialAccountViewDatetime)")
-//        if tutorialViews.tutorialAccountViewDatetime == nil
-        if 2 == 2
+        if tutorialViews.tutorialAccountViewDatetime == nil
+//        if 2 == 2
         {
             let holeView = HoleView(holeViewPosition: 1, frame: viewContainer.bounds, circleOffsetX: 10, circleOffsetY: 200, circleRadius: 100, textOffsetX: (viewContainer.bounds.width / 2) - 50, textOffsetY: 50, textWidth: 200, textFontSize: 24, text: "This list shows the permanent Blobs you have created.  No temporary Blobs are accessible for management.")
             holeView.holeViewDelegate = self

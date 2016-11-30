@@ -111,7 +111,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     let previewTimeLabelWidth: CGFloat = 100
     
     // Set the selectionMessageBox dimensions
-    let selectorBoxWidth: CGFloat = 160
+    let selectorBoxWidth: CGFloat = 120
     let selectorBoxHeight: CGFloat = 40
     
     // View controller variables for temporary user settings and view controls
@@ -888,11 +888,11 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     {
         // Prepare both of the Table View Controller and add Tab Bar Items to them
         activeBlobsVC = BlobsActiveTableViewController()
-        let activeBlobsTabBarItemImage = UIImage(named: Constants.Strings.iconStringTabIconLocation)
-        let activeBlobsTabBarItem = UITabBarItem(title: "", image: nil, tag: 1)
-//        activeBlobsTabBarItem.selectedImage =
-//        activeBlobsTabBarItem.setTitleTextAttributes([NSForegroundColorAttributeName: UIColor.grayColor()], forState:.Normal)
-//        activeBlobsTabBarItem.image = UIImage(named: Constants.Strings.iconStringTabIconLocation)
+        let activeBlobsTabBarItem = UITabBarItem()
+        activeBlobsTabBarItem.tag = 1
+        activeBlobsTabBarItem.image = UIImage(named: Constants.Strings.iconStringTabIconActiveBlobsGray)
+        activeBlobsTabBarItem.selectedImage = UIImage(named: Constants.Strings.iconStringTabIconActiveBlobsWhite)
+        activeBlobsTabBarItem.imageInsets = UIEdgeInsets(top: 5, left: 0, bottom: -5, right: 0)
         activeBlobsVC.tabBarItem = activeBlobsTabBarItem
         
         peopleVC = PeopleViewController()
@@ -900,24 +900,25 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         peopleVC.tabBarUsed = true
         let connectionsTabBarItem = UITabBarItem()
         connectionsTabBarItem.tag = 2
-        connectionsTabBarItem.image = UIImage(named: Constants.Strings.iconStringTabIconConnectionsWhite)
+        connectionsTabBarItem.image = UIImage(named: Constants.Strings.iconStringTabIconConnectionsGray)
+        connectionsTabBarItem.selectedImage = UIImage(named: Constants.Strings.iconStringTabIconConnectionsWhite)
+        connectionsTabBarItem.imageInsets = UIEdgeInsets(top: 5, left: 0, bottom: -5, right: 0)
         peopleVC.tabBarItem = connectionsTabBarItem
         
         accountVC = AccountViewController()
         accountVC.accountViewDelegate = self
         let accountTabBarItem = UITabBarItem()
         accountTabBarItem.tag = 3
-//        accountTabBarItem.image = UIImage(named: Constants.Strings.iconStringTabIconAccount)
-//        accountTabBarItem.image?.draw(in: CGRect(x: 0, y: 0, width: 30, height: 30))
-//        accountTabBarItem.imageInsets = UIEdgeInsets(top: 2, left: 2, bottom: 2, right: 2)
+        accountTabBarItem.image = UIImage(named: Constants.Strings.iconStringTabIconAccountGray)
+        accountTabBarItem.selectedImage = UIImage(named: Constants.Strings.iconStringTabIconAccountWhite)
+        accountTabBarItem.imageInsets = UIEdgeInsets(top: 5, left: 0, bottom: -5, right: 0)
         accountVC.tabBarItem = accountTabBarItem
         
         // Create the Tab Bar Controller to hold the Table View Controllers
         let tabBarController = UITabBarController()
-        tabBarController.tabBar.barTintColor = Constants.Colors.colorStatusBar
+        tabBarController.tabBar.barTintColor = Constants.Colors.colorStatusBarLight
         tabBarController.tabBar.tintColor = Constants.Colors.colorTextNavBar
         tabBarController.viewControllers = [activeBlobsVC, peopleVC, accountVC]
-//        tabBarController.modalTransitionStyle = .FlipHorizontal
         
         // If the account tab should be loaded, set the last (2) index to load
         if goToAccountTab
@@ -1424,7 +1425,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                         if let blobType = blob.blobType
                         {
                             // If the Blob Type is not Permanent, remove it from the Map View and Data
-                            if blobType != Constants.BlobTypes.permanent
+                            if blobType != Constants.BlobTypes.permanent || blobType != Constants.BlobTypes.blobjot
                             {
                                 // Remove the Blob from the global array of locationBlobs so that it cannot be accessed
                                 loopLocationBlobsCheck: for (index, lBlob) in Constants.Data.locationBlobs.enumerated()
