@@ -228,11 +228,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         print("AD-RN - DID RECEIVE - REMOTE - NOTIFICATION - BACKGROUND: \(userInfo)")
         
         self.handlePushNotification(userInfo: userInfo)
+        
+        completionHandler(UIBackgroundFetchResult.newData)
     }
     
     func application(_ application: UIApplication, handleActionWithIdentifier identifier: String?, forRemoteNotification userInfo: [AnyHashable: Any], completionHandler: @escaping () -> Void)
     {
         print("AD-RN - HANDLE ACTION WITH IDENTIFIER: \(identifier) FOR REMOTE NOTIFICATION: \(userInfo)")
+        
+        self.handlePushNotification(userInfo: userInfo)
     }
     
     // CUSTOM HANDLER FOR PUSH NOTIFICATIONS
@@ -241,8 +245,26 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         print("AD-RN - HANDLING PUSH NOTIFICATION: \(userInfo)")
         if let blobID = userInfo["blobID"] as? String
         {
-            // Only request the extra Blob data if it has not already been requested
-            AWSPrepRequest(requestToCall: AWSGetBlobMinimumData(blobID: blobID, notifyUser: true), delegate: self as AWSRequestDelegate).prepRequest()
+            let notificationBlob = Blob()
+            notificationBlob.blobID = blobID
+            notificationBlob.blobDatetime = Date(timeIntervalSince1970: Double(userInfo["blobTimestamp"] as! String)!)
+            notificationBlob.blobLat = Double(userInfo["blobLat"] as! String)!
+            notificationBlob.blobLong = Double(userInfo["blobLong"] as! String)!
+            notificationBlob.blobRadius = Double(userInfo["blobRadius"] as! String)!
+            notificationBlob.blobType = Constants().blobTypes(Int(userInfo["blobType"] as! String)!)
+            notificationBlob.blobUserID = userInfo["blobUserID"] as? String
+            
+            Constants.Data.taggedBlobs.append(notificationBlob)
+            Constants.Data.mapBlobs.append(notificationBlob)
+            
+            if let userName = userInfo["userName"] as? String
+            {
+                // Show the new Blob notification
+                UtilityFunctions().displayNewBlobNotification(blob: notificationBlob, userName: userName)
+            }
+            
+//            // Only request the extra Blob data if it has not already been requested
+//            AWSPrepRequest(requestToCall: AWSGetBlobMinimumData(blobID: blobID, notifyUser: true), delegate: self as AWSRequestDelegate).prepRequest()
         }
     }
     
@@ -343,6 +365,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
                             // Ensure that the blob type is not a BLOBJOT BLOB
                             if blob.blobType != Constants.BlobTypes.blobjot
                             {
+// *OPTIMIZE***** ADD THE USER CHECK TO BLOB EXTRA DATA AND ENSURE THAT THIS IS NOT DUPLICATED IN OTHER BLOB EXTRA DATA CALLS
                                 // When downloading Blob data, always request the user data if it does not already exist
                                 // Find the correct User Object in the global list
                                 var userExists = false
@@ -399,35 +422,35 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
                         // Show the error message
                         UtilityFunctions().createAlertOkViewInTopVC("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                     }
-                case let awsGetBlobMinimumData as AWSGetBlobMinimumData:
-                    if success
-                    {
-                        // Fire a notification to alert the user that a new Blob has been added
-                        print("AD-PAR-AGBMD - SUCCESS: \(awsGetBlobMinimumData.blobID)")
-                        UtilityFunctions().displayNewBlobNotification(newBlobID: awsGetBlobMinimumData.blobID)
-                        
-                        // Refresh the map so that the circle is added to the map
-                        self.mapViewController.refreshMap()
-                    }
-                    else
-                    {
-                        print("AD-PAR-AGBMD - ERROR")
-                        // Show the error message
-                        UtilityFunctions().createAlertOkViewInTopVC("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
-                    }
+//                case let awsGetBlobMinimumData as AWSGetBlobMinimumData:
+//                    if success
+//                    {
+//                        // Fire a notification to alert the user that a new Blob has been added
+//                        print("AD-PAR-AGBMD - SUCCESS: \(awsGetBlobMinimumData.blobID)")
+//                        UtilityFunctions().displayNewBlobNotification(newBlobID: awsGetBlobMinimumData.blobID)
+//                        
+//                        // Refresh the map so that the circle is added to the map
+//                        self.mapViewController.refreshMap()
+//                    }
+//                    else
+//                    {
+//                        print("AD-PAR-AGBMD - ERROR")
+//                        // Show the error message
+//                        UtilityFunctions().createAlertOkViewInTopVC("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+//                    }
                 case let awsGetSingleUserData as AWSGetSingleUserData:
                     if success
                     {
-                        print("AD - GOT SINGLE USER DATA")
-                        // THIS ASSUMES THAT ONLY A NEW DATA NOTIFICATION WILL REQUEST THE SINGLE USER DATA IN APP DELEGATE
-                        if let blob = awsGetSingleUserData.targetBlob
-                        {
-                            // Fire a notification to alert the user that a new Blob has been added
-                            UtilityFunctions().displayNewBlobNotification(newBlobID: blob.blobID)
-                            
-                            // Refresh the map so that the circle is added to the map
-                            self.mapViewController.refreshMap()
-                        }
+                        print("AD - GOT SINGLE USER DATA FOR USER: \(awsGetSingleUserData.user.userName)")
+//                        // THIS ASSUMES THAT ONLY AN ACTIVE BLOB (IN RADIUS) NOTIFICATION WILL REQUEST THE SINGLE USER DATA IN APP DELEGATE
+//                        if let blob = awsGetSingleUserData.targetBlob
+//                        {
+//                            // Fire a notification to alert the user that a new Blob has been added
+//                            UtilityFunctions().displayNewBlobNotification(newBlobID: blob.blobID)
+//                            
+//                            // Refresh the map so that the circle is added to the map
+//                            self.mapViewController.refreshMap()
+//                        }
                     }
                     else
                     {

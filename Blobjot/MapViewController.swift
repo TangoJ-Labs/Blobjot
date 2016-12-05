@@ -126,6 +126,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // The local user setting whether or not the user has the map camera tracking and following the user's location
     var userTrackingCamera: Bool = false
     
+    // The marker used to show the search pick location
+    var searchMarker: GMSMarker?
+    
     // The indicator whether or not the status bar should be hidden
     var statusBarHidden: Bool = false
     
@@ -184,8 +187,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     override func viewDidLoad()
     {
         super.viewDidLoad()
-        print("MVC - VIEW DID LOAD")
-        
         self.edgesForExtendedLayout = UIRectEdge.all
         
         // Create a fake user for the default blob
@@ -201,7 +202,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         statusBarHeight = UIApplication.shared.statusBarFrame.size.height
         viewFrameY = self.view.frame.minY
         screenSize = UIScreen.main.bounds
-        print("MVC - UI SCREEN SIZE: \(screenSize)")
         
         let vcHeight = screenSize.height - statusBarHeight
         var vcY = statusBarHeight
@@ -541,13 +541,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         fbLoginButton.delegate = self
         loginBox.addSubview(fbLoginButton)
         
-//        let loginButtonContainerWidth = fbLoginButton.frame.width
-//        let loginButtonContainerHeight = fbLoginButton.frame.height
-//        loginButtonContainer = UIView(frame: CGRect(x: (loginBox.frame.width / 2) - (loginButtonContainerWidth / 2), y: (loginBox.frame.height / 2) - (loginButtonContainerHeight / 2), width: loginButtonContainerWidth, height: loginButtonContainerHeight))
-//        loginButtonContainer.layer.cornerRadius = 5
-//        loginButtonContainer.backgroundColor = Constants.Colors.colorFacebookDarkBlue
-//        loginBox.addSubview(loginButtonContainer)
-        
         // Add a loading indicator for the pause showing the "Log out" button after the FBSDK is logged in and before the Account VC loads
         loginActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: 0, y: loginBox.frame.height / 2 + 30, width: loginBox.frame.width, height: 20))
         loginActivityIndicator.color = UIColor.black
@@ -645,7 +638,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     
     override func viewWillAppear(_ animated: Bool)
     {
-        print("MVC - VIEW WILL APPEAR")
+        print("MVC: VIEW WILL APPEAR")
+        // Run the addBlobs function in case additional data has not been added
+        self.addMapBlobsToMap()
         
         if showLoginScreenBool
         {
@@ -732,8 +727,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             viewContainer.addSubview(holeView)
             
         default:
-            print("MVC - FINISHED ALL HOLE VIEWS")
-            
             self.closePreview()
             
             // Remove the tutorial Blob and refresh the Map to recall the user's Blobs
@@ -774,7 +767,19 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         
         // Use the place coordinate to center the map
         mapCenter = CLLocationCoordinate2D(latitude: place.coordinate.latitude, longitude: place.coordinate.longitude)
-        mapView.camera = GMSCameraPosition(target: mapCenter, zoom: mapView.camera.zoom, bearing: CLLocationDirection(0), viewingAngle: mapView.camera.viewingAngle)
+        
+        // Add a marker to the center of the coordinates
+        let position = mapCenter
+        searchMarker = GMSMarker(position: position!)
+        searchMarker!.groundAnchor = CGPoint(x: 0.5, y: 0.5)
+        searchMarker!.title = ""
+        searchMarker!.icon = GMSMarker.markerImage(with: .black)
+        searchMarker!.tracksViewChanges = false
+        searchMarker!.map = mapView
+        
+        // Center the camera on the place
+        mapView.camera = GMSCameraPosition(target: mapCenter, zoom: 18, bearing: CLLocationDirection(0), viewingAngle: mapView.camera.viewingAngle)
+        // mapView.camera.zoom
         
         // Save an action in Core Data
         CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
@@ -950,7 +955,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         let navController = UINavigationController(rootViewController: tabBarController)
         navController.navigationBar.barTintColor = Constants.Colors.colorStatusBar
         self.present(navController, animated: true, completion: nil)
-//        self.navigationController!.pushViewController(tabBarController, animated: true)
         
         // Save an action in Core Data
         CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
@@ -980,7 +984,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         {
             if addingBlob
             {
-                print("addView Tap Gesture - go to Add screen")
                 // If the addingBlob indicator is true, the user has already started the Add Blob process and has chosen a location and radius for the Blob
                 // Instantiate the BlobAddViewController and a Nav Controller and present the View Controller
                 
@@ -993,7 +996,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 
                 // Change the add blob indicator to true before calling adjustMapViewCamera
                 addingBlob = true
-                print("addView Tap Gesture - add Circle")
                 
                 buttonAddImage.image = UIImage(named: Constants.Strings.iconStringMapViewCheck)
                 
@@ -1050,7 +1052,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // If the Track User button is tapped, the track functionality is toggled
     func toggleTrackUser(_ gesture: UITapGestureRecognizer)
     {
-        print("TOGGLE TRACK USER")
         // Close the Preview Box - the user is not interacting with the Preview Box anymore
         closePreview()
         
@@ -1059,8 +1060,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         {
             unhighlightMapCircleForBlob(mBlob)
         }
-        print("MAP BLOBS: \(Constants.Data.mapBlobs)")
-        print("LOCATION BLOBS: \(Constants.Data.locationBlobs)")
         
         // Check to see if the user is already being tracked (toggle functionality)
         if userTrackingCamera
@@ -1087,8 +1086,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // Reset the MapView and re-download the Blob data
     func refreshMap(_ gesture: UITapGestureRecognizer? = nil)
     {
-        print("MVC - AI - START REFRESH MAP")
-        
         // Show the Map refreshing indicator
         self.buttonRefreshMapActivityIndicator.startAnimating()
         self.mapView.addSubview(backgroundActivityView)
@@ -1332,7 +1329,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             locationInaccurate = false
             
             // Hide the low accuracy view
-//            self.lowAccuracyView.removeFromSuperview()
             self.lowAccuracyView.isHidden = true
             
             // Clear the array of current location Blobs and add the default Blob as the first element
@@ -1395,7 +1391,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                     else
                     {
                         Constants.Data.locationBlobs.append(blob)
-                        print("APPENDING BLOB")
                     }
                     
                     // If the Blob is invisible, change the circle to gray
@@ -1425,7 +1420,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                         if let blobType = blob.blobType
                         {
                             // If the Blob Type is not Permanent, remove it from the Map View and Data
-                            if blobType != Constants.BlobTypes.permanent || blobType != Constants.BlobTypes.blobjot
+                            if blobType != Constants.BlobTypes.permanent && blobType != Constants.BlobTypes.blobjot
                             {
                                 // Remove the Blob from the global array of locationBlobs so that it cannot be accessed
                                 loopLocationBlobsCheck: for (index, lBlob) in Constants.Data.locationBlobs.enumerated()
@@ -1472,46 +1467,38 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                             }
                         }
                     }
-                    else
+                    // Since the Blob is not within the current radius, remove the extra data and change the color, if it is an invisible Blob
+                    
+                    // If the Blob is not in range of the user's current location, but the Blob's extra data has already been requested,
+                    // delete the extra data and indicate that the Blob's extra data has not been requested
+                    // If the Blob was deleted in the last IF statement (if viewed and not permanent), then this step is unnecessary
+                    if blob.blobExtraRequested
                     {
-                        // If the Blob was not viewed, remove the extra data and change the color, if it is an invisible Blob
+                        // Remove all of the extra data
+                        blob.blobText = nil
+                        blob.blobThumbnailID = nil
+                        blob.blobMediaType = nil
+                        blob.blobMediaID = nil
                         
-                        // If the Blob is not in range of the user's current location, but the Blob's extra data has already been requested,
-                        // delete the extra data and indicate that the Blob's extra data has not been requested
-                        // If the Blob was deleted in the last IF statement (if viewed and not permanent), then this step is unnecessary
-                        if blob.blobExtraRequested
-                        {
-                            // Remove all of the extra data
-                            blob.blobText = nil
-                            blob.blobThumbnailID = nil
-                            blob.blobMediaType = nil
-                            blob.blobMediaID = nil
-                            
-                            // Indicate that the extra data has not been requested
+                        // Indicate that the extra data has not been requested
 // *ISSUE ********** If the data has been requested, but not added to the Blob yet, it could be added again after this step, causing bugs
-                            blob.blobExtraRequested = false
-                        }
-                        // If the Blob is invisible, change the circle back to clear
-                        if blob.blobType == Constants.BlobTypes.invisible
+                        blob.blobExtraRequested = false
+                    }
+                    // If the Blob is invisible, change the circle back to clear
+                    if blob.blobType == Constants.BlobTypes.invisible
+                    {
+                        loopMapCirclesCheck: for circle in Constants.Data.mapCircles
                         {
-                            loopMapCirclesCheck: for circle in Constants.Data.mapCircles
+                            if circle.title == blob.blobID
                             {
-                                if circle.title == blob.blobID
-                                {
-                                    circle.fillColor = Constants().blobColor(blob.blobType, mainMap: true)
-                                    
-                                    break loopMapCirclesCheck
-                                }
+                                circle.fillColor = Constants().blobColor(blob.blobType, mainMap: true)
+                                
+                                break loopMapCirclesCheck
                             }
                         }
                     }
                 }
             }
-            
-//            loopLocationBlobsCheck: for lBlob in Constants.Data.locationBlobs
-//            {
-//                print("MVC - LOCATIONS BLOB TEXT: \(lBlob.blobText), TYPE: \(lBlob.blobType), DATE: \(lBlob.blobDatetime)")
-//            }
             
             // Reload the Collection View
             self.refreshCollectionView()
@@ -1519,14 +1506,12 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             // Only hide the background activity indicator if the global sending property is false
             if !Constants.Data.stillSendingBlob && !self.waitingForMapData
             {
-                print("MVC - AI - STOP REFRESH MAP")
                 self.hideBackgroundActivityView()
             }
         }
         else
         {
             // Show the low accuracy view
-//            self.viewContainer.addSubview(lowAccuracyView)
             self.lowAccuracyView.isHidden = false
             
             // Record that the user's location is inaccurate
@@ -1952,7 +1937,8 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             
             // Check whether the current Map Blob matches the Location Blob at the selected index
             // If so, find the Map Circle that matches the current Map Blob and highlight that Map Circle's border
-            if mBlob.blobID == Constants.Data.locationBlobs[(indexPath as NSIndexPath).row].blobID {
+            if mBlob.blobID == Constants.Data.locationBlobs[(indexPath as NSIndexPath).row].blobID
+            {
                 mBlob.blobSelected = true
                 
                 // Reload the Collection View
@@ -2009,7 +1995,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             print("MVC - FBSDK USER ID: \(result.token.userID)")
             
             // Show the logging in indicator and label
-//            loginBox.addSubview(loginButtonContainer)
             loginActivityIndicator.startAnimating()
             loginBox.addSubview(loginProcessLabel)
             
@@ -2034,7 +2019,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         // Save an action in Core Data
         CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
         
-        print("MVC - FBSDK WILL LOG IN: \(loginButton)")
         return true
     }
     
@@ -2058,6 +2042,12 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     {
         if searchBarVisible
         {
+            // Hide the search marker
+            if searchMarker != nil
+            {
+                searchMarker!.map = nil
+            }
+            
             searchBarVisible = false
             
             // Add an animation to raise the search button container out of view
@@ -2085,11 +2075,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // If so, animate the raising of the Preview Box out of view
     func closePreview()
     {
-        //Stop animating the activity indicators
-        previewThumbnailActivityIndicator.stopAnimating()
-        previewUserImageActivityIndicator.stopAnimating()
-        previewUserNameActivityIndicator.stopAnimating()
-        
         if previewContainer.frame.minY > -45
         {
             // Add an animation to raise the preview container out of view
@@ -2109,6 +2094,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     {
         self.previewThumbnailView.image = nil
         self.previewTextBox.text = nil
+        previewUserImageView.image = UIImage(named: "PROFILE_DEFAULT.png")
         self.previewUserNameLabel.text = nil
         self.previewTimeLabel.text = nil
         
@@ -2138,9 +2124,8 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     
     func hideBackgroundActivityView()
     {
-        print("MVC - AI - HIDE BGD AI")
         // Stop the refresh Map button indicator if it is running
-//        self.buttonRefreshMapActivityIndicator.stopAnimating()
+        self.buttonRefreshMapActivityIndicator.stopAnimating()
         self.backgroundActivityView.removeFromSuperview()
     }
     
@@ -2255,7 +2240,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             }
             else
             {
-                print("MVC - BLOB EXTRA REQUESTED - TRYING TO FIND THUMBNAIL")
                 // Check to see if the thumbnail was already downloaded
                 // If not, the return function from AWS will apply the thumbnail to the preview box
                 // Loop through the BlobThumbnailObjects array
@@ -2306,8 +2290,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         }
         else if blob.blobType == Constants.BlobTypes.blobjot
         {
-            print("MVC - TAPPED PUBLIC BLOB: \(blob.blobText)")
-            
             previewUserImageView.image = UIImage(named: Constants.Strings.iconStringBlobjotLogo)
             previewUserNameLabel.text = "Public Area"
             
@@ -2384,7 +2366,19 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             // Set the Preview Time Label to show the age of the Blob
             if let datetime = blob.blobDatetime
             {
-                let stringAge = String(-1 * Int(datetime.timeIntervalSinceNow / 3600)) + " hrs"
+                // Capture the number of hours it has been since the Blob was created (as a positive integer)
+                let dateAgeHrs: Int = -1 * Int(datetime.timeIntervalSinceNow / 3600)
+                
+                // Set the date age label.  If the age is less than 24 hours, just show it in hours.  Otherwise, show the number of days and hours.
+                var stringAge = String(dateAgeHrs / Int(24)) + " days" //+ String(dateAgeHrs % 24) + " hrs"
+                if dateAgeHrs < 24
+                {
+                    stringAge = String(dateAgeHrs) + " hrs"
+                }
+                else if dateAgeHrs < 48
+                {
+                    stringAge = "1 day"
+                }
                 previewTimeLabel.text = stringAge
             }
         }
@@ -2560,7 +2554,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     
     func showLoginScreen()
     {
-        print("LOGIN - MVC - SHOW LOGIN SCREEN")
         self.showLoginScreenBool = true
         
         self.viewContainer.addSubview(loginScreen)
@@ -2580,23 +2573,18 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                         {
                             // Load the account view to show the logged in user
                             self.loadTabViewController(true)
-                            print("LOGIN - MVC - LOADING ACCOUNT TAB")
-                            
                             self.showLoginScreenBool = false
                             
                             // Hide the logging in screen, indicator, and label
                             self.loginScreen.removeFromSuperview()
                             self.loginActivityIndicator.stopAnimating()
-//                            self.loginButtonContainer.removeFromSuperview()
                             self.loginProcessLabel.removeFromSuperview()
-                            print("LOGIN - MVC - REMOVED LOGIN SCREEN")
                         }
                         else
                         {
                             // Since the first attempt to download the map data would have failed if the user was not logged in, refresh it again
                             // Recall the Tutorial Views data in Core Data.  If it is empty for the current ViewController's tutorial, it has not been seen by the curren user.
                             let tutorialViews = CoreDataFunctions().tutorialViewRetrieve()
-                            print("MVC: TUTORIAL VIEWS MAPVIEW (AWS RETURN): \(tutorialViews.tutorialMapViewDatetime)")
                             if tutorialViews.tutorialMapViewDatetime != nil
                             {
                                 self.refreshMap()
@@ -2607,7 +2595,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                     {
                         // Hide the logging in indicator and label
                         self.loginActivityIndicator.stopAnimating()
-//                        self.loginButtonContainer.removeFromSuperview()
                         self.loginProcessLabel.removeFromSuperview()
                         
                         // Show the error message

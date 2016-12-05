@@ -54,8 +54,6 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
     var logoutButtonTapGesture: UITapGestureRecognizer!
     var locationButtonTapGesture: UITapGestureRecognizer!
     
-    var currentUserName: String = ""
-    
 //    var blobUserActivityIndicator: UIActivityIndicatorView!
     var blobsTableViewBackgroundLabel: UILabel!
     var blobsUserTableView: UITableView!
@@ -156,7 +154,7 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
         }
         
         // Add a custom logout button
-        logoutButton = UIView(frame: CGRect(x: (viewContainer.frame.width * 3) / 4 - 50, y: 10, width: 100, height: 45))
+        logoutButton = UIView(frame: CGRect(x: (viewContainer.frame.width * 3) / 4 - 65, y: 10, width: 130, height: 45))
         logoutButton.layer.cornerRadius = 5
         logoutButton.layer.borderWidth = 1
         logoutButton.layer.borderColor = Constants.Colors.colorPurple.cgColor
@@ -172,7 +170,7 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
         logoutButton.addSubview(logoutButtonLabel)
         
         // Add a custom location button
-        locationButton = UIView(frame: CGRect(x: (viewContainer.frame.width * 3) / 4 - 50, y: displayUserContainer.frame.height - 55, width: 100, height: 45))
+        locationButton = UIView(frame: CGRect(x: (viewContainer.frame.width * 3) / 4 - 65, y: displayUserContainer.frame.height - 55, width: 130, height: 45))
         locationButton.layer.cornerRadius = 5
         locationButton.layer.borderWidth = 1
         locationButton.layer.borderColor = Constants.Colors.colorPurple.cgColor
@@ -192,30 +190,37 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
         let locationManagerSettingArray = CoreDataFunctions().locationManagerSettingRetrieve()
         print("AVC - CD Location Manager Setting Count: \(locationManagerSettingArray.count)")
         
-        if locationManagerSettingArray.count > 0
+        if locationManagerSettingArray.count == 0
         {
-            print("AVC - CD Location Manager Setting: \(locationManagerSettingArray[0].locationManagerSetting)")
-            if locationManagerSettingArray[0].locationManagerSetting == "constant"
-            {
-                Constants.Settings.locationManagerConstant = true
-                locationButtonLabel.text = Constants.Strings.stringLMConstant
-            }
-            else
-            {
-                Constants.Settings.locationManagerConstant = false
-                locationButtonLabel.text = Constants.Strings.stringLMSignificant
-            }
+            // If the array is empty, no previous setting was saved - set and save the default
+            
+            Constants.Settings.locationManagerSetting = Constants.LocationManagerSettingType.significant
+            locationButtonLabel.text = Constants.Strings.stringLMSignificant
+            
+            // Now save the default to Core Data
+            CoreDataFunctions().locationManagerSettingSave(Constants.LocationManagerSettingType.significant)
         }
         else
         {
-            Constants.Settings.locationManagerConstant = true
-            locationButtonLabel.text = Constants.Strings.stringLMConstant
-            
-            // Now save the default to Core Data
-            CoreDataFunctions().locationManagerSettingSave(true)
+            print("AVC - CD Location Manager Setting: \(locationManagerSettingArray[0].locationManagerSetting)")
+            if locationManagerSettingArray[0].locationManagerSetting == Constants.LocationManagerSettingType.always.rawValue
+            {
+                Constants.Settings.locationManagerSetting = Constants.LocationManagerSettingType.always
+                locationButtonLabel.text = Constants.Strings.stringLMAlways
+            }
+            else if locationManagerSettingArray[0].locationManagerSetting == Constants.LocationManagerSettingType.off.rawValue
+            {
+                Constants.Settings.locationManagerSetting = Constants.LocationManagerSettingType.off
+                locationButtonLabel.text = Constants.Strings.stringLMOff
+            }
+            else
+            {
+                Constants.Settings.locationManagerSetting = Constants.LocationManagerSettingType.significant
+                locationButtonLabel.text = Constants.Strings.stringLMSignificant
+            }
         }
         
-        if Constants.Data.currentUser != ""
+        if Constants.Data.currentUser.userID != nil
         {
             displayUserContainer.addSubview(displayUserLabel)
             displayUserContainer.addSubview(displayUserLabelActivityIndicator)
@@ -285,7 +290,7 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
         print("AVC - GOT SAVED BLOBS: COUNT: \(savedBlobs.count)")
         for sBlob in savedBlobs
         {
-            if sBlob.blobUserID == Constants.Data.currentUser && sBlob.blobType == Constants.BlobTypes.permanent
+            if sBlob.blobUserID == Constants.Data.currentUser.userID && sBlob.blobType == Constants.BlobTypes.permanent
             {
                 print("AVC - SAVED BLOB: \(sBlob.blobID)")
                 userBlobs.append(sBlob)
@@ -296,7 +301,10 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
         userBlobs.sort(by: {$0.blobDatetime.timeIntervalSince1970 > $1.blobDatetime.timeIntervalSince1970})
         
         // Go ahead and request the user data from AWS again in case the data has been updated
-        AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: Constants.Data.currentUser, forPreviewBox: false), delegate: self as AWSRequestDelegate).prepRequest()
+        if let currentUserID = Constants.Data.currentUser.userID
+        {
+            AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: currentUserID, forPreviewBox: false), delegate: self as AWSRequestDelegate).prepRequest()
+        }
         
         // Recall the Tutorial Views data in Core Data.  If it is empty for the current ViewController's tutorial, it has not been seen by the curren user.
         let tutorialViews = CoreDataFunctions().tutorialViewRetrieve()
@@ -375,7 +383,7 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
         loginManager.logOut()
         
         // Log out the user from the app
-        Constants.Data.currentUser = ""
+        Constants.Data.currentUser = User()
         Constants.credentialsProvider.clearCredentials()
         
         // Clear the data from the app
@@ -413,27 +421,38 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
         print("TOGGLE THE LOCATION MANAGER SETTINGS")
         
         // Toggle the location manager type
-        if Constants.Settings.locationManagerConstant
+        if Constants.Settings.locationManagerSetting == Constants.LocationManagerSettingType.always
         {
             // Change the locationManagerAlways toggle indicator
-            Constants.Settings.locationManagerConstant = false
+            Constants.Settings.locationManagerSetting = Constants.LocationManagerSettingType.significant
             
             // Change the button color and text
             locationButtonLabel.text = Constants.Strings.stringLMSignificant
             
             // Save the locationManagerSetting in Core Data
-            CoreDataFunctions().locationManagerSettingSave(false)
+            CoreDataFunctions().locationManagerSettingSave(Constants.LocationManagerSettingType.significant)
+        }
+        else if Constants.Settings.locationManagerSetting == Constants.LocationManagerSettingType.off
+        {
+            // Change the locationManagerAlways toggle indicator
+            Constants.Settings.locationManagerSetting = Constants.LocationManagerSettingType.always
+            
+            // Change the button color and text
+            locationButtonLabel.text = Constants.Strings.stringLMAlways
+            
+            // Save the locationManagerSetting in Core Data
+            CoreDataFunctions().locationManagerSettingSave(Constants.LocationManagerSettingType.always)
         }
         else
         {
             // Change the locationManagerAlways toggle indicator
-            Constants.Settings.locationManagerConstant = true
+            Constants.Settings.locationManagerSetting = Constants.LocationManagerSettingType.off
             
             // Change the button color and text
-            locationButtonLabel.text = Constants.Strings.stringLMConstant
+            locationButtonLabel.text = Constants.Strings.stringLMOff
             
             // Save the locationManagerSetting in Core Data
-            CoreDataFunctions().locationManagerSettingSave(true)
+            CoreDataFunctions().locationManagerSettingSave(Constants.LocationManagerSettingType.off)
         }
         
         // Implement the changed settings immediately
@@ -548,8 +567,11 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
                     }
                 }
                 
-                // Record the Blob deletion in AWS so that the Blob no longer is downloaded for anyone
-                AWSPrepRequest(requestToCall: AWSDeleteBlob(blobID: cellBlob.blobID, userID: Constants.Data.currentUser), delegate: self as AWSRequestDelegate).prepRequest()
+                if let currentUserID = Constants.Data.currentUser.userID
+                {
+                    // Record the Blob deletion in AWS so that the Blob no longer is downloaded for anyone
+                    AWSPrepRequest(requestToCall: AWSDeleteBlob(blobID: cellBlob.blobID, userID: currentUserID), delegate: self as AWSRequestDelegate).prepRequest()
+                }
                 
                 // Remove the Circle for this Blob from the map Circles so that it no longer shows on the Map View
                 loopMapCirclesCheck: for (cIndex, circle) in Constants.Data.mapCircles.enumerated()
@@ -695,37 +717,27 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
     // The Child View Controller will call this function when the logged in user has been added to the global user list
     func refreshCurrentUserElements()
     {
-        // The Current User Data has already been loaded into the global user array, and possibly updated from a fresh download of user data
+        print("AVC-RCUE - REFRESH CURRENT USER DATA")
         
-        // Find the logged in User Object in the global User list and use the data to fill out the user display views
-        userLoop: for userObject in Constants.Data.userObjects
+        // The Current User Data has already been loaded into the global current User object, and possibly updated 
+        // from a fresh download of user data when this viewController was loaded
+        
+        // Show the logged in user's username in the display user label
+        if let username = Constants.Data.currentUser.userName
         {
-            print("GLOBAL LIST USER CHECK: \(userObject.userName)")
+            Constants.Data.currentUser.userName  = username
+            displayUserLabel.text = username
+            displayUserLabelActivityIndicator.stopAnimating()
+        }
+        
+        // Refresh the user image if it exists
+        if let userImage = Constants.Data.currentUser.userImage
+        {
+            self.displayUserImage.image = userImage
+            self.displayUserImageActivityIndicator.stopAnimating()
             
-            if userObject.userID == Constants.Data.currentUser
-            {
-                print("IN PARENT - GOT CURRENT USER: \(userObject.userName)")
-                
-                // Show the logged in user's username in the display user label
-                if let username = userObject.userName
-                {
-                    currentUserName  = username
-                    displayUserLabel.text = username
-                    displayUserLabelActivityIndicator.stopAnimating()
-                }
-                
-                // Refresh the user image if it exists
-                if let userImage = userObject.userImage
-                {
-                    self.displayUserImage.image = userImage
-                    self.displayUserImageActivityIndicator.stopAnimating()
-                    
-                    // Store the new image in Core Data for immediate access in next VC loading
-                    CoreDataFunctions().currentUserSave(user: userObject)
-                }
-                
-                break userLoop
-            }
+            // Store the new image in Core Data for immediate access in next VC loading
+            CoreDataFunctions().currentUserSave(user: Constants.Data.currentUser)
         }
     }
     

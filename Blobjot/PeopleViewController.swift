@@ -323,118 +323,132 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
         let rowUser = self.peopleList[(indexPath as NSIndexPath).row]
         print("PVC - IN ROW ACTIONS FOR ROW: \((indexPath as NSIndexPath).row) AND USER: \(rowUser.userName)")
         
-        if rowUser.userID == Constants.Data.currentUser
+        if let rowUserID = rowUser.userID
         {
-            // LOGGED IN USER
+            if rowUser.userID == Constants.Data.currentUser.userID
+            {
+                // LOGGED IN USER
+                print("PVC - IN CURRENT USER ACTIONS")
+                let you = UITableViewRowAction(style: .normal, title: "This is\nYou!")
+                { action, index in
+                    print("PVC - current user button tapped")
+                }
+                you.backgroundColor = Constants.Colors.colorGrayLight
+                
+                return [you]
+            }
+            else if rowUser.userStatus == Constants.UserStatusTypes.pending
+            {
+                // PENDING USERS
+                print("PVC - IN PENDING USER ACTIONS")
+                let block = UITableViewRowAction(style: .normal, title: "Block\nUser")
+                { action, index in
+                    print("PVC - block button tapped")
+                    // Remove the person from the global people list
+                    loopUserObjectCheck: for (userIndex, userObject) in Constants.Data.userObjects.enumerated()
+                    {
+                        if userObject.userID == self.peopleList[(indexPath as NSIndexPath).row].userID
+                        {
+                            Constants.Data.userObjects.remove(at: userIndex)
+                            
+                            break loopUserObjectCheck
+                        }
+                    }
+                    // Call to change the userStatus to 3 (NotConnected) and prepare the view
+                    self.updateUserStatusType(rowUserID, peopleListIndex: (indexPath as NSIndexPath).row, userStatus: Constants.UserStatusTypes.blocked)
+                }
+                block.backgroundColor = Constants.Colors.colorGrayLight
+                
+                let delete = UITableViewRowAction(style: .normal, title: "Delete\nRequest")
+                { action, index in
+                    print("PVC - delete request button tapped")
+                    
+                    // Call to change the userStatus to 3 (NotConnected) and prepare the view
+                    self.updateUserStatusType(rowUserID, peopleListIndex: (indexPath as NSIndexPath).row, userStatus: Constants.UserStatusTypes.notConnected)
+                }
+                delete.backgroundColor = Constants.Colors.blobRedOpaque
+                
+                let add = UITableViewRowAction(style: .normal, title: "Connect")
+                { action, index in
+                    print("PVC - add connection button tapped")
+                    
+                    // Call to change the userStatus to 3 (NotConnected) and prepare the view
+                    self.updateUserStatusType(rowUserID, peopleListIndex: (indexPath as NSIndexPath).row, userStatus: Constants.UserStatusTypes.connected)
+                }
+                add.backgroundColor = Constants.Colors.blobYellowOpaque
+                
+                return [add, delete, block]
+            }
+            else if rowUser.userStatus == Constants.UserStatusTypes.waiting
+            {
+                // WAITING USERS
+                print("PVC - IN WAITING USER ACTIONS")
+                let delete = UITableViewRowAction(style: .normal, title: "Delete\nRequest")
+                { action, index in
+                    print("PVC - delete request button tapped")
+                    
+                    // Call to change the userStatus to 3 (NotConnected) and prepare the view
+                    self.updateUserStatusType(rowUserID, peopleListIndex: (indexPath as NSIndexPath).row, userStatus: Constants.UserStatusTypes.notConnected)
+                }
+                delete.backgroundColor = Constants.Colors.blobRedOpaque
+                
+                return [delete]
+            }
+            else if rowUser.userStatus == Constants.UserStatusTypes.connected
+            {
+                // CONNECTED USERS
+                print("PVC - IN CONNECTED USER ACTIONS")
+                let delete = UITableViewRowAction(style: .normal, title: "Delete\nConnection")
+                { action, index in
+                    print("PVC - delete connection button tapped")
+                    
+                    // Call to change the userStatus to 3 (NotConnected) and prepare the view
+                    self.updateUserStatusType(rowUserID, peopleListIndex: (indexPath as NSIndexPath).row, userStatus: Constants.UserStatusTypes.notConnected)
+                }
+                delete.backgroundColor = Constants.Colors.blobRedOpaque
+                
+                return [delete]
+            }
+            else if rowUser.userStatus == Constants.UserStatusTypes.blocked
+            {
+                // CONNECTED USERS
+                print("PVC - IN BLOCKED USER ACTIONS")
+                let delete = UITableViewRowAction(style: .normal, title: "Unblock\nUser")
+                { action, index in
+                    print("PVC - unblock user button tapped")
+                    
+                    // Call to change the userStatus to 3 (NotConnected) and prepare the view
+                    self.updateUserStatusType(rowUserID, peopleListIndex: (indexPath as NSIndexPath).row, userStatus: Constants.UserStatusTypes.notConnected)
+                }
+                delete.backgroundColor = Constants.Colors.blobRedOpaque
+                
+                return [delete]
+            }
+            else
+            {
+                print("PVC - IN DEFAULT USER ACTIONS")
+                // Set the default return action
+                let add = UITableViewRowAction(style: .normal, title: "Connect")
+                { action, index in
+                    print("PVC - add connection button tapped")
+                    
+                    // Call to change the userStatus to 3 (NotConnected) and prepare the view
+                    self.updateUserStatusType(rowUserID, peopleListIndex: (indexPath as NSIndexPath).row, userStatus: Constants.UserStatusTypes.waiting)
+                }
+                add.backgroundColor = Constants.Colors.blobYellowOpaque
+                return [add]
+            }
+        }
+        else
+        {
+            // ERROR WITH ROW USER
             print("PVC - IN CURRENT USER ACTIONS")
-            let nothing = UITableViewRowAction(style: .normal, title: "This is\nYou!")
+            let nothing = UITableViewRowAction(style: .normal, title: "Error,\nplease reload")
             { action, index in
                 print("PVC - current user button tapped")
             }
             nothing.backgroundColor = Constants.Colors.colorGrayLight
-            
             return [nothing]
-        }
-        else if rowUser.userStatus == Constants.UserStatusTypes.pending
-        {
-            // PENDING USERS
-            print("PVC - IN PENDING USER ACTIONS")
-            let block = UITableViewRowAction(style: .normal, title: "Block\nUser")
-            { action, index in
-                print("PVC - block button tapped")
-                // Remove the person from the global people list
-                loopUserObjectCheck: for (userIndex, userObject) in Constants.Data.userObjects.enumerated()
-                {
-                    if userObject.userID == self.peopleList[(indexPath as NSIndexPath).row].userID
-                    {
-                        Constants.Data.userObjects.remove(at: userIndex)
-                        
-                        break loopUserObjectCheck
-                    }
-                }
-                // Call to change the userStatus to 3 (NotConnected) and prepare the view
-                self.updateUserStatusType(self.peopleList[(indexPath as NSIndexPath).row].userID, peopleListIndex: (indexPath as NSIndexPath).row, userStatus: Constants.UserStatusTypes.blocked)
-            }
-            block.backgroundColor = Constants.Colors.colorGrayLight
-            
-            let delete = UITableViewRowAction(style: .normal, title: "Delete\nRequest")
-            { action, index in
-                print("PVC - delete request button tapped")
-                
-                // Call to change the userStatus to 3 (NotConnected) and prepare the view
-                self.updateUserStatusType(self.peopleList[(indexPath as NSIndexPath).row].userID, peopleListIndex: (indexPath as NSIndexPath).row, userStatus: Constants.UserStatusTypes.notConnected)
-            }
-            delete.backgroundColor = Constants.Colors.blobRedOpaque
-            
-            let add = UITableViewRowAction(style: .normal, title: "Connect")
-            { action, index in
-                print("PVC - add connection button tapped")
-                
-                // Call to change the userStatus to 3 (NotConnected) and prepare the view
-                self.updateUserStatusType(self.peopleList[(indexPath as NSIndexPath).row].userID, peopleListIndex: (indexPath as NSIndexPath).row, userStatus: Constants.UserStatusTypes.connected)
-            }
-            add.backgroundColor = Constants.Colors.blobYellowOpaque
-            
-            return [add, delete, block]
-        }
-        else if rowUser.userStatus == Constants.UserStatusTypes.waiting
-        {
-            // WAITING USERS
-            print("PVC - IN WAITING USER ACTIONS")
-            let delete = UITableViewRowAction(style: .normal, title: "Delete\nRequest")
-            { action, index in
-                print("PVC - delete request button tapped")
-                
-                // Call to change the userStatus to 3 (NotConnected) and prepare the view
-                self.updateUserStatusType(self.peopleList[(indexPath as NSIndexPath).row].userID, peopleListIndex: (indexPath as NSIndexPath).row, userStatus: Constants.UserStatusTypes.notConnected)
-            }
-            delete.backgroundColor = Constants.Colors.blobRedOpaque
-            
-            return [delete]
-        }
-        else if rowUser.userStatus == Constants.UserStatusTypes.connected
-        {
-            // CONNECTED USERS
-            print("PVC - IN CONNECTED USER ACTIONS")
-            let delete = UITableViewRowAction(style: .normal, title: "Delete\nConnection")
-            { action, index in
-                print("PVC - delete connection button tapped")
-                
-                // Call to change the userStatus to 3 (NotConnected) and prepare the view
-                self.updateUserStatusType(self.peopleList[(indexPath as NSIndexPath).row].userID, peopleListIndex: (indexPath as NSIndexPath).row, userStatus: Constants.UserStatusTypes.notConnected)
-            }
-            delete.backgroundColor = Constants.Colors.blobRedOpaque
-            
-            return [delete]
-        }
-        else if rowUser.userStatus == Constants.UserStatusTypes.blocked
-        {
-            // CONNECTED USERS
-            print("PVC - IN BLOCKED USER ACTIONS")
-            let delete = UITableViewRowAction(style: .normal, title: "Unblock\nUser")
-            { action, index in
-                print("PVC - unblock user button tapped")
-                
-                // Call to change the userStatus to 3 (NotConnected) and prepare the view
-                self.updateUserStatusType(self.peopleList[(indexPath as NSIndexPath).row].userID, peopleListIndex: (indexPath as NSIndexPath).row, userStatus: Constants.UserStatusTypes.notConnected)
-            }
-            delete.backgroundColor = Constants.Colors.blobRedOpaque
-            
-            return [delete]
-        }
-        else
-        {
-            print("PVC - IN DEFAULT USER ACTIONS")
-            // Set the default return action
-            let add = UITableViewRowAction(style: .normal, title: "Connect")
-            { action, index in
-                print("PVC - add connection button tapped")
-                
-                // Call to change the userStatus to 3 (NotConnected) and prepare the view
-                self.updateUserStatusType(self.peopleList[(indexPath as NSIndexPath).row].userID, peopleListIndex: (indexPath as NSIndexPath).row, userStatus: Constants.UserStatusTypes.waiting)
-            }
-            add.backgroundColor = Constants.Colors.blobYellowOpaque
-            return [add]
         }
     }
     
@@ -460,44 +474,47 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
     {
         print("PVC - Search Text: \(searchText)")
         
-        // If the search bar is cleared, clear the peopleList and add all but the currently logged in user
-        self.peopleList = [User]()
-        if searchText == ""
+        if let currentUserID = Constants.Data.currentUser.userID
         {
-            for addPerson in Constants.Data.userObjects
-            {
-                // Ensure the person is not the currently logged in user
-                if addPerson.userID != Constants.Data.currentUser
-                {
-                    self.peopleList.append(addPerson)
-                }
-            }
-            
-            // else filter the list by clearing the peopleList and appending only the matching Users
-        }
-        else
-        {
+            // If the search bar is cleared, clear the peopleList and add all but the currently logged in user
             self.peopleList = [User]()
-            
-            for userObject in Constants.Data.userObjects
+            if searchText == ""
             {
-                if let username = userObject.userName
+                for addPerson in Constants.Data.userObjects
                 {
-                    // Convert the strings to lowercase for better matching
-                    if username.lowercased().contains(searchText.lowercased())
+                    // Ensure the person is not the currently logged in user
+                    if addPerson.userID != currentUserID
                     {
-                        print("PVC - UserName Contains: \(searchText)")
-                        
-                        // Ensure the person is not the currently logged in user
-                        if userObject.userID != Constants.Data.currentUser
+                        self.peopleList.append(addPerson)
+                    }
+                }
+                
+                // else filter the list by clearing the peopleList and appending only the matching Users
+            }
+            else
+            {
+                self.peopleList = [User]()
+                
+                for userObject in Constants.Data.userObjects
+                {
+                    if let username = userObject.userName
+                    {
+                        // Convert the strings to lowercase for better matching
+                        if username.lowercased().contains(searchText.lowercased())
                         {
-                            self.peopleList.append(userObject)
+                            print("PVC - UserName Contains: \(searchText)")
+                            
+                            // Ensure the person is not the currently logged in user
+                            if userObject.userID != currentUserID
+                            {
+                                self.peopleList.append(userObject)
+                            }
                         }
                     }
                 }
             }
+            self.refreshTableViewAndEndSpinner(true)
         }
-        self.refreshTableViewAndEndSpinner(true)
     }
     
     func updateSearchResults(for searchController: UISearchController)
@@ -538,35 +555,38 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
                 let rowUser = self.peopleList[(indexPath as NSIndexPath).row]
                 print("PVC - IN ROW ACTIONS FOR ROW: \((indexPath as NSIndexPath).row) AND USER: \(rowUser.userName)")
                 
-                // Ensure that the tapped user is not the current user
-                if rowUser.userID != Constants.Data.currentUser
+                if let currentUserID = Constants.Data.currentUser.userID
                 {
-                    // Set default userStatus settings
-                    var userStatus = Constants.UserStatusTypes.waiting
-                    
-                    if rowUser.userStatus == Constants.UserStatusTypes.pending
+                    // Ensure that the tapped user is not the current user
+                    if rowUser.userID != currentUserID
                     {
-                        // PENDING USERS
-                        print("PVC - TAPPED PENDING USER STAR")
-                        // Change the userStatus to 3 (Other) and set the actionType to delete
-                        userStatus = Constants.UserStatusTypes.connected
+                        // Set default userStatus settings
+                        var userStatus = Constants.UserStatusTypes.waiting
                         
-                    }
-                    else if rowUser.userStatus == Constants.UserStatusTypes.waiting || rowUser.userStatus == Constants.UserStatusTypes.connected || rowUser.userStatus == Constants.UserStatusTypes.blocked
-                    {
-                        // WAITING, CONNECTED, OR BLOCKED USERS
-                        print("PVC - TAPPED WAITING, CONNECTED, OR BLOCKED USER STAR")
-                        // Change the userStatus to 3 (Other) and set the actionType to delete
-                        userStatus = Constants.UserStatusTypes.notConnected
+                        if rowUser.userStatus == Constants.UserStatusTypes.pending
+                        {
+                            // PENDING USERS
+                            print("PVC - TAPPED PENDING USER STAR")
+                            // Change the userStatus to 3 (Other) and set the actionType to delete
+                            userStatus = Constants.UserStatusTypes.connected
                         
+                        }
+                        else if rowUser.userStatus == Constants.UserStatusTypes.waiting || rowUser.userStatus == Constants.UserStatusTypes.connected || rowUser.userStatus == Constants.UserStatusTypes.blocked
+                        {
+                            // WAITING, CONNECTED, OR BLOCKED USERS
+                            print("PVC - TAPPED WAITING, CONNECTED, OR BLOCKED USER STAR")
+                            // Change the userStatus to 3 (Other) and set the actionType to delete
+                            userStatus = Constants.UserStatusTypes.notConnected
+                        
+                        }
+                        else
+                        {
+                            // NOT CONNECTED USERS - will keep default "Waiting" status type set above
+                            print("PVC - TAPPED NOT CONNECTED USER STAR")
+                        }
+                        
+                        updateUserStatusType(self.peopleList[(indexPath as NSIndexPath).row].userID!, peopleListIndex: (indexPath as NSIndexPath).row, userStatus: userStatus)
                     }
-                    else
-                    {
-                        // NOT CONNECTED USERS - will keep default "Waiting" status type set above
-                        print("PVC - TAPPED NOT CONNECTED USER STAR")
-                    }
-                    
-                    updateUserStatusType(self.peopleList[(indexPath as NSIndexPath).row].userID, peopleListIndex: (indexPath as NSIndexPath).row, userStatus: userStatus)
                 }
             }
             
@@ -590,36 +610,39 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
     
     func updateUserStatusType(_ counterpartUserID: String, peopleListIndex: Int, userStatus: Constants.UserStatusTypes)
     {
-        // Update the associated user's userStatus locally and refresh the Table View
-        self.peopleList[peopleListIndex].userStatus = userStatus
-        self.refreshTableViewAndEndSpinner(true)
-        
-        // Update the associated user's userStatus globally
-        loopUserObjectUpdate: for userObject in Constants.Data.userObjects
+        if let currentUserID = Constants.Data.currentUser.userID
         {
-            if userObject.userID == counterpartUserID
+            // Update the associated user's userStatus locally and refresh the Table View
+            self.peopleList[peopleListIndex].userStatus = userStatus
+            self.refreshTableViewAndEndSpinner(true)
+            
+            // Update the associated user's userStatus globally
+            loopUserObjectUpdate: for userObject in Constants.Data.userObjects
             {
-                userObject.userStatus = userStatus
-                
-                break loopUserObjectUpdate
+                if userObject.userID == counterpartUserID
+                {
+                    userObject.userStatus = userStatus
+                    
+                    break loopUserObjectUpdate
+                }
             }
+            
+            var actionType = "connect"
+            if userStatus == Constants.UserStatusTypes.notConnected
+            {
+                actionType = "delete"
+            }
+            else if userStatus == Constants.UserStatusTypes.blocked
+            {
+                actionType = "block"
+            }
+            
+            // Add a user connection action in AWS
+            AWSPrepRequest(requestToCall: AWSAddUserConnectionAction(userID: currentUserID, connectionUserID: counterpartUserID, actionType: actionType), delegate: self as AWSRequestDelegate).prepRequest()
+            
+            // Save an action in Core Data
+            CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
         }
-        
-        var actionType = "connect"
-        if userStatus == Constants.UserStatusTypes.notConnected
-        {
-            actionType = "delete"
-        }
-        else if userStatus == Constants.UserStatusTypes.blocked
-        {
-            actionType = "block"
-        }
-        
-        // Add a user connection action in AWS
-        AWSPrepRequest(requestToCall: AWSAddUserConnectionAction(userID: Constants.Data.currentUser, connectionUserID: counterpartUserID, actionType: actionType), delegate: self as AWSRequestDelegate).prepRequest()
-        
-        // Save an action in Core Data
-        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
     func refreshTableViewAndEndSpinner(_ endSpinner: Bool)

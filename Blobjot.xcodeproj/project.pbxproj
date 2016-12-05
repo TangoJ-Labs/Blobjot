@@ -42,6 +42,7 @@
 		B8312FDE1DB3DACB00CFC715 /* LocationManagerSetting+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8312FDD1DB3DACB00CFC715 /* LocationManagerSetting+CoreDataProperties.swift */; };
 		B8312FDF1DB3DACB00CFC715 /* LocationManagerSetting+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8312FDD1DB3DACB00CFC715 /* LocationManagerSetting+CoreDataProperties.swift */; };
 		B8312FE01DB3DACB00CFC715 /* LocationManagerSetting+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8312FDD1DB3DACB00CFC715 /* LocationManagerSetting+CoreDataProperties.swift */; };
+		B83C79851DF5AED500ACA52F /* Sugar_Land-Trailbrook_Back.gpx in Resources */ = {isa = PBXBuildFile; fileRef = B83C79841DF5AED300ACA52F /* Sugar_Land-Trailbrook_Back.gpx */; };
 		B84DD7B51DC67E4F0076B9DD /* BV_add_comment_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = B84DD7A51DC67E4F0076B9DD /* BV_add_comment_icon.png */; };
 		B84DD7B61DC67E4F0076B9DD /* CV_add_connection_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = B84DD7A61DC67E4F0076B9DD /* CV_add_connection_icon.png */; };
 		B84DD7B71DC67E4F0076B9DD /* CV_check_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = B84DD7A71DC67E4F0076B9DD /* CV_check_icon.png */; };
@@ -186,6 +187,7 @@
 		B8312FCE1DB3D9AF00CFC715 /* BlobjotUITests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "BlobjotUITests-Bridging-Header.h"; sourceTree = "<group>"; };
 		B8312FD91DB3DA8700CFC715 /* LocationManagerSetting.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocationManagerSetting.swift; sourceTree = "<group>"; };
 		B8312FDD1DB3DACB00CFC715 /* LocationManagerSetting+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "LocationManagerSetting+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		B83C79841DF5AED300ACA52F /* Sugar_Land-Trailbrook_Back.gpx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = "Sugar_Land-Trailbrook_Back.gpx"; path = "Blobjot/Sugar_Land-Trailbrook_Back.gpx"; sourceTree = "<group>"; };
 		B84DD7A51DC67E4F0076B9DD /* BV_add_comment_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = BV_add_comment_icon.png; sourceTree = "<group>"; };
 		B84DD7A61DC67E4F0076B9DD /* CV_add_connection_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = CV_add_connection_icon.png; sourceTree = "<group>"; };
 		B84DD7A71DC67E4F0076B9DD /* CV_check_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = CV_check_icon.png; sourceTree = "<group>"; };
@@ -385,6 +387,7 @@
 				B8B109321DEDAB3200EA3B41 /* Anywhere2.gpx */,
 				B80C56321D5112C100C4E683 /* Houston-Downtown.gpx */,
 				B88DFD891DBE9F9200255BA5 /* Houston-Downtown2.gpx */,
+				B83C79841DF5AED300ACA52F /* Sugar_Land-Trailbrook_Back.gpx */,
 				B80A84441D5AD2E1003943C3 /* Sugar_Land-Trailbrook_Front.gpx */,
 				B80D17781D9712C50032B0D8 /* style.json */,
 			);
@@ -669,6 +672,7 @@
 				B8B109571DEE866500EA3B41 /* TAB_ICON_connections_white.png in Resources */,
 				B84DD7BC1DC67E4F0076B9DD /* MV_close_icon.png in Resources */,
 				B84DD7B91DC67E4F0076B9DD /* MV_add_combo_icon.png in Resources */,
+				B83C79851DF5AED500ACA52F /* Sugar_Land-Trailbrook_Back.gpx in Resources */,
 				B84DD7BE1DC67E4F0076B9DD /* MV_location_icon.png in Resources */,
 				B84DD7B71DC67E4F0076B9DD /* CV_check_icon.png in Resources */,
 				B8B1096B1DEE886400EA3B41 /* TAB_ICON_active_blobs_white@3x.png in Resources */,
@@ -1076,6 +1080,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CLANG_ENABLE_MODULES = YES;
+				FRAMEWORK_SEARCH_PATHS = "";
 				INFOPLIST_FILE = BlobjotTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.blobjot.BlobjotTests;
@@ -1093,6 +1098,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CLANG_ENABLE_MODULES = YES;
+				FRAMEWORK_SEARCH_PATHS = "";
 				INFOPLIST_FILE = BlobjotTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.blobjot.BlobjotTests;

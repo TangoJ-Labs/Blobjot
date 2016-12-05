@@ -73,7 +73,7 @@ class PeopleTableViewCell: UITableViewCell {
     }
     
     override func setSelected(_ selected: Bool, animated: Bool) {
-        print("SELECTED ACCOUNT VIEW CELL")
+//        print("SET SELECTED PEOPLE VIEW CELL")
     }
     
 //    override func setSelected(_ selected: Bool, animated: Bool) {

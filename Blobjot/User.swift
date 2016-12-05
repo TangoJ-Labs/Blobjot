@@ -10,13 +10,13 @@ import UIKit
 
 class User {
     
-    var userID: String!
     var facebookID: String!
+    var userID: String?
     var userName: String?
     var userImage: UIImage?
     var userStatus: Constants.UserStatusTypes = Constants.UserStatusTypes.notConnected
     
-    convenience init(userID: String, facebookID: String, userName: String?, userImage: UIImage?)
+    convenience init(facebookID: String, userID: String?, userName: String?, userImage: UIImage?)
     {
         self.init()
         

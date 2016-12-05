@@ -202,9 +202,9 @@ struct Constants
         static var lastCredentials: TimeInterval = Date().timeIntervalSince1970
         static var stillSendingBlob: Bool = false
         
-        static var currentUser: String = "" //DON_QUIXOTE: MY9QP9I8HW6ZDMWA || THE_LADY_WITH_COFFEE: 70X4ODWM6D4AL2H4 || TEST_USER: NOLFGJEJ5KX6AIE2 // THE LOGGED IN USER
-        static var currentUserName: String?
-        static var currentUserImage: UIImage?
+        static var currentUser = User()
+//        static var currentUserName: String?
+//        static var currentUserImage: UIImage?
         
         static var taggedBlobs = [Blob]()
         static var blobjotBlobs = [Blob]()
@@ -216,7 +216,7 @@ struct Constants
         static var locationBlobs = [Blob]()
         static var blobThumbnailObjects = [BlobThumbnailObject]()
         static var userObjects = [User]()
-        static var userPublicArea = User(userID: "blobjotBlob", facebookID: "blobjotBlob", userName: "Public Area", userImage: UIImage(named: Constants.Strings.iconStringBlobjotLogo))
+        static var userPublicArea = User(facebookID: "blobjotBlob", userID: "blobjotBlob", userName: "Public Area", userImage: UIImage(named: Constants.Strings.iconStringBlobjotLogo))
         
     }
     
@@ -335,12 +335,12 @@ struct Constants
         static let iconStringTabIconAccountWhite = "TAB_ICON_account_white.png"
         
         static let awsRegion = AWSRegionType.usEast1
-//        static let awsCognitoIdentityPoolID = "us-east-1:6db4d1c8-f3f5-4466-b135-535279ff6077"
         static let awsCognitoIdentityPoolID = "us-east-1:c24cf3db-0349-4163-87ad-3572319324e7"
         
         static let stringLogOut = "Log Out"
-        static let stringLMConstant = "Constant\n(High Accuracy)"
+        static let stringLMAlways = "Constant Tracking\n(High Accuracy)"
         static let stringLMSignificant = "Battery Saver\n(Low Accuracy)"
+        static let stringLMOff = "Background Location\nTracking OFF"
         
     }
     
@@ -376,9 +376,32 @@ struct Constants
         static let locationDistanceUpdateBlobjotBlobs: Double = 2000 // In meters
         static let locationTimeMinChange: Double = 3 // In seconds
         
-        static var locationManagerConstant: Bool = true
+        static var locationManagerSetting: LocationManagerSettingType = Constants.LocationManagerSettingType.significant
         static var statusBarStyle: UIStatusBarStyle = UIStatusBarStyle.lightContent
         
+    }
+    
+    enum LocationManagerSettingType: String
+    {
+        case always = "always"
+        case significant = "significant"
+        case off = "off"
+    }
+    
+    func blobTypes(_ locationManagerSettingTypeString: String) -> Constants.LocationManagerSettingType
+    {
+        // Evaluate the LocationManagerSetting String received and convert it to the appropriate LocationManagerSetting Type
+        switch locationManagerSettingTypeString
+        {
+        case "always":
+            return Constants.LocationManagerSettingType.always
+        case "significant":
+            return Constants.LocationManagerSettingType.significant
+        case "off":
+            return Constants.LocationManagerSettingType.off
+        default:
+            return Constants.LocationManagerSettingType.significant
+        }
     }
     
 }

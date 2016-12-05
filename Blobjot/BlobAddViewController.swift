@@ -95,7 +95,7 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
         rightButtonItem = UIBarButtonItem(title: "Send",
                                               style: UIBarButtonItemStyle.plain,
                                               target: self,
-                                              action: #selector(self.sendBlobAndPopViewController(_:)))
+                                              action: #selector(self.sendBlob(_:)))
         rightButtonItem.tintColor = Constants.Colors.colorTextNavBar
         self.navigationItem.setRightBarButton(rightButtonItem, animated: true)
         
@@ -495,7 +495,7 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
     
     // The function called by the "Send" button on the Nav Bar
     // Upload the new Blob data to the server and then dismiss the BlobAdd VC from the parent VC (the Map View)
-    func sendBlobAndPopViewController(_ sender: UIBarButtonItem)
+    func sendBlob(_ sender: UIBarButtonItem)
     {
         print("SEND FILES TO S3 AND DATA TO LAMBDA AND POP VC")
         print("RANDOM ID: \(self.usableMediaID)")
@@ -552,9 +552,9 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
                 AWSPrepRequest(requestToCall: AWSUploadMediaToBucket(bucket: Constants.Strings.S3BucketThumbnails, uploadMediaFilePath: thumbnailFilePath, mediaID: self.usableMediaID, uploadKey: uploadMediaKey, currentTime: nowTime, deleteWhenFinished: true), delegate: self as AWSRequestDelegate).prepRequest()
             }
             
-            // Set the global indicator to show that a Blob is currently being uploaded and remove the VC from the top of the stack
+            // Set the global indicator to show that a Blob is currently being uploaded
             Constants.Data.stillSendingBlob = true
-            self.popVC()
+//            self.popVC()
         }
     }
     
@@ -571,7 +571,10 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
             {
                 if user.userStatus == Constants.UserStatusTypes.connected
                 {
-                    taggedUsers.append(user.userID)
+                    if let userID = user.userID
+                    {
+                        taggedUsers.append(userID)
+                    }
                 }
             }
         }
@@ -579,53 +582,64 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
         {
             for selectUser in self.vc4.peopleListSelected
             {
-                taggedUsers.append(selectUser.userID)
-            }
-        }
-        
-        // Upload the Blob data to Lamda and then DynamoDB
-        AWSPrepRequest(requestToCall: AWSUploadBlobData(blobID: blobID, blobLat: self.blobCoords.latitude, blobLong: self.blobCoords.longitude, blobMediaID: uploadKey, blobMediaType: self.blobMediaType, blobRadius: self.blobRadius, blobText: self.vc2.blobTextView.text, blobThumbnailID: mediaID + ".png", blobTimestamp: currentTime, blobType: self.blobType.rawValue, blobTaggedUsers: taggedUsers, blobUserID: Constants.Data.currentUser), delegate: self as AWSRequestDelegate).prepRequest()
-        
-        print("MAP BLOBS COUNT 1: \(Constants.Data.mapBlobs.count)")
-        
-        // Create a new Blob locally so that the Circle can immediately be added to the map
-        let newBlob = Blob()
-        newBlob.blobID = mediaID
-        newBlob.blobDatetime = Date(timeIntervalSince1970: currentTime)
-        newBlob.blobLat = self.blobCoords.latitude
-        newBlob.blobLong = self.blobCoords.longitude
-        newBlob.blobRadius = self.blobRadius
-        newBlob.blobType = self.blobType
-        newBlob.blobUserID = Constants.Data.currentUser
-        Constants.Data.userBlobs.append(newBlob)
-        
-        // Check to see if the logged in user was tagged
-        loopTaggedUsers: for person in taggedUsers
-        {
-            print("CHECKING TAGGED USERS: \(person)")
-            // If the logged in user was tagged, add the Blob to the mapBlobs so that it shows on the Map View
-            if person == Constants.Data.currentUser
-            {
-                print("ADDING TO MAP BLOBS")
-                Constants.Data.taggedBlobs.append(newBlob)
-                Constants.Data.mapBlobs.append(newBlob)
-                
-                // A new Blob was added, so sort the global mapBlobs array
-                UtilityFunctions().sortMapBlobs()
-                
-                // Call the parent VC to add the new Blob to the map of the Map View
-                if let parentVC = self.blobAddViewDelegate {
-                    parentVC.createBlobOnMap(CLLocationCoordinate2DMake(self.blobCoords.latitude, self.blobCoords.longitude), blobRadius: self.blobRadius, blobType: self.blobType, blobTitle: mediaID)
+                if let userID = selectUser.userID
+                {
+                    taggedUsers.append(userID)
                 }
-                break loopTaggedUsers
             }
         }
         
-        // Sort the mapBlobs
-        UtilityFunctions().sortMapBlobs()
-        
-        print("MAP BLOBS COUNT 2: \(Constants.Data.mapBlobs.count)")
-        print("USER BLOBS COUNT: \(Constants.Data.userBlobs.count)")
+        if let currentUserName = Constants.Data.currentUser.userName
+        {
+            // Upload the Blob data to Lamda and then DynamoDB
+            AWSPrepRequest(requestToCall: AWSUploadBlobData(blobID: blobID, blobLat: self.blobCoords.latitude, blobLong: self.blobCoords.longitude, blobMediaID: uploadKey, blobMediaType: self.blobMediaType, blobRadius: self.blobRadius, blobText: self.vc2.blobTextView.text, blobThumbnailID: mediaID + ".png", blobTimestamp: currentTime, blobType: self.blobType.rawValue, blobTaggedUsers: taggedUsers, blobUserID: Constants.Data.currentUser.userID!, blobUserName: currentUserName), delegate: self as AWSRequestDelegate).prepRequest()
+            
+            print("MAP BLOBS COUNT 1: \(Constants.Data.mapBlobs.count)")
+            
+            // Create a new Blob locally so that the Circle can immediately be added to the map
+            let newBlob = Blob()
+            newBlob.blobID = mediaID
+            newBlob.blobDatetime = Date(timeIntervalSince1970: currentTime)
+            newBlob.blobLat = self.blobCoords.latitude
+            newBlob.blobLong = self.blobCoords.longitude
+            newBlob.blobRadius = self.blobRadius
+            newBlob.blobType = self.blobType
+            newBlob.blobUserID = Constants.Data.currentUser.userID!
+            Constants.Data.userBlobs.append(newBlob)
+            
+            // Check to see if the logged in user was tagged
+            loopTaggedUsers: for person in taggedUsers
+            {
+                print("CHECKING TAGGED USERS: \(person)")
+                // If the logged in user was tagged, add the Blob to the mapBlobs so that it shows on the Map View
+                if person == Constants.Data.currentUser.userID!
+                {
+                    print("ADDING TO MAP BLOBS")
+                    Constants.Data.taggedBlobs.append(newBlob)
+                    Constants.Data.mapBlobs.append(newBlob)
+                    
+                    // A new Blob was added, so sort the global mapBlobs array
+                    UtilityFunctions().sortMapBlobs()
+                    
+                    // Call the parent VC to add the new Blob to the map of the Map View
+                    if let parentVC = self.blobAddViewDelegate {
+                        parentVC.createBlobOnMap(CLLocationCoordinate2DMake(self.blobCoords.latitude, self.blobCoords.longitude), blobRadius: self.blobRadius, blobType: self.blobType, blobTitle: mediaID)
+                    }
+                    break loopTaggedUsers
+                }
+            }
+            
+            // Sort the mapBlobs
+            UtilityFunctions().sortMapBlobs()
+            
+            print("MAP BLOBS COUNT 2: \(Constants.Data.mapBlobs.count)")
+            print("USER BLOBS COUNT: \(Constants.Data.userBlobs.count)")
+        }
+        else
+        {
+            // Try to get the logged in user's FB data again (username is missing)
+            AWSPrepRequest(requestToCall: FBGetUserData(user: Constants.Data.currentUser, downloadImage: true), delegate: self as AWSRequestDelegate).prepRequest()
+        }
     }
     
     func popVC()
@@ -699,8 +713,9 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
                 case _ as AWSUploadBlobData:
                     if success
                     {
-//                        // Remove the current View Controller from the stack
-//                        self.popVC()
+                        // Remove the current View Controller from the stack
+                        self.popVC()
+                        
                         print("BAVC - UPLOAD COMPLETED - HIDE MAP AI")
                         Constants.Data.stillSendingBlob = false
                         

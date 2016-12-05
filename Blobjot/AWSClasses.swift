@@ -194,7 +194,7 @@ class AWSPrepRequest
     func getBlobjotID(facebookToken: FBSDKAccessToken!)
     {
         // If the Identity ID is still valid, ensure that the current userID is not nil
-        if Constants.Data.currentUser != ""
+        if Constants.Data.currentUser.userID != nil
         {
             // The user is already logged in so go ahead and register for notifications
 //            UtilityFunctions().registerPushNotifications()
@@ -259,13 +259,12 @@ class AWSLoginUser : AWSRequestObject
                 if error != nil
                 {
                     print("FBSDK - Error Getting Info \(error)")
-                    CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: error!.localizedDescription)
+                    CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: "FBSDK - Error Getting Info" + error!.localizedDescription)
                     
                     // Record the server request attempt
                     Constants.Data.serverTries += 1
                     
                     // Try again
-//                    self.makeRequest()
                     AWSPrepRequest(requestToCall: AWSLoginUser(secondaryAwsRequestObject: nil), delegate: self.awsRequestDelegate!).prepRequest()
                 }
                 else
@@ -302,8 +301,29 @@ class AWSLoginUser : AWSRequestObject
                             
                             self.loginUser((facebookName as! String), facebookThumbnailUrl: facebookImageUrl)
                         }
+                        else
+                        {
+                            print("FBSDK - Error Processing Facebook Name")
+                            CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: "FBSDK - Error Processing Facebook Name" + error!.localizedDescription)
+                            
+                            // Record the server request attempt
+                            Constants.Data.serverTries += 1
+                            
+                            // Try again
+                            AWSPrepRequest(requestToCall: AWSLoginUser(secondaryAwsRequestObject: nil), delegate: self.awsRequestDelegate!).prepRequest()
+                        }
                     }
-                    
+                    else
+                    {
+                        print("FBSDK - Error Processing Result")
+                        CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: "FBSDK - Error Processing Result" + error!.localizedDescription)
+                        
+                        // Record the server request attempt
+                        Constants.Data.serverTries += 1
+                        
+                        // Try again
+                        AWSPrepRequest(requestToCall: AWSLoginUser(secondaryAwsRequestObject: nil), delegate: self.awsRequestDelegate!).prepRequest()
+                    }
                 }
         }
     }
@@ -348,12 +368,13 @@ class AWSLoginUser : AWSRequestObject
                     
                     // Create a user object to save the data
                     let currentUser = User()
-                    currentUser.userID = responseData as! String
+                    currentUser.userID = responseData as? String
                     currentUser.facebookID = self.facebookToken!.userID
                     currentUser.userName = facebookName
+                    currentUser.userImage = UIImage(named: "PROFILE_DEFAULT.png")
                     
-                    // The response will be the userID associated with the facebookID used, save the userID globally
-                    Constants.Data.currentUser = currentUser.userID
+                    // The response will be the userID associated with the facebookID used, save the current user globally
+                    Constants.Data.currentUser = currentUser
                     
                     // Save the new login data to Core Data
                     CoreDataFunctions().currentUserSave(user: currentUser)
@@ -395,7 +416,7 @@ class AWSGetMapData : AWSRequestObject
         print("AC-GMD - COGNITO ID: \(Constants.credentialsProvider.identityId)")
         
         // Create some JSON to send the logged in userID
-        let json: NSDictionary = ["user_id" : Constants.Data.currentUser]
+        let json: NSDictionary = ["user_id" : Constants.Data.currentUser.userID!]
         
         let lambdaInvoker = AWSLambdaInvoker.default()
         lambdaInvoker.invokeFunction("Blobjot-GetMapData", jsonObject: json, completionHandler:
@@ -408,7 +429,7 @@ class AWSGetMapData : AWSRequestObject
                     CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: err.debugDescription)
                     
                     // Process the error codes and alert the user if needed
-                    if err!._code == 1 && Constants.Data.currentUser != ""
+                    if err!._code == 1 && Constants.Data.currentUser.userID != nil
                     {
                         // Record the server request attempt
                         Constants.Data.serverTries += 1
@@ -523,7 +544,7 @@ class AWSGetBlobjotBlobs : AWSRequestObject
                     CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: err.debugDescription)
                     
                     // Process the error codes and alert the user if needed
-                    if err!._code == 1 && Constants.Data.currentUser != ""
+                    if err!._code == 1 && Constants.Data.currentUser.userID != nil
                     {
                         // Record the server request attempt
                         Constants.Data.serverTries += 1
@@ -618,7 +639,7 @@ class AWSGetBlobMinimumData : AWSRequestObject
     // Use this request function when a Blob is within range of the user's location and the extra Blob data is needed
     override func makeRequest()
     {
-        print("REQUESTING GBMD FOR BLOB: \(self.blobID)")
+        print("AC-GBMD: REQUESTING GBMD FOR BLOB: \(self.blobID)")
         
         // Create a JSON object with the passed Blob ID and an indicator of whether or not the Blob data should be filtered (0 for no, 1 for yes)
         let json: NSDictionary = ["blob_id" : self.blobID, "filter" : 1]
@@ -629,7 +650,7 @@ class AWSGetBlobMinimumData : AWSRequestObject
                 
                 if (err != nil)
                 {
-                    print("GET BLOB MINIMUM DATA ERROR: \(err)")
+                    print("AC-GBMD: GET BLOB MINIMUM DATA ERROR: \(err)")
                     CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: err.debugDescription)
                     
                     // Record the server request attempt
@@ -649,7 +670,7 @@ class AWSGetBlobMinimumData : AWSRequestObject
                     // Then convert the AnyObject values to Strings or Numbers depending on their key
                     if let checkBlob = response as? [String: AnyObject]
                     {
-                        print("CREATE MINIMUM BLOB FOR: \(checkBlob)")
+                        print("AC-GBMD: CREATE MINIMUM BLOB FOR: \(checkBlob)")
                         let minBlob = Blob()
                         minBlob.blobID = self.blobID
                         minBlob.blobDatetime = Date(timeIntervalSince1970: checkBlob["blobTimestamp"] as! Double)
@@ -658,7 +679,7 @@ class AWSGetBlobMinimumData : AWSRequestObject
                         minBlob.blobRadius = checkBlob["blobRadius"] as? Double
                         minBlob.blobType = Constants().blobTypes(checkBlob["blobType"] as! Int)
                         minBlob.blobUserID = checkBlob["blobUserID"] as? String
-                        print("CREATED MINIMUM BLOB")
+                        print("AC-GBMD: CREATED MINIMUM BLOB")
                         
                         Constants.Data.taggedBlobs.append(minBlob)
                         Constants.Data.mapBlobs.append(minBlob)
@@ -669,16 +690,20 @@ class AWSGetBlobMinimumData : AWSRequestObject
                         // Check if the user has already been downloaded IF NOT A BLOBJOT BLOB
                         if minBlob.blobType != Constants.BlobTypes.blobjot
                         {
+                            print("AC-GBMD: CHECK 1")
                             var userExists = false
                             loopUserCheck: for user in Constants.Data.userObjects
                             {
+                                print("AC-GBMD: CHECK 2a")
                                 if user.userID == minBlob.blobUserID
                                 {
+                                    print("AC-GBMD: CHECK 3")
                                     userExists = true
                                     
                                     // Notify the parent view that the AWS call completed successfully
                                     if let parentVC = self.awsRequestDelegate
                                     {
+                                        print("AC-GBMD: CHECK 4")
                                         parentVC.processAwsReturn(self, success: true)
                                     }
                                     
@@ -688,6 +713,7 @@ class AWSGetBlobMinimumData : AWSRequestObject
                             // If the user has not been downloaded, request the user and the userImage
                             if !userExists
                             {
+                                print("AC-GBMD: CHECK 2b")
                                 let awsGetSingleUserData = AWSGetSingleUserData(userID: minBlob.blobUserID, forPreviewBox: false)
                                 awsGetSingleUserData.targetBlob = minBlob
                                 AWSPrepRequest(requestToCall: awsGetSingleUserData, delegate: self.awsRequestDelegate!).prepRequest()
@@ -969,7 +995,7 @@ class AWSGetSingleUserData : AWSRequestObject
         print("AC-AGSUD - REQUESTING GSUD FOR USER: \(userID), USERNAME: \(user.userName)")
         
         // Create some JSON to send the logged in userID
-        let json: NSDictionary = ["user_id" : self.user.userID, "requesting_user_id" : Constants.Data.currentUser]
+        let json: NSDictionary = ["user_id" : self.user.userID!, "requesting_user_id" : Constants.Data.currentUser.userID!]
         
         let lambdaInvoker = AWSLambdaInvoker.default()
         lambdaInvoker.invokeFunction("Blobjot-GetSingleUserData", jsonObject: json, completionHandler:
@@ -1004,6 +1030,7 @@ class AWSGetSingleUserData : AWSRequestObject
                         self.user.facebookID = facebookID
                         self.user.userStatus = Constants.UserStatusTypes(rawValue: userStatus)!
                         
+                        // NOTE: No need to update the Current User Object here - the FB ID and userID will not change, update in FBGetUserData
                         // Check to ensure the user does not already exist in the global User array
                         var userObjectExists = false
                         loopUserObjectCheck: for userObject in Constants.Data.userObjects
@@ -1049,7 +1076,7 @@ class AWSGetUserConnections : AWSRequestObject
         print("AC-GUC - REQUESTING GUC")
         
         // Create some JSON to send the logged in userID
-        let json: NSDictionary = ["user_id" : Constants.Data.currentUser, "print_check" : "BAP"]
+        let json: NSDictionary = ["user_id" : Constants.Data.currentUser.userID!, "print_check" : "BAP"]
         
         let lambdaInvoker = AWSLambdaInvoker.default()
         lambdaInvoker.invokeFunction("Blobjot-GetUserConnections", jsonObject: json, completionHandler:
@@ -1079,63 +1106,67 @@ class AWSGetUserConnections : AWSRequestObject
                     {
                         print("AC-GUC newUserConnectionArrays count: \(newUserConnectionArrays.count)")
                         
-                        // Loop through the arrays and add each user - the arrays should be in the proper order by user type
-                        for (arrayIndex, userArray) in newUserConnectionArrays.enumerated()
+                        if let currentUserID = Constants.Data.currentUser.userID
                         {
-                            print("AC-GUC userArray index: \(arrayIndex), count: \(userArray.count)")
-                            
-                            // Loop through each AnyObject (User) in the array
-                            for user in userArray
+                            // Loop through the arrays and add each user - the arrays should be in the proper order by user type
+                            for (arrayIndex, userArray) in newUserConnectionArrays.enumerated()
                             {
-                                print("AC-GUC user: \(user)")
+                                print("AC-GUC userArray index: \(arrayIndex), count: \(userArray.count)")
                                 
-                                // Convert the AnyObject to JSON with keys and AnyObject values
-                                // Then convert the AnyObject values to Strings or Numbers depending on their key
-                                if let checkUser = user as? [String: AnyObject]
+                                // Loop through each AnyObject (User) in the array
+                                for user in userArray
                                 {
-                                    let userID = checkUser["user_id"] as! String
-                                    let facebookID = checkUser["facebook_id"] as! String
-                                    let userStatus = Constants.UserStatusTypes(rawValue: arrayIndex)
+                                    print("AC-GUC user: \(user)")
                                     
-                                    // Create a User Object and add it to the global User array
-                                    let addUser = User()
-                                    addUser.userID = userID
-                                    addUser.facebookID = facebookID
-                                    addUser.userStatus = userStatus!
-                                    
-                                    // Check to ensure the user does not already exist in the global User array
-                                    // Add the minimal user data to the array
-                                    var userObjectExists = false
-                                    loopUserObjectCheck: for userObject in Constants.Data.userObjects
+                                    // Convert the AnyObject to JSON with keys and AnyObject values
+                                    // Then convert the AnyObject values to Strings or Numbers depending on their key
+                                    if let checkUser = user as? [String: AnyObject]
                                     {
-                                        print("AC-GUC - userObject: \(userObject.userName)")
+                                        let userID = checkUser["user_id"] as! String
+                                        let facebookID = checkUser["facebook_id"] as! String
+                                        let userStatus = Constants.UserStatusTypes(rawValue: arrayIndex)
                                         
-                                        if userObject.userID == userID
+                                        // Create a User Object and add it to the global User array
+                                        let addUser = User()
+                                        addUser.userID = userID
+                                        addUser.facebookID = facebookID
+                                        addUser.userStatus = userStatus!
+                                        
+                                        // Check to ensure the user does not already exist in the global User array
+                                        // Add the minimal user data to the array
+                                        var userObjectExists = false
+                                        loopUserObjectCheck: for userObject in Constants.Data.userObjects
                                         {
-                                            userObject.userStatus = userStatus!
+                                            print("AC-GUC - userObject: \(userObject.userName)")
                                             
-                                            // If the user is the currently logged in user, ensure that the user is connected to themselves
-                                            if userObject.userID == Constants.Data.currentUser
-                                            {
-                                                userObject.userStatus = Constants.UserStatusTypes.connected
-                                            }
-                                            else
+                                            if userObject.userID == userID
                                             {
                                                 userObject.userStatus = userStatus!
+                                                
+                                                // If the user is the currently logged in user, ensure that the user is connected to themselves
+                                                if userObject.userID! == currentUserID
+                                                {
+                                                    userObject.userStatus = Constants.UserStatusTypes.connected
+                                                }
+                                                else
+                                                {
+                                                    userObject.userStatus = userStatus!
+                                                }
+                                                
+                                                userObjectExists = true
+                                                break loopUserObjectCheck
                                             }
-                                            
-                                            userObjectExists = true
-                                            break loopUserObjectCheck
                                         }
+                                        if !userObjectExists
+                                        {
+                                            Constants.Data.userObjects.append(addUser)
+                                        }
+                                        
+                                        // Download the FB data, but not the image - the user data is likely used in the tables, and images should
+                                        // only be downloaded when needed in the table
+                                        // NOTE: No need to update the Current User Object here - the FB ID and userID will not change, update in FBGetUserData
+                                        AWSPrepRequest(requestToCall: FBGetUserData(user: addUser, downloadImage: false), delegate: self.awsRequestDelegate!).prepRequest()
                                     }
-                                    if !userObjectExists
-                                    {
-                                        Constants.Data.userObjects.append(addUser)
-                                    }
-                                    
-                                    // Download the FB data, but not the image - the user data is likely used in the tables, and images should
-                                    // only be downloaded when needed in the table
-                                    AWSPrepRequest(requestToCall: FBGetUserData(user: addUser, downloadImage: false), delegate: self.awsRequestDelegate!).prepRequest()
                                 }
                             }
                         }
@@ -1329,8 +1360,9 @@ class AWSUploadBlobData : AWSRequestObject
     var blobType: Int!
     var blobTaggedUsers: [String]!
     var blobUserID: String!
+    var blobUserName: String!
     
-    required init(blobID: String, blobLat: Double, blobLong: Double, blobMediaID: String!, blobMediaType: Int, blobRadius: Double, blobText: String, blobThumbnailID: String!, blobTimestamp: Double, blobType: Int, blobTaggedUsers: [String], blobUserID: String)
+    required init(blobID: String, blobLat: Double, blobLong: Double, blobMediaID: String!, blobMediaType: Int, blobRadius: Double, blobText: String, blobThumbnailID: String!, blobTimestamp: Double, blobType: Int, blobTaggedUsers: [String], blobUserID: String, blobUserName: String)
     {
         self.blobID = blobID
         self.blobLat = blobLat
@@ -1344,6 +1376,7 @@ class AWSUploadBlobData : AWSRequestObject
         self.blobType = blobType
         self.blobTaggedUsers = blobTaggedUsers
         self.blobUserID = blobUserID
+        self.blobUserName = blobUserName
     }
     
     // Upload data to Lambda for transfer to DynamoDB
@@ -1365,6 +1398,7 @@ class AWSUploadBlobData : AWSRequestObject
         json["blobType"]        = String(self.blobType)
         json["blobTaggedUsers"] = self.blobTaggedUsers
         json["blobUserID"]      = self.blobUserID
+        json["blobUserName"]    = self.blobUserName
         
         print("LAMBDA JSON: \(json)")
         let lambdaInvoker = AWSLambdaInvoker.default()
@@ -1501,7 +1535,7 @@ class AWSGetUserBlobs : AWSRequestObject
         print("AC - GUB - REQUESTING GUB")
         
         // Create some JSON to send the logged in userID
-        let json: NSDictionary = ["user_id" : Constants.Data.currentUser]
+        let json: NSDictionary = ["user_id" : Constants.Data.currentUser.userID!]
         
         let lambdaInvoker = AWSLambdaInvoker.default()
         lambdaInvoker.invokeFunction("Blobjot-GetUserBlobs", jsonObject: json, completionHandler:
@@ -1815,11 +1849,11 @@ class AWSRegisterForPushNotifications : AWSRequestObject
         print("AC-RPN - CURRENT USER: \(Constants.Data.currentUser)")
         
         // Ensure that the Current UserID is not nil
-        if Constants.Data.currentUser != ""
+        if let currentUserID = Constants.Data.currentUser.userID
         {
             var json = [String: Any]()
             json["device_token"] = self.deviceToken
-            json["user_id"] = Constants.Data.currentUser
+            json["user_id"] = currentUserID
             
             print("AC-RPN - ABOUT TO CALL LAMBDA PN REGISTRATION")
             
@@ -2209,6 +2243,9 @@ class FBGetUserData : AWSRequestObject
                                                     {
                                                         parentVC.processAwsReturn(self, success: true)
                                                     }
+                                                    
+                                                    // Update the global user and save to Core Data
+                                                    self.updateUserGlobally(user: self.user)
                                             })
                                         }
                                         else
@@ -2222,16 +2259,18 @@ class FBGetUserData : AWSRequestObject
                                                     {
                                                         parentVC.processAwsReturn(self, success: false)
                                                     }
+                                                    
+                                                    // Update the global user and save to Core Data
+                                                    self.updateUserGlobally(user: self.user)
                                             })
                                         }
-                                        
-                                        // Update the global user and save to Core Data
-                                        self.updateUserGlobally(user: self.user)
                                     }
                                     
                                     // Run task
                                     task.resume()
                                 }
+                                // Update the global user and save to Core Data
+                                self.updateUserGlobally(user: self.user)
                             }
                         }
                         
@@ -2247,17 +2286,30 @@ class FBGetUserData : AWSRequestObject
                 parentVC.processAwsReturn(self, success: false)
             }
             
-            // Go ahead and request the user data from AWS again since not all data was originally downloaded
-            AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: self.user.userID, forPreviewBox: false), delegate: self.awsRequestDelegate!).prepRequest()
+            if let userID = self.user.userID
+            {
+                // Go ahead and request the user data from AWS again since not all data was originally downloaded
+                AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: userID, forPreviewBox: false), delegate: self.awsRequestDelegate!).prepRequest()
+            }
         }
     }
     
     // Update the user in the global userList with the new data
     func updateUserGlobally(user: User)
     {
+        // Update the Current User object, if needed
+        if user.userID! == Constants.Data.currentUser.userID!
+        {
+            Constants.Data.currentUser.userName = user.userName
+            Constants.Data.currentUser.userImage = user.userImage
+            
+            // Save to Core Data
+            CoreDataFunctions().currentUserSave(user: Constants.Data.currentUser)
+        }
+        
         loopUserObjectCheck: for userObject in Constants.Data.userObjects
         {
-            if userObject.userID == self.user.userID
+            if userObject.userID == user.userID!
             {
                 userObject.userName = user.userName
                 userObject.userImage = user.userImage

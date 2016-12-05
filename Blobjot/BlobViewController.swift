@@ -86,8 +86,6 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
         navBarHeight = self.navigationController?.navigationBar.frame.height
         viewFrameY = self.view.frame.minY
         screenSize = UIScreen.main.bounds
-        print("BVC - UI SCREEN BOUNDS: \(UIScreen.main.bounds)")
-        print("BVC - SCREEN BOUNDS: \(self.view.bounds)")
         
         self.automaticallyAdjustsScrollViewInsets = false
         
@@ -112,7 +110,6 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
         {
             self.blobTextViewHeight = textHeightForAttributedText(text: NSAttributedString(string: blobText), width: self.blobTextViewWidth) * 1.3
         }
-        print("BVC - BLOB TEXT VIEW SIZE: \(blobTextViewHeight)")
         
         // Set the blobCellHeight as if a media preview or map is going to be shown
         blobCellContentHeight = blobTextViewOffsetY + blobTextViewHeight + 5 + blobMediaSize
@@ -281,8 +278,11 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
             print("BVC - SAVED BLOB: \(sBlob.blobText)")
         }
         
-        // Add a Blob view in AWS
-        AWSPrepRequest(requestToCall: AWSAddBlobView(blobID: self.blob.blobID, userID: Constants.Data.currentUser), delegate: self as AWSRequestDelegate).prepRequest()
+        if let currentUserID = Constants.Data.currentUser.userID
+        {
+            // Add a Blob view in AWS
+            AWSPrepRequest(requestToCall: AWSAddBlobView(blobID: self.blob.blobID, userID: currentUserID), delegate: self as AWSRequestDelegate).prepRequest()
+        }
     }
 
     override func didReceiveMemoryWarning()
@@ -405,11 +405,36 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
             
             if let datetime = blob.blobDatetime
             {
+                // Capture the number of hours it has been since the Blob was created (as a positive integer)
+                let dateAgeHrs: Int = -1 * Int(datetime.timeIntervalSinceNow / 3600)
+                
+                // Set the datetime label.  If the Blob's recency is less than 5 days (120 hours), just show the day and time.
+                // If the Blob's recency is more than 5 days, include the date
                 let formatter = DateFormatter()
-                formatter.dateFormat = "E, H:mm" //"E, MMM d HH:mm"
+                formatter.amSymbol = "am"
+                formatter.pmSymbol = "pm"
+                
+                if dateAgeHrs > 120
+                {
+                    formatter.dateFormat = "E, MMM d, H:mma"
+                }
+                else
+                {
+                    formatter.dateFormat = "E, H:mma"
+                }
                 let stringDate: String = formatter.string(from: datetime as Date)
                 blobDatetimeLabel.text = stringDate
-                let stringAge = String(-1 * Int(datetime.timeIntervalSinceNow / 3600)) + " hrs"
+                
+                // Set the date age label.  If the age is less than 24 hours, just show it in hours.  Otherwise, show the number of days and hours.
+                var stringAge = String(dateAgeHrs / Int(24)) + " days" //+ String(dateAgeHrs % 24) + " hrs"
+                if dateAgeHrs < 24
+                {
+                    stringAge = String(dateAgeHrs) + " hrs"
+                }
+                else if dateAgeHrs < 48
+                {
+                    stringAge = "1 day"
+                }
                 blobDateAgeLabel.text = stringAge
             }
             
@@ -586,37 +611,40 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
             var addCommentView: UITextView!
             var commentDatetimeLabel: UILabel!
             
-            // If the comment's user is the logged in user, format the comment differently
-            if self.blobCommentArray[indexPath.row - 1].userID == Constants.Data.currentUser
+            if let currentUserID = Constants.Data.currentUser.userID
             {
-                addCommentView = UITextView(frame: CGRect(x: cell.frame.width - 5 - self.commentBoxWidth, y: 12, width: self.commentBoxWidth, height: Constants.Dim.blobViewCommentCellHeight - 4))
-                addCommentView.backgroundColor = Constants.Colors.standardBackground
-                cell.addSubview(addCommentView)
-            }
-            else
-            {
-                addCommentView = UITextView(frame: CGRect(x: self.addCommentViewOffsetX, y: 12, width: self.commentBoxWidth, height: Constants.Dim.blobViewCommentCellHeight - 4))
-                addCommentView.backgroundColor = Constants.Colors.colorPurpleLight
-                cell.addSubview(addCommentView)
-                
-                // Add an imageview for the user image for the comment (ONLY IF THE USER IS NOT THE CURRENT USER)
-                let userImageView = UIImageView(frame: CGRect(x: 5, y: 15, width: Constants.Dim.blobViewCommentUserImageSize, height: Constants.Dim.blobViewCommentUserImageSize))
-                userImageView.layer.cornerRadius = Constants.Dim.blobViewCommentUserImageSize / 2
-                userImageView.contentMode = UIViewContentMode.scaleAspectFill
-                userImageView.clipsToBounds = true
-                userImageView.isUserInteractionEnabled = false
-                cell.addSubview(userImageView)
-                
-                // Modify the user image with the comment user image
-                userLoop: for user in Constants.Data.userObjects
+                // If the comment's user is the logged in user, format the comment differently
+                if self.blobCommentArray[indexPath.row - 1].userID == currentUserID
                 {
-                    if user.userID == self.blobCommentArray[indexPath.row - 1].userID
+                    addCommentView = UITextView(frame: CGRect(x: cell.frame.width - 5 - self.commentBoxWidth, y: 12, width: self.commentBoxWidth, height: Constants.Dim.blobViewCommentCellHeight - 4))
+                    addCommentView.backgroundColor = Constants.Colors.standardBackground
+                    cell.addSubview(addCommentView)
+                }
+                else
+                {
+                    addCommentView = UITextView(frame: CGRect(x: self.addCommentViewOffsetX, y: 12, width: self.commentBoxWidth, height: Constants.Dim.blobViewCommentCellHeight - 4))
+                    addCommentView.backgroundColor = Constants.Colors.colorPurpleLight
+                    cell.addSubview(addCommentView)
+                    
+                    // Add an imageview for the user image for the comment (ONLY IF THE USER IS NOT THE CURRENT USER)
+                    let userImageView = UIImageView(frame: CGRect(x: 5, y: 15, width: Constants.Dim.blobViewCommentUserImageSize, height: Constants.Dim.blobViewCommentUserImageSize))
+                    userImageView.layer.cornerRadius = Constants.Dim.blobViewCommentUserImageSize / 2
+                    userImageView.contentMode = UIViewContentMode.scaleAspectFill
+                    userImageView.clipsToBounds = true
+                    userImageView.isUserInteractionEnabled = false
+                    cell.addSubview(userImageView)
+                    
+                    // Modify the user image with the comment user image
+                    userLoop: for user in Constants.Data.userObjects
                     {
-                        if let commentUserImage = user.userImage
+                        if user.userID == self.blobCommentArray[indexPath.row - 1].userID
                         {
-                            userImageView.image = commentUserImage
+                            if let commentUserImage = user.userImage
+                            {
+                                userImageView.image = commentUserImage
+                            }
+                            break userLoop
                         }
-                        break userLoop
                     }
                 }
             }
@@ -847,14 +875,17 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
             {
                 AWSPrepRequest(requestToCall: AWSAddCommentForBlob(blobID: self.blob.blobID, comment: commentText), delegate: self as AWSRequestDelegate).prepRequest()
                 
-                // Add the comment locally
-                let addBlobComment = BlobComment()
-                addBlobComment.commentID        = "new"
-                addBlobComment.blobID           = "new"
-                addBlobComment.userID           = Constants.Data.currentUser
-                addBlobComment.comment          = commentText
-                addBlobComment.commentDatetime  = Date()
-                self.blobCommentArray.append(addBlobComment)
+                if let currentUserID = Constants.Data.currentUser.userID
+                {
+                    // Add the comment locally
+                    let addBlobComment = BlobComment()
+                    addBlobComment.commentID        = "new"
+                    addBlobComment.blobID           = "new"
+                    addBlobComment.userID           = currentUserID
+                    addBlobComment.comment          = commentText
+                    addBlobComment.commentDatetime  = Date()
+                    self.blobCommentArray.append(addBlobComment)
+                }
                 
                 // Reload the TableView
                 self.refreshBlobViewTable()

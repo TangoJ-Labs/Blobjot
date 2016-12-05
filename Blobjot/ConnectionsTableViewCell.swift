@@ -71,7 +71,7 @@ class ConnectionsTableViewCell: UITableViewCell
     }
     
     override func setSelected(_ selected: Bool, animated: Bool) {
-        print("SELECTED ACCOUNT VIEW CELL")
+//        print("SET SELECTED CONNECTIONS VIEW CELL")
     }
     
 //    override func setSelected(_ selected: Bool, animated: Bool)

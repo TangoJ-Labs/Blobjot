@@ -33,57 +33,60 @@ class UtilityFunctions
             print("UF-RUL - CHECKING CORE DATA - CURRENT USER: \(cUser.userID), \(cUser.userName)")
         }
         
-        // If the return has content, use it to populate the user elements
-        // Ensure that the saved userID is the same as the global current user (it should be - should be reset when first logged in)
-        if currentUserArray.count > 0 && currentUserArray[0].userID == Constants.Data.currentUser
+        if let currentUserID = Constants.Data.currentUser.userID
         {
-            print("UF-RUL - CHECKING CORE DATA FOR CURRENT USER: \(currentUserArray[0].userID)")
-            // Create a new User object to store the currently logged in user
-            let currentUser = User()
-            if let userID = currentUserArray[0].userID
+            // If the return has content, use it to populate the user elements
+            // Ensure that the saved userID is the same as the global current user (it should be - should be reset when first logged in)
+            if currentUserArray.count > 0 && currentUserArray[0].userID == currentUserID
             {
-                currentUser.userID  = userID
-            }
-            if let facebookID = currentUserArray[0].facebookID
-            {
-                currentUser.userName  = facebookID
-            }
-            if let userName = currentUserArray[0].userName
-            {
-                currentUser.userName  = userName
-            }
-            if let imageData = currentUserArray[0].userImage
-            {
-                print("UF-RUL - CHECKING CORE DATA - PREVIOUS IMAGE DATA EXISTS")
-                currentUser.userImage = UIImage(data: imageData as Data)
-            }
-            
-            // Add the current user object to the global user object array
-            Constants.Data.userObjects.append(currentUser)
-        }
-        
-        let savedUsers = CoreDataFunctions().userRetrieve()
-        print("UF-RUL - GOT SAVED USERS COUNT: \(savedUsers.count)")
-        for sUser in savedUsers
-        {
-            print("UF-RUL - ADDING CORE DATA USER: \(sUser.userName)")
-            print("UF-RUL - ADDING CORE DATA USER: \(sUser.facebookID)")
-            
-            // Check to ensure the user does not already exist in the global User array
-            var userObjectExists = false
-            loopUserObjectCheck: for userObject in Constants.Data.userObjects
-            {
-                print("UF-RUL - userObject: \(userObject.userID), \(userObject.userName)")
-                
-                if userObject.userID == sUser.userID
+                print("UF-RUL - CHECKING CORE DATA FOR CURRENT USER: \(currentUserArray[0].userID)")
+                // Create a new User object to store the currently logged in user
+                let currentUser = User()
+                if let userID = currentUserArray[0].userID
                 {
-                    userObjectExists = true
-                    break loopUserObjectCheck
+                    currentUser.userID  = userID
                 }
+                if let facebookID = currentUserArray[0].facebookID
+                {
+                    currentUser.userName  = facebookID
+                }
+                if let userName = currentUserArray[0].userName
+                {
+                    currentUser.userName  = userName
+                }
+                if let imageData = currentUserArray[0].userImage
+                {
+                    print("UF-RUL - CHECKING CORE DATA - PREVIOUS IMAGE DATA EXISTS")
+                    currentUser.userImage = UIImage(data: imageData as Data)
+                }
+                
+                // Add the current user object to the global user object array
+                Constants.Data.userObjects.append(currentUser)
             }
-            if !userObjectExists
+            
+            let savedUsers = CoreDataFunctions().userRetrieve()
+            print("UF-RUL - GOT SAVED USERS COUNT: \(savedUsers.count)")
+            for sUser in savedUsers
             {
-                Constants.Data.userObjects.append(sUser)
+                print("UF-RUL - ADDING CORE DATA USER: \(sUser.userName)")
+                print("UF-RUL - ADDING CORE DATA USER: \(sUser.facebookID)")
+                
+                // Check to ensure the user does not already exist in the global User array
+                var userObjectExists = false
+                loopUserObjectCheck: for userObject in Constants.Data.userObjects
+                {
+                    print("UF-RUL - userObject: \(userObject.userID), \(userObject.userName)")
+                    
+                    if userObject.userID == sUser.userID
+                    {
+                        userObjectExists = true
+                        break loopUserObjectCheck
+                    }
+                }
+                if !userObjectExists
+                {
+                    Constants.Data.userObjects.append(sUser)
+                }
             }
         }
     }
@@ -142,23 +145,38 @@ class UtilityFunctions
     
     func toggleLocationManagerSettings()
     {
-        if Constants.Settings.locationManagerConstant
+        if Constants.Settings.locationManagerSetting == Constants.LocationManagerSettingType.always
         {
+            print("UF-LMS - ALWAYS")
+            
             Constants.appDelegateLocationManager.pausesLocationUpdatesAutomatically = false
             Constants.appDelegateLocationManager.startUpdatingLocation()
             Constants.appDelegateLocationManager.disallowDeferredLocationUpdates()
             
             // Save an action in Core Data
-            CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: "LOCATION MANAGER: CONSTANT")
+            CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: "LOCATION MANAGER: ALWAYS")
+        }
+        else if Constants.Settings.locationManagerSetting == Constants.LocationManagerSettingType.off
+        {
+            print("UF-LMS - OFF")
+            
+            Constants.appDelegateLocationManager.stopMonitoringSignificantLocationChanges()
+            Constants.appDelegateLocationManager.stopUpdatingLocation()
+            
+            // Save an action in Core Data
+            CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: "LOCATION MANAGER: OFF")
         }
         else
         {
+            // Significant is the default
+            print("UF-LMS - SIGNIFICANT")
+            
             Constants.appDelegateLocationManager.pausesLocationUpdatesAutomatically = true
             Constants.appDelegateLocationManager.startMonitoringSignificantLocationChanges()
 //            Constants.appDelegateLocationManager.allowDeferredLocationUpdates(untilTraveled: Constants.Settings.locationAccuracyDeferredDistance, timeout: Constants.Settings.locationAccuracyDeferredInterval)
             
             // Save an action in Core Data
-            CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: "LOCATION MANAGER: BATTERY SAVE")
+            CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: "LOCATION MANAGER: SIGNIFICANT")
         }
     }
     
@@ -236,24 +254,49 @@ class UtilityFunctions
         CoreDataFunctions().blobNotificationSave(blobID: blob.blobID)
     }
     
-    // Process a notification for a new blob
-    func displayNewBlobNotification(newBlobID: String)
+    //
+    func displayNewBlobNotification(blob: Blob, userName: String)
     {
+        let notification = UILocalNotification()
+        notification.alertBody = "\(userName) added a new Blob for you."
+        notification.alertAction = "open"
+        notification.hasAction = false
+        // notification.alertTitle = "\(userObject.userName)"
+        notification.userInfo = ["blobID" : blob.blobID]
+        notification.fireDate = Date().addingTimeInterval(0) //Show the notification now
+        
+        UIApplication.shared.scheduleLocalNotification(notification)
+        
+        // Add to the number shown on the badge (count of notifications)
+        Constants.Data.badgeNumber += 1
+        UIApplication.shared.applicationIconBadgeNumber = Constants.Data.badgeNumber
+    }
+    
+    // Process a notification for a new blob
+    func displayNewBlobNotificationOLD(newBlobID: String)
+    {
+        print("UF-DNBN: CHECK 1")
         // Recall the Blob data
         loopBlobCheck: for blob in Constants.Data.mapBlobs
         {
+            print("UF-DNBN: CHECK 2")
             if blob.blobID == newBlobID
             {
+                print("UF-DNBN: CHECK 3")
                 // Ensure that the passed Blob was not created by the current user
-                if blob.blobUserID != Constants.Data.currentUser
+                if blob.blobUserID != Constants.Data.currentUser.userID
                 {
+                    print("UF-DNBN: CHECK 4")
                     // Recall the userObject needed based on recalled Blob data
                     loopUserCheck: for user in Constants.Data.userObjects
                     {
+                        print("UF-DNBN: CHECK 5")
                         if user.userID == blob.blobUserID
                         {
+                            print("UF-DNBN: CHECK 6")
                             if let userName = user.userName
                             {
+                                print("UF-DNBN: CHECK 7")
                                 // Create a notification of the new Blob at the current location
                                 let notification = UILocalNotification()
                                 
@@ -292,36 +335,6 @@ class UtilityFunctions
         UIGraphicsEndImageContext()
         
         return image
-    }
-    
-    func pathForCoordinate(_ coordinate: CLLocationCoordinate2D, withMeterRadius: Double) -> GMSMutablePath
-    {
-        let degreesBetweenPoints = 8.0
-        
-        let path = GMSMutablePath()
-        
-        // 45 sides
-        let numberOfPoints = floor(360.0 / degreesBetweenPoints)
-        let distRadians: Double = withMeterRadius / 6371000.0
-        let varianceRadians: Double = (withMeterRadius / 10) / 6371000.0
-        
-        // earth radius in meters
-        let centerLatRadians: Double = coordinate.latitude * M_PI / 180
-        let centerLonRadians: Double = coordinate.longitude * M_PI / 180
-        
-        //array to hold all the points
-        for index in 0 ..< Int(numberOfPoints) {
-            let degrees: Double = Double(index) * Double(degreesBetweenPoints)
-            let degreeRadians: Double = degrees * M_PI / 180
-            let pointLatRadians: Double = asin(sin(centerLatRadians) * cos(distRadians) + cos(centerLatRadians) * sin(distRadians) * cos(degreeRadians))
-            let pointLonRadians: Double = centerLonRadians + atan2(sin(degreeRadians) * sin(distRadians) * cos(centerLatRadians), cos(distRadians) - sin(centerLatRadians) * sin(pointLatRadians))
-            let pointLat: Double = pointLatRadians * 180 / M_PI
-            let pointLon: Double = pointLonRadians * 180 / M_PI
-            let point: CLLocationCoordinate2D = CLLocationCoordinate2DMake(pointLat, pointLon)
-            path.add(point)
-        }
-        
-        return path
     }
     
 }

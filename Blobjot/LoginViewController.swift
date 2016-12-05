@@ -45,12 +45,6 @@ class LoginViewController: UIViewController, FBSDKLoginButtonDelegate {
         screenSize = UIScreen.main.bounds
         
         let vcHeight = screenSize.height - statusBarHeight
-        var vcY = statusBarHeight
-        if statusBarHeight > 20 {
-            vcY = 20
-        } else {
-//            vcHeight = screenSize.height - statusBarHeight
-        }
         
         // Add the view container to hold all other views (allows for shadows on all subviews)
         viewContainer = UIView(frame: CGRect(x: screenSize.width / 4, y: vcHeight / 4, width: screenSize.width / 2, height: vcHeight / 2))

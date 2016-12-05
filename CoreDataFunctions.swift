@@ -104,7 +104,7 @@ class CoreDataFunctions: AWSRequestDelegate
     
     
     // MARK: LOCATION MANAGER SETTING
-    func locationManagerSettingSave(_ locationManagerConstant: Bool)
+    func locationManagerSettingSave(_ locationManagerSetting: Constants.LocationManagerSettingType)
     {
         // Try to retrieve the location manager setting from Core Data
         let moc = DataController().managedObjectContext
@@ -124,23 +124,28 @@ class CoreDataFunctions: AWSRequestDelegate
         // If the return has no content, the locationManagerSetting has not yet been saved
         if locationManagerSettingArray.count == 0
         {
-            // Save the locationManagerSetting in Core Data
+            // Save the default locationManagerSetting in Core Data
             let entity = NSEntityDescription.insertNewObject(forEntityName: "LocationManagerSetting", into: moc) as! LocationManagerSetting
-            entity.setValue("constant", forKey: "locationManagerSetting")
-            print("UF-CDLMS - LOCATION MANAGER SETTING VALUE \"constant\"")
+            entity.setValue(Constants.LocationManagerSettingType.significant.rawValue, forKey: "locationManagerSetting")
+            print("UF-CDLMS - LOCATION MANAGER SETTING VALUE \"significant\"")
         }
         else
         {
             // Replace the locationManagerSetting to ensure that the latest setting is used
-            if locationManagerConstant
+            if locationManagerSetting == Constants.LocationManagerSettingType.always
             {
-                locationManagerSettingArray[0].setValue("constant", forKey: "locationManagerSetting")
-                print("UF-CDLMS - LOCATION MANAGER SETTING VALUE \"constant\"")
+                locationManagerSettingArray[0].setValue(Constants.LocationManagerSettingType.always.rawValue, forKey: "locationManagerSetting")
+                print("UF-CDLMS - LOCATION MANAGER SETTING VALUE \"always\"")
+            }
+            else if locationManagerSetting == Constants.LocationManagerSettingType.off
+            {
+                locationManagerSettingArray[0].setValue(Constants.LocationManagerSettingType.off.rawValue, forKey: "locationManagerSetting")
+                print("UF-CDLMS - LOCATION MANAGER SETTING VALUE \"off\"")
             }
             else
             {
-                locationManagerSettingArray[0].setValue("significant_change", forKey: "locationManagerSetting")
-                print("UF-CDLMS - LOCATION MANAGER SETTING VALUE \"significant_change\"")
+                locationManagerSettingArray[0].setValue(Constants.LocationManagerSettingType.significant.rawValue, forKey: "locationManagerSetting")
+                print("UF-CDLMS - LOCATION MANAGER SETTING VALUE \"significant\"")
             }
         }
         
@@ -490,9 +495,12 @@ class CoreDataFunctions: AWSRequestDelegate
         }
         
         // If the passed user is the current user, update the Current User data in Core Data as well
-        if user.userID == Constants.Data.currentUser
+        if let userID = user.userID
         {
-            currentUserSave(user: user)
+            if userID == Constants.Data.currentUser.userID
+            {
+                currentUserSave(user: user)
+            }
         }
     }
     
