@@ -35,7 +35,6 @@ class BlobsActiveTableViewController: UIViewController, UITableViewDataSource, U
         statusBarHeight = UIApplication.shared.statusBarFrame.size.height
         if let navBarHeight = self.navigationController?.navigationBar.frame.height
         {
-            print("NAV BAR HEIGHT DYNAMIC: \(navBarHeight)")
             self.navBarHeight = navBarHeight
 //            self.statusBarHeight = 0
         }
@@ -108,8 +107,6 @@ class BlobsActiveTableViewController: UIViewController, UITableViewDataSource, U
 
     func tapMapView(_ gesture: UITapGestureRecognizer)
     {
-        print("Back to Map View Tap Gesture")
-        
         self.presentingViewController!.dismiss(animated: true, completion: {})
     }
     
@@ -138,7 +135,6 @@ class BlobsActiveTableViewController: UIViewController, UITableViewDataSource, U
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell
     {
         let cell = tableView.dequeueReusableCell(withIdentifier: Constants.Strings.blobsActiveTableViewCellReuseIdentifier, for: indexPath) as! BlobsActiveTableViewCell
-        print("CELL \((indexPath as NSIndexPath).row): \(cell)")
         
         // Add a clear background for the selectedBackgroundView so that the row is not highlighted when selected
         let sbv = UIView(frame: CGRect(x: 0, y: 0, width: cell.frame.width, height: cell.frame.height))
@@ -158,9 +154,6 @@ class BlobsActiveTableViewController: UIViewController, UITableViewDataSource, U
         // Be sure the Location Blobs array has an element at the assigned Blob Index
         if Constants.Data.locationBlobs.count >= blobIndex
         {
-            print("BLOB: \(Constants.Data.locationBlobs[blobIndex].blobID)")
-            print("BLOB DATETIME: \(Constants.Data.locationBlobs[blobIndex].blobDatetime)")
-            
             // Find the correct User Object in the global list and assign the User Image
             loopUserObjectCheck: for userObject in Constants.Data.userObjects
             {
@@ -218,7 +211,6 @@ class BlobsActiveTableViewController: UIViewController, UITableViewDataSource, U
         return cell
     }
     
-    
     // The Table Row slide action methods
     func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]?
     {
@@ -228,8 +220,6 @@ class BlobsActiveTableViewController: UIViewController, UITableViewDataSource, U
         // If the user selects to hide the Blob from their map
         let hide = UITableViewRowAction(style: .normal, title: "Hide\nBlob")
         { action, index in
-            print("hide button tapped")
-            
             // Find the Blob for the selected table row
             let actionBlob = Constants.Data.locationBlobs[blobIndex]
             
@@ -269,7 +259,6 @@ class BlobsActiveTableViewController: UIViewController, UITableViewDataSource, U
             {
                 if circle.title == actionBlob.blobID
                 {
-                    print("DELETING CIRCLE: \(circle.title)")
                     circle.map = nil
                     Constants.Data.mapCircles.remove(at: cIndex)
                     
@@ -284,23 +273,15 @@ class BlobsActiveTableViewController: UIViewController, UITableViewDataSource, U
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath)
     {
-        print("DID SELECT ROW #\((indexPath as NSIndexPath).item)!")
-        
         // Prevent the row from being highlighted
         tableView.deselectRow(at: indexPath, animated: true)
         
         // Load the Blob View Controller with the selected Blob - remember to add one to the Location Blob array since
         // the first element (the "default" Blob is not shown in the Collection View
-        print("LOCATION BLOB COUNT: \(Constants.Data.locationBlobs.count)")
         if Constants.Data.locationBlobs.count >= (indexPath as NSIndexPath).row + 1
         {
             self.loadBlobViewWithBlob(Constants.Data.locationBlobs[(indexPath as NSIndexPath).row + 1])
         }
-        
-        // Reference the cell and start the loading indicator
-        let cell = tableView.dequeueReusableCell(withIdentifier: Constants.Strings.blobsActiveTableViewCellReuseIdentifier, for: indexPath) as! BlobsActiveTableViewCell
-        print("CELL \((indexPath as NSIndexPath).row): \(cell)")
-//        cell.cellSelectedActivityIndicator.startAnimating()
         
         // Save an action in Core Data
         CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
@@ -308,17 +289,14 @@ class BlobsActiveTableViewController: UIViewController, UITableViewDataSource, U
     
     func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath)
     {
-        print("DID DESELECT ROW: \((indexPath as NSIndexPath).row)")
     }
     
     func tableView(_ tableView: UITableView, didHighlightRowAt indexPath: IndexPath)
     {
-        print("DID HIGHLIGHT ROW: \((indexPath as NSIndexPath).row)")
     }
     
     func tableView(_ tableView: UITableView, didUnhighlightRowAt indexPath: IndexPath)
     {
-        print("DID UNHIGHLIGHT ROW: \((indexPath as NSIndexPath).row)")
     }
     
     // Override to support conditional editing of the table view.
@@ -330,12 +308,6 @@ class BlobsActiveTableViewController: UIViewController, UITableViewDataSource, U
     // Override to support editing the table view.
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath)
     {
-//        if editingStyle == .Delete {
-//            // Delete the row from the data source
-//            tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
-//        } else if editingStyle == .Insert {
-//            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-//        }
     }
     
     
@@ -352,13 +324,11 @@ class BlobsActiveTableViewController: UIViewController, UITableViewDataSource, U
     // This version is used when the top VC is popped from a Nav Bar button
     func popViewController(_ sender: UIBarButtonItem)
     {
-        print("pop Back to Table View")
         self.dismiss(animated: true, completion: nil)
     }
     
     func loadBlobViewWithBlob(_ blob: Blob)
     {
-        print("LOADING VIEW BLOB")
         if blob.blobExtraRequested && (blob.blobText != nil || blob.blobThumbnailID != nil)
         {
             // Create a back button and title for the Nav Bar

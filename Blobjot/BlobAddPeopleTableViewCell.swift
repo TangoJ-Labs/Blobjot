@@ -24,8 +24,6 @@ class BlobAddPeopleTableViewCell: UITableViewCell {
         cellContainer.backgroundColor = Constants.Colors.standardBackground
         self.addSubview(cellContainer)
         
-        print("CELL CONTAINER FRAME: \(cellContainer.frame)")
-        
         let imageSize = cellContainer.frame.height - 10
         cellUserImage = UIImageView(frame: CGRect(x: cellContainer.frame.width - 10 - imageSize, y: 5, width: imageSize, height: imageSize))
         cellUserImage.layer.cornerRadius = imageSize / 2

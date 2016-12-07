@@ -27,8 +27,6 @@ class PeopleTableViewCell: UITableViewCell {
         cellContainer.layer.shadowRadius = Constants.Dim.cardShadowRadius
         self.addSubview(cellContainer)
         
-        print("CELL CONTAINER FRAME: \(cellContainer.frame)")
-        
         cellConnectIndicator = UIImageView(frame: CGRect(x: 10, y: (cellContainer.frame.height / 2) - (Constants.Dim.peopleConnectIndicatorSize / 2), width: Constants.Dim.peopleConnectIndicatorSize, height: Constants.Dim.peopleConnectIndicatorSize))
         cellConnectIndicator.image = UIImage(named: Constants.Strings.iconStringConnectionViewAddConnection)
         cellConnectIndicator.contentMode = UIViewContentMode.scaleAspectFit

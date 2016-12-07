@@ -26,20 +26,12 @@ class UtilityFunctions
         // Check to see if the current user data is already in Core Data
         // Try to retrieve the current user data from Core Data
         let currentUserArray = CoreDataFunctions().currentUserRetrieve()
-        
-        print("UF-RUL - CHECKING CORE DATA - CURRENT USER COUNT: \(currentUserArray.count)")
-        for cUser in currentUserArray
-        {
-            print("UF-RUL - CHECKING CORE DATA - CURRENT USER: \(cUser.userID), \(cUser.userName)")
-        }
-        
         if let currentUserID = Constants.Data.currentUser.userID
         {
             // If the return has content, use it to populate the user elements
             // Ensure that the saved userID is the same as the global current user (it should be - should be reset when first logged in)
             if currentUserArray.count > 0 && currentUserArray[0].userID == currentUserID
             {
-                print("UF-RUL - CHECKING CORE DATA FOR CURRENT USER: \(currentUserArray[0].userID)")
                 // Create a new User object to store the currently logged in user
                 let currentUser = User()
                 if let userID = currentUserArray[0].userID
@@ -56,7 +48,6 @@ class UtilityFunctions
                 }
                 if let imageData = currentUserArray[0].userImage
                 {
-                    print("UF-RUL - CHECKING CORE DATA - PREVIOUS IMAGE DATA EXISTS")
                     currentUser.userImage = UIImage(data: imageData as Data)
                 }
                 
@@ -65,18 +56,12 @@ class UtilityFunctions
             }
             
             let savedUsers = CoreDataFunctions().userRetrieve()
-            print("UF-RUL - GOT SAVED USERS COUNT: \(savedUsers.count)")
             for sUser in savedUsers
             {
-                print("UF-RUL - ADDING CORE DATA USER: \(sUser.userName)")
-                print("UF-RUL - ADDING CORE DATA USER: \(sUser.facebookID)")
-                
                 // Check to ensure the user does not already exist in the global User array
                 var userObjectExists = false
                 loopUserObjectCheck: for userObject in Constants.Data.userObjects
                 {
-                    print("UF-RUL - userObject: \(userObject.userID), \(userObject.userName)")
-                    
                     if userObject.userID == sUser.userID
                     {
                         userObjectExists = true
@@ -147,8 +132,6 @@ class UtilityFunctions
     {
         if Constants.Settings.locationManagerSetting == Constants.LocationManagerSettingType.always
         {
-            print("UF-LMS - ALWAYS")
-            
             Constants.appDelegateLocationManager.pausesLocationUpdatesAutomatically = false
             Constants.appDelegateLocationManager.startUpdatingLocation()
             Constants.appDelegateLocationManager.disallowDeferredLocationUpdates()
@@ -158,8 +141,6 @@ class UtilityFunctions
         }
         else if Constants.Settings.locationManagerSetting == Constants.LocationManagerSettingType.off
         {
-            print("UF-LMS - OFF")
-            
             Constants.appDelegateLocationManager.stopMonitoringSignificantLocationChanges()
             Constants.appDelegateLocationManager.stopUpdatingLocation()
             
@@ -169,8 +150,6 @@ class UtilityFunctions
         else
         {
             // Significant is the default
-            print("UF-LMS - SIGNIFICANT")
-            
             Constants.appDelegateLocationManager.pausesLocationUpdatesAutomatically = true
             Constants.appDelegateLocationManager.startMonitoringSignificantLocationChanges()
 //            Constants.appDelegateLocationManager.allowDeferredLocationUpdates(untilTraveled: Constants.Settings.locationAccuracyDeferredDistance, timeout: Constants.Settings.locationAccuracyDeferredInterval)
@@ -275,28 +254,21 @@ class UtilityFunctions
     // Process a notification for a new blob
     func displayNewBlobNotificationOLD(newBlobID: String)
     {
-        print("UF-DNBN: CHECK 1")
         // Recall the Blob data
         loopBlobCheck: for blob in Constants.Data.mapBlobs
         {
-            print("UF-DNBN: CHECK 2")
             if blob.blobID == newBlobID
             {
-                print("UF-DNBN: CHECK 3")
                 // Ensure that the passed Blob was not created by the current user
                 if blob.blobUserID != Constants.Data.currentUser.userID
                 {
-                    print("UF-DNBN: CHECK 4")
                     // Recall the userObject needed based on recalled Blob data
                     loopUserCheck: for user in Constants.Data.userObjects
                     {
-                        print("UF-DNBN: CHECK 5")
                         if user.userID == blob.blobUserID
                         {
-                            print("UF-DNBN: CHECK 6")
                             if let userName = user.userName
                             {
-                                print("UF-DNBN: CHECK 7")
                                 // Create a notification of the new Blob at the current location
                                 let notification = UILocalNotification()
                                 

@@ -19,12 +19,10 @@ class LocationBlobsCollectionViewCell: UICollectionViewCell {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        print("Frame Cell frame is: \(frame)")
         
         cellContainer = UIView(frame: CGRect(x: 0, y: 0, width: contentView.frame.width, height: contentView.frame.height))
         cellContainer.backgroundColor = UIColor.clear
         contentView.addSubview(cellContainer)
-        print("viewContainer: \(cellContainer.frame)")
         
         // Add a View Container for the User Image
         userImageContainer = UIView(frame: CGRect(x: 5, y: 5, width: Constants.Dim.mapViewLocationBlobsCVItemSize, height: Constants.Dim.mapViewLocationBlobsCVItemSize))

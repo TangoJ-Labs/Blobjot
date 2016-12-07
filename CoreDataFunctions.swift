@@ -16,7 +16,6 @@ class CoreDataFunctions: AWSRequestDelegate
     // MARK: CURRENT USER
     func currentUserSave(user: User)
     {
-        print("CD-CUS: CHECK 1")
         // Try to retrieve the current user data from Core Data
         var currentUserArray = [CurrentUser]()
         let moc = DataController().managedObjectContext
@@ -30,11 +29,9 @@ class CoreDataFunctions: AWSRequestDelegate
         {
             fatalError("Failed to fetch CurrentUser: \(error)")
         }
-        print("CD-CUS: CHECK 2 - COUNT: \(currentUserArray.count)")
         // If the return has no content, the current user has not yet been saved
         if currentUserArray.count == 0
         {
-            print("CD-CUS: CHECK 3")
             // Save the current user data in Core Data
             let entity = NSEntityDescription.insertNewObject(forEntityName: "CurrentUser", into: moc) as! CurrentUser
             entity.setValue(user.userID, forKey: "userID")
@@ -47,22 +44,15 @@ class CoreDataFunctions: AWSRequestDelegate
         }
         else
         {
-            print("CD-CUS: CHECK 4")
             // Replace the current user data to ensure that the latest data is used
-            print("CD-CUS: CHECK 4a: CUR: \(currentUserArray[0].userID), FUT: \(user.userID)")
             currentUserArray[0].userID = user.userID
-            print("CD-CUS: CHECK 4b: CUR: \(currentUserArray[0].facebookID), FUT: \(user.facebookID)")
             currentUserArray[0].userID = user.facebookID
-            print("CD-CUS: CHECK 4c: CUR: \(currentUserArray[0].userName), FUT: \(user.userName)")
             currentUserArray[0].userName = user.userName
-            print("CD-CUS: CHECK 4d: CUR: \(currentUserArray[0].userImage?.bytes), FUT: \(user.userImage?.size)")
             if let userImage = user.userImage
             {
                 currentUserArray[0].userImage = UIImagePNGRepresentation(userImage) as NSData?
             }
-            print("CD-CUS: CHECK 4e")
         }
-        print("CD-CUS: CHECK 5")
         // Save the Entity
         do
         {
@@ -72,18 +62,15 @@ class CoreDataFunctions: AWSRequestDelegate
         {
             fatalError("Failure to save context: \(error)")
         }
-        print("CD-CUS: CHECK 6")
     }
     
     func currentUserRetrieve() -> [CurrentUser]
     {
-        print("CD-CUR: CHECK 1")
         // Access Core Data
         // Retrieve the Current User Blob data from Core Data
         let moc = DataController().managedObjectContext
         let currentUserFetch: NSFetchRequest<CurrentUser> = CurrentUser.fetchRequest()
         
-        print("CD-CUR: CHECK 2")
         // Create an empty blobNotifications list in case the Core Data request fails
         var currentUser = [CurrentUser]()
         do
@@ -94,10 +81,9 @@ class CoreDataFunctions: AWSRequestDelegate
         {
             fatalError("Failed to fetch CurrentUser: \(error)")
         }
-
         for cUser in currentUser
         {
-            print("CD-CUR: CHECK 3 - CURRENT USER: \(cUser.userID), \(cUser.userName)")
+            print("CD-CUR: \(cUser.userName)")
         }
         return currentUser
     }
@@ -127,7 +113,6 @@ class CoreDataFunctions: AWSRequestDelegate
             // Save the default locationManagerSetting in Core Data
             let entity = NSEntityDescription.insertNewObject(forEntityName: "LocationManagerSetting", into: moc) as! LocationManagerSetting
             entity.setValue(Constants.LocationManagerSettingType.significant.rawValue, forKey: "locationManagerSetting")
-            print("UF-CDLMS - LOCATION MANAGER SETTING VALUE \"significant\"")
         }
         else
         {
@@ -135,17 +120,14 @@ class CoreDataFunctions: AWSRequestDelegate
             if locationManagerSetting == Constants.LocationManagerSettingType.always
             {
                 locationManagerSettingArray[0].setValue(Constants.LocationManagerSettingType.always.rawValue, forKey: "locationManagerSetting")
-                print("UF-CDLMS - LOCATION MANAGER SETTING VALUE \"always\"")
             }
             else if locationManagerSetting == Constants.LocationManagerSettingType.off
             {
                 locationManagerSettingArray[0].setValue(Constants.LocationManagerSettingType.off.rawValue, forKey: "locationManagerSetting")
-                print("UF-CDLMS - LOCATION MANAGER SETTING VALUE \"off\"")
             }
             else
             {
                 locationManagerSettingArray[0].setValue(Constants.LocationManagerSettingType.significant.rawValue, forKey: "locationManagerSetting")
-                print("UF-CDLMS - LOCATION MANAGER SETTING VALUE \"significant\"")
             }
         }
         
@@ -153,7 +135,6 @@ class CoreDataFunctions: AWSRequestDelegate
         do
         {
             try moc.save()
-            print("UF-CDLMS - SAVED NEW LOCATION MANAGER SETTING VALUE")
         }
         catch
         {
@@ -177,11 +158,6 @@ class CoreDataFunctions: AWSRequestDelegate
         catch
         {
             fatalError("Failed to fetch locationManagerSetting: \(error)")
-        }
-        
-        for item in locationManagerSetting
-        {
-            print("CD-LMS: ITEM: \(item.locationManagerSetting)")
         }
         
         return locationManagerSetting
@@ -225,11 +201,6 @@ class CoreDataFunctions: AWSRequestDelegate
             fatalError("Failed to fetch frames: \(error)")
         }
         
-        for item in blobNotifications
-        {
-            print("CD-BN: ITEM: \(item.blobID)")
-        }
-        
         return blobNotifications
     }
     
@@ -237,8 +208,6 @@ class CoreDataFunctions: AWSRequestDelegate
     // MARK: BLOBS
     func blobSave(blob: Blob)
     {
-        print("CD-BS - BLOB SAVE: \(blob.blobText)")
-        
         // Retrieve the Blob data from Core Data
         let moc = DataController().managedObjectContext
         let blobFetch: NSFetchRequest<BlobCD> = BlobCD.fetchRequest()
@@ -317,8 +286,6 @@ class CoreDataFunctions: AWSRequestDelegate
     
     func blobRetrieve() -> [Blob]
     {
-        print("CD-BR - RETRIEVING BLOBS")
-        
         // Retrieve the Blob data from Core Data
         let moc = DataController().managedObjectContext
         let blobFetch: NSFetchRequest<BlobCD> = BlobCD.fetchRequest()
@@ -334,8 +301,6 @@ class CoreDataFunctions: AWSRequestDelegate
             CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: error.localizedDescription)
             fatalError("CD-BR - BLOB RETRIEVE - Failed to fetch frames: \(error)")
         }
-        
-        print("CD-BR - BLOBS CD COUNT: \(blobsCD.count)")
         
         // Convert the Blobs to a Blob class
         var blobs = [Blob]()
@@ -362,8 +327,6 @@ class CoreDataFunctions: AWSRequestDelegate
                 addBlob.blobThumbnail = UIImage(data: thumbnailData as Data)
             }
             blobs.append(addBlob)
-            
-            print("CD-BR: BLOB: \(addBlob.blobID)")
         }
         
         // Save the changes to the lastUsed records
@@ -397,8 +360,6 @@ class CoreDataFunctions: AWSRequestDelegate
             fatalError("CD-BRD - BLOB RETRIEVE DELETE - Failed to fetch frames: \(error)")
         }
         
-        print("CD-BRD - BLOB COUNT: \(blobsCD.count)")
-        
         // Delete each object one at a time if not used recently
         for cdBlob in blobsCD
         {
@@ -431,8 +392,6 @@ class CoreDataFunctions: AWSRequestDelegate
     // MARK: USERS
     func userSave(user: User)
     {
-        print("CD-US - SAVING USER: \(user.userID), \(user.userName), \(user.facebookID)")
-        
         let moc = DataController().managedObjectContext
         
         // Check for the User already in Core Data
@@ -529,8 +488,6 @@ class CoreDataFunctions: AWSRequestDelegate
             // Update the lastUsed record
             usersCD[cdIndex].lastUsed = Date() as NSDate?
             
-            print("CD-UR - USER: \(cdUser.userID), \(cdUser.userName), \(cdUser.facebookID)")
-            
             let addUser = User()
             addUser.userID = cdUser.userID
             addUser.facebookID = cdUser.facebookID
@@ -575,8 +532,6 @@ class CoreDataFunctions: AWSRequestDelegate
             fatalError("Failed to fetch frames: \(error)")
         }
         
-        print("CD-URD - USER COUNT: \(usersCD.count)")
-        
         // Delete each object one at a time if not used recently
         for cdUser in usersCD
         {
@@ -587,8 +542,6 @@ class CoreDataFunctions: AWSRequestDelegate
                     moc.delete(cdUser)
                     print("CD-URD - USER DELETE: \(cdUser.userID)")
                 }
-//                moc.delete(cdUser)
-//                print("CD-URD - USER DELETE: \(cdUser.userID)")
             }
             else
             {
@@ -610,7 +563,6 @@ class CoreDataFunctions: AWSRequestDelegate
     // MARK: TUTORIAL VIEWS
     func tutorialViewSave(tutorialViews: TutorialViews)
     {
-        print("CD-TVS: CHECK 1")
         // Try to retrieve the Tutorial Views data from Core Data
         var tutorialViewsArray = [TutorialViews]()
         let moc = DataController().managedObjectContext
@@ -624,11 +576,9 @@ class CoreDataFunctions: AWSRequestDelegate
         {
             fatalError("Failed to fetch CurrentUser: \(error)")
         }
-        print("CD-TVS: CHECK 2 - COUNT: \(tutorialViewsArray.count)")
         // If the return has no content, no Tutorial Views have been saved
         if tutorialViewsArray.count == 0
         {
-            print("CD-TVS: CHECK 3")
             // Save the Tutorial Views data in Core Data
             let entity = NSEntityDescription.insertNewObject(forEntityName: "TutorialViews", into: moc) as! TutorialViews
             if let tutorialMapViewDatetime = tutorialViews.tutorialMapViewDatetime
@@ -646,9 +596,7 @@ class CoreDataFunctions: AWSRequestDelegate
         }
         else
         {
-            print("CD-TVS: CHECK 4")
             // Replace the Tutorial Views data to ensure that the latest data is used
-            print("CD-TVS: CHECK 4a: CUR: \(tutorialViewsArray[0].tutorialMapViewDatetime)")
             if let tutorialMapViewDatetime = tutorialViews.tutorialMapViewDatetime
             {
                 tutorialViewsArray[0].tutorialMapViewDatetime = tutorialMapViewDatetime
@@ -661,9 +609,7 @@ class CoreDataFunctions: AWSRequestDelegate
             {
                 tutorialViewsArray[0].tutorialBlobAddViewDatetime = tutorialBlobAddViewDatetime
             }
-            print("CD-TVS: CHECK 4b")
         }
-        print("CD-TVS: CHECK 5")
         // Save the Entity
         do
         {
@@ -673,24 +619,19 @@ class CoreDataFunctions: AWSRequestDelegate
         {
             fatalError("Failure to save context: \(error)")
         }
-        print("CD-TVS: CHECK 6")
     }
     
     func tutorialViewRetrieve() -> TutorialViews
     {
-        print("CD-TVR: CHECK 1")
         // Access Core Data
         // Retrieve the Tutorial Views data from Core Data
         let moc = DataController().managedObjectContext
         let tutorialViewsFetch: NSFetchRequest<TutorialViews> = TutorialViews.fetchRequest()
         
-        print("CD-TVR: CHECK 2")
         // Create an empty Tutorial Views list in case the Core Data request fails
         var tutorialViewsArray = [TutorialViews]()
-        print("CD-TVR: CHECK 3")
         // Create a new Tutorial Views entity
         let tutorialViews = NSEntityDescription.insertNewObject(forEntityName: "TutorialViews", into: moc) as! TutorialViews
-        print("CD-TVR: CHECK 4")
         do
         {
             tutorialViewsArray = try moc.fetch(tutorialViewsFetch)
@@ -699,10 +640,8 @@ class CoreDataFunctions: AWSRequestDelegate
         {
             fatalError("Failed to fetch CurrentUser: \(error)")
         }
-        print("CD-TVR: CHECK 5 - COUNT: \(tutorialViewsArray.count)")
         if tutorialViewsArray.count > 0
         {
-            print("CD-TVR: CHECK 6: ASSIGNING tutorialViews KEYS")
             // Sometimes more than one record may be saved - use the one with the most data
             var tutorialViewHighestDataCount: Int = 0
             var tutorialViewArrayIndexUse: Int = 0
@@ -741,9 +680,9 @@ class CoreDataFunctions: AWSRequestDelegate
                 tutorialViews.setValue(tutorialBlobAddViewDatetime, forKey: "tutorialBlobAddViewDatetime")
             }
         }
-        print("CD-TVR: CHECK 6a: \(tutorialViews.tutorialMapViewDatetime)")
-        print("CD-TVR: CHECK 6b: \(tutorialViews.tutorialAccountViewDatetime)")
-        print("CD-TVR: CHECK 6c: \(tutorialViews.tutorialBlobAddViewDatetime)")
+        print("CD-TVR: CHECK A: \(tutorialViews.tutorialMapViewDatetime)")
+        print("CD-TVR: CHECK B: \(tutorialViews.tutorialAccountViewDatetime)")
+        print("CD-TVR: CHECK C: \(tutorialViews.tutorialBlobAddViewDatetime)")
         return tutorialViews
     }
     
@@ -769,8 +708,6 @@ class CoreDataFunctions: AWSRequestDelegate
         {
             fatalError("Failure to save context: \(error)")
         }
-        
-        print("CDF - SAVING LOG ERROR: \(function), \(errorString), \(timestamp)")
     }
     
     func logErrorRetrieve(andDelete: Bool) -> [LogError]
@@ -809,11 +746,6 @@ class CoreDataFunctions: AWSRequestDelegate
             fatalError("Failed to fetch log errors: \(error)")
         }
         
-        for item in logErrors
-        {
-            print("CD-LE: ITEM: \(item.errorString)")
-        }
-        
         // logErrors will return EVEN IF DELETED (they are not deleted from array, just Core Data)
         return logErrors
     }
@@ -841,8 +773,6 @@ class CoreDataFunctions: AWSRequestDelegate
         {
             fatalError("Failure to save context: \(error)")
         }
-        
-        print("CDF - SAVING LOG USERFLOW: \(viewController), \(action), \(timestamp)")
     }
     
     func logUserflowRetrieve(andDelete: Bool) -> [LogUserflow]
@@ -881,11 +811,6 @@ class CoreDataFunctions: AWSRequestDelegate
             fatalError("Failed to fetch log errors: \(error)")
         }
         
-        for item in logUserflows
-        {
-            print("CD-LU: ITEM: \(item.action)")
-        }
-        
         // logUserflows will return EVEN IF DELETED (they are not deleted from array, just Core Data)
         return logUserflows
     }
@@ -897,14 +822,12 @@ class CoreDataFunctions: AWSRequestDelegate
     // Called when the app starts up - process the logs saved in the previous session and upload to AWS
     func processLogs()
     {
-        print("CDF - PROCESS LOGS")
         // Retrieve the Error Logs
         let logErrors = logErrorRetrieve(andDelete: false)
         
         var logErrorArray = [[String]]()
         for logError in logErrors
         {
-            print("CDF - LOG ERROR: \(logError.function), \(logError.timestamp), \(logError.errorString)")
             var logErrorSubArray = [String]()
             logErrorSubArray.append(logError.function!)
             logErrorSubArray.append(String(format:"%f", (logError.timestamp?.doubleValue)!))
@@ -917,8 +840,7 @@ class CoreDataFunctions: AWSRequestDelegate
         AWSPrepRequest(requestToCall: AWSLog(logType: Constants.LogType.error, logArray: logErrorArray), delegate: self as AWSRequestDelegate).prepRequest()
         
         // Delete all Error Logs
-        let logErrorDeleteReturn = logErrorRetrieve(andDelete: true)
-        print("CDF - DELETED ERROR LOGS RETURN COUNT: \(logErrorDeleteReturn.count)")
+        _ = logErrorRetrieve(andDelete: true)
         
         // Retrieve the Userflow Logs
         let logUserflows = logUserflowRetrieve(andDelete: false)
@@ -926,7 +848,6 @@ class CoreDataFunctions: AWSRequestDelegate
         var logUserflowArray = [[String]]()
         for logUserflow in logUserflows
         {
-            print("CDF - LOG USERFLOW: \(logUserflow.viewController), \(logUserflow.timestamp), \(logUserflow.action)")
             var logUserflowSubArray = [String]()
             logUserflowSubArray.append(logUserflow.viewController!)
             logUserflowSubArray.append(String(format:"%f", (logUserflow.timestamp?.doubleValue)!))
@@ -939,8 +860,7 @@ class CoreDataFunctions: AWSRequestDelegate
         AWSPrepRequest(requestToCall: AWSLog(logType: Constants.LogType.userflow, logArray: logUserflowArray), delegate: self as AWSRequestDelegate).prepRequest()
         
         // Delete all Userflow Logs
-        let logUserflowDeleteReturn = logUserflowRetrieve(andDelete: true)
-        print("CDF - DELETED USERFLOW LOGS RETURN COUNT: \(logUserflowDeleteReturn.count)")
+        _ = logUserflowRetrieve(andDelete: true)
     }
     
     

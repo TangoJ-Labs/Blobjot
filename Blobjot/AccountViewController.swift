@@ -142,8 +142,6 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
         // If the return has content, the current user is saved - use that data
         if currentUserArray.count > 0
         {
-            print("CORE DATA - CURRENT USER - GOT USER DATA")
-            
             // Apply the current user data in the current user elements
             displayUserLabel.text = currentUserArray[0].userName
             
@@ -188,8 +186,6 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
         // If Core Data does not have that setting data, assign the default setting "constant" to Core Data
         // Also set the locationManager toggle button color and text based on the global setting
         let locationManagerSettingArray = CoreDataFunctions().locationManagerSettingRetrieve()
-        print("AVC - CD Location Manager Setting Count: \(locationManagerSettingArray.count)")
-        
         if locationManagerSettingArray.count == 0
         {
             // If the array is empty, no previous setting was saved - set and save the default
@@ -287,12 +283,10 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
         // Reset the userBlobs array and try to load the userBlobs from Core Data
         userBlobs = [Blob]()
         let savedBlobs = CoreDataFunctions().blobRetrieve()
-        print("AVC - GOT SAVED BLOBS: COUNT: \(savedBlobs.count)")
         for sBlob in savedBlobs
         {
             if sBlob.blobUserID == Constants.Data.currentUser.userID && sBlob.blobType == Constants.BlobTypes.permanent
             {
-                print("AVC - SAVED BLOB: \(sBlob.blobID)")
                 userBlobs.append(sBlob)
             }
         }
@@ -332,8 +326,6 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
         {
             
         default:
-            print("AVC - FINISHED ALL HOLE VIEWS")
-            
             // Record the Tutorial View in Core Data
             let moc = DataController().managedObjectContext
             let tutorialView = NSEntityDescription.insertNewObject(forEntityName: "TutorialViews", into: moc) as! TutorialViews
@@ -341,37 +333,6 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
             CoreDataFunctions().tutorialViewSave(tutorialViews: tutorialView)
         }
     }
-    
-    
-    // MARK: GESTURE RECOGNIZERS
-    
-//    // Reveal the popup screen to edit the userName
-//    func viewScreenTapGesture(_ sender: UITapGestureRecognizer)
-//    {
-//        hideScreenAndEditNameBox()
-//        
-//        // Save an action in Core Data
-//        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
-//    }
-//    
-//    func hideScreenAndEditNameBox()
-//    {
-//        // Remove the gray screen
-//        self.viewScreen.removeFromSuperview()
-//        
-//        // Animate the user name edit popup out of view
-//        UIView.animate(withDuration: 0.2, animations:
-//            {
-//                self.displayUserEditNameView.frame = CGRect(x: 50, y: self.viewContainer.frame.height, width: self.viewContainer.frame.width - 100, height: self.viewContainer.frame.width - 50)
-//            }, completion:
-//            { (finished: Bool) -> Void in
-//                self.displayUserEditNameView.removeFromSuperview()
-//        })
-//        
-//        // Save an action in Core Data
-//        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
-//    }
-    
     
     // Log out the user from the app and facebook
     func logoutButtonTapGesture(_ sender: UITapGestureRecognizer)
@@ -418,8 +379,6 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
     // Toggle the location manager type
     func locationButtonTapGesture(_ sender: UITapGestureRecognizer)
     {
-        print("TOGGLE THE LOCATION MANAGER SETTINGS")
-        
         // Toggle the location manager type
         if Constants.Settings.locationManagerSetting == Constants.LocationManagerSettingType.always
         {
@@ -578,7 +537,6 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
                 {
                     if circle.title == cellBlob.blobID
                     {
-                        print("DELETING CIRCLE: \(circle.title)")
                         circle.map = nil
                         Constants.Data.mapCircles.remove(at: cIndex)
                         
@@ -600,13 +558,10 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath)
     {
-        print("DID SELECT ROW #\((indexPath as NSIndexPath).item)!")
-        
         // Prevent the row from being highlighted
         tableView.deselectRow(at: indexPath, animated: true)
         
         // Load the Blob View Controller with the selected Blob
-        print("USER BLOB COUNT: \(self.userBlobs.count)")
         if self.userBlobs.count >= (indexPath as NSIndexPath).row
         {
             self.loadBlobViewWithBlob(self.userBlobs[(indexPath as NSIndexPath).row])
@@ -614,7 +569,6 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
         
         // Reference the cell and start the loading indicator
         let cell = tableView.dequeueReusableCell(withIdentifier: Constants.Strings.accountTableViewCellReuseIdentifier, for: indexPath) as! AccountTableViewCell
-        print("SELECTED CELL \((indexPath as NSIndexPath).row): \(cell)")
         cell.cellSelectedActivityIndicator.startAnimating()
         
         // Save an action in Core Data
@@ -623,17 +577,14 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
     
     func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath)
     {
-        print("DID DESELECT ROW: \((indexPath as NSIndexPath).row)")
     }
     
     func tableView(_ tableView: UITableView, didHighlightRowAt indexPath: IndexPath)
     {
-        print("DID HIGHLIGHT ROW: \((indexPath as NSIndexPath).row)")
     }
     
     func tableView(_ tableView: UITableView, didUnhighlightRowAt indexPath: IndexPath)
     {
-        print("DID UNHIGHLIGHT ROW: \((indexPath as NSIndexPath).row)")
     }
     
     // Override to support conditional editing of the table view.
@@ -646,12 +597,6 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
     // Override to support editing the table view.
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath)
     {
-//        if editingStyle == .Delete {
-//            // Delete the row from the data source
-//            tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
-//        } else if editingStyle == .Insert {
-//            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-//        }
     }
     
     
@@ -663,13 +608,11 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
     // This version is used when the top VC is popped from a Nav Bar button
     func popViewController(_ sender: UIBarButtonItem)
     {
-        print("pop Back to Table View")
         self.dismiss(animated: true, completion: nil)
     }
     
     func loadBlobViewWithBlob(_ blob: Blob)
     {
-        print("LOADING USER LIST BLOB")
         if blob.blobText != nil || blob.blobThumbnailID != nil
         {
             // Create a back button and title for the Nav Bar
@@ -791,7 +734,6 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
                         if Constants.Data.userBlobs.count <= 0
                         {
                             // The User has not created any Blobs, so stop the loading animation and show the message
-//                            self.blobUserActivityIndicator.stopAnimating()
                             self.blobsTableViewBackgroundLabel.text = "You have not yet created a Blob.  Tap the add button on the Map Screen to create a new Blob!"
                         }
                         else
@@ -823,10 +765,7 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
                             }
                         }
                         
-                        print("ADDED IMAGE: \(awsGetThumbnailImage.blob.blobThumbnailID))")
-                        
                         // Reload the Table View
-                        print("GET IMAGE - RELOAD TABLE VIEW")
                         self.blobsUserTableView.performSelector(onMainThread: #selector(UITableView.reloadData), with: nil, waitUntilDone: true)
                         
                         // Find the correct User Object in the global list and assign the newly downloaded Image

@@ -22,8 +22,8 @@ protocol BlobAddPeopleViewControllerDelegate {
     func deselectedAllPeople()
 }
 
-class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate, AWSRequestDelegate {
-    
+class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate, AWSRequestDelegate
+{    
     // Add a delegate variable which the parent view controller can pass its own delegate instance to and have access to the protocol
     // (and have its own functions called that are listed in the protocol)
     var blobAddPeopleDelegate: BlobAddPeopleViewControllerDelegate?
@@ -52,7 +52,8 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
     var peopleListSelected = [User]()
     var peopleListUse = [User]()
     
-    override func viewDidLoad() {
+    override func viewDidLoad()
+    {
         super.viewDidLoad()
         
         // Status Bar Settings
@@ -127,15 +128,17 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
         selectAllContainer.addGestureRecognizer(selectAllTapGesture)
         
         // Go ahead and use the global array, if it has content
-        for userObject in Constants.Data.userObjects {
-            
+        for userObject in Constants.Data.userObjects
+        {
             // Add the User Object to the local list if they are a connection
-            if userObject.userStatus == Constants.UserStatusTypes.connected {
+            if userObject.userStatus == Constants.UserStatusTypes.connected
+            {
                 self.peopleList.append(userObject)
             }
         }
         // Sort the list alphabetically and copy the peopleList to the peopleList to use in the table
-        self.peopleList.sort(by: {
+        self.peopleList.sort(by:
+            {
             if $0.userName != nil && $1.userName != nil
             {
                 return $0.userName! <  $1.userName!
@@ -150,7 +153,8 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
         AWSPrepRequest(requestToCall: AWSGetUserConnections(), delegate: self as AWSRequestDelegate).prepRequest()
     }
 
-    override func didReceiveMemoryWarning() {
+    override func didReceiveMemoryWarning()
+    {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
@@ -158,25 +162,24 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
     
     // MARK: - Table view data source
     
-    func numberOfSections(in tableView: UITableView) -> Int {
-        // #warning Incomplete implementation, return the number of sections
+    func numberOfSections(in tableView: UITableView) -> Int
+    {
         return 1
     }
     
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        // #warning Incomplete implementation, return the number of rows
-        print("BAPVC - PEOPLE COUNT: \(peopleListUse.count)")
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int
+    {
         return peopleListUse.count
     }
     
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat
+    {
         return Constants.Dim.blobAddPeopleTableViewCellHeight
     }
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell
+    {
         let cell = tableView.dequeueReusableCell(withIdentifier: Constants.Strings.blobAddPeopleTableViewCellReuseIdentifier, for: indexPath) as! BlobAddPeopleTableViewCell
-        print("BAPVC - CELL \((indexPath as NSIndexPath).row): \(cell)")
-        
         cell.cellUserImageActivityIndicator.startAnimating()
         cell.cellUserName.text = ""
         cell.cellUserImage.image = nil
@@ -187,7 +190,6 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
         cell.selectedBackgroundView = sbv
         
         let cellUserObject = self.peopleListUse[(indexPath as NSIndexPath).row]
-        print("BAPVC - USER NAME: \(cellUserObject.userName) FOR CELL: \((indexPath as NSIndexPath).row)")
         
         // Get the User Object from the list and assign data to the cell
         if cellUserObject.userName != nil
@@ -212,56 +214,23 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
         return cell
     }
     
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        print("DID SELECT ROW: \((indexPath as NSIndexPath).row)")
-        
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath)
+    {
         // Add the selected person to the selected list if they do not already exist
         var personExists = false
-        loopPeopleListSelected: for person in peopleListSelected {
-            if person.userID == peopleListUse[(indexPath as NSIndexPath).row].userID {
+        loopPeopleListSelected: for person in peopleListSelected
+        {
+            if person.userID == peopleListUse[(indexPath as NSIndexPath).row].userID
+            {
                 personExists = true
                 break loopPeopleListSelected
             }
         }
-        if !personExists {
+        if !personExists
+        {
             peopleListSelected.append(peopleListUse[(indexPath as NSIndexPath).row])
         }
         
-        print("PEOPLE SELECTED COUNT: \(peopleListSelected.count)")
-        // Check the number of people selected
-        if peopleListSelected.count > 0 {
-            if let parentVC = self.blobAddPeopleDelegate {
-                parentVC.selectedPerson()
-            }
-        } else {
-            if let parentVC = self.blobAddPeopleDelegate {
-                parentVC.deselectedAllPeople()
-            }
-        }
-        
-        // SELECTED PEOPLE CHECK
-        for person in peopleListSelected {
-            print("PERSON SELECTED: \(person.userName)")
-        }
-        
-        // Save an action in Core Data
-        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
-    }
-    
-    func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath)
-    {
-        print("DID DESELECT ROW: \((indexPath as NSIndexPath).row)")
-        
-        loopPeopleListSelected: for (index, person) in peopleListSelected.enumerated()
-        {
-            if person.userID == peopleListUse[(indexPath as NSIndexPath).row].userID
-            {
-                peopleListSelected.remove(at: index)
-                break loopPeopleListSelected
-            }
-        }
-        
-        print("PEOPLE SELECTED COUNT: \(peopleListSelected.count)")
         // Check the number of people selected
         if peopleListSelected.count > 0
         {
@@ -278,9 +247,35 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
             }
         }
         
-        // SELECTED PEOPLE CHECK
-        for person in peopleListSelected {
-            print("PERSON SELECTED: \(person.userName)")
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
+    }
+    
+    func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath)
+    {
+        loopPeopleListSelected: for (index, person) in peopleListSelected.enumerated()
+        {
+            if person.userID == peopleListUse[(indexPath as NSIndexPath).row].userID
+            {
+                peopleListSelected.remove(at: index)
+                break loopPeopleListSelected
+            }
+        }
+        
+        // Check the number of people selected
+        if peopleListSelected.count > 0
+        {
+            if let parentVC = self.blobAddPeopleDelegate
+            {
+                parentVC.selectedPerson()
+            }
+        }
+        else
+        {
+            if let parentVC = self.blobAddPeopleDelegate
+            {
+                parentVC.deselectedAllPeople()
+            }
         }
         
         // Save an action in Core Data
@@ -289,12 +284,10 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
     
     func tableView(_ tableView: UITableView, didHighlightRowAt indexPath: IndexPath)
     {
-        print("DID HIGHLIGHT ROW: \((indexPath as NSIndexPath).row)")
     }
     
     func tableView(_ tableView: UITableView, didUnhighlightRowAt indexPath: IndexPath)
     {
-        print("DID UNHIGHLIGHT ROW: \((indexPath as NSIndexPath).row)")
     }
     
     // Override to support conditional editing of the table view.
@@ -309,8 +302,6 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
     // Edit the peopleList based on the search text filter
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String)
     {
-        print("BAPVC - Search Text: \(searchText)")
-        
         // If the search bar is cleared, clear the peopleList and add all users
         self.peopleListUse = [User]()
         if searchText == ""
@@ -330,8 +321,6 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
                     // Convert the strings to lowercase for better matching
                     if userObject.userName!.lowercased().contains(searchText.lowercased())
                     {
-                        print("BAPVC - UserName Contains: \(searchText)")
-                        
                         self.peopleListUse.append(userObject)
                     }
                 }
@@ -394,7 +383,6 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
     func refreshTableAndHighlights()
     {
         // Reload the Table View
-        print("BAPVC - REFRESH TABLE AND HIGHLIGHTS - RELOAD TABLE VIEW")
         self.peopleTableView.performSelector(onMainThread: #selector(UITableView.reloadData), with: nil, waitUntilDone: true)
         
         // Loop through the Selected People list and highlight the associated people in the Use People list

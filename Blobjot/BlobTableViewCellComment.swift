@@ -19,7 +19,6 @@ class BlobTableViewCellComment: UITableViewCell
     {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
-        print("BTVC - CELL HEIGHT: \(self.frame.height)")
         self.backgroundColor = Constants.Colors.standardBackgroundGrayUltraLight
         
         let clearView = UIView()

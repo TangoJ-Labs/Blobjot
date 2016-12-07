@@ -31,11 +31,6 @@ class MyProvider : NSObject, AWSIdentityProviderManager
     init(tokens: [NSString : NSString])
     {
         self.tokens = tokens
-        
-        for token in tokens
-        {
-            print("AC-MP - TOKEN: \(token.key), \(token.value)")
-        }
     }
     
     func logins() -> AWSTask<NSDictionary>
@@ -69,13 +64,9 @@ class AWSPrepRequest
             Constants.Data.serverLastRefresh = Date().timeIntervalSince1970
         }
         
-        print("AC-PREP - SERVER TRIES: \(Constants.Data.serverTries)")
         // Ensure that the app is not continuously failing to access the server
         if Constants.Data.serverTries <= Constants.Settings.maxServerTries
         {
-            print("AC - IN PREP REQUEST: \(requestToCall)")
-            print("AC - FBSDK TOKEN: \(FBSDKAccessToken.current())")
-            
             // Check to see if the facebook user id is already in the FBSDK
             if let facebookToken = FBSDKAccessToken.current()
             {
@@ -86,13 +77,11 @@ class AWSPrepRequest
                 // Ensure that the Cognito ID is still valid and is not older than an hour (AWS will invalidate if older)
                 if Constants.credentialsProvider.identityId != nil && Constants.Data.lastCredentials - NSDate().timeIntervalSinceNow < 3600
                 {
-                    print("AC - ALREADY HAVE COGNITO ID - GETTING NEW AWS ID")
                     // The Cognito ID is valid, so check for a Blobjot ID and then make the request
                     self.getBlobjotID(facebookToken: facebookToken)
                 }
                 else
                 {
-                    print("AC - CALLING COGNITO ID")
                     // If the Cognito credentials have expired, request the credentials again (Cognito Identity ID) and use the current Facebook info
                     self.getCognitoID()
                 }
@@ -103,18 +92,16 @@ class AWSPrepRequest
                 
                 if let parentVC = self.awsRequestDelegate
                 {
-                    print("AC - PARENT VC IS: \(parentVC)")
-                    
                     // Check to see if the parent viewcontroller is already the MapViewController.  If so, call the MVC showLoginScreen function
                     // Otherwise, launch a new MapViewController and show the login screen
                     if parentVC is MapViewController
                     {
-                        print("AC - PARENT VC IS EQUAL TO MVC")
+                        // PARENT VC IS EQUAL TO MVC
                         parentVC.showLoginScreen()
                     }
                     else
                     {
-                        print("AC - PARENT VC IS NOT EQUAL TO MVC")
+                        // PARENT VC IS NOT EQUAL TO MVC
                         let newMapViewController = MapViewController()
                         if let rootNavController = UIApplication.shared.windows[0].rootViewController?.navigationController
                         {
@@ -129,8 +116,6 @@ class AWSPrepRequest
             // Reset the server try count since the request cycle was stopped - the user can manually try again if needed
             Constants.Data.serverTries = 0
             Constants.Data.serverLastRefresh = Date().timeIntervalSince1970
-            
-            print("AC-PREP - RESET SERVER TRIES: \(Constants.Data.serverTries)")
         }
     }
     
@@ -199,7 +184,7 @@ class AWSPrepRequest
             // The user is already logged in so go ahead and register for notifications
 //            UtilityFunctions().registerPushNotifications()
             
-            print("AC - FIRING REQUEST")
+            // FIRING REQUEST
             // All login info is current; go ahead and fire the needed method
             self.requestToCall.facebookToken = facebookToken
             self.requestToCall.makeRequest()
@@ -207,8 +192,6 @@ class AWSPrepRequest
         else
         {
             // The current ID is nil, so request it from AWS, but store the previous request and call it when the
-            // login is complete
-            print("AC - NO CURRENT USER - SECONDARY REQUEST: \(self.requestToCall) WITH FB TOKEN: \(facebookToken)")
             let awsLoginUser = AWSLoginUser(secondaryAwsRequestObject: self.requestToCall)
             awsLoginUser.awsRequestDelegate = self.awsRequestDelegate
             awsLoginUser.facebookToken = facebookToken
@@ -247,14 +230,11 @@ class AWSLoginUser : AWSRequestObject
     // FBSDK METHOD - Get user data from FB before attempting to log in via AWS
     override func makeRequest()
     {
-        print("FBSDK - MAKING GRAPH REQUEST")
         print("AC - FBSDK - COGNITO ID: \(Constants.credentialsProvider.identityId)")
         let fbRequest = FBSDKGraphRequest(graphPath: "me", parameters: ["fields": "id, email, name, picture"]) //parameters: ["fields": "id,email,name,picture"])
         print("FBSDK - MAKING GRAPH CALL")
         fbRequest?.start
             {(connection: FBSDKGraphRequestConnection?, result: Any?, error: Error?) in
-                
-                print("FBSDK - CONNECTION: \(connection)")
                 
                 if error != nil
                 {
@@ -269,36 +249,26 @@ class AWSLoginUser : AWSRequestObject
                 }
                 else
                 {
-                    print("FBSDK - RESULT: \(result)")
-                    
                     if let resultDict = result as? [String:AnyObject]
                     {
-                        print("FBSDK - User Info : \(resultDict)")
-                        print("FBSDK - USER NAME : \(resultDict["name"])")
-                        
-                        if let resultPicture = resultDict["picture"] as? [String:AnyObject]
-                        {
-                            if let resultPictureData = resultPicture["data"] as? [String:AnyObject]
-                            {
-                                print("FBSDK - IMAGE URL : \(resultPictureData["url"])")
-                            }
-                        }
+//                        if let resultPicture = resultDict["picture"] as? [String:AnyObject]
+//                        {
+//                            if let resultPictureData = resultPicture["data"] as? [String:AnyObject]
+//                            {
+//                                print("FBSDK - IMAGE URL : \(resultPictureData["url"])")
+//                            }
+//                        }
                         
                         if let facebookName = resultDict["name"]
                         {
-                            print("FBSDK - FACEBOOK NAME: \(facebookName)")
-                            
                             var facebookImageUrl = "none"
                             if let resultPicture = resultDict["picture"] as? [String:AnyObject]
                             {
                                 if let resultPictureData = resultPicture["data"] as? [String:AnyObject]
                                 {
-                                    print("FBSDK - IMAGE URL : \(resultPictureData["url"])")
                                     facebookImageUrl = resultPictureData["url"]! as! String
                                 }
                             }
-                            print("FBSDK - FACEBOOK URL: \(facebookImageUrl)")
-                            
                             self.loginUser((facebookName as! String), facebookThumbnailUrl: facebookImageUrl)
                         }
                         else
@@ -333,9 +303,7 @@ class AWSLoginUser : AWSRequestObject
     {
         print("AC - LU - FACEBOOK TOKEN: \(self.facebookToken)")
         print("AC - LU - COGNITO ID: \(Constants.credentialsProvider.identityId)")
-//        let json: NSDictionary = ["facebook_id" : self.facebookToken!.userID, "facebook_name": facebookName, "facebook_thumbnail_url": facebookThumbnailUrl]
         let json: NSDictionary = ["facebook_id" : self.facebookToken!.userID]
-        print("AC - USER LOGIN DATA: \(json)")
         
         let lambdaInvoker = AWSLambdaInvoker.default()
         lambdaInvoker.invokeFunction("Blobjot-LoginUser", jsonObject: json, completionHandler:
@@ -364,8 +332,6 @@ class AWSLoginUser : AWSRequestObject
                 }
                 else if (responseData != nil)
                 {
-                    print("AC - FBSDK - LOGIN - USER RESPONSE: \(responseData)")
-                    
                     // Create a user object to save the data
                     let currentUser = User()
                     currentUser.userID = responseData as? String
@@ -446,9 +412,7 @@ class AWSGetMapData : AWSRequestObject
                     // Convert the response to an array of AnyObjects
                     if let newMapBlobs = response as? [AnyObject]
                     {
-                        print("AC-GMD: jsonData: \(newMapBlobs)")
                         print("AC-GMD - BLOB COUNT: \(newMapBlobs.count)")
-                        
                         // Always clear the mapCircles before clearing the mapBlobs data otherwise the circles will be unresponsive
                         // Each circle must individually have their map nullified, otherwise the mapView will still display the circle
                         for circle in Constants.Data.mapCircles
@@ -464,14 +428,11 @@ class AWSGetMapData : AWSRequestObject
                         // Loop through each AnyObject (Blob) in the array
                         for newBlob in newMapBlobs
                         {
-                            print("AC-GMD - NEW BLOB: \(newBlob)")
-                            
                             // Convert the AnyObject to JSON with keys and AnyObject values
                             // Then convert the AnyObject values to Strings or Numbers depending on their key
                             if let checkBlob = newBlob as? [String: AnyObject]
                             {
                                 // Finish converting the JSON AnyObjects and assign the data to a new Blob Object
-                                print("AC-GMD - ASSIGNING DATA")
                                 let addBlob = Blob()
                                 addBlob.blobID = checkBlob["blobID"] as! String
                                 addBlob.blobDatetime = Date(timeIntervalSince1970: checkBlob["blobTimestamp"] as! Double)
@@ -483,7 +444,6 @@ class AWSGetMapData : AWSRequestObject
                                 
                                 // Append the new Blob Object to the global Tagged Blobs Array
                                 Constants.Data.taggedBlobs.append(addBlob)
-                                print("AC-GMD - APPENDED BLOB: \(addBlob.blobID)")
                             }
                         }
                         
@@ -506,7 +466,6 @@ class AWSGetMapData : AWSRequestObject
                     }
                 }
         })
-        print("AC-GMD - AFTER REQUEST")
     }
 }
 
@@ -525,7 +484,6 @@ class AWSGetBlobjotBlobs : AWSRequestObject
     override func makeRequest()
     {
         print("AC-GBB - COGNITO ID: \(Constants.credentialsProvider.identityId)")
-        
         // Create some JSON to send the logged in userID
         // Create some JSON to send the Blob data
         var json = [String: Any]()
@@ -561,7 +519,6 @@ class AWSGetBlobjotBlobs : AWSRequestObject
                     // Convert the response to an array of AnyObjects
                     if let newBlobjotBlobs = response as? [AnyObject]
                     {
-                        print("AC-GBB: jsonData: \(newBlobjotBlobs)")
                         print("AC-GBB - BLOB COUNT: \(newBlobjotBlobs.count)")
                         
                         // Clear any place Blobs from the global blobjotBlobs
@@ -570,14 +527,11 @@ class AWSGetBlobjotBlobs : AWSRequestObject
                         // Loop through each AnyObject (Blob) in the array
                         for newBlob in newBlobjotBlobs
                         {
-                            print("AC-GBB - NEW BLOB: \(newBlob)")
-                            
                             // Convert the AnyObject to JSON with keys and AnyObject values
                             // Then convert the AnyObject values to Strings or Numbers depending on their key
                             if let checkBlob = newBlob as? [String: AnyObject]
                             {
                                 // Finish converting the JSON AnyObjects and assign the data to a new Blob Object
-                                print("AC-GBB - ASSIGNING DATA")
                                 let addBlob = Blob()
                                 addBlob.blobID = checkBlob["blobID"] as! String
                                 addBlob.blobDatetime = Date(timeIntervalSince1970: checkBlob["blobTimestamp"] as! Double)
@@ -605,8 +559,6 @@ class AWSGetBlobjotBlobs : AWSRequestObject
                                 {
                                     Constants.Data.mapBlobs.append(addBlob)
                                 }
-                                
-                                print("AC-GBB - APPENDED BLOB: \(checkBlob["blobText"] as? String), WITH RADIUS: \(addBlob.blobRadius)")
                             }
                         }
                         
@@ -621,7 +573,6 @@ class AWSGetBlobjotBlobs : AWSRequestObject
                     }
                 }
         })
-        print("AC-GBB - AFTER REQUEST")
     }
 }
 
@@ -664,13 +615,10 @@ class AWSGetBlobMinimumData : AWSRequestObject
                 }
                 else if (response != nil)
                 {
-                    print("AC-GBMD: response: \(response)")
-                    
                     // Convert the response to JSON with keys and AnyObject values
                     // Then convert the AnyObject values to Strings or Numbers depending on their key
                     if let checkBlob = response as? [String: AnyObject]
                     {
-                        print("AC-GBMD: CREATE MINIMUM BLOB FOR: \(checkBlob)")
                         let minBlob = Blob()
                         minBlob.blobID = self.blobID
                         minBlob.blobDatetime = Date(timeIntervalSince1970: checkBlob["blobTimestamp"] as! Double)
@@ -679,7 +627,6 @@ class AWSGetBlobMinimumData : AWSRequestObject
                         minBlob.blobRadius = checkBlob["blobRadius"] as? Double
                         minBlob.blobType = Constants().blobTypes(checkBlob["blobType"] as! Int)
                         minBlob.blobUserID = checkBlob["blobUserID"] as? String
-                        print("AC-GBMD: CREATED MINIMUM BLOB")
                         
                         Constants.Data.taggedBlobs.append(minBlob)
                         Constants.Data.mapBlobs.append(minBlob)
@@ -690,20 +637,16 @@ class AWSGetBlobMinimumData : AWSRequestObject
                         // Check if the user has already been downloaded IF NOT A BLOBJOT BLOB
                         if minBlob.blobType != Constants.BlobTypes.blobjot
                         {
-                            print("AC-GBMD: CHECK 1")
                             var userExists = false
                             loopUserCheck: for user in Constants.Data.userObjects
                             {
-                                print("AC-GBMD: CHECK 2a")
                                 if user.userID == minBlob.blobUserID
                                 {
-                                    print("AC-GBMD: CHECK 3")
                                     userExists = true
                                     
                                     // Notify the parent view that the AWS call completed successfully
                                     if let parentVC = self.awsRequestDelegate
                                     {
-                                        print("AC-GBMD: CHECK 4")
                                         parentVC.processAwsReturn(self, success: true)
                                     }
                                     
@@ -713,7 +656,6 @@ class AWSGetBlobMinimumData : AWSRequestObject
                             // If the user has not been downloaded, request the user and the userImage
                             if !userExists
                             {
-                                print("AC-GBMD: CHECK 2b")
                                 let awsGetSingleUserData = AWSGetSingleUserData(userID: minBlob.blobUserID, forPreviewBox: false)
                                 awsGetSingleUserData.targetBlob = minBlob
                                 AWSPrepRequest(requestToCall: awsGetSingleUserData, delegate: self.awsRequestDelegate!).prepRequest()
@@ -762,8 +704,6 @@ class AWSGetBlobExtraData : AWSRequestObject
                 }
                 else if (response != nil)
                 {
-                    print("AWSM-GBD: response: \(response)")
-                    
                     // Convert the response to JSON with keys and AnyObject values
                     // Then convert the AnyObject values to Strings or Numbers depending on their key
                     // Start with converting the Blob ID to a String
@@ -776,28 +716,21 @@ class AWSGetBlobExtraData : AWSRequestObject
                         {
                             if mBlob.blobID == extraBlobID
                             {
-                                print("AWSM-GBD: ASSIGNING EXTRA MAP BLOB DATA")
                                 mBlob.blobMediaType = checkBlob["blobMediaType"] as? Int
                                 mBlob.blobMediaID = checkBlob["blobMediaID"] as? String
                                 mBlob.blobThumbnailID = checkBlob["blobThumbnailID"] as? String
                                 mBlob.blobText = checkBlob["blobText"] as? String
-                                print("AWSM-GBD: ASSIGNED EXTRA MAP BLOB DATA")
                                 
                                 // ...and request the Thumbnail image data if the Thumbnail ID is not null
                                 if let thumbnailID = mBlob.blobThumbnailID
                                 {
-                                    print("AWSM-GBD: ABOUT TO CALL GET THUMBNAIL FOR: \(thumbnailID)")
-                                    
                                     // Ensure the thumbnail does not already exist
                                     var thumbnailExists = false
                                     loopThumbnailCheck: for tObject in Constants.Data.blobThumbnailObjects
                                     {
-                                        print("AWSM-GBD: GET THUMBNAIL - CHECK 2")
-                                        
                                         // Check to see if the thumbnail Object ID matches
                                         if tObject.blobThumbnailID == thumbnailID
                                         {
-                                            print("AWSM-GBD: GET THUMBNAIL - CHECK 3")
                                             thumbnailExists = true
                                             
                                             break loopThumbnailCheck
@@ -820,23 +753,19 @@ class AWSGetBlobExtraData : AWSRequestObject
                                     {
                                         blobExistsInLocationBlobs = true
                                         
-                                        print("AWSM-GBD: ASSIGNING EXTRA LOC BLOB DATA")
                                         lBlob.blobMediaType = checkBlob["blobMediaType"] as? Int
                                         lBlob.blobMediaID = checkBlob["blobMediaID"] as? String
                                         lBlob.blobThumbnailID = checkBlob["blobThumbnailID"] as? String
                                         lBlob.blobText = checkBlob["blobText"] as? String
-                                        print("AWSM-GBD: ASSIGNED EXTRA LOC BLOB DATA")
                                         
                                         break loopLocationBlobCheck
                                     }
                                 }
                                 
-                                print("AWSM-GBD: LOCATION BLOB COUNT: \(Constants.Data.locationBlobs.count)")
                                 // If the Blob does not exist, append it to the Location Blobs array
                                 if !blobExistsInLocationBlobs
                                 {
                                     Constants.Data.locationBlobs.append(mBlob)
-                                    print("AWSM-GBD: APPENDED BLOB AFTER DOWNLOAD: \(mBlob.blobText)")
                                 }
                                 
                                 // Notify the parent view that the AWS call completed successfully
@@ -868,8 +797,6 @@ class AWSGetThumbnailImage : AWSRequestObject
     {
         if let thumbnailID = blob.blobThumbnailID
         {
-            print("GETTING THUMBNAIL FOR: \(thumbnailID)")
-            
             let downloadingFilePath = NSTemporaryDirectory() + thumbnailID // + Constants.Settings.frameImageFileType)
             let downloadingFileURL = URL(fileURLWithPath: downloadingFilePath)
             let transferManager = AWSS3TransferManager.default()
@@ -921,20 +848,16 @@ class AWSGetThumbnailImage : AWSRequestObject
                     }
                     else
                     {
-                        print("GTFT: DOWNLOAD SUCCEEDED")
                         DispatchQueue.main.async(execute:
                             { () -> Void in
                                 // Assign the image to the Preview Image View
                                 if FileManager().fileExists(atPath: downloadingFilePath)
                                 {
-                                    print("THUMBNAIL FILE AVAILABLE")
                                     let thumbnailData = try? Data(contentsOf: URL(fileURLWithPath: downloadingFilePath))
                                     
                                     // Ensure the Thumbnail Data is not null
                                     if let tData = thumbnailData
                                     {
-                                        print("GET THUMBNAIL - CHECK 1")
-                                        
                                         // Create a Blob Thumbnail Object, assign the Thumbnail ID and newly downloaded Image
                                         let addThumbnailObject = BlobThumbnailObject()
                                         addThumbnailObject.blobThumbnailID = thumbnailID
@@ -943,8 +866,6 @@ class AWSGetThumbnailImage : AWSRequestObject
                                         
                                         // Add the image to the blob for access by the return function
                                         self.blob.blobThumbnail = UIImage(data: tData)
-                                        
-                                        print("ADDED THUMBNAIL FOR IMAGE: \(thumbnailID))")
                                         
                                         // Notify the parent view that the AWS call completed successfully
                                         if let parentVC = self.awsRequestDelegate
@@ -1020,9 +941,6 @@ class AWSGetSingleUserData : AWSRequestObject
                     // Convert the response to an array of arrays
                     if let userJson = response as? [String: AnyObject]
                     {
-                        print("AC-AGSUD - SINGLE USER: \(userJson)")
-                        
-                        let userID = userJson["user_id"] as! String
                         let facebookID = userJson["facebook_id"] as! String
                         let userStatus = userJson["user_status"] as! Int
                         
@@ -1037,7 +955,6 @@ class AWSGetSingleUserData : AWSRequestObject
                         {
                             if userObject.userID == self.user.userID
                             {
-                                print("AC-AGSUD - USER: \(userID) UPDATING - IMAGE CHECK: \(userObject.userImage)")
                                 // Replace the global user with the updated local one
                                 userObject.facebookID = self.user.facebookID
                                 userObject.userStatus = self.user.userStatus
@@ -1048,7 +965,6 @@ class AWSGetSingleUserData : AWSRequestObject
                         }
                         if !userObjectExists
                         {
-                            print("AC-AGSUD - USER: \(userID) DOES NOT EXIST - ADDING")
                             Constants.Data.userObjects.append(self.user)
                         }
                         
@@ -1099,25 +1015,17 @@ class AWSGetUserConnections : AWSRequestObject
                 }
                 else if (response != nil)
                 {
-                    print("AC-GUC RESPONSE: \(response)")
-                    
                     // Convert the response to an array of arrays
                     if let newUserConnectionArrays = response as? [[AnyObject]]
                     {
-                        print("AC-GUC newUserConnectionArrays count: \(newUserConnectionArrays.count)")
-                        
                         if let currentUserID = Constants.Data.currentUser.userID
                         {
                             // Loop through the arrays and add each user - the arrays should be in the proper order by user type
                             for (arrayIndex, userArray) in newUserConnectionArrays.enumerated()
                             {
-                                print("AC-GUC userArray index: \(arrayIndex), count: \(userArray.count)")
-                                
                                 // Loop through each AnyObject (User) in the array
                                 for user in userArray
                                 {
-                                    print("AC-GUC user: \(user)")
-                                    
                                     // Convert the AnyObject to JSON with keys and AnyObject values
                                     // Then convert the AnyObject values to Strings or Numbers depending on their key
                                     if let checkUser = user as? [String: AnyObject]
@@ -1137,8 +1045,6 @@ class AWSGetUserConnections : AWSRequestObject
                                         var userObjectExists = false
                                         loopUserObjectCheck: for userObject in Constants.Data.userObjects
                                         {
-                                            print("AC-GUC - userObject: \(userObject.userName)")
-                                            
                                             if userObject.userID == userID
                                             {
                                                 userObject.userStatus = userStatus!
@@ -1201,8 +1107,6 @@ class AWSGetRandomID : AWSRequestObject
     // Request a random MediaID
     override func makeRequest()
     {
-        print("REQUESTING RANDOM ID")
-        
         // Create some JSON to send the logged in userID
         let json: NSDictionary = ["request" : "random_media_id"]
         
@@ -1230,7 +1134,6 @@ class AWSGetRandomID : AWSRequestObject
                     // Convert the response to a String
                     if let newRandomID = response as? String
                     {
-                        print("RANDOM ID IS: \(newRandomID)")
                         self.randomID = newRandomID
                         
                         // Notify the parent view that the AWS call completed successfully
@@ -1331,7 +1234,6 @@ class AWSUploadMediaToBucket : AWSRequestObject
                     {
                         do
                         {
-                            print("Deleting media: \(self.uploadKey)")
                             try FileManager.default.removeItem(atPath: self.uploadMediaFilePath)
                         }
                         catch let error as NSError
@@ -1421,8 +1323,6 @@ class AWSUploadBlobData : AWSRequestObject
                 }
                 else if (response != nil)
                 {
-                    print("SENDING DATA TO LAMDA RESPONSE: \(response)")
-                    
                     // Notify the parent view that the AWS call completed successfully
                     if let parentVC = self.awsRequestDelegate
                     {
@@ -1560,7 +1460,6 @@ class AWSGetUserBlobs : AWSRequestObject
                     // Convert the response to an array of AnyObjects
                     if let rawUserBlobs = response as? [AnyObject]
                     {
-                        print("AC - GUB - BUTV-GUB: jsonData: \(rawUserBlobs)")
                         print("AC - GUB - BLOB COUNT: \(rawUserBlobs.count)")
                         
                         Constants.Data.userBlobs = [Blob]()
@@ -1570,14 +1469,11 @@ class AWSGetUserBlobs : AWSRequestObject
                         // Save them to Core Data
                         for newBlob in rawUserBlobs
                         {
-                            print("AC - GUB - NEW BLOB: \(newBlob)")
-                            
                             // Convert the AnyObject to JSON with keys and AnyObject values
                             // Then convert the AnyObject values to Strings or Numbers depending on their key
                             if let checkBlob = newBlob as? [String: AnyObject]
                             {
                                 // Finish converting the JSON AnyObjects and assign the data to a new Blob Object
-                                print("AC - GUB - ASSIGNING DATA")
                                 let addBlob = Blob()
                                 addBlob.blobID = checkBlob["blobID"] as! String
                                 addBlob.blobDatetime = Date(timeIntervalSince1970: checkBlob["blobTimestamp"] as! Double)
@@ -1596,7 +1492,6 @@ class AWSGetUserBlobs : AWSRequestObject
                                 {
                                     // Append the new Blob Object to the local User Blobs Array
                                     Constants.Data.userBlobs.append(addBlob)
-                                    print("AC - GUB - APPENDED BLOB: \(addBlob.blobID)")
                                     
                                     // Save to Core Data
                                     CoreDataFunctions().blobSave(blob: addBlob)
@@ -1683,15 +1578,12 @@ class AWSGetBlobImage : AWSRequestObject
     override func makeRequest()
     {
         print("ATTEMPT TO DOWNLOAD IMAGE: \(self.blob.blobMediaID)")
-        print("BLOB MEDIA TYPE: \(self.blob.blobMediaType)")
         
         // Verify the type of Blob (image or video)
         if self.blob.blobMediaType == 1
         {
             if let blobMediaID = self.blob.blobMediaID
             {
-                print("DOWNLOADING IMAGE: \(self.blob.blobMediaID)")
-                
                 let downloadingFilePath = NSTemporaryDirectory() + blobMediaID // + Constants.Settings.frameImageFileType)
                 let downloadingFileURL = URL(fileURLWithPath: downloadingFilePath)
                 let transferManager = AWSS3TransferManager.default()
@@ -1747,7 +1639,6 @@ class AWSGetBlobImage : AWSRequestObject
                             // Assign the image to the Preview Image View
                             if FileManager().fileExists(atPath: downloadingFilePath)
                             {
-                                print("THUMBNAIL FILE AVAILABLE")
                                 let imageData = try? Data(contentsOf: URL(fileURLWithPath: downloadingFilePath))
                                 
                                 // Save the image to the local UIImage
@@ -1758,8 +1649,6 @@ class AWSGetBlobImage : AWSRequestObject
                                 {
                                     parentVC.processAwsReturn(self, success: true)
                                 }
-                                
-                                print("ADDED THUMBNAIL FOR IMAGE: \(blobMediaID))")
                             }
                             else
                             {
@@ -1846,7 +1735,6 @@ class AWSRegisterForPushNotifications : AWSRequestObject
     override func makeRequest()
     {
         print("AC-RPN - REGISTERING FOR PUSH NOTIFICATIONS FOR DEVICE: \(self.deviceToken)")
-        print("AC-RPN - CURRENT USER: \(Constants.Data.currentUser)")
         
         // Ensure that the Current UserID is not nil
         if let currentUserID = Constants.Data.currentUser.userID
@@ -1854,8 +1742,6 @@ class AWSRegisterForPushNotifications : AWSRequestObject
             var json = [String: Any]()
             json["device_token"] = self.deviceToken
             json["user_id"] = currentUserID
-            
-            print("AC-RPN - ABOUT TO CALL LAMBDA PN REGISTRATION")
             
             let lambdaInvokerInvocationRequest = AWSLambdaInvokerInvocationRequest()
             lambdaInvokerInvocationRequest!.functionName = "Blobjot-RegisterForPushNotifications"
@@ -1893,9 +1779,8 @@ class AWSRegisterForPushNotifications : AWSRequestObject
                             parentVC.processAwsReturn(self, success: false)
                         }
                     }
-                    else if let result = task.result
+                    else if task.result != nil
                     {
-                        print("AC-RPN: result: \(result)")
                         // Notify the parent view that the AWS call completed successfully
                         if let parentVC = self.awsRequestDelegate
                         {
@@ -1905,14 +1790,12 @@ class AWSRegisterForPushNotifications : AWSRequestObject
                     
                     return nil
                 })
-            print("AC-RPN - PAST CALLING LAMBDA PN REGISTRATION")
         }
         else
         {
             // No need to recall Registration - will be recalled once a user is logged in
             print("***** AC-RPN: ERROR NO CURRENT USER *****")
         }
-        print("AC-RPN - PAST CALLING LAMBDA PN REGISTRATION 2")
     }
 }
 
@@ -2003,15 +1886,13 @@ class AWSGetBlobComments : AWSRequestObject
                 else if (response != nil)
                 {
                     // Convert the response to an array of AnyObjects
-                    if let rawBlobComments = response as? [AnyObject] {
-                        print("AC-GBC - jsonData: \(rawBlobComments)")
-                        
+                    if let rawBlobComments = response as? [AnyObject]
+                    {
                         for rawBlobComment in rawBlobComments
                         {
                             if let jsonBlobComment = rawBlobComment as? [String: AnyObject]
                             {
                                 // Finish converting the JSON AnyObjects and assign the data to a new Blob Object
-                                print("AC-GBC - ASSIGNING DATA")
                                 let addBlobComment = BlobComment()
                                 addBlobComment.commentID        = jsonBlobComment["commentID"] as! String
                                 addBlobComment.blobID           = jsonBlobComment["blobID"] as! String
@@ -2021,7 +1902,6 @@ class AWSGetBlobComments : AWSRequestObject
                                 
                                 // Append the new Blob Object to the local User Blobs Array
                                 self.blobCommentArray.append(addBlobComment)
-                                print("AC-GBC - APPENDED BLOB COMMENT: \(addBlobComment.commentID)")
                             }
                         }
                         
@@ -2074,7 +1954,6 @@ class AWSCheckUsername : AWSRequestObject
                 }
                 else if (response != nil)
                 {
-                    print("AC-CU - USERNAME CHECK RESPONSE: \(response)")
                     self.response = response as? String
                     
                     // Notify the parent view that the AWS call completed successfully
@@ -2190,7 +2069,6 @@ class FBGetUserData : AWSRequestObject
         print("AC-FBSDK - TRYING TO MAKE GRAPH REQUEST WITH USER: \(self.user.userID), USERNAME: \(self.user.userName), FB ID: \(self.user.facebookID), USER STATUS: \(self.user.userStatus)")
         if let facebookID = self.user.facebookID
         {
-            print("AC-FBSDK - COGNITO ID: \(Constants.credentialsProvider.identityId)")
             let fbRequest = FBSDKGraphRequest(graphPath: facebookID, parameters: ["fields": "id, email, name, picture"]) //parameters: ["fields": "id,email,name,picture"])
             fbRequest?.start
                 {(connection: FBSDKGraphRequestConnection?, result: Any?, error: Error?) in

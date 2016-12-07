@@ -57,7 +57,6 @@ class HoleView: UIView
         
         super.init(frame: frame)
         
-        print("HoleView - frame: \(frame)")
         createView()
     }
     

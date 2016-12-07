@@ -35,7 +35,8 @@ class BlobAddMediaViewController: UIViewController {
     
     var mediaPickerTapGesture: UITapGestureRecognizer!
     
-    override func viewDidLoad() {
+    override func viewDidLoad()
+    {
         super.viewDidLoad()
         
         // Status Bar Settings
@@ -65,7 +66,8 @@ class BlobAddMediaViewController: UIViewController {
         viewContainer.addGestureRecognizer(mediaPickerTapGesture)
     }
 
-    override func didReceiveMemoryWarning() {
+    override func didReceiveMemoryWarning()
+    {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
@@ -73,10 +75,10 @@ class BlobAddMediaViewController: UIViewController {
     
     // MARK: GESTURE RECOGNIZERS
     
-    func showMediaPicker(_ gesture: UITapGestureRecognizer) {
-        
-        if let parentVC = self.blobAddMediaDelegate {
-            print("CALLING PARENT DELEGATE")
+    func showMediaPicker(_ gesture: UITapGestureRecognizer)
+    {
+        if let parentVC = self.blobAddMediaDelegate
+        {
             parentVC.pickMediaPicker()
         }
         

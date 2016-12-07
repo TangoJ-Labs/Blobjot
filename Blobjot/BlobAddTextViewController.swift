@@ -53,7 +53,6 @@ class BlobAddTextViewController: UIViewController, UITextViewDelegate {
     }
     
     func textViewShouldBeginEditing(_ textView: UITextView) -> Bool {
-        print("ADD BLOB TEXT - SHOULD BEGIN EDITING")
         blobTextViewDefaultText.removeFromSuperview()
         
         return true

@@ -270,14 +270,6 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
         // Save to Core Data
         CoreDataFunctions().blobSave(blob: blob)
         
-        // Display saved Blobs
-        let savedBlobs = CoreDataFunctions().blobRetrieve()
-        print("BVC - SAVED BLOB COUNT: \(savedBlobs.count)")
-        for sBlob in savedBlobs
-        {
-            print("BVC - SAVED BLOB: \(sBlob.blobText)")
-        }
-        
         if let currentUserID = Constants.Data.currentUser.userID
         {
             // Add a Blob view in AWS
@@ -296,7 +288,6 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
     
     func numberOfSections(in tableView: UITableView) -> Int
     {
-        // #warning Incomplete implementation, return the number of sections
         return 1
     }
     
@@ -310,8 +301,6 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat
     {
-        print("BVC - CELL HEIGHT - BLOB HEIGHT FOR CELL: \(indexPath.row)")
-        
         if indexPath.row == 0
         {
             if self.blobCommentArray.count == 0
@@ -331,7 +320,6 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
             {
                 contentSize = 10 + textHeightForAttributedText(text: NSAttributedString(string: text), width: commentBoxWidth)
             }
-            print("BVC - CONTENT SIZE FOR CELL: \(indexPath.row): \(contentSize)")
             if contentSize > Constants.Dim.blobViewCommentCellHeight - 4
             {
                 cellHeight = contentSize + 14
@@ -361,8 +349,6 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
             {
                 subview.removeFromSuperview()
             }
-            
-            print("BVC - CELL HEIGHT: \(cell.frame.height)")
             
             var userImageContainer: UIView!
             var userImageView: UIImageView!
@@ -508,17 +494,14 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
                 
                 // Start animating the activity indicator
                 blobMediaActivityIndicator.startAnimating()
-                print("BVC - MEDIA INDICATOR START")
                 
                 // Assign the blob image to the image if available - if not, assign the thumbnail until the real image downloads
                 if blobImage != nil
                 {
-                    print("BVC - ADDED BLOB IMAGE")
                     blobImageView.image = blobImage
                     
                     // Stop animating the activity indicator
                     blobMediaActivityIndicator.stopAnimating()
-                    print("BVC - MEDIA INDICATOR STOP")
                 }
                 else if let thumbnailImage = blob.blobThumbnail
                 {
@@ -606,8 +589,6 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
                 subview.removeFromSuperview()
             }
             
-            print("BTC - CELL HEIGHT: \(cell.frame.height)")
-            
             var addCommentView: UITextView!
             var commentDatetimeLabel: UILabel!
             
@@ -679,7 +660,6 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
             {
                 contentSize = textHeightForAttributedText(text: NSAttributedString(string: text), width: commentBoxWidth)
             }
-            print("BVC - CONTENT SIZE FOR CELL: \(indexPath.row): \(contentSize)")
             if contentSize > Constants.Dim.blobViewCommentCellHeight - 4
             {
                 addCommentView.frame.size.height = contentSize
@@ -692,8 +672,6 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath)
     {
-        print("DID SELECT ROW #\((indexPath as NSIndexPath).item)!")
-        
         // Ensure that a comment was selected (not the Blob content in cell 0)
         if indexPath.row > 0
         {
@@ -732,17 +710,14 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
     
     func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath)
     {
-        print("DID DESELECT ROW: \((indexPath as NSIndexPath).row)")
     }
     
     func tableView(_ tableView: UITableView, didHighlightRowAt indexPath: IndexPath)
     {
-        print("DID HIGHLIGHT ROW: \((indexPath as NSIndexPath).row)")
     }
     
     func tableView(_ tableView: UITableView, didUnhighlightRowAt indexPath: IndexPath)
     {
-        print("DID UNHIGHLIGHT ROW: \((indexPath as NSIndexPath).row)")
     }
     
     
@@ -750,8 +725,6 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
     
     func scrollViewDidScroll(_ scrollView: UIScrollView)
     {
-        print("BVC - SCROLL VIEW POSITION: \(scrollView.contentOffset.y)")
-        
         // Ensure the Blob has media - otherwise the comment button is alreay in view
         if blobCellContentHeight >= viewContainer.frame.height
         {
@@ -815,8 +788,6 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
     
     func textViewShouldBeginEditing(_ textView: UITextView) -> Bool
     {
-        print("BVC - TEXT VIEW SHOULD BEGIN EDITING")
-        
         self.blobCommentAddTextViewDefaultText.removeFromSuperview()
         
         return true
@@ -824,8 +795,6 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
     
     func textViewDidBeginEditing(_ textView: UITextView)
     {
-        print("BVC - TEXT VIEW DID BEGIN EDITING")
-        
         // Show the add comment labels
         self.blobCommentAddCancelLabel.textColor = Constants.Colors.colorTextGray
         self.blobCommentAddSendLabel.textColor = Constants.Colors.colorTextGray
@@ -855,7 +824,6 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
     
     func blobCommentAddCancelLabelTap(_ gesture: UITapGestureRecognizer)
     {
-        print("BVC - COMMENT CANCEL")
         // Close the comment box and clear the text view
         self.closeCommentBox()
         
@@ -865,11 +833,8 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
     
     func blobCommentAddSendLabelTap(_ gesture: UITapGestureRecognizer)
     {
-        print("BVC - COMMENT SEND")
-        
         if self.blobCommentAddTextView.text != ""
         {
-            print("BVC - COMMENT SEND - CONFIRM UPLOAD")
             // Upload the comment
             if let commentText = self.blobCommentAddTextView.text
             {
@@ -903,14 +868,11 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
     // This version is used when the top VC is popped from a Nav Bar button
     func popViewController(_ sender: UIBarButtonItem)
     {
-        print("pop Back to Map View")
         self.dismiss(animated: true, completion: {})
     }
     
     func refreshBlobViewTable()
     {
-        print("BVC - REFRESH BLOB VIEW TABLE")
-        
         DispatchQueue.main.async(execute:
             {
                 if self.blobTableView != nil
@@ -923,8 +885,6 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
     
     func refreshDataManually()
     {
-        print("BVC - REFRESH DATA MANUALLY")
-        
         // Request the image
         AWSPrepRequest(requestToCall: AWSGetBlobImage(blob: self.blob), delegate: self as AWSRequestDelegate).prepRequest()
         
@@ -1020,7 +980,6 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
                 case let awsGetBlobImage as AWSGetBlobImage:
                     if success
                     {
-                        print("BVC - AWS RETURN - AWSGetBlobImage")
                         if let blobImage = awsGetBlobImage.blobImage
                         {
                             // Set the local image property to the downloaded image
@@ -1028,8 +987,6 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
                             
                             // Reload the TableView
                             self.refreshBlobViewTable()
-                            
-                            print("BVC - ADDED IMAGE FOR BLOB WITH TEXT: \(awsGetBlobImage.blob.blobText)")
                         }
                     }
                     else
@@ -1041,11 +998,7 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
                 case let awsGetBlobComments as AWSGetBlobComments:
                     if success
                     {
-                        print("BVC - AWS RETURN - AWSGetBlobComments")
-                        
                         self.blobCommentArray = awsGetBlobComments.blobCommentArray
-                        
-                        print("BVC - COMMENT COUNT: \(self.blobCommentArray.count)")
                         
                         // Check to ensure that the user data has been downloaded for each comment's user
                         // If not, download the user data (AWSGetUserImage will be called after AWSGetSingleUserData - so listen for AWSGetUserImage's return)
@@ -1079,8 +1032,6 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
                 case _ as AWSGetSingleUserData:
                     if success
                     {
-                        print("BVC - AWS RETURN - AWSGetSingleUserData")
-                        
                         // Reload the TableView
                         self.refreshBlobViewTable()
                     }
@@ -1092,7 +1043,6 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
                     }
                 case _ as FBGetUserData:
                     // Do not distinguish between success and failure for this class - both need to have the userList updated
-                    print("BVC - AWS RETURN - FBGetUserData")
                     // A new user image was just downloaded for a user in the blob comment list
                     // Reload the TableView
                     self.refreshBlobViewTable()

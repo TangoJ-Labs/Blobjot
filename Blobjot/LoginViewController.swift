@@ -28,7 +28,6 @@ class LoginViewController: UIViewController, FBSDKLoginButtonDelegate {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        print("LVC - VIEW DID LOAD")
         
         self.edgesForExtendedLayout = UIRectEdge.all
         
@@ -95,21 +94,12 @@ class LoginViewController: UIViewController, FBSDKLoginButtonDelegate {
             print("LVC - FBSDK IS CANCELLED: \(result.description)")
         }
         else {
-            print("LVC - FBSDK COMPLETED WITH PERMISSIONS: \(result.grantedPermissions)")
-            print("LVC - FBSDK USER ID: \(result.token.userID)")
-            
             // Show the logging in indicator and label
             loginActivityIndicator.startAnimating()
             loginBox.addSubview(loginProcessLabel)
             
             // Set the new login indicator for certain settings
 //            self.newLogin = true
-            
-            // Now that the Facebook token has been retrieved, get the Cognito IdentityID
-            //            let awsMethods = AWSMethods()
-            //            awsMethods.awsMethodsCognitoDelegate = self
-            //            awsMethods.getCognitoIdentityID(result.token)
-//            self.prepAWSRequest(methodToCall: Constants.AWSMethodTypes.loginUser)
         }
     }
     

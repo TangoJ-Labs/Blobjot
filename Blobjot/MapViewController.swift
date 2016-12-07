@@ -638,7 +638,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     
     override func viewWillAppear(_ animated: Bool)
     {
-        print("MVC: VIEW WILL APPEAR")
         // Run the addBlobs function in case additional data has not been added
         self.addMapBlobsToMap()
         
@@ -1276,8 +1275,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     
     func refreshBlobs(_ userLocationCurrent: CLLocation)
     {
-        print("MVC - REFRESHING BLOBS -- LAST LOCATION: \(self.lastBlobjotBlobsLocation)")
-        
         // Ensure that the distance change is greater than the minimum setting for updating Blobjot Blobs
         if let blobjotBlobsLocationPrevious = self.lastBlobjotBlobsLocation
         {
@@ -1286,8 +1283,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             // Ensure that the distance change is greater than the minimum setting
             if locationDistance >= Constants.Settings.locationDistanceUpdateBlobjotBlobs
             {
-                print("MVC - REFRESHING BLOBS -- UPDATE BBs - CHANGE ADEQUATE")
-                
                 // Download the local place Blobs
                 AWSPrepRequest(requestToCall: AWSGetBlobjotBlobs(userLat: Float(userLocationCurrent.coordinate.latitude), userLng: Float(userLocationCurrent.coordinate.longitude)), delegate: self as AWSRequestDelegate).prepRequest()
                 
@@ -1297,8 +1292,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         }
         else
         {
-            print("MVC - REFRESHING BLOBS -- UPDATE BBs - LAST LOCATION NIL")
-            
             // Download the local place Blobs
             AWSPrepRequest(requestToCall: AWSGetBlobjotBlobs(userLat: Float(userLocationCurrent.coordinate.latitude), userLng: Float(userLocationCurrent.coordinate.longitude)), delegate: self as AWSRequestDelegate).prepRequest()
             
@@ -1991,9 +1984,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         }
         else
         {
-            print("MVC - FBSDK COMPLETED WITH PERMISSIONS: \(result.grantedPermissions)")
-            print("MVC - FBSDK USER ID: \(result.token.userID)")
-            
             // Show the logging in indicator and label
             loginActivityIndicator.startAnimating()
             loginBox.addSubview(loginProcessLabel)
@@ -2004,7 +1994,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             // Now that the Facebook token has been retrieved, get the Cognito IdentityID
             print("MVC - FBSDK TOKEN: \(FBSDKAccessToken.current())")
             AWSPrepRequest(requestToCall: AWSLoginUser(secondaryAwsRequestObject: nil), delegate: self as AWSRequestDelegate).prepRequest()
-            print("MVC - LOGIN - CALLED AWS LOGIN USER FUNCTION")
             
             // Call APNS registration again (need to also log in to AWS SNS, but do this first)
             let notificationTypes: UIUserNotificationType = [UIUserNotificationType.alert, UIUserNotificationType.badge, UIUserNotificationType.sound]
@@ -2094,7 +2083,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     {
         self.previewThumbnailView.image = nil
         self.previewTextBox.text = nil
-        previewUserImageView.image = UIImage(named: "PROFILE_DEFAULT.png")
+        self.previewUserImageView.image = UIImage(named: "PROFILE_DEFAULT.png")
         self.previewUserNameLabel.text = nil
         self.previewTimeLabel.text = nil
         
@@ -2231,8 +2220,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         // otherwise, move the Blob age and text all the way to the right side of the Preview Box
         if blob.blobExtraRequested
         {
-            print("MVC - BLOB EXTRA REQUESTED")
-            
             // Check whether the Blob has media - if not, do not show the Thumbnail box
             if blob.blobMediaType != nil && blob.blobMediaType == 0
             {
@@ -2268,7 +2255,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         }
         else
         {
-            print("MVC - BLOB EXTRA NOT REQUESTED")
             self.lowerPreviewBox()
         }
         
@@ -2611,7 +2597,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 case _ as AWSGetMapData:
                     if success
                     {
-                        print("MVC-AGMD - GOT MAP DATA")
                         // Attempt to call the local function to add the Map Blobs to the Map
                         self.addMapBlobsToMap()
                         
@@ -2626,7 +2611,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 case _ as AWSGetBlobjotBlobs:
                     if success
                     {
-                        print("MVC-AGBB - GOT BLOBJOT BLOBS")
                         // Attempt to call the local function to add the Map Blobs to the Map
                         self.addMapBlobsToMap()
                     }
@@ -2656,8 +2640,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 case let awsGetThumbnailImage as AWSGetThumbnailImage:
                     if success
                     {
-                        print("MVC - ADDING THUMBNAIL FOR: \(awsGetThumbnailImage.blob.blobID)")
-                        
                         // Loop through the BlobThumbnailObjects array
                         loopThumbnail: for tObject in Constants.Data.blobThumbnailObjects
                         {

@@ -25,9 +25,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool
     {
-        let thisClass: String = NSStringFromClass(type(of: self))
-        print("GET CLASS NAME: \(thisClass)")
-        print("GET FUNCTION NAME: \(#function.description)")
+//        let thisClass: String = NSStringFromClass(type(of: self))
         
         // Register the device with Apple's Push Notification Service
         let notificationTypes: UIUserNotificationType = [UIUserNotificationType.alert, UIUserNotificationType.badge, UIUserNotificationType.sound]
@@ -59,7 +57,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         }
         
         // Initialize the notification settings and reset the badge number
-        let settings = UIUserNotificationSettings(types: [.alert, .badge , .sound], categories: nil)
+        let settings = UIUserNotificationSettings(types: [.alert, .badge, .sound], categories: nil)
         application.registerUserNotificationSettings(settings)
         
         UIApplication.shared.applicationIconBadgeNumber = Constants.Data.badgeNumber
@@ -77,9 +75,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     {
         // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
         // Use this method to pause ongoing tasks, disable timers, and throttle down OpenGL ES frame rates. Games should use this method to pause the game.
-        
-        print("IN APP WILL RESIGN ACTIVE")
-        
         CoreDataFunctions().processLogs()
         
         Constants.inBackground = true
@@ -89,8 +84,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     
     func applicationDidEnterBackground(_ application: UIApplication)
     {
-        print("IN APP DID ENTER BACKGROUND")
-        
         Constants.inBackground = true
         
         self.updateLocationManager()
@@ -103,17 +96,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     func applicationWillEnterForeground(_ application: UIApplication)
     {
         // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
-        
         Constants.inBackground = false
         
-        print("AD-AWEF - STOPPING LOCATION UPDATING")
         Constants.appDelegateLocationManager.stopUpdatingLocation()
         self.updateLocationManager()
     }
     
     func applicationDidBecomeActive(_ application: UIApplication)
     {
-        print("IN APP DID BECOME ACTIVE")
         // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
         Constants.inBackground = false
         
@@ -124,7 +114,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         Constants.Data.badgeNumber = 0
         UIApplication.shared.applicationIconBadgeNumber = Constants.Data.badgeNumber
         
-        print("AD-ADBA - STOPPING LOCATION UPDATING")
         Constants.appDelegateLocationManager.stopUpdatingLocation()
         self.updateLocationManager()
     }
@@ -133,8 +122,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
         // Saves changes in the application's managed object context before the application terminates.
-        
-        print("AD - SAVING CONTEXT IN CORE DATA")
         
 //        // Create a new DataController instance
 //        let dataController = DataController()
@@ -206,7 +193,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         {
             stringToken = stringToken + String(format: "%02.2hhx", arguments: [deviceToken[i]])
         }
-        print("AD-RN = DEVICE TOKEN STRING: \(stringToken)")
         AWSPrepRequest(requestToCall: AWSRegisterForPushNotifications(deviceToken: stringToken), delegate: self as AWSRequestDelegate).prepRequest()
     }
     
@@ -242,7 +228,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     // CUSTOM HANDLER FOR PUSH NOTIFICATIONS
     func handlePushNotification(userInfo: [AnyHashable: Any])
     {
-        print("AD-RN - HANDLING PUSH NOTIFICATION: \(userInfo)")
         if let blobID = userInfo["blobID"] as? String
         {
             let notificationBlob = Blob()
@@ -272,7 +257,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     // For the FacebookSDK
     func application(_ application: UIApplication, open url: URL, sourceApplication: String?, annotation: Any) -> Bool
     {
-        print("AD-FBSDK - SOURCE APPLICATION: \(sourceApplication)")
         return FBSDKApplicationDelegate.sharedInstance().application(application, open: url, sourceApplication: sourceApplication, annotation: annotation)
     }
     
@@ -357,7 +341,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
                         // If it as been requested, just append the Blob to the Location Blob Array
                         if !blob.blobExtraRequested {
                             blob.blobExtraRequested = true
-                            print("AD - REQUESTING BLOB EXTRA")
                             
                             // Only request the extra Blob data if it has not already been requested
                             AWSPrepRequest(requestToCall: AWSGetBlobExtraData(blob: blob), delegate: self as AWSRequestDelegate).prepRequest()
@@ -388,7 +371,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
                         else
                         {
                             Constants.Data.locationBlobs.append(blob)
-                            print("AD - APPENDING BLOB")
                         }
                     }
                 }
@@ -454,7 +436,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
                     }
                     else
                     {
-                        print("AD-PAR-AGSUD - ERROR")
                         // Show the error message
                         UtilityFunctions().createAlertOkViewInTopVC("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                     }
@@ -466,7 +447,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
                     }
                     else
                     {
-                        print("AD-PAR-ARFPN - FAILURE")
                         UtilityFunctions().createAlertOkViewInTopVC("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                     }
                 default:

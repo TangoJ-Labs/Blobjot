@@ -18,7 +18,6 @@ extension UIImage
         
         let widthRatio  = targetSize / self.size.width
         let heightRatio = targetSize / self.size.height
-        print("EXT - RESIZE IMAGE - WIDTH RATIO: \(widthRatio) - HEIGHT RATIO: \(heightRatio)")
         
         // Figure out what our orientation is, and use that to form the rectangle
         var newSize: CGSize
@@ -32,7 +31,6 @@ extension UIImage
             // Horizontal Image
             newSize = CGSize(width: originalSize.width * widthRatio,  height: originalSize.height * widthRatio)
         }
-        print("EXT - RESIZE IMAGE - NEW SIZE: \(newSize)")
         // This is the rect that we've calculated out and this is what is actually used below
         let rect = CGRect(x: 0, y: 0, width: newSize.width, height: newSize.height)
         

@@ -278,7 +278,6 @@ struct Constants
         
         static let accountProfileBoxHeight: CGFloat = 120
         static let accountSearchBarHeight: CGFloat = 40
-        static let connectionsTableViewCellHeight: CGFloat = 80
         static let accountConnectStarSize: CGFloat = 40
         
         static let tabBarHeight: CGFloat = 49
@@ -300,7 +299,6 @@ struct Constants
         static let S3BucketMedia = "blobjot-media"
         
         static let peopleTableViewCellReuseIdentifier = "peopleTableViewCell"
-        static let connectionsTableViewCellReuseIdentifier = "connectionsTableViewCell"
         static let locationBlobsCellReuseIdentifier = "locationBlobsCell"
         static let blobsActiveTableViewCellReuseIdentifier = "blobsActiveTableViewCell"
         static let accountTableViewCellReuseIdentifier = "accountTableViewCell"

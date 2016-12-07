@@ -13,8 +13,6 @@
 		B80C56311D51126800C4E683 /* Blob.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56301D51126800C4E683 /* Blob.swift */; };
 		B80C56341D5112F100C4E683 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56331D5112F100C4E683 /* Constants.swift */; };
 		B80C56361D5113B900C4E683 /* MapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56351D5113B900C4E683 /* MapViewController.swift */; };
-		B80C56471D51158000C4E683 /* ConnectionsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56371D51158000C4E683 /* ConnectionsTableViewCell.swift */; };
-		B80C56481D51158000C4E683 /* ConnectionsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56381D51158000C4E683 /* ConnectionsViewController.swift */; };
 		B80C56491D51158000C4E683 /* BlobAddMediaViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56391D51158000C4E683 /* BlobAddMediaViewController.swift */; };
 		B80C564A1D51158000C4E683 /* BlobAddPeopleTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C563A1D51158000C4E683 /* BlobAddPeopleTableViewCell.swift */; };
 		B80C564B1D51158000C4E683 /* BlobAddPeopleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C563B1D51158000C4E683 /* BlobAddPeopleViewController.swift */; };
@@ -60,7 +58,6 @@
 		B8541B731DB7D49000867D82 /* CustomClasses.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8541B721DB7D48D00867D82 /* CustomClasses.swift */; };
 		B8541B751DBBD0B900867D82 /* BlobComment.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8541B741DBBD0B500867D82 /* BlobComment.swift */; };
 		B85FDE891D7DC2BA002A8FC7 /* CustomIdentityProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B85FDE881D7DC2BA002A8FC7 /* CustomIdentityProvider.swift */; };
-		B86406FF1D74AD800084D6EF /* SearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B86406FE1D74AD7F0084D6EF /* SearchViewController.swift */; };
 		B86407051D7B0E720084D6EF /* DataController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B86407041D7B0E710084D6EF /* DataController.swift */; };
 		B86407081D7B13EB0084D6EF /* DataModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = B86407061D7B13EB0084D6EF /* DataModel.xcdatamodeld */; };
 		B864070D1D7B14A40084D6EF /* BlobNotifications+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B86407091D7B14A40084D6EF /* BlobNotifications+CoreDataProperties.swift */; };
@@ -158,8 +155,6 @@
 		B80C56321D5112C100C4E683 /* Houston-Downtown.gpx */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = "Houston-Downtown.gpx"; path = "Blobjot/Houston-Downtown.gpx"; sourceTree = "<group>"; };
 		B80C56331D5112F100C4E683 /* Constants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = Constants.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		B80C56351D5113B900C4E683 /* MapViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapViewController.swift; sourceTree = "<group>"; };
-		B80C56371D51158000C4E683 /* ConnectionsTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConnectionsTableViewCell.swift; sourceTree = "<group>"; };
-		B80C56381D51158000C4E683 /* ConnectionsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConnectionsViewController.swift; sourceTree = "<group>"; };
 		B80C56391D51158000C4E683 /* BlobAddMediaViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlobAddMediaViewController.swift; sourceTree = "<group>"; };
 		B80C563A1D51158000C4E683 /* BlobAddPeopleTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlobAddPeopleTableViewCell.swift; sourceTree = "<group>"; };
 		B80C563B1D51158000C4E683 /* BlobAddPeopleViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlobAddPeopleViewController.swift; sourceTree = "<group>"; };
@@ -205,7 +200,6 @@
 		B8541B721DB7D48D00867D82 /* CustomClasses.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomClasses.swift; sourceTree = "<group>"; };
 		B8541B741DBBD0B500867D82 /* BlobComment.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlobComment.swift; sourceTree = "<group>"; };
 		B85FDE881D7DC2BA002A8FC7 /* CustomIdentityProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomIdentityProvider.swift; sourceTree = "<group>"; };
-		B86406FE1D74AD7F0084D6EF /* SearchViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SearchViewController.swift; sourceTree = "<group>"; };
 		B86407041D7B0E710084D6EF /* DataController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataController.swift; sourceTree = "<group>"; };
 		B86407071D7B13EB0084D6EF /* DataModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = DataModel.xcdatamodel; sourceTree = "<group>"; };
 		B86407091D7B14A40084D6EF /* BlobNotifications+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "BlobNotifications+CoreDataProperties.swift"; sourceTree = "<group>"; };
@@ -454,8 +448,6 @@
 				B88DFD8D1DBFC98E00255BA5 /* BlobTableViewCellComment.swift */,
 				B81822061D5B98F300B3A2BB /* BlobThumbnailObject.swift */,
 				B80C56431D51158000C4E683 /* BlobViewController.swift */,
-				B80C56371D51158000C4E683 /* ConnectionsTableViewCell.swift */,
-				B80C56381D51158000C4E683 /* ConnectionsViewController.swift */,
 				B80C56331D5112F100C4E683 /* Constants.swift */,
 				B8541B721DB7D48D00867D82 /* CustomClasses.swift */,
 				B85FDE881D7DC2BA002A8FC7 /* CustomIdentityProvider.swift */,
@@ -466,7 +458,6 @@
 				B80C56351D5113B900C4E683 /* MapViewController.swift */,
 				B80C56451D51158000C4E683 /* PeopleTableViewCell.swift */,
 				B80C56461D51158000C4E683 /* PeopleViewController.swift */,
-				B86406FE1D74AD7F0084D6EF /* SearchViewController.swift */,
 				B80C56601D5183B100C4E683 /* User.swift */,
 				B80D177A1D98A5760032B0D8 /* UtilityFunctions.swift */,
 			);
@@ -846,7 +837,6 @@
 				B85FDE891D7DC2BA002A8FC7 /* CustomIdentityProvider.swift in Sources */,
 				B86407051D7B0E720084D6EF /* DataController.swift in Sources */,
 				B80C56361D5113B900C4E683 /* MapViewController.swift in Sources */,
-				B80C56481D51158000C4E683 /* ConnectionsViewController.swift in Sources */,
 				B88DFD8E1DBFC98E00255BA5 /* BlobTableViewCellComment.swift in Sources */,
 				B80C56531D51158000C4E683 /* BlobViewController.swift in Sources */,
 				B80D177B1D98A5760032B0D8 /* UtilityFunctions.swift in Sources */,
@@ -863,10 +853,8 @@
 				B8B108F81DCB718200EA3B41 /* LogError+CoreDataProperties.swift in Sources */,
 				B8B109031DCFE52300EA3B41 /* UserCD+CoreDataClass.swift in Sources */,
 				B80C56541D51158000C4E683 /* LocationEventsCollectionViewCell.swift in Sources */,
-				B80C56471D51158000C4E683 /* ConnectionsTableViewCell.swift in Sources */,
 				B80C564D1D51158000C4E683 /* BlobAddTypeViewController.swift in Sources */,
 				B80D17751D90E1C90032B0D8 /* LoginViewController.swift in Sources */,
-				B86406FF1D74AD800084D6EF /* SearchViewController.swift in Sources */,
 				B8B108F71DCB718200EA3B41 /* LogError+CoreDataClass.swift in Sources */,
 				B8B108F91DCB718200EA3B41 /* LogUserflow+CoreDataClass.swift in Sources */,
 				B80C564C1D51158000C4E683 /* BlobAddTextViewController.swift in Sources */,

@@ -225,8 +225,6 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
             viewContainer.addSubview(holeView)
             
         default:
-            print("BAVC - FINISHED ALL HOLE VIEWS")
-            
             // Record the Tutorial View in Core Data
             let moc = DataController().managedObjectContext
             let tutorialView = NSEntityDescription.insertNewObject(forEntityName: "TutorialViews", into: moc) as! TutorialViews
@@ -241,8 +239,6 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
     // The Before and After View Controller delegate methods control the order in which the pages are viewed
     func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController?
     {
-        print("PAGE VIEW CONTROLLER - VC BEFORE VC: \(viewController)")
-        
         let index = viewControllers.index(of: viewController)
         if index == nil || index! == 0
         {
@@ -256,8 +252,6 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
     
     func pageViewController(_ pageViewController: UIPageViewController, viewControllerAfter viewController: UIViewController) -> UIViewController?
     {
-        print("PAGE VIEW CONTROLLER - VC AFTER VC: \(viewController)")
-        
         let index = viewControllers.index(of: viewController)
         if index == nil || index! + 1 == viewControllers.count
         {
@@ -272,12 +266,9 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
     // Track which page view is about to be viewed and change the Page Control (dots) to highlight the correct dot
     func pageViewController(_ pageViewController: UIPageViewController, willTransitionTo pendingViewControllers: [UIViewController])
     {
-        print("PAGE VIEW CONTROLLER - PENDING VCs: \(pendingViewControllers)")
-        
         if let pendingVC = pendingViewControllers.first
         {
             let index = viewControllers.index(of: pendingVC)
-            print("PENDING INDEX: \(index)")
             pageControl.currentPage = index!
             
             if index! == 0
@@ -318,8 +309,6 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
     // Once the media has been selected, dismiss the Media Picker VC, capture the media location, and take a screenshot (for a movie type)
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any])
     {
-        print("MEDIA SELECTED IS: \(info.description)")
-        
         // Dismiss the Media Picker
         self.dismiss(animated: true, completion: nil)
         
@@ -340,8 +329,6 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
 //                blobImage = pickedImage
                 self.blobImage = pickedImage.resizeWithSquareSize(Constants.Settings.imageSizeBlob)
                 
-                print("BLOB IMAGE IS: \(self.blobImage)")
-                
                 // Save the thumbnail locally
                 if let randomMediaID = self.randomMediaID
                 {
@@ -351,7 +338,6 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
                     // Create and locally save the mediaImage
                     if let data = UIImagePNGRepresentation(self.blobImage!)
                     {
-                        print("CREATED THUMBNAIL")
                         uploadImageFilePath = NSTemporaryDirectory() + (randomMediaID + ".png")
                         try? data.write(to: URL(fileURLWithPath: uploadImageFilePath!), options: [.atomic])
                     }
@@ -365,7 +351,6 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
         // If the blobImage was successfully saved, create a low-quality thumbnail and save it locally
         if let blobImage = self.blobImage
         {
-//            blobThumbnail = blobImage.resizeWithWidth(Constants.Dim.blobsActiveTableViewContentSize)
             blobThumbnail = blobImage.resizeWithSquareSize(Constants.Settings.imageSizeThumbnail)
             
             // Save the thumbnail locally
@@ -374,7 +359,6 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
                 // Create and locally save the thumbnail
                 if let data = UIImagePNGRepresentation(blobThumbnail!)
                 {
-                    print("CREATED THUMBNAIL")
                     uploadThumbnailFilePath = NSTemporaryDirectory() + (randomMediaID + "_THUMBNAIL_" + ".png")
                     try? data.write(to: URL(fileURLWithPath: uploadThumbnailFilePath), options: [.atomic])
                 }
@@ -391,7 +375,6 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
     // If the user cancels picking media, dismiss the Media Picker
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController)
     {
-        print("CANCELLED MEDIA PICKER")
         self.dismiss(animated: true, completion: nil)
         
         // Save an action in Core Data
@@ -406,8 +389,6 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
     // the Circle color on the Map View and pass down the color indicator changes to the BlobAddType (vc1) View Controller
     func changeMapCircleType(_ type: Constants.BlobTypes)
     {
-        print("BLOB ADD VIEW CHANGE MAP CIRCLE TYPE TO: \(type)")
-        
         // Save the lastest type for access when uploading
         self.blobType = type
         
@@ -482,13 +463,11 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
     // change the color of the "Send" button to show that the Blob can be sent
     func selectedPerson()
     {
-        print("SELECTED PERSON - SET SEND BUTTON COLOR")
         self.selectedOneOrMorePeople = true
         rightButtonItem.tintColor = UIColor.white
     }
     func deselectedAllPeople()
     {
-        print("DESELECTED ALL PEOPLE - SET SEND BUTTON COLOR")
         self.selectedOneOrMorePeople = false
         rightButtonItem.tintColor = UIColor.lightGray
     }
@@ -497,11 +476,6 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
     // Upload the new Blob data to the server and then dismiss the BlobAdd VC from the parent VC (the Map View)
     func sendBlob(_ sender: UIBarButtonItem)
     {
-        print("SEND FILES TO S3 AND DATA TO LAMBDA AND POP VC")
-        print("RANDOM ID: \(self.usableMediaID)")
-        print("SEND ALREADY ATTEMPTED?: \(self.sendAttempted)")
-        print("PEOPLE SELECTED?: \(self.selectedOneOrMorePeople)")
-        
         // Ensure that this is the first time the Blob send has been attempted
         // and that at least one person has been selected
         if !self.sendAttempted && self.selectedOneOrMorePeople
@@ -514,9 +488,6 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
             viewScreenActivityIndicator.startAnimating()
             
             // Prepare the media and urls for upload
-            print("SENDING FILES")
-            print("BLOB MEDIA TYPE: \(self.blobMediaType)")
-            
             // Calculate the current time to use in dating the Blob
             let nowTime = Date().timeIntervalSince1970
             
@@ -526,8 +497,6 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
             // Process the Blob based on its media type
             if self.blobMediaType == 0
             {
-                print("PROCESSING NON-MEDIA BLOB")
-                
                 // NO MEDIA WAS ATTACHED
                 if let randomMediaID = self.randomMediaID
                 {
@@ -536,7 +505,6 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
             }
             else if self.blobMediaType == 1
             {
-                print("PROCESSING PHOTO BLOB")
                 // THE MEDIA IS A PHOTO
                 
                 // If the media is an image, upload using temporary image and delete the temporary image
@@ -560,8 +528,6 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
     
     func processBlobData(_ blobID: String, mediaID: String, uploadKey: String, currentTime: Double)
     {
-        print("PROCESSING BLOB DATA")
-        
         // Save the list of tagged users
         // If all users are selected, apply all connected users in the global user array
         var taggedUsers = [String]()
@@ -594,8 +560,6 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
             // Upload the Blob data to Lamda and then DynamoDB
             AWSPrepRequest(requestToCall: AWSUploadBlobData(blobID: blobID, blobLat: self.blobCoords.latitude, blobLong: self.blobCoords.longitude, blobMediaID: uploadKey, blobMediaType: self.blobMediaType, blobRadius: self.blobRadius, blobText: self.vc2.blobTextView.text, blobThumbnailID: mediaID + ".png", blobTimestamp: currentTime, blobType: self.blobType.rawValue, blobTaggedUsers: taggedUsers, blobUserID: Constants.Data.currentUser.userID!, blobUserName: currentUserName), delegate: self as AWSRequestDelegate).prepRequest()
             
-            print("MAP BLOBS COUNT 1: \(Constants.Data.mapBlobs.count)")
-            
             // Create a new Blob locally so that the Circle can immediately be added to the map
             let newBlob = Blob()
             newBlob.blobID = mediaID
@@ -610,11 +574,9 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
             // Check to see if the logged in user was tagged
             loopTaggedUsers: for person in taggedUsers
             {
-                print("CHECKING TAGGED USERS: \(person)")
                 // If the logged in user was tagged, add the Blob to the mapBlobs so that it shows on the Map View
                 if person == Constants.Data.currentUser.userID!
                 {
-                    print("ADDING TO MAP BLOBS")
                     Constants.Data.taggedBlobs.append(newBlob)
                     Constants.Data.mapBlobs.append(newBlob)
                     
@@ -631,9 +593,6 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
             
             // Sort the mapBlobs
             UtilityFunctions().sortMapBlobs()
-            
-            print("MAP BLOBS COUNT 2: \(Constants.Data.mapBlobs.count)")
-            print("USER BLOBS COUNT: \(Constants.Data.userBlobs.count)")
         }
         else
         {
