@@ -16,6 +16,7 @@ class PeopleTableViewCell: UITableViewCell {
     var cellUserImageActivityIndicator: UIActivityIndicatorView!
     var cellActionMessage: UILabel!
     var cellUserName: UILabel!
+    var cellFacebookFriendsImage: UIImageView!
     
     override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -40,17 +41,25 @@ class PeopleTableViewCell: UITableViewCell {
         cellUserImage.clipsToBounds = true
         cellContainer.addSubview(cellUserImage)
         
+        // The Facebook friends indicator image will show if the user is a Facebook friend
+        let fbImageSize = Constants.Dim.peopleTableViewFBImageSize
+        cellFacebookFriendsImage = UIImageView(frame: CGRect(x: cellContainer.frame.width - cellUserImage.frame.width - 20 - fbImageSize, y: (cellContainer.frame.height / 2) - (fbImageSize / 2), width: fbImageSize, height: fbImageSize))
+        cellFacebookFriendsImage.layer.cornerRadius = fbImageSize / 2
+        cellFacebookFriendsImage.contentMode = UIViewContentMode.scaleAspectFill
+        cellFacebookFriendsImage.clipsToBounds = true
+        cellFacebookFriendsImage.image = UIImage(named: "FB.png")
+        
         // Add a loading indicator while the Image is downloaded / searched for
         // Give it the same size and location as the Image View
         cellUserImageActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: cellContainer.frame.width - 10 - imageSize, y: (cellContainer.frame.height / 2) - (imageSize / 2), width: imageSize, height: imageSize))
         cellUserImageActivityIndicator.color = UIColor.black
         cellContainer.addSubview(cellUserImageActivityIndicator)
         
-        cellUserName = UILabel(frame: CGRect(x: 15 + cellConnectIndicator.frame.width, y: (cellContainer.frame.height / 2) - 15, width: cellContainer.frame.width - 30 - cellConnectIndicator.frame.width - cellUserImage.frame.width, height: 30))
+        cellUserName = UILabel(frame: CGRect(x: 15 + cellConnectIndicator.frame.width, y: (cellContainer.frame.height / 2) - 15, width: cellContainer.frame.width - 40 - cellConnectIndicator.frame.width - cellUserImage.frame.width - cellFacebookFriendsImage.frame.width, height: 30))
         cellUserName.font = UIFont(name: Constants.Strings.fontRegular, size: 16)
         cellContainer.addSubview(cellUserName)
         
-        cellActionMessage = UILabel(frame: CGRect(x: 15 + cellConnectIndicator.frame.width, y: 5, width: cellContainer.frame.width - 30 - cellConnectIndicator.frame.width - cellUserImage.frame.width, height: 30))
+        cellActionMessage = UILabel(frame: CGRect(x: 15 + cellConnectIndicator.frame.width, y: 5, width: cellContainer.frame.width - 40 - cellConnectIndicator.frame.width - cellUserImage.frame.width - cellFacebookFriendsImage.frame.width, height: 30))
         cellActionMessage.font = UIFont(name: Constants.Strings.fontRegular, size: 8)
         cellActionMessage.textAlignment = NSTextAlignment.left
         cellContainer.addSubview(cellActionMessage)

@@ -274,6 +274,7 @@ struct Constants
         static let peopleSearchBarHeight: CGFloat = 40
         static let peopleTableViewCellHeight: CGFloat = 80
         static let peopleTableViewUserImageSize: CGFloat = 40
+        static let peopleTableViewFBImageSize: CGFloat = 20
         static let peopleConnectIndicatorSize: CGFloat = 30
         
         static let accountProfileBoxHeight: CGFloat = 120

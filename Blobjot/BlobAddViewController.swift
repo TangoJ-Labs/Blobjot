@@ -25,7 +25,7 @@ protocol BlobAddViewControllerDelegate {
     func bringAddBlobViewControllerTopOfStack(_ newVC: Bool)
     
     // The parent VC will hide any activity indicators showing background activity
-    func hideBackgroundActivityView()
+    func hideBackgroundActivityView(_ refreshBlobs: Bool)
     
     // Used to add the new Blob to the map
     func createBlobOnMap(_ blobCenter: CLLocationCoordinate2D, blobRadius: Double, blobType: Constants.BlobTypes, blobTitle: String)
@@ -569,6 +569,16 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
             newBlob.blobRadius = self.blobRadius
             newBlob.blobType = self.blobType
             newBlob.blobUserID = Constants.Data.currentUser.userID!
+            newBlob.blobText = self.vc2.blobTextView.text
+            if let thumbnailFilePath = self.uploadThumbnailFilePath
+            {
+                newBlob.blobMediaType = 1
+                newBlob.blobThumbnail = UIImage(contentsOfFile: thumbnailFilePath)
+            }
+            else
+            {
+                newBlob.blobMediaType = 0
+            }
             Constants.Data.userBlobs.append(newBlob)
             
             // Check to see if the logged in user was tagged
@@ -682,7 +692,7 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
                         if let parentVC = self.blobAddViewDelegate
                         {
                             // Have the parent VC hide any background activity indicator(s)
-                            parentVC.hideBackgroundActivityView()
+                            parentVC.hideBackgroundActivityView(true)
                         }
                     }
                     else

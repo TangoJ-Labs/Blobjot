@@ -324,8 +324,20 @@ class AWSLoginUser : AWSRequestObject
                             {
                                 parentVC.processAwsReturn(self, success: false)
                                 
-                                // Try again
-                                AWSPrepRequest(requestToCall: self, delegate: parentVC).prepRequest()
+//                                // Try again
+//                                AWSPrepRequest(requestToCall: self, delegate: parentVC).prepRequest()
+                                
+                                // Check to see if the parent viewcontroller is already the MapViewController.  If so, call the MVC showLoginScreen function
+                                // Otherwise, launch a new MapViewController and show the login screen
+                                if parentVC is MapViewController
+                                {
+                                    // PARENT VC IS EQUAL TO MVC
+                                    parentVC.showLoginScreen()
+                                }
+                                
+                                // Reset the server try count since the request cycle was stopped - the user can manually try again if needed
+                                Constants.Data.serverTries = 0
+                                Constants.Data.serverLastRefresh = Date().timeIntervalSince1970
                             }
                     })
                     
@@ -444,6 +456,7 @@ class AWSGetMapData : AWSRequestObject
                                 
                                 // Append the new Blob Object to the global Tagged Blobs Array
                                 Constants.Data.taggedBlobs.append(addBlob)
+                                print("AC-GMD - ADDED BLOB: \(addBlob.blobID)")
                             }
                         }
                         
@@ -461,6 +474,7 @@ class AWSGetMapData : AWSRequestObject
                         // Notify the parent view that the AWS call completed successfully
                         if let parentVC = self.awsRequestDelegate
                         {
+                            print("AC-GMD - CALLED PARENT")
                             parentVC.processAwsReturn(self, success: true)
                         }
                     }
@@ -1816,7 +1830,7 @@ class AWSAddCommentForBlob : AWSRequestObject
         print("AC-ACFB - ADDING COMMENT FOR BLOB: \(self.blobID)")
         var json = [String: Any]()
         json["blob_id"]   = self.blobID
-        json["user_id"]   = Constants.Data.currentUser
+        json["user_id"]   = Constants.Data.currentUser.userID!
         json["timestamp"] = String(Date().timeIntervalSince1970)
         json["comment"]   = self.comment
         
@@ -2197,6 +2211,62 @@ class FBGetUserData : AWSRequestObject
                 
                 break loopUserObjectCheck
             }
+        }
+    }
+}
+
+class FBGetCurrentUserInfo : AWSRequestObject
+{
+    var interestList: [String]?
+    
+    // FBSDK METHOD - Get user friends list from FB
+    override func makeRequest()
+    {
+        print("AC-FBSDK - GET USER INFO")
+        
+        let params = ["fields": "about"] //"id, first_name, last_name, middle_name, name, email, picture"]
+        let fbRequest = FBSDKGraphRequest(graphPath: "me/likes", parameters: params)
+        fbRequest?.start
+            {(connection: FBSDKGraphRequestConnection?, result: Any?, error: Error?) in
+                
+                if error != nil
+                {
+                    print("AC-FBSDK - USER INFO - Error Getting Info \(error)")
+                    CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: error!.localizedDescription)
+                    
+                    // Notify the parent view that the AWS call failed
+                    if let parentVC = self.awsRequestDelegate
+                    {
+                        parentVC.processAwsReturn(self, success: false)
+                    }
+                    
+                    // Record the server request attempt
+                    Constants.Data.serverTries += 1
+                }
+                else
+                {
+                    if let resultDict = result as? [String:AnyObject]
+                    {
+                        print("AC-FBSDK - USER INFO RESULT DICT: \(resultDict)")
+                        if let likeData = resultDict["data"] as? NSArray
+                        {
+                            print("AC-FBSDK - USER INFO COUNT: \(likeData.count)")
+                            for like in likeData
+                            {
+                                print("AC-FBSDK - LIKE: \(like)")
+//                                let id = friend["id"] as! String!
+//                                friendList?.append(id)
+                            }
+                        }
+                        
+//                        // Notify the parent view that the request completed successfully
+//                        if let parentVC = self.awsRequestDelegate
+//                        {
+//                            parentVC.processAwsReturn(self, success: true)
+//                        }
+                    }
+                    
+                }
         }
     }
 }

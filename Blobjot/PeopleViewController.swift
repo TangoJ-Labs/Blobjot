@@ -145,6 +145,9 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
         // Populate the local User list with the global User list
         // The global User list was populated from Core Data upon initiation, and was updated with new data upon download
         peopleList = Constants.Data.userObjects
+        
+        // Request the Current User Facebook Friend List
+        AWSPrepRequest(requestToCall: FBGetCurrentUserInfo(), delegate: self as AWSRequestDelegate).prepRequest()
     }
     
     override func viewWillLayoutSubviews()
@@ -195,6 +198,7 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
         cell.cellConnectIndicator.image = UIImage(named: Constants.Strings.iconStringConnectionViewAddConnection)
         cell.cellActionMessage.text = ""
         cell.cellUserImageActivityIndicator.startAnimating()
+        cell.cellContainer.addSubview(cell.cellFacebookFriendsImage)
         
         // Add a clear background for the selectedBackgroundView so that the row is not highlighted when selected
         let sbv = UIView(frame: CGRect(x: 0, y: 0, width: cell.frame.width, height: cell.frame.height))
@@ -503,6 +507,15 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
                         
                         updateUserStatusType(self.peopleList[(indexPath as NSIndexPath).row].userID!, peopleListIndex: (indexPath as NSIndexPath).row, userStatus: userStatus)
                     }
+                }
+            }
+            else if cell.cellFacebookFriendsImage.frame.contains(pointInCell)
+            {
+                if let cellUserName = self.peopleList[(indexPath as NSIndexPath).row].userName
+                {
+                    // Show a popup message explaining that this friend is a Facebook friend
+                    let alertController = UtilityFunctions().createAlertOkView("Facebook Friend", message: "\(cellUserName) is a Facebook friend.")
+                    self.present(alertController, animated: true, completion: nil)
                 }
             }
             // Reload the Table View

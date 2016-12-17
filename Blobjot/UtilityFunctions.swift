@@ -62,7 +62,7 @@ class UtilityFunctions
                 var userObjectExists = false
                 loopUserObjectCheck: for userObject in Constants.Data.userObjects
                 {
-                    if userObject.userID == sUser.userID
+                    if userObject.userID == sUser.userID || userObject.facebookID == sUser.facebookID
                     {
                         userObjectExists = true
                         break loopUserObjectCheck
@@ -233,7 +233,6 @@ class UtilityFunctions
         CoreDataFunctions().blobNotificationSave(blobID: blob.blobID)
     }
     
-    //
     func displayNewBlobNotification(blob: Blob, userName: String)
     {
         let notification = UILocalNotification()

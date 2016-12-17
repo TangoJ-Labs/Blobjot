@@ -111,6 +111,7 @@
 		B8B1096F1DEE920500EA3B41 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = B8B1096E1DEE920500EA3B41 /* Default-568h@2x.png */; };
 		B8B533A51DC9A50200B9ACC1 /* HoleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B533A41DC9A50200B9ACC1 /* HoleView.swift */; };
 		B8C8C59D1D57544C004D773E /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C8C59C1D57544C004D773E /* Extensions.swift */; };
+		B8F32B791E00C876001F333B /* FB.png in Resources */ = {isa = PBXBuildFile; fileRef = B8F32B781E00C875001F333B /* FB.png */; };
 		F0218AC95EF86C2A827CA39C /* Pods_Blobjot.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BCF8CA5237DDB608651A853C /* Pods_Blobjot.framework */; };
 /* End PBXBuildFile section */
 
@@ -264,6 +265,7 @@
 		B8B1096E1DEE920500EA3B41 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		B8B533A41DC9A50200B9ACC1 /* HoleView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HoleView.swift; sourceTree = "<group>"; };
 		B8C8C59C1D57544C004D773E /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		B8F32B781E00C875001F333B /* FB.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = FB.png; sourceTree = "<group>"; };
 		BCF8CA5237DDB608651A853C /* Pods_Blobjot.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Blobjot.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF3D7EAE5506D94FE1CC92A9 /* Pods-BlobjotUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BlobjotUITests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-BlobjotUITests/Pods-BlobjotUITests.debug.xcconfig"; sourceTree = "<group>"; };
 		ECCEA997791A35BA1BCB3413 /* Pods-Blobjot.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Blobjot.release.xcconfig"; path = "Pods/Target Support Files/Pods-Blobjot/Pods-Blobjot.release.xcconfig"; sourceTree = "<group>"; };
@@ -339,6 +341,7 @@
 				B84DD7A81DC67E4F0076B9DD /* CV_pending_icon.png */,
 				B8B1096E1DEE920500EA3B41 /* Default-568h@2x.png */,
 				B80C56581D5116E000C4E683 /* defaultMedia.png */,
+				B8F32B781E00C875001F333B /* FB.png */,
 				B8B109381DEE5B6100EA3B41 /* HOME.png */,
 				B84DD7A91DC67E4F0076B9DD /* MV_add_combo_icon.png */,
 				B84DD7AA1DC67E4F0076B9DD /* MV_add_icon.png */,
@@ -638,6 +641,7 @@
 				B84DD7B51DC67E4F0076B9DD /* BV_add_comment_icon.png in Resources */,
 				B8B1095D1DEE86B600EA3B41 /* TAB_ICON_connections_gray.png in Resources */,
 				B8B1095E1DEE86B600EA3B41 /* TAB_ICON_connections_gray@2x.png in Resources */,
+				B8F32B791E00C876001F333B /* FB.png in Resources */,
 				B8B1096F1DEE920500EA3B41 /* Default-568h@2x.png in Resources */,
 				B8B109671DEE886400EA3B41 /* TAB_ICON_active_blobs_gray@2x.png in Resources */,
 				B8B109561DEE866500EA3B41 /* TAB_ICON_account_white@3x.png in Resources */,

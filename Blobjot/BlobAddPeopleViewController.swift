@@ -421,8 +421,16 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
                         // Stop the table loading spinner before adding data so that it does not show up in front of the user list
 //                        self.accountTableActivityIndicator.stopAnimating()
                         
-                        // Replace the local User list with the global one
-                        self.peopleList = Constants.Data.userObjects
+                        // Replace the local User list with the global one, if the user is a connection
+                        self.peopleList = [User]()
+                        
+                        for gUser in Constants.Data.userObjects
+                        {
+                            if gUser.userStatus == Constants.UserStatusTypes.connected
+                            {
+                                self.peopleList.append(gUser)
+                            }
+                        }
                         
                         // Sort the list alphabetically and copy the peopleList to the peopleList to use in the table
                         self.peopleList.sort(by: {

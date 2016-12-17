@@ -1246,9 +1246,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         // Check that the user's current location is accessible
         if let userLocationCurrent = mapView.myLocation
         {
-            if let userLocationPrevious = self.lastLocation
+            if self.lastLocation != nil
             {
-                let locationDistance = userLocationCurrent.distance(from: userLocationPrevious)
+                let locationDistance = userLocationCurrent.distance(from: self.lastLocation!)
                 let timeSinceLocationChange = Date().timeIntervalSince1970 - self.lastLocationTime
                 
                 // Ensure that the distance change is greater than the minimum setting
@@ -1278,6 +1278,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         // Ensure that the distance change is greater than the minimum setting for updating Blobjot Blobs
         if let blobjotBlobsLocationPrevious = self.lastBlobjotBlobsLocation
         {
+            print("CURRENT LOCATION: \(userLocationCurrent), PREVIOUS LOCATION: \(blobjotBlobsLocationPrevious)")
             let locationDistance = userLocationCurrent.distance(from: blobjotBlobsLocationPrevious)
             
             // Ensure that the distance change is greater than the minimum setting
@@ -1499,7 +1500,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             // Only hide the background activity indicator if the global sending property is false
             if !Constants.Data.stillSendingBlob && !self.waitingForMapData
             {
-                self.hideBackgroundActivityView()
+                self.hideBackgroundActivityView(false)
             }
         }
         else
@@ -2111,11 +2112,20 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         }
     }
     
-    func hideBackgroundActivityView()
+    func hideBackgroundActivityView(_ refreshBlobs: Bool)
     {
         // Stop the refresh Map button indicator if it is running
         self.buttonRefreshMapActivityIndicator.stopAnimating()
         self.backgroundActivityView.removeFromSuperview()
+        
+        // If indicated, refresh the map data in case it was changed
+        if refreshBlobs
+        {
+            if let currentLocation = mapView.myLocation
+            {
+                self.refreshBlobs(currentLocation)
+            }
+        }
     }
     
     func bringAddBlobViewControllerTopOfStack(_ newVC: Bool)
@@ -2397,6 +2407,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // Loop through the Map Blobs, check if they have already been added as Map Circles, and create a Map Circle if needed
     func addMapBlobsToMap()
     {
+        print("MVC-AMBM - ADDING MAP BLOBS")
         // Loop through Map Blobs and check for corresponding Map Circles
         for addBlob in Constants.Data.mapBlobs
         {
@@ -2406,6 +2417,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 if circle.title == addBlob.blobID
                 {
                     blobExists = true
+                    print("MVC-AMBM - BLOB EXISTS")
                     break loopCircleCheck
                 }
             }
@@ -2414,7 +2426,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             if !blobExists
             {
                 let blobCenter = CLLocationCoordinate2DMake(addBlob.blobLat, addBlob.blobLong)
-                
+                print("MVC-AMBM - BLOB DOES NOT EXIST")
                 // Call local function to create a new Circle and add it to the Map View
                 self.createBlobOnMap(blobCenter, blobRadius: addBlob.blobRadius, blobType: addBlob.blobType, blobTitle: addBlob.blobID)
             }
@@ -2440,7 +2452,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         addCircle.strokeWidth = 1
         addCircle.map = self.mapView
         Constants.Data.mapCircles.append(addCircle)
-        
+        print("MVC-AMBM - ADDED CIRCLE")
 //        let path = UtilityFunctions().pathForCoordinate(blobCenter, withMeterRadius: blobRadius)
 //        let blob = GMSPolyline(path: path)
 //        blob.map = self.mapView
@@ -2599,6 +2611,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                     {
                         // Attempt to call the local function to add the Map Blobs to the Map
                         self.addMapBlobsToMap()
+                        print("MVC - AWSGetMapData Returned - called addBlobsToMap")
                         
                         // Reset the waiting for map data indicator
                         self.waitingForMapData = false

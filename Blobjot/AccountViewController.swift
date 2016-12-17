@@ -216,17 +216,14 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
             }
         }
         
-        if Constants.Data.currentUser.userID != nil
-        {
-            displayUserContainer.addSubview(displayUserLabel)
-            displayUserContainer.addSubview(displayUserLabelActivityIndicator)
-            displayUserLabelActivityIndicator.startAnimating()
-            displayUserContainer.addSubview(displayUserImageContainer)
-            displayUserImageContainer.addSubview(displayUserImageActivityIndicator)
-            displayUserImageActivityIndicator.startAnimating()
-            displayUserContainer.addSubview(logoutButton)
-            displayUserContainer.addSubview(locationButton)
-        }
+        displayUserContainer.addSubview(displayUserLabel)
+        displayUserContainer.addSubview(displayUserLabelActivityIndicator)
+        displayUserLabelActivityIndicator.startAnimating()
+        displayUserContainer.addSubview(displayUserImageContainer)
+        displayUserImageContainer.addSubview(displayUserImageActivityIndicator)
+        displayUserImageActivityIndicator.startAnimating()
+        displayUserContainer.addSubview(logoutButton)
+        displayUserContainer.addSubview(locationButton)
         
 //        // Add a loading indicator while downloading the logged in user image
 //        blobUserActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: 0, y: Constants.Dim.accountProfileBoxHeight, width: viewContainer.frame.width, height: Constants.Dim.accountTableViewCellHeight))
@@ -242,6 +239,7 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
         blobsTableViewBackgroundLabel.textAlignment = .center
         blobsTableViewBackgroundLabel.text = "You haven't created any Blobs yet.  Go to the Map View to add new Blobs!"
         viewContainer.addSubview(blobsTableViewBackgroundLabel)
+        blobsTableViewBackgroundLabel.isHidden = false
         
         blobsUserTableView = UITableView(frame: CGRect(x: 0, y: 0, width: viewContainer.frame.width, height: viewContainer.frame.height))
         blobsUserTableView.dataSource = self
@@ -426,13 +424,17 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
     
     func numberOfSections(in tableView: UITableView) -> Int
     {
-        // #warning Incomplete implementation, return the number of sections
         return 1
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int
     {
-        // #warning Incomplete implementation, return the number of rows
+        // If the userBlobs list has Blobs, delete the "no blobs" label so that it does not show behind the first Blob
+        if self.userBlobs.count > 0
+        {
+            blobsTableViewBackgroundLabel.isHidden = true
+        }
+        
         return self.userBlobs.count
     }
     
