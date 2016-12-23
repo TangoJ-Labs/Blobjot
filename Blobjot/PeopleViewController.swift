@@ -61,8 +61,16 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
         UIApplication.shared.isStatusBarHidden = false
         UIApplication.shared.statusBarStyle = Constants.Settings.statusBarStyle
         statusBarHeight = UIApplication.shared.statusBarFrame.size.height
-        navBarHeight = self.navigationController?.navigationBar.frame.height
+        print("**************** STATUS BAR HEIGHT: \(statusBarHeight)")
+        navBarHeight = 0
+        if let navController = self.navigationController
+        {
+            navBarHeight = navController.navigationBar.frame.height
+        }
+        print("**************** navBarHeight: \(navBarHeight)")
         viewFrameY = self.view.frame.minY
+        print("**************** VIEW FRAME Y: \(viewFrameY)")
+
         screenSize = UIScreen.main.bounds
         
         if !useBarHeights
@@ -136,7 +144,7 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
         cellPeopleTableViewTapGesture.numberOfTapsRequired = 1  // add single tap
         peopleTableView.addGestureRecognizer(cellPeopleTableViewTapGesture)
         
-        searchExitTapGesture = UITapGestureRecognizer(target: self, action: #selector(MapViewController.tapSearchExit(_:)))
+        searchExitTapGesture = UITapGestureRecognizer(target: self, action: #selector(PeopleViewController.tapSearchExit(_:)))
         searchExitTapGesture.numberOfTapsRequired = 1  // add single tap
         searchExitView.addGestureRecognizer(searchExitTapGesture)
         
@@ -146,8 +154,17 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
         // The global User list was populated from Core Data upon initiation, and was updated with new data upon download
         peopleList = Constants.Data.userObjects
         
-        // Request the Current User Facebook Friend List
-        AWSPrepRequest(requestToCall: FBGetCurrentUserInfo(), delegate: self as AWSRequestDelegate).prepRequest()
+        if let tabBar = self.tabBarController
+        {
+            let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
+            let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
+            ncTitleText.text = "People"
+            ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 14)
+            ncTitleText.textColor = Constants.Colors.colorTextNavBar
+            ncTitleText.textAlignment = .center
+            ncTitle.addSubview(ncTitleText)
+            tabBar.navigationItem.titleView = ncTitle
+        }
     }
     
     override func viewWillLayoutSubviews()
@@ -198,7 +215,6 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
         cell.cellConnectIndicator.image = UIImage(named: Constants.Strings.iconStringConnectionViewAddConnection)
         cell.cellActionMessage.text = ""
         cell.cellUserImageActivityIndicator.startAnimating()
-        cell.cellContainer.addSubview(cell.cellFacebookFriendsImage)
         
         // Add a clear background for the selectedBackgroundView so that the row is not highlighted when selected
         let sbv = UIView(frame: CGRect(x: 0, y: 0, width: cell.frame.width, height: cell.frame.height))
@@ -219,12 +235,12 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
             }
             else
             {
-                AWSPrepRequest(requestToCall: FBGetUserData(user: cellUserObject, downloadImage: true), delegate: self as AWSRequestDelegate).prepRequest()
+                AWSPrepRequest(requestToCall: FBGetUserProfileData(user: cellUserObject, downloadImage: true), delegate: self as AWSRequestDelegate).prepRequest()
             }
         }
         else
         {
-            AWSPrepRequest(requestToCall: FBGetUserData(user: cellUserObject, downloadImage: true), delegate: self as AWSRequestDelegate).prepRequest()
+            AWSPrepRequest(requestToCall: FBGetUserProfileData(user: cellUserObject, downloadImage: true), delegate: self as AWSRequestDelegate).prepRequest()
         }
         
         if cellUserObject.userStatus == Constants.UserStatusTypes.pending
@@ -509,15 +525,6 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
                     }
                 }
             }
-            else if cell.cellFacebookFriendsImage.frame.contains(pointInCell)
-            {
-                if let cellUserName = self.peopleList[(indexPath as NSIndexPath).row].userName
-                {
-                    // Show a popup message explaining that this friend is a Facebook friend
-                    let alertController = UtilityFunctions().createAlertOkView("Facebook Friend", message: "\(cellUserName) is a Facebook friend.")
-                    self.present(alertController, animated: true, completion: nil)
-                }
-            }
             // Reload the Table View
             self.refreshTableViewAndEndSpinner(false)
         }
@@ -531,7 +538,8 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
     
     func popViewController(_ sender: UIBarButtonItem)
     {
-        self.dismiss(animated: true, completion: {})
+//        self.dismiss(animated: true, completion: {})
+        self.navigationController!.popViewController(animated: true)
     }
     
     func updateUserStatusType(_ counterpartUserID: String, peopleListIndex: Int, userStatus: Constants.UserStatusTypes)
@@ -672,15 +680,15 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
                         let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                         self.present(alertController, animated: true, completion: nil)
                     }
-                case let fbGetUserData as FBGetUserData:
+                case let FBGetUserProfileData as FBGetUserProfileData:
                     // Do not distinguish between success and failure for this class - both need to have the userList updated
                     // Find the correct User Object in the local list and assign the newly downloaded Image
                     loopUserObjectCheckLocal: for userObjectLocal in self.peopleList
                     {
-                        if userObjectLocal.userID == fbGetUserData.user.userID
+                        if userObjectLocal.userID == FBGetUserProfileData.user.userID
                         {
                             // If the passed user has a userImage, use it, otherwise use the default image
-                            if let newImage = fbGetUserData.user.userImage
+                            if let newImage = FBGetUserProfileData.user.userImage
                             {
                                 userObjectLocal.userImage = newImage
                             }
@@ -690,7 +698,7 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
                             }
                             
                             // If the passed user has a username, use it, otherwise indicate a hidden user
-                            if let username = fbGetUserData.user.userName
+                            if let username = FBGetUserProfileData.user.userName
                             {
                                 userObjectLocal.userName = username
                             }

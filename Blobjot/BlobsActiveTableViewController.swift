@@ -14,7 +14,7 @@ class BlobsActiveTableViewController: UIViewController, UITableViewDataSource, U
     var screenSize: CGRect!
     var statusBarHeight: CGFloat!
     var navBarHeight: CGFloat!
-    var tabBarHeight: CGFloat!
+//    var tabBarHeight: CGFloat!
     var viewFrameY: CGFloat!
     
     var viewContainer: UIView!
@@ -44,17 +44,17 @@ class BlobsActiveTableViewController: UIViewController, UITableViewDataSource, U
         }
         viewFrameY = self.view.frame.minY
         screenSize = UIScreen.main.bounds
-        if let tabBarHeight = self.navigationController?.navigationBar.frame.height
-        {
-            self.tabBarHeight = tabBarHeight
-        }
-        else
-        {
-            self.tabBarHeight = 49
-        }
+//        if let tabBarHeight = self.navigationController?.navigationBar.frame.height
+//        {
+//            self.tabBarHeight = tabBarHeight
+//        }
+//        else
+//        {
+//            self.tabBarHeight = 49
+//        }
         
         // Add the view container to hold all other views (allows for shadows on all subviews)
-        viewContainer = UIView(frame: CGRect(x: 0, y: statusBarHeight + navBarHeight - viewFrameY, width: self.view.frame.width, height: self.view.frame.height - statusBarHeight - navBarHeight - tabBarHeight + viewFrameY))
+        viewContainer = UIView(frame: CGRect(x: 0, y: statusBarHeight + navBarHeight - viewFrameY, width: self.view.frame.width, height: self.view.frame.height - statusBarHeight - navBarHeight + viewFrameY))
         viewContainer.backgroundColor = Constants.Colors.standardBackground
         self.view.addSubview(viewContainer)
         
@@ -324,7 +324,8 @@ class BlobsActiveTableViewController: UIViewController, UITableViewDataSource, U
     // This version is used when the top VC is popped from a Nav Bar button
     func popViewController(_ sender: UIBarButtonItem)
     {
-        self.dismiss(animated: true, completion: nil)
+//        self.dismiss(animated: true, completion: nil)
+        self.navigationController!.popViewController(animated: true)
     }
     
     func loadBlobViewWithBlob(_ blob: Blob)
@@ -332,7 +333,7 @@ class BlobsActiveTableViewController: UIViewController, UITableViewDataSource, U
         if blob.blobExtraRequested && (blob.blobText != nil || blob.blobThumbnailID != nil)
         {
             // Create a back button and title for the Nav Bar
-            let backButtonItem = UIBarButtonItem(title: "BLOBS \u{2193}",
+            let backButtonItem = UIBarButtonItem(title: "\u{2190}",
                                                  style: UIBarButtonItemStyle.plain,
                                                  target: self,
                                                  action: #selector(BlobsActiveTableViewController.popViewController(_:)))
@@ -350,6 +351,7 @@ class BlobsActiveTableViewController: UIViewController, UITableViewDataSource, U
                     break loopUserObjectCheck
                 }
             }
+            ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 14)
             ncTitleText.textColor = Constants.Colors.colorTextNavBar
             ncTitleText.textAlignment = .center
             ncTitle.addSubview(ncTitleText)
@@ -358,14 +360,14 @@ class BlobsActiveTableViewController: UIViewController, UITableViewDataSource, U
             blobVC = BlobViewController()
             blobVC.blob = blob
             
-            // Instantiate the Nav Controller and attach the Nav Bar items to the view controller settings
-            let navController = UINavigationController(rootViewController: blobVC)
+            // Assign the created Nav Bar settings to the Tab Bar Controller
             blobVC.navigationItem.setLeftBarButton(backButtonItem, animated: true)
             blobVC.navigationItem.titleView = ncTitle
             
-            // Change the Nav Bar color and present the view
-            navController.navigationBar.barTintColor = Constants.Colors.colorStatusBar
-            self.present(navController, animated: true, completion: nil)
+            if let navController = self.navigationController
+            {
+                navController.pushViewController(blobVC, animated: true)
+            }
         }
         
         // Save an action in Core Data

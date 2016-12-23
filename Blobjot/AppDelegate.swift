@@ -46,8 +46,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         
         // Prepare the root View Controller and make visible
         self.mapViewController = MapViewController()
+        self.navController.pushViewController(mapViewController, animated: false)
+        
+//        // stackoverflow.com/questions/24402000/uinavigationbar-text-color-in-swift
+//        let navigationBarAppearace = UINavigationBar.appearance()
+//        navigationBarAppearace.tintColor = Constants.Colors.colorTextNavBar
+//        navigationBarAppearace.barTintColor = Constants.Colors.colorStatusBar
+//        navigationBarAppearace.titleTextAttributes = [NSForegroundColorAttributeName: Constants.Colors.colorTextNavBar]
+        
         self.window = UIWindow(frame: UIScreen.main.bounds)
-        self.window!.rootViewController = mapViewController
+        self.navController.navigationBar.barTintColor = Constants.Colors.colorStatusBar
+        self.navController.navigationBar.tintColor = Constants.Colors.colorTextNavBar
+        self.navController.viewControllers = [mapViewController]
+        self.window!.rootViewController = navController
         self.window!.makeKeyAndVisible()
         
         // Change the color of the default background (try to change the color of the background seen when using a flip transition)

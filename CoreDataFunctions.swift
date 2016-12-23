@@ -560,6 +560,99 @@ class CoreDataFunctions: AWSRequestDelegate
         }
     }
     
+    // MARK: USER LIKES
+    func likesSave()
+    {
+        print("CD-LS - SAVING LIKES")
+        // Delete all current likes to ensure that any removed likes on Facebook are removed in Blobjot
+        likesDelete()
+        
+        // Retrieve the Blob data from Core Data
+        let moc = DataController().managedObjectContext
+        for globalLike in Constants.Data.currentUserLikes
+        {
+            let entity = NSEntityDescription.insertNewObject(forEntityName: "UserLike", into: moc) as! UserLike
+            entity.setValue(globalLike, forKey: "like")
+        }
+        
+        // Save the Entity
+        do
+        {
+            try moc.save()
+        }
+        catch
+        {
+            fatalError("CD-LS - USER LIKES SAVE - Failure to save context: \(error)")
+        }
+    }
+    
+    func likesRetrieve() -> [String]
+    {
+        print("CD-LR - RETRIEVING LIKES")
+        // Retrieve the UserLikes data from Core Data
+        let moc = DataController().managedObjectContext
+        let likesFetch: NSFetchRequest<UserLike> = UserLike.fetchRequest()
+        
+        // Create an empty likes list in case the Core Data request fails
+        var userLikes = [UserLike]()
+        do
+        {
+            userLikes = try moc.fetch(likesFetch)
+        }
+        catch
+        {
+            CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: error.localizedDescription)
+            fatalError("Failed to fetch frames: \(error)")
+        }
+        
+        // Convert the Blobs to a Blob class
+        var likes = [String]()
+        for userLike in userLikes
+        {
+            print("CD-LR - RETRIEVED LIKE: \(userLike.like)")
+            likes.append(userLike.like!)
+        }
+        
+        return likes
+    }
+    
+    func likesDelete()
+    {
+        print("CD-LD - DELETING LIKES")
+        // Retrieve the Blob data from Core Data
+        let moc = DataController().managedObjectContext
+        let likesFetch: NSFetchRequest<UserLike> = UserLike.fetchRequest()
+        
+        // Create an empty blobNotifications list in case the Core Data request fails
+        var likes = [UserLike]()
+        do
+        {
+            likes = try moc.fetch(likesFetch)
+        }
+        catch
+        {
+            CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: error.localizedDescription)
+            fatalError("CD-LD - LIKES RETRIEVE DELETE - Failed to fetch frames: \(error)")
+        }
+        
+        // Delete each object one at a time if not used recently
+        for like in likes
+        {
+            moc.delete(like)
+            print("CD-LD - LIKE DELETE: \(like.like)")
+        }
+        
+        // Save the changes to the likes
+        do
+        {
+            try moc.save()
+        }
+        catch
+        {
+            fatalError("CD-LD - LIKES SAVE UPDATES - Failure to save context: \(error)")
+        }
+    }
+    
     // MARK: TUTORIAL VIEWS
     func tutorialViewSave(tutorialViews: TutorialViews)
     {

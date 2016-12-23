@@ -203,12 +203,12 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
             }
             else
             {
-                AWSPrepRequest(requestToCall: FBGetUserData(user: cellUserObject, downloadImage: true), delegate: self as AWSRequestDelegate).prepRequest()
+                AWSPrepRequest(requestToCall: FBGetUserProfileData(user: cellUserObject, downloadImage: true), delegate: self as AWSRequestDelegate).prepRequest()
             }
         }
         else
         {
-            AWSPrepRequest(requestToCall: FBGetUserData(user: cellUserObject, downloadImage: true), delegate: self as AWSRequestDelegate).prepRequest()
+            AWSPrepRequest(requestToCall: FBGetUserProfileData(user: cellUserObject, downloadImage: true), delegate: self as AWSRequestDelegate).prepRequest()
         }
         
         return cell
@@ -454,23 +454,23 @@ class BlobAddPeopleViewController: UIViewController, UITableViewDataSource, UITa
                         let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                         self.present(alertController, animated: true, completion: nil)
                     }
-                case let fbGetUserData as FBGetUserData:
+                case let FBGetUserProfileData as FBGetUserProfileData:
                     // Do not distinguish between success and failure for this class - both need to have the userList updated
-                    if let newImage = fbGetUserData.user.userImage
+                    if let newImage = FBGetUserProfileData.user.userImage
                     {
                         // Find the correct User Object in the local list and assign the newly downloaded Image
                         loopUserObjectCheckLocal: for userObjectLocal in self.peopleList
                         {
-                            if userObjectLocal.userID == fbGetUserData.user.userID
+                            if userObjectLocal.userID == FBGetUserProfileData.user.userID
                             {
-                                userObjectLocal.userName = fbGetUserData.user.userName
+                                userObjectLocal.userName = FBGetUserProfileData.user.userName
                                 userObjectLocal.userImage = newImage
                                 
                                 break loopUserObjectCheckLocal
                             }
                         }
                         
-                        print("PVC - ADDED USER IMAGE: \(fbGetUserData.user.userName))")
+                        print("PVC - ADDED USER IMAGE: \(FBGetUserProfileData.user.userName))")
                         
                         // Reload the Table View
                         self.refreshTableAndHighlights()

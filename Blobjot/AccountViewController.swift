@@ -308,6 +308,18 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
             holeView.holeViewDelegate = self
             viewContainer.addSubview(holeView)
         }
+        
+        if let tabBar = self.tabBarController
+        {
+            let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
+            let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
+            ncTitleText.text = "Account"
+            ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 12)
+            ncTitleText.textColor = Constants.Colors.colorTextNavBar
+            ncTitleText.textAlignment = .center
+            ncTitle.addSubview(ncTitleText)
+            tabBar.navigationItem.titleView = ncTitle
+        }
     }
     
     override func didReceiveMemoryWarning()
@@ -610,7 +622,8 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
     // This version is used when the top VC is popped from a Nav Bar button
     func popViewController(_ sender: UIBarButtonItem)
     {
-        self.dismiss(animated: true, completion: nil)
+//        self.dismiss(animated: true, completion: nil)
+        self.navigationController!.popViewController(animated: true)
     }
     
     func loadBlobViewWithBlob(_ blob: Blob)
@@ -618,7 +631,7 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
         if blob.blobText != nil || blob.blobThumbnailID != nil
         {
             // Create a back button and title for the Nav Bar
-            let backButtonItem = UIBarButtonItem(title: "ACCOUNT \u{2193}",
+            let backButtonItem = UIBarButtonItem(title: "\u{2190}",
                                                  style: UIBarButtonItemStyle.plain,
                                                  target: self,
                                                  action: #selector(AccountViewController.popViewController(_:)))
@@ -636,6 +649,7 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
                     break loopUserObjectCheck
                 }
             }
+            ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 14)
             ncTitleText.textColor = Constants.Colors.colorTextNavBar
             ncTitleText.textAlignment = .center
             ncTitle.addSubview(ncTitleText)
@@ -645,14 +659,14 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
             blobVC.blob = blob
             blobVC.userBlob = true
             
-            // Instantiate the Nav Controller and attach the Nav Bar items to the view controller settings
-            let navController = UINavigationController(rootViewController: blobVC)
+            // Assign the created Nav Bar settings to the Tab Bar Controller
             blobVC.navigationItem.setLeftBarButton(backButtonItem, animated: true)
             blobVC.navigationItem.titleView = ncTitle
             
-            // Change the Nav Bar color and present the view
-            navController.navigationBar.barTintColor = Constants.Colors.colorStatusBar
-            self.present(navController, animated: true, completion: nil)
+            if let navController = self.navigationController
+            {
+                navController.pushViewController(blobVC, animated: true)
+            }
         }
         
         // Save an action in Core Data
@@ -719,7 +733,7 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
                         let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                         self.present(alertController, animated: true, completion: nil)
                     }
-                case _ as FBGetUserData:
+                case _ as FBGetUserProfileData:
                     // Do not distinguish between success and failure for this class - both need to have the userList updated
                     // Refresh the user elements
                     self.refreshCurrentUserElements()

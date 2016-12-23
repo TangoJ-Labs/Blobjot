@@ -584,6 +584,9 @@ class AWSGetBlobjotBlobs : AWSRequestObject
                         {
                             parentVC.processAwsReturn(self, success: true)
                         }
+                        
+                        // Recall the user's Facebook likes to match with Public Blobs (Blobjot Blobs)
+                        AWSPrepRequest(requestToCall: FBGetUserLikes(), delegate: self.awsRequestDelegate!).prepRequest()
                     }
                 }
         })
@@ -962,7 +965,7 @@ class AWSGetSingleUserData : AWSRequestObject
                         self.user.facebookID = facebookID
                         self.user.userStatus = Constants.UserStatusTypes(rawValue: userStatus)!
                         
-                        // NOTE: No need to update the Current User Object here - the FB ID and userID will not change, update in FBGetUserData
+                        // NOTE: No need to update the Current User Object here - the FB ID and userID will not change, update in FBGetUserProfileData
                         // Check to ensure the user does not already exist in the global User array
                         var userObjectExists = false
                         loopUserObjectCheck: for userObject in Constants.Data.userObjects
@@ -984,7 +987,7 @@ class AWSGetSingleUserData : AWSRequestObject
                         
                         // Request the Facebook Info (Name and Image)
                         // Always request the FB data to ensure the latest is used
-                        AWSPrepRequest(requestToCall: FBGetUserData(user: self.user, downloadImage: true), delegate: self.awsRequestDelegate!).prepRequest()
+                        AWSPrepRequest(requestToCall: FBGetUserProfileData(user: self.user, downloadImage: true), delegate: self.awsRequestDelegate!).prepRequest()
                         
                         // Don't save the user to Core Data here; wait until the FB data is downloaded to capture all data
                         
@@ -1084,8 +1087,8 @@ class AWSGetUserConnections : AWSRequestObject
                                         
                                         // Download the FB data, but not the image - the user data is likely used in the tables, and images should
                                         // only be downloaded when needed in the table
-                                        // NOTE: No need to update the Current User Object here - the FB ID and userID will not change, update in FBGetUserData
-                                        AWSPrepRequest(requestToCall: FBGetUserData(user: addUser, downloadImage: false), delegate: self.awsRequestDelegate!).prepRequest()
+                                        // NOTE: No need to update the Current User Object here - the FB ID and userID will not change, update in FBGetUserProfileData
+                                        AWSPrepRequest(requestToCall: FBGetUserProfileData(user: addUser, downloadImage: false), delegate: self.awsRequestDelegate!).prepRequest()
                                     }
                                 }
                             }
@@ -2066,7 +2069,7 @@ class AWSLog : AWSRequestObject
     }
 }
 
-class FBGetUserData : AWSRequestObject
+class FBGetUserProfileData : AWSRequestObject
 {
     var user: User!
     var downloadImage: Bool = false
@@ -2189,49 +2192,48 @@ class FBGetUserData : AWSRequestObject
     // Update the user in the global userList with the new data
     func updateUserGlobally(user: User)
     {
-        // Update the Current User object, if needed
-        if user.userID! == Constants.Data.currentUser.userID!
+        if let userID = user.userID, let currentUserID = Constants.Data.currentUser.userID
         {
-            Constants.Data.currentUser.userName = user.userName
-            Constants.Data.currentUser.userImage = user.userImage
-            
-            // Save to Core Data
-            CoreDataFunctions().currentUserSave(user: Constants.Data.currentUser)
-        }
-        
-        loopUserObjectCheck: for userObject in Constants.Data.userObjects
-        {
-            if userObject.userID == user.userID!
+            // Update the Current User object, if needed
+            if userID == currentUserID
             {
-                userObject.userName = user.userName
-                userObject.userImage = user.userImage
+                Constants.Data.currentUser.userName = user.userName
+                Constants.Data.currentUser.userImage = user.userImage
                 
                 // Save to Core Data
-                CoreDataFunctions().userSave(user: userObject)
-                
-                break loopUserObjectCheck
+                CoreDataFunctions().currentUserSave(user: Constants.Data.currentUser)
+            }
+            
+            loopUserObjectCheck: for userObject in Constants.Data.userObjects
+            {
+                if userObject.userID == userID
+                {
+                    userObject.userName = user.userName
+                    userObject.userImage = user.userImage
+                    
+                    // Save to Core Data
+                    CoreDataFunctions().userSave(user: userObject)
+                    
+                    break loopUserObjectCheck
+                }
             }
         }
     }
 }
 
-class FBGetCurrentUserInfo : AWSRequestObject
+class FBGetUserLikes : AWSRequestObject
 {
-    var interestList: [String]?
-    
-    // FBSDK METHOD - Get user friends list from FB
+    // FBSDK METHOD - Get user data from FB before attempting to log in via AWS
     override func makeRequest()
     {
-        print("AC-FBSDK - GET USER INFO")
-        
-        let params = ["fields": "about"] //"id, first_name, last_name, middle_name, name, email, picture"]
-        let fbRequest = FBSDKGraphRequest(graphPath: "me/likes", parameters: params)
+        print("AC-FBSDK - GUD - TRYING TO MAKE GRAPH REQUEST (LIKES)")
+        let fbRequest = FBSDKGraphRequest(graphPath: "me/likes", parameters: ["fields": "likes"])
         fbRequest?.start
             {(connection: FBSDKGraphRequestConnection?, result: Any?, error: Error?) in
                 
                 if error != nil
                 {
-                    print("AC-FBSDK - USER INFO - Error Getting Info \(error)")
+                    print("AC-FBSDK - GUD - Error Getting Info \(error)")
                     CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: error!.localizedDescription)
                     
                     // Notify the parent view that the AWS call failed
@@ -2245,27 +2247,41 @@ class FBGetCurrentUserInfo : AWSRequestObject
                 }
                 else
                 {
-                    if let resultDict = result as? [String:AnyObject]
+                    // Reset the userLikes list
+                    Constants.Data.currentUserLikes = [String]()
+                    
+                    if let resultDict = result as? [String: Any]
                     {
-                        print("AC-FBSDK - USER INFO RESULT DICT: \(resultDict)")
-                        if let likeData = resultDict["data"] as? NSArray
+                        if let likesData = resultDict["data"] as? [Any]
                         {
-                            print("AC-FBSDK - USER INFO COUNT: \(likeData.count)")
-                            for like in likeData
+                            for likesDataObject in likesData
                             {
-                                print("AC-FBSDK - LIKE: \(like)")
-//                                let id = friend["id"] as! String!
-//                                friendList?.append(id)
+                                if let likeGroup = likesDataObject as? [String: Any]
+                                {
+                                    if let likeGroupList = likeGroup["likes"] as? [String: Any]
+                                    {
+                                        if let likes = likeGroupList["data"] as? [Any]
+                                        {
+                                            for likeObject in likes
+                                            {
+                                                if let likeObjectParsed = likeObject as? [String: Any]
+                                                {
+                                                    if let like = likeObjectParsed["name"] as? String
+                                                    {
+                                                        print("AC-FBSDK - GUD - like : \(like)")
+                                                        Constants.Data.currentUserLikes.append(like)
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
-                        
-//                        // Notify the parent view that the request completed successfully
-//                        if let parentVC = self.awsRequestDelegate
-//                        {
-//                            parentVC.processAwsReturn(self, success: true)
-//                        }
                     }
                     
+                    // Save all downloaded data to Core Data
+                    CoreDataFunctions().likesSave()
                 }
         }
     }

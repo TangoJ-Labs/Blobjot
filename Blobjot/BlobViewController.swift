@@ -676,7 +676,7 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
         if indexPath.row > 0
         {
             // Create a back button and title for the Nav Bar
-            let backButtonItem = UIBarButtonItem(title: "BLOB \u{2193}",
+            let backButtonItem = UIBarButtonItem(title: "\u{2190}",
                                                  style: UIBarButtonItemStyle.plain,
                                                  target: self,
                                                  action: #selector(BlobViewController.popViewController(_:)))
@@ -685,7 +685,7 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
             let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
             let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
             ncTitleText.text = "All People"
-            ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 12)
+            ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 14)
             ncTitleText.textColor = Constants.Colors.colorTextNavBar
             ncTitleText.textAlignment = .center
             ncTitle.addSubview(ncTitleText)
@@ -694,14 +694,14 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
             let peopleVC = PeopleViewController()
             peopleVC.peopleListTopPerson = self.blobCommentArray[indexPath.row - 1].userID
             
-            // Instantiate the Nav Controller and attach the Nav Bar items to the view controller settings
-            let navController = UINavigationController(rootViewController: peopleVC)
+            // Assign the created Nav Bar settings to the Tab Bar Controller
             peopleVC.navigationItem.setLeftBarButton(backButtonItem, animated: true)
             peopleVC.navigationItem.titleView = ncTitle
             
-            // Change the Nav Bar color and present the view
-            navController.navigationBar.barTintColor = Constants.Colors.colorStatusBar
-            self.present(navController, animated: true, completion: nil)
+            if let navController = self.navigationController
+            {
+                navController.pushViewController(peopleVC, animated: true)
+            }
             
             // Save an action in Core Data
             CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
@@ -868,7 +868,8 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
     // This version is used when the top VC is popped from a Nav Bar button
     func popViewController(_ sender: UIBarButtonItem)
     {
-        self.dismiss(animated: true, completion: {})
+//        self.dismiss(animated: true, completion: {})
+        self.navigationController!.popViewController(animated: true)
     }
     
     func refreshBlobViewTable()
@@ -1041,7 +1042,7 @@ class BlobViewController: UIViewController, GMSMapViewDelegate, UITextViewDelega
                         let alertController = UtilityFunctions().createAlertOkView("AWSGetUserImage - Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                         self.present(alertController, animated: true, completion: nil)
                     }
-                case _ as FBGetUserData:
+                case _ as FBGetUserProfileData:
                     // Do not distinguish between success and failure for this class - both need to have the userList updated
                     // A new user image was just downloaded for a user in the blob comment list
                     // Reload the TableView

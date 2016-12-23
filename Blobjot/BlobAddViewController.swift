@@ -607,7 +607,7 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
         else
         {
             // Try to get the logged in user's FB data again (username is missing)
-            AWSPrepRequest(requestToCall: FBGetUserData(user: Constants.Data.currentUser, downloadImage: true), delegate: self as AWSRequestDelegate).prepRequest()
+            AWSPrepRequest(requestToCall: FBGetUserProfileData(user: Constants.Data.currentUser, downloadImage: true), delegate: self as AWSRequestDelegate).prepRequest()
         }
     }
     

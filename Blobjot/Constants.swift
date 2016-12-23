@@ -203,6 +203,7 @@ struct Constants
         static var stillSendingBlob: Bool = false
         
         static var currentUser = User()
+        static var currentUserLikes = [String]()
 //        static var currentUserName: String?
 //        static var currentUserImage: UIImage?
         
@@ -246,9 +247,9 @@ struct Constants
         static let mapViewShadowOpacity: Float = 0.2
         static let mapViewShadowRadius: CGFloat = 1.0
         
-        static let cardShadowOffset = CGSize(width: 0, height: 0.2)
-        static let cardShadowOpacity: Float = 0.5
-        static let cardShadowRadius: CGFloat = 2.0
+        static let cardShadowOffset = CGSize(width: 0, height: 0.1) // CGSize(width: 0, height: 0.2)
+        static let cardShadowOpacity: Float = 0.5 // 0.5
+        static let cardShadowRadius: CGFloat = 1.0 // 2.0
         
         static let blobsActiveTableViewCellHeight: CGFloat = 100
         static let blobsActiveTableViewUserImageSize: CGFloat = 60

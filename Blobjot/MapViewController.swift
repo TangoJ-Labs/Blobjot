@@ -15,11 +15,12 @@ import GooglePlacePicker
 import UIKit
 
 
-class MapViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, GMSMapViewDelegate, BlobAddViewControllerDelegate, GMSAutocompleteResultsViewControllerDelegate, FBSDKLoginButtonDelegate, AWSRequestDelegate, PeopleViewControllerDelegate, AccountViewControllerDelegate, HoleViewDelegate
+class MapViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, GMSMapViewDelegate, BlobAddViewControllerDelegate, GMSAutocompleteResultsViewControllerDelegate, FBSDKLoginButtonDelegate, UITabBarControllerDelegate, AWSRequestDelegate, PeopleViewControllerDelegate, AccountViewControllerDelegate, HoleViewDelegate
 {
     // Save device settings to adjust view if needed
     var screenSize: CGRect!
     var statusBarHeight: CGFloat!
+    var navBarHeight: CGFloat!
     var viewFrameY: CGFloat!
     
     // The views to hold major components of the view controller
@@ -34,10 +35,10 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     var selectorSlider: UISlider!
     
     // The search bar will be used to search Blobs on the map
-    var searchBarContainer: UIView!
-    var searchBar: UISearchBar!
-    var searchBarExitView: UIView!
-    var searchBarExitLabel: UILabel!
+//    var searchBarContainer: UIView!
+//    var searchBar: UISearchBar!
+//    var searchBarExitView: UIView!
+//    var searchBarExitLabel: UILabel!
     
     var resultsViewController: GMSAutocompleteResultsViewController?
     var searchController: UISearchController?
@@ -64,10 +65,10 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     var buttonAddImage: UIImageView!
     var buttonCancelAdd: UIView!
     var buttonCancelAddImage: UIImageView!
-    var buttonSearchView: UIView!
-    var buttonSearchViewImage: UIImageView!
-    var buttonListView: UIView!
-    var buttonListViewImage: UIImageView!
+//    var buttonSearchView: UIView!
+//    var buttonSearchViewImage: UIImageView!
+//    var buttonListView: UIView!
+//    var buttonListViewImage: UIImageView!
     var buttonTrackUser: UIView!
     var buttonTrackUserImage: UIImageView!
     var buttonRefreshMap: UIView!
@@ -88,13 +89,12 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     var loginProcessLabel: UILabel!
     
     // The tap gestures for buttons and other interactive components
-    var searchExitTapGesture: UITapGestureRecognizer!
+//    var searchExitTapGesture: UITapGestureRecognizer!
     var accountTapGesture: UITapGestureRecognizer!
     var buttonAddTapGesture: UITapGestureRecognizer!
     var buttonCancelAddTapGesture: UITapGestureRecognizer!
-    var buttonSearchTapGesture: UITapGestureRecognizer!
-    var buttonListTapGesture: UITapGestureRecognizer!
-    var buttonProfileTapGesture: UITapGestureRecognizer!
+//    var buttonSearchTapGesture: UITapGestureRecognizer!
+//    var buttonProfileTapGesture: UITapGestureRecognizer!
     var buttonTrackUserTapGesture: UITapGestureRecognizer!
     var buttonRefreshMapTapGesture: UITapGestureRecognizer!
     
@@ -163,15 +163,16 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     var accountVC: AccountViewController!
     var peopleVC: PeopleViewController!
     var addBlobVC: BlobAddViewController!
+    var tabBarControllerCustom: UITabBarController!
     
     // If the user is manually logging in, set the indicator for certain settings
     var newLogin: Bool = false
     
     var showLoginScreenBool: Bool = false
     
-    // Create boolean properties to indicate whether the menu buttons are open
-    var menuButtonMapOpen: Bool = false
-    var menuButtonBlobOpen: Bool = false
+//    // Create boolean properties to indicate whether the menu buttons are open
+//    var menuButtonMapOpen: Bool = false
+//    var menuButtonBlobOpen: Bool = false
     
     // Create a local property to hold the child VC
     var blobVC: BlobViewController!
@@ -200,17 +201,23 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         UIApplication.shared.isStatusBarHidden = false
         UIApplication.shared.statusBarStyle = Constants.Settings.statusBarStyle
         statusBarHeight = UIApplication.shared.statusBarFrame.size.height
+        navBarHeight = 44.0
+        if let navController = self.navigationController
+        {
+            print("MVC - NAV BAR HEIGHT: \(navController.navigationBar.frame.height)")
+            navBarHeight = navController.navigationBar.frame.height
+        }
         viewFrameY = self.view.frame.minY
         screenSize = UIScreen.main.bounds
         
-        let vcHeight = screenSize.height - statusBarHeight
-        var vcY = statusBarHeight
+        let vcHeight = screenSize.height - statusBarHeight - navBarHeight
+        var vcY = statusBarHeight + navBarHeight
         if statusBarHeight > 20 {
-            vcY = 20
+            vcY = 20 + navBarHeight
         }
         
         // Add the view container to hold all other views (allows for shadows on all subviews)
-        viewContainer = UIView(frame: CGRect(x: 0, y: vcY!, width: screenSize.width, height: vcHeight))
+        viewContainer = UIView(frame: CGRect(x: 0, y: vcY, width: screenSize.width, height: vcHeight))
         viewContainer.backgroundColor = Constants.Colors.standardBackground
         self.view.addSubview(viewContainer)
         
@@ -277,21 +284,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         selectorSlider.thumbTintColor = Constants.Colors.colorGrayDark
         selectorSlider.addTarget(self, action: #selector(MapViewController.sliderValueDidChange(_:)), for: .valueChanged)
         
-        // Add the Map Refresh button in the bottom right corner, just above the Add Button
-        buttonRefreshMap = UIView(frame: CGRect(x: viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonTrackUserSize, y: 5, width: Constants.Dim.mapViewButtonTrackUserSize, height: Constants.Dim.mapViewButtonTrackUserSize))
-        buttonRefreshMap.layer.cornerRadius = Constants.Dim.mapViewButtonSearchSize / 2
-        buttonRefreshMap.backgroundColor = Constants.Colors.colorMapViewButton
-        buttonRefreshMap.layer.shadowOffset = Constants.Dim.mapViewShadowOffset
-        buttonRefreshMap.layer.shadowOpacity = Constants.Dim.mapViewShadowOpacity
-        buttonRefreshMap.layer.shadowRadius = Constants.Dim.mapViewShadowRadius
-        viewContainer.addSubview(buttonRefreshMap)
-        
-        buttonRefreshMapImage = UIImageView(frame: CGRect(x: 5, y: 5, width: Constants.Dim.mapViewButtonSize - 10, height: Constants.Dim.mapViewButtonSize - 10))
-        buttonRefreshMapImage.image = UIImage(named: Constants.Strings.iconStringMapViewRefresh)
-        buttonRefreshMapImage.contentMode = UIViewContentMode.scaleAspectFit
-        buttonRefreshMapImage.clipsToBounds = true
-        buttonRefreshMap.addSubview(buttonRefreshMapImage)
-        
         // Add the "My Location" Tracker Button in the bottom right corner, to the left of the Add Button
         buttonTrackUser = UIView(frame: CGRect(x: viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonTrackUserSize, y: 5, width: Constants.Dim.mapViewButtonTrackUserSize, height: Constants.Dim.mapViewButtonTrackUserSize))
         buttonTrackUser.layer.cornerRadius = Constants.Dim.mapViewButtonTrackUserSize / 2
@@ -307,40 +299,55 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         buttonTrackUserImage.clipsToBounds = true
         buttonTrackUser.addSubview(buttonTrackUserImage)
         
+        // Add the Map Refresh button in the bottom right corner, just above the Add Button
+        buttonRefreshMap = UIView(frame: CGRect(x: viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonTrackUserSize, y: 10 + Constants.Dim.mapViewButtonTrackUserSize, width: Constants.Dim.mapViewButtonTrackUserSize, height: Constants.Dim.mapViewButtonTrackUserSize))
+        buttonRefreshMap.layer.cornerRadius = Constants.Dim.mapViewButtonSearchSize / 2
+        buttonRefreshMap.backgroundColor = Constants.Colors.colorMapViewButton
+        buttonRefreshMap.layer.shadowOffset = Constants.Dim.mapViewShadowOffset
+        buttonRefreshMap.layer.shadowOpacity = Constants.Dim.mapViewShadowOpacity
+        buttonRefreshMap.layer.shadowRadius = Constants.Dim.mapViewShadowRadius
+        viewContainer.addSubview(buttonRefreshMap)
+        
+        buttonRefreshMapImage = UIImageView(frame: CGRect(x: 5, y: 5, width: Constants.Dim.mapViewButtonSize - 10, height: Constants.Dim.mapViewButtonSize - 10))
+        buttonRefreshMapImage.image = UIImage(named: Constants.Strings.iconStringMapViewRefresh)
+        buttonRefreshMapImage.contentMode = UIViewContentMode.scaleAspectFit
+        buttonRefreshMapImage.clipsToBounds = true
+        buttonRefreshMap.addSubview(buttonRefreshMapImage)
+        
         // Show a loading indicator for when the Map is refreshing
         buttonRefreshMapActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: 0, y: 0, width: buttonRefreshMap.frame.width, height: buttonRefreshMap.frame.height))
         buttonRefreshMapActivityIndicator.color = UIColor.white
         buttonRefreshMap.addSubview(buttonRefreshMapActivityIndicator)
         
-        // The Search Button
-        buttonSearchView = UIView(frame: CGRect(x: viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonSearchSize, y: 5, width: Constants.Dim.mapViewButtonSearchSize, height: Constants.Dim.mapViewButtonSearchSize))
-        buttonSearchView.layer.cornerRadius = Constants.Dim.mapViewButtonSearchSize / 2
-        buttonSearchView.backgroundColor = Constants.Colors.colorMapViewButton
-        buttonSearchView.layer.shadowOffset = Constants.Dim.mapViewShadowOffset
-        buttonSearchView.layer.shadowOpacity = Constants.Dim.mapViewShadowOpacity
-        buttonSearchView.layer.shadowRadius = Constants.Dim.mapViewShadowRadius
-        viewContainer.addSubview(buttonSearchView)
-        
-        buttonSearchViewImage = UIImageView(frame: CGRect(x: 5, y: 5, width: Constants.Dim.mapViewButtonSize - 10, height: Constants.Dim.mapViewButtonSize - 10))
-        buttonSearchViewImage.image = UIImage(named: Constants.Strings.iconStringMapViewSearchCombo)
-        buttonSearchViewImage.contentMode = UIViewContentMode.scaleAspectFit
-        buttonSearchViewImage.clipsToBounds = true
-        buttonSearchView.addSubview(buttonSearchViewImage)
-        
-        // Add the List Button in the top right corner, just below the search button
-        buttonListView = UIView(frame: CGRect(x: viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonListSize, y: viewContainer.frame.height - 5 - Constants.Dim.mapViewButtonListSize, width: Constants.Dim.mapViewButtonListSize, height: Constants.Dim.mapViewButtonListSize))
-        buttonListView.layer.cornerRadius = Constants.Dim.mapViewButtonListSize / 2
-        buttonListView.backgroundColor = Constants.Colors.colorMapViewButton
-        buttonListView.layer.shadowOffset = Constants.Dim.mapViewShadowOffset
-        buttonListView.layer.shadowOpacity = Constants.Dim.mapViewShadowOpacity
-        buttonListView.layer.shadowRadius = Constants.Dim.mapViewShadowRadius
-        viewContainer.addSubview(buttonListView)
-        
-        buttonListViewImage = UIImageView(frame: CGRect(x: 5, y: 5, width: Constants.Dim.mapViewButtonSize - 10, height: Constants.Dim.mapViewButtonSize - 10))
-        buttonListViewImage.image = UIImage(named: Constants.Strings.iconStringMapViewList)
-        buttonListViewImage.contentMode = UIViewContentMode.scaleAspectFit
-        buttonListViewImage.clipsToBounds = true
-        buttonListView.addSubview(buttonListViewImage)
+//        // The Search Button
+//        buttonSearchView = UIView(frame: CGRect(x: viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonSearchSize, y: 5, width: Constants.Dim.mapViewButtonSearchSize, height: Constants.Dim.mapViewButtonSearchSize))
+//        buttonSearchView.layer.cornerRadius = Constants.Dim.mapViewButtonSearchSize / 2
+//        buttonSearchView.backgroundColor = Constants.Colors.colorMapViewButton
+//        buttonSearchView.layer.shadowOffset = Constants.Dim.mapViewShadowOffset
+//        buttonSearchView.layer.shadowOpacity = Constants.Dim.mapViewShadowOpacity
+//        buttonSearchView.layer.shadowRadius = Constants.Dim.mapViewShadowRadius
+//        viewContainer.addSubview(buttonSearchView)
+//        
+//        buttonSearchViewImage = UIImageView(frame: CGRect(x: 5, y: 5, width: Constants.Dim.mapViewButtonSize - 10, height: Constants.Dim.mapViewButtonSize - 10))
+//        buttonSearchViewImage.image = UIImage(named: Constants.Strings.iconStringMapViewSearchCombo)
+//        buttonSearchViewImage.contentMode = UIViewContentMode.scaleAspectFit
+//        buttonSearchViewImage.clipsToBounds = true
+//        buttonSearchView.addSubview(buttonSearchViewImage)
+//        
+//        // Add the List Button in the top right corner, just below the search button
+//        buttonListView = UIView(frame: CGRect(x: viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonListSize, y: viewContainer.frame.height - 5 - Constants.Dim.mapViewButtonListSize, width: Constants.Dim.mapViewButtonListSize, height: Constants.Dim.mapViewButtonListSize))
+//        buttonListView.layer.cornerRadius = Constants.Dim.mapViewButtonListSize / 2
+//        buttonListView.backgroundColor = Constants.Colors.colorMapViewButton
+//        buttonListView.layer.shadowOffset = Constants.Dim.mapViewShadowOffset
+//        buttonListView.layer.shadowOpacity = Constants.Dim.mapViewShadowOpacity
+//        buttonListView.layer.shadowRadius = Constants.Dim.mapViewShadowRadius
+//        viewContainer.addSubview(buttonListView)
+//        
+//        buttonListViewImage = UIImageView(frame: CGRect(x: 5, y: 5, width: Constants.Dim.mapViewButtonSize - 10, height: Constants.Dim.mapViewButtonSize - 10))
+//        buttonListViewImage.image = UIImage(named: Constants.Strings.iconStringMapViewList)
+//        buttonListViewImage.contentMode = UIViewContentMode.scaleAspectFit
+//        buttonListViewImage.clipsToBounds = true
+//        buttonListView.addSubview(buttonListViewImage)
         
         // Add the Add Button in the bottom right corner
         buttonAdd = UIView(frame: CGRect(x: viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonAddSize, y: viewContainer.frame.height - 5 - Constants.Dim.mapViewButtonAddSize, width: Constants.Dim.mapViewButtonAddSize, height: Constants.Dim.mapViewButtonAddSize))
@@ -352,7 +359,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         viewContainer.addSubview(buttonAdd)
         
         buttonAddImage = UIImageView(frame: CGRect(x: 5, y: 5, width: Constants.Dim.mapViewButtonSize - 10, height: Constants.Dim.mapViewButtonSize - 10))
-        buttonAddImage.image = UIImage(named: Constants.Strings.iconStringMapViewAddCombo)
+        buttonAddImage.image = UIImage(named: Constants.Strings.iconStringMapViewAdd)
         buttonAddImage.contentMode = UIViewContentMode.scaleAspectFit
         buttonAddImage.clipsToBounds = true
         buttonAdd.addSubview(buttonAddImage)
@@ -414,17 +421,17 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         locationBlobsCollectionView.showsVerticalScrollIndicator = false
         locationBlobsCollectionViewContainer.addSubview(locationBlobsCollectionView)
         
-        // Add the Search Box with the width of the screen and a height so that only the top buttons will by covered when deployed
-        // Initialize with the Search Bar Y location as negative so that the Search Bar is not visible
-        searchBarContainer = UIView(frame: CGRect(x: 0, y: 0 - Constants.Dim.mapViewSearchBarContainerHeight, width: viewContainer.frame.width, height: Constants.Dim.mapViewSearchBarContainerHeight))
-        searchBarContainer.backgroundColor = Constants.Colors.colorStatusBar
-        searchBarContainer.layer.shadowOffset = Constants.Dim.mapViewShadowOffset
-        searchBarContainer.layer.shadowOpacity = Constants.Dim.mapViewShadowOpacity
-        searchBarContainer.layer.shadowRadius = Constants.Dim.mapViewShadowRadius
-        
-        // The search bar exit view and label should be on the right side of the search bar container
-        searchBarExitView = UIView(frame: CGRect(x: viewContainer.frame.width - 50, y: 0, width: 50, height: 50))
-        searchBarContainer.addSubview(searchBarExitView)
+//        // Add the Search Box with the width of the screen and a height so that only the top buttons will by covered when deployed
+//        // Initialize with the Search Bar Y location as negative so that the Search Bar is not visible
+//        searchBarContainer = UIView(frame: CGRect(x: 0, y: 0 - Constants.Dim.mapViewSearchBarContainerHeight, width: viewContainer.frame.width, height: Constants.Dim.mapViewSearchBarContainerHeight))
+//        searchBarContainer.backgroundColor = Constants.Colors.colorStatusBar
+//        searchBarContainer.layer.shadowOffset = Constants.Dim.mapViewShadowOffset
+//        searchBarContainer.layer.shadowOpacity = Constants.Dim.mapViewShadowOpacity
+//        searchBarContainer.layer.shadowRadius = Constants.Dim.mapViewShadowRadius
+//        
+//        // The search bar exit view and label should be on the right side of the search bar container
+//        searchBarExitView = UIView(frame: CGRect(x: viewContainer.frame.width - 50, y: 0, width: 50, height: 50))
+//        searchBarContainer.addSubview(searchBarExitView)
         
         // MARK: SEARCH BAR COMPONENTS
         resultsViewController = GMSAutocompleteResultsViewController()
@@ -436,10 +443,12 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         // Add the search bar to the right of the nav bar,
         // use a popover to display the results.
         // Set an explicit size as we don't want to use the entire nav bar.
-        searchController?.searchBar.frame = CGRect(x: 0, y: 0, width: viewContainer.frame.width - 50, height: searchBarContainer.frame.height)
+        searchController?.searchBar.frame = CGRect(x: 0, y: 0, width: viewContainer.frame.width - 50, height: navBarHeight)
         searchController?.searchBar.searchBarStyle = UISearchBarStyle.minimal
+        searchController?.searchBar.setValue("\u{2573}", forKey: "_cancelButtonText")
         searchController?.searchBar.clipsToBounds = true
-        searchBarContainer.addSubview((searchController?.searchBar)!)
+        self.navigationItem.titleView = searchController?.searchBar
+//        searchBarContainer.addSubview((searchController?.searchBar)!)
         
         // When UISearchController presents the results view, present it in
         // this view controller, not one further up the chain.
@@ -450,12 +459,26 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         searchController?.obscuresBackgroundDuringPresentation = false
         searchController?.modalPresentationStyle = UIModalPresentationStyle.popover
         
-        searchBarExitLabel = UILabel(frame: CGRect(x: 5, y: 5, width: 40, height: 40))
-        searchBarExitLabel.text = "\u{2573}"
-        searchBarExitLabel.textColor = Constants.Colors.colorTextNavBar
-        searchBarExitLabel.textAlignment = .center
-        searchBarExitLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 24)
-        searchBarExitView.addSubview(searchBarExitLabel)
+        let leftButtonItem = UIBarButtonItem(image: UIImage(named: "MV_list_icon.png"),
+                                             style: UIBarButtonItemStyle.plain,
+                                             target: self,
+                                             action: #selector(MapViewController.loadActiveBlobsViewController))
+        leftButtonItem.tintColor = Constants.Colors.colorTextNavBar
+        self.navigationItem.setLeftBarButton(leftButtonItem, animated: true)
+        
+        let rightButtonItem = UIBarButtonItem(image: UIImage(named: "TAB_ICON_account_gray.png"),
+                                             style: UIBarButtonItemStyle.plain,
+                                             target: self,
+                                             action: #selector(MapViewController.loadTabViewController(_:)))
+        rightButtonItem.tintColor = Constants.Colors.colorTextNavBar
+        self.navigationItem.setRightBarButton(rightButtonItem, animated: true)
+        
+//        searchBarExitLabel = UILabel(frame: CGRect(x: 5, y: 5, width: 40, height: 40))
+//        searchBarExitLabel.text = "\u{2573}"
+//        searchBarExitLabel.textColor = Constants.Colors.colorTextNavBar
+//        searchBarExitLabel.textAlignment = .center
+//        searchBarExitLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 24)
+//        searchBarExitView.addSubview(searchBarExitLabel)
         
         // Add the Preview Box to be the same size as the Search Box
         // Initialize with the Y location as negative (hide the box) just like the Search Box
@@ -537,7 +560,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         
         fbLoginButton = FBSDKLoginButton()
         fbLoginButton.center = CGPoint(x: loginBox.frame.width / 2, y: loginBox.frame.height / 2)
-        fbLoginButton.readPermissions = ["public_profile", "email"]
+        fbLoginButton.readPermissions = ["public_profile", "email", "user_likes"]
         fbLoginButton.delegate = self
         loginBox.addSubview(fbLoginButton)
         
@@ -571,18 +594,14 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         statusBarView.backgroundColor = Constants.Colors.colorStatusBar
         self.view.addSubview(statusBarView)
         
-        // Add the Tap Gesture Recognizers for all Buttons
-        buttonSearchTapGesture = UITapGestureRecognizer(target: self, action: #selector(MapViewController.tapButtonSearch(_:)))
-        buttonSearchTapGesture.numberOfTapsRequired = 1  // add single tap
-        buttonSearchView.addGestureRecognizer(buttonSearchTapGesture)
+//        // Add the Tap Gesture Recognizers for all Buttons
+//        buttonSearchTapGesture = UITapGestureRecognizer(target: self, action: #selector(MapViewController.tapButtonSearch(_:)))
+//        buttonSearchTapGesture.numberOfTapsRequired = 1  // add single tap
+//        buttonSearchView.addGestureRecognizer(buttonSearchTapGesture)
         
-        searchExitTapGesture = UITapGestureRecognizer(target: self, action: #selector(MapViewController.tapSearchExit(_:)))
-        searchExitTapGesture.numberOfTapsRequired = 1  // add single tap
-        searchBarExitView.addGestureRecognizer(searchExitTapGesture)
-        
-        buttonListTapGesture = UITapGestureRecognizer(target: self, action: #selector(MapViewController.tapListView(_:)))
-        buttonListTapGesture.numberOfTapsRequired = 1  // add single tap
-        buttonListView.addGestureRecognizer(buttonListTapGesture)
+//        searchExitTapGesture = UITapGestureRecognizer(target: self, action: #selector(MapViewController.tapSearchExit(_:)))
+//        searchExitTapGesture.numberOfTapsRequired = 1  // add single tap
+//        searchBarExitView.addGestureRecognizer(searchExitTapGesture)
         
         buttonTrackUserTapGesture = UITapGestureRecognizer(target: self, action: #selector(MapViewController.toggleTrackUser(_:)))
         buttonTrackUserTapGesture.numberOfTapsRequired = 1  // add single tap
@@ -619,7 +638,10 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         
         // Setup the Blob list
         Constants.Data.locationBlobs = [Constants.Data.defaultBlob]
-
+        
+        // Recall the userLikes from Core Data and set them to the global variable
+        Constants.Data.currentUserLikes = CoreDataFunctions().likesRetrieve()
+        
         // Recall the Tutorial Views data in Core Data.  If it is empty for the current ViewController's tutorial, it has not been seen by the curren user.
         let tutorialViews = CoreDataFunctions().tutorialViewRetrieve()
         print("MVC: TUTORIAL VIEWS MAPVIEW: \(tutorialViews.tutorialMapViewDatetime)")
@@ -757,6 +779,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // Capture the Google Places Search Result
     func resultsController(_ resultsController: GMSAutocompleteResultsViewController, didAutocompleteWith place: GMSPlace)
     {
+        print("MVC - SEARCH BAR RESULTS CONTROLLER")
         searchController?.isActive = false
         
         // Show the status bar now that the search view is gone
@@ -787,24 +810,31 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     func resultsController(_ resultsController: GMSAutocompleteResultsViewController, didFailAutocompleteWithError error: Error)
     {
         // TODO: handle the error.
-        print("Error: ", error)
+        print("MVC - SEARCH BAR Error: ", error)
         CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: error.localizedDescription)
     }
     
     // Turn the network activity indicator on and off again.
     func didRequestAutocompletePredictions(forResultsController resultsController: GMSAutocompleteResultsViewController)
     {
-        UIApplication.shared.isNetworkActivityIndicatorVisible = true
+        print("MVC - SEARCH BAR didRequestAutocompletePredictions")
+//        UIApplication.shared.isNetworkActivityIndicatorVisible = true
         
-        // Hide the status bar while the user searches for the place
-        UIApplication.shared.isStatusBarHidden = true
-        self.statusBarHidden = true
-        self.setNeedsStatusBarAppearanceUpdate()
+//        // Hide the status bar while the user searches for the place
+//        UIApplication.shared.isStatusBarHidden = true
+//        self.statusBarHidden = true
+//        self.setNeedsStatusBarAppearanceUpdate()
     }
     
     func didUpdateAutocompletePredictions(forResultsController resultsController: GMSAutocompleteResultsViewController)
     {
-        UIApplication.shared.isNetworkActivityIndicatorVisible = false
+        print("MVC - SEARCH BAR didUpdateAutocompletePredictions")
+//        UIApplication.shared.isNetworkActivityIndicatorVisible = false
+//        
+//        // Show the status bar
+//        UIApplication.shared.isStatusBarHidden = false
+//        self.statusBarHidden = false
+//        self.setNeedsStatusBarAppearanceUpdate()
     }
     
     
@@ -820,58 +850,58 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
-    // When the Search Button is tapped, check to see if the search bar is visible
-    // If it is not visible, and add it to the view and animate in down into view
-    func tapButtonSearch(_ gesture: UITapGestureRecognizer)
-    {        
-        // Check whether the button has already been pushed - if not, expand the hidden buttons
-        // else, display the search bar
-        if !menuButtonMapOpen
-        {
-            menuButtonMapOpen = true
-            
-            // Add an animation to lower the hidden buttons
-            UIView.animate(withDuration: 0.2, animations:
-                {
-                    self.buttonTrackUser.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonTrackUserSize, y: 10 + Constants.Dim.mapViewButtonTrackUserSize, width: Constants.Dim.mapViewButtonTrackUserSize, height: Constants.Dim.mapViewButtonTrackUserSize)
-                    self.buttonRefreshMap.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonTrackUserSize, y: 15 + Constants.Dim.mapViewButtonTrackUserSize * 2, width: Constants.Dim.mapViewButtonTrackUserSize, height: Constants.Dim.mapViewButtonTrackUserSize)
-                }, completion:
-                { (finished: Bool) -> Void in
-                    self.buttonSearchViewImage.image = UIImage(named: Constants.Strings.iconStringMapViewSearch)
-            })
-        }
-        else
-        {
-            // Ensure that the search bar is not visible - if it is, the search button should not be visible to touch
-            if !searchBarVisible
-            {
-                searchBarVisible = true
-                viewContainer.addSubview(searchBarContainer)
-                
-                // Add an animation to lower the search button container into view
-                UIView.animate(withDuration: 0.2, animations:
-                    {
-                        self.searchBarContainer.frame = CGRect(x: 0, y: 0, width: self.viewContainer.frame.width, height: Constants.Dim.mapViewSearchBarContainerHeight)
-                    }, completion: nil)
-            }
-        }
-        
-        // Save an action in Core Data
-        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
-    }
+//    // When the Search Button is tapped, check to see if the search bar is visible
+//    // If it is not visible, and add it to the view and animate in down into view
+//    func tapButtonSearch(_ gesture: UITapGestureRecognizer)
+//    {        
+//        // Check whether the button has already been pushed - if not, expand the hidden buttons
+//        // else, display the search bar
+//        if !menuButtonMapOpen
+//        {
+//            menuButtonMapOpen = true
+//            
+//            // Add an animation to lower the hidden buttons
+//            UIView.animate(withDuration: 0.2, animations:
+//                {
+//                    self.buttonTrackUser.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonTrackUserSize, y: 10 + Constants.Dim.mapViewButtonTrackUserSize, width: Constants.Dim.mapViewButtonTrackUserSize, height: Constants.Dim.mapViewButtonTrackUserSize)
+//                    self.buttonRefreshMap.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonTrackUserSize, y: 15 + Constants.Dim.mapViewButtonTrackUserSize * 2, width: Constants.Dim.mapViewButtonTrackUserSize, height: Constants.Dim.mapViewButtonTrackUserSize)
+//                }, completion:
+//                { (finished: Bool) -> Void in
+//                    self.buttonSearchViewImage.image = UIImage(named: Constants.Strings.iconStringMapViewSearch)
+//            })
+//        }
+//        else
+//        {
+//            // Ensure that the search bar is not visible - if it is, the search button should not be visible to touch
+//            if !searchBarVisible
+//            {
+//                searchBarVisible = true
+//                viewContainer.addSubview(searchBarContainer)
+//                
+//                // Add an animation to lower the search button container into view
+//                UIView.animate(withDuration: 0.2, animations:
+//                    {
+//                        self.searchBarContainer.frame = CGRect(x: 0, y: 0, width: self.viewContainer.frame.width, height: Constants.Dim.mapViewSearchBarContainerHeight)
+//                    }, completion: nil)
+//            }
+//        }
+//        
+//        // Save an action in Core Data
+//        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
+//    }
     
-    // If the Search Box Exit Button is tapped, call the custom function to hide the box
-    func tapSearchExit(_ gesture: UITapGestureRecognizer)
-    {
-        self.closeSearchBox()
-        
-        // Save an action in Core Data
-        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
-    }
+//    // If the Search Box Exit Button is tapped, call the custom function to hide the box
+//    func tapSearchExit(_ gesture: UITapGestureRecognizer)
+//    {
+//        self.closeSearchBox()
+//        
+//        // Save an action in Core Data
+//        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
+//    }
     
     // If the List View Button is tapped, prepare a Navigation Controller and a Tab View Controller
     // Attach the needed Table Views to the Tab View Controller and load the Navigation Controller
-    func tapListView(_ gesture: UITapGestureRecognizer)
+    func prepPushView()
     {
         // Ensure that the Preview Screen is hidden
         self.closePreview()
@@ -882,57 +912,20 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             unhighlightMapCircleForBlob(mBlob)
         }
         
-        self.loadTabViewController(false)
+//        self.loadTabViewController(false)
         
         // Save an action in Core Data
-        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: "tapListView")
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: "prepPushView")
     }
     
-    func loadTabViewController(_ goToAccountTab: Bool)
+    func loadActiveBlobsViewController()
     {
-        // Prepare both of the Table View Controller and add Tab Bar Items to them
-        activeBlobsVC = BlobsActiveTableViewController()
-        let activeBlobsTabBarItem = UITabBarItem()
-        activeBlobsTabBarItem.tag = 1
-        activeBlobsTabBarItem.image = UIImage(named: Constants.Strings.iconStringTabIconActiveBlobsGray)
-        activeBlobsTabBarItem.selectedImage = UIImage(named: Constants.Strings.iconStringTabIconActiveBlobsWhite)
-        activeBlobsTabBarItem.imageInsets = UIEdgeInsets(top: 5, left: 0, bottom: -5, right: 0)
-        activeBlobsVC.tabBarItem = activeBlobsTabBarItem
-        
-        peopleVC = PeopleViewController()
-        peopleVC.peopleViewDelegate = self
-        peopleVC.tabBarUsed = true
-        let connectionsTabBarItem = UITabBarItem()
-        connectionsTabBarItem.tag = 2
-        connectionsTabBarItem.image = UIImage(named: Constants.Strings.iconStringTabIconConnectionsGray)
-        connectionsTabBarItem.selectedImage = UIImage(named: Constants.Strings.iconStringTabIconConnectionsWhite)
-        connectionsTabBarItem.imageInsets = UIEdgeInsets(top: 5, left: 0, bottom: -5, right: 0)
-        peopleVC.tabBarItem = connectionsTabBarItem
-        
-        accountVC = AccountViewController()
-        accountVC.accountViewDelegate = self
-        let accountTabBarItem = UITabBarItem()
-        accountTabBarItem.tag = 3
-        accountTabBarItem.image = UIImage(named: Constants.Strings.iconStringTabIconAccountGray)
-        accountTabBarItem.selectedImage = UIImage(named: Constants.Strings.iconStringTabIconAccountWhite)
-        accountTabBarItem.imageInsets = UIEdgeInsets(top: 5, left: 0, bottom: -5, right: 0)
-        accountVC.tabBarItem = accountTabBarItem
-        
-        // Create the Tab Bar Controller to hold the Table View Controllers
-        let tabBarController = UITabBarController()
-        tabBarController.tabBar.barTintColor = Constants.Colors.colorStatusBarLight
-        tabBarController.tabBar.tintColor = Constants.Colors.colorTextNavBar
-        tabBarController.viewControllers = [activeBlobsVC, peopleVC, accountVC]
-        
-        // If the account tab should be loaded, set the last (2) index to load
-        if goToAccountTab
-        {
-            tabBarController.selectedIndex = 2
-        }
+        // Reset features on the MVC
+        prepPushView()
         
         // Create the Back Button Item and Title View for the Tab View
         // These settings will be passed up to the assigned Navigation Controller for the Tab View Controller
-        let backButtonItem = UIBarButtonItem(title: "MAP \u{2193}",
+        let backButtonItem = UIBarButtonItem(title: "\u{2190}",
                                              style: UIBarButtonItemStyle.plain,
                                              target: self,
                                              action: #selector(MapViewController.popViewController(_:)))
@@ -940,74 +933,153 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         
         let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
         let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
-        ncTitleText.text = "BLOBS"
-        ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 12)
+        ncTitleText.text = "Nearby Blobs"
+        ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 14)
         ncTitleText.textColor = Constants.Colors.colorTextNavBar
         ncTitleText.textAlignment = .center
         ncTitle.addSubview(ncTitleText)
         
+        // Prepare the Active Blobs VC
         // Assign the created Nav Bar settings to the Tab Bar Controller
-        tabBarController.navigationItem.setLeftBarButton(backButtonItem, animated: true)
-        tabBarController.navigationItem.titleView = ncTitle
+        activeBlobsVC = BlobsActiveTableViewController()
+        activeBlobsVC.navigationItem.setLeftBarButton(backButtonItem, animated: true)
+        activeBlobsVC.navigationItem.titleView = ncTitle
         
-        // Create the Navigation Controller, attach the Tab Bar Controller and present the View Controller
-        let navController = UINavigationController(rootViewController: tabBarController)
-        navController.navigationBar.barTintColor = Constants.Colors.colorStatusBar
-        self.present(navController, animated: true, completion: nil)
+        print("MVC - NAV CONTROLLER: \(self.navigationController)")
+        if let navController = self.navigationController
+        {
+            navController.pushViewController(activeBlobsVC, animated: true)
+        }
         
         // Save an action in Core Data
         CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
+    
+    func loadTabViewController(_ goToAccountTab: Bool)
+    {
+        // Reset features on the MVC
+        prepPushView()
+        
+        // Prepare both of the Table View Controllers and add Tab Bar Items to them
+        peopleVC = PeopleViewController()
+        peopleVC.peopleViewDelegate = self
+        peopleVC.tabBarUsed = true
+        let peopleTabBarItem = UITabBarItem()
+        peopleTabBarItem.tag = 1
+        peopleTabBarItem.image = UIImage(named: Constants.Strings.iconStringTabIconConnectionsGray)
+        peopleTabBarItem.selectedImage = UIImage(named: Constants.Strings.iconStringTabIconConnectionsWhite)
+        peopleTabBarItem.imageInsets = UIEdgeInsets(top: 5, left: 0, bottom: -5, right: 0)
+        peopleVC.tabBarItem = peopleTabBarItem
+        
+        accountVC = AccountViewController()
+        accountVC.accountViewDelegate = self
+        let accountTabBarItem = UITabBarItem()
+        accountTabBarItem.tag = 2
+        accountTabBarItem.image = UIImage(named: Constants.Strings.iconStringTabIconAccountGray)
+        accountTabBarItem.selectedImage = UIImage(named: Constants.Strings.iconStringTabIconAccountWhite)
+        accountTabBarItem.imageInsets = UIEdgeInsets(top: 5, left: 0, bottom: -5, right: 0)
+        accountVC.tabBarItem = accountTabBarItem
+        
+        // Create the Tab Bar Controller to hold the Table View Controllers
+        tabBarControllerCustom = UITabBarController()
+        tabBarControllerCustom.delegate = self
+        tabBarControllerCustom.tabBar.barTintColor = Constants.Colors.colorStatusBarLight
+        tabBarControllerCustom.tabBar.tintColor = Constants.Colors.colorTextNavBar
+        tabBarControllerCustom.viewControllers = [peopleVC, accountVC]
+        
+        // If the account tab should be loaded, set the last (1) index to load
+        if goToAccountTab
+        {
+            tabBarControllerCustom.selectedIndex = 1
+        }
+        
+        // Create the Back Button Item and Title View for the Tab View
+        // These settings will be passed up to the assigned Navigation Controller for the Tab View Controller
+        let backButtonItem = UIBarButtonItem(title: "\u{2190}",
+                                             style: UIBarButtonItemStyle.plain,
+                                             target: self,
+                                             action: #selector(MapViewController.popViewController(_:)))
+        backButtonItem.tintColor = Constants.Colors.colorTextNavBar
+        
+        // Assign the created Nav Bar settings to the Tab Bar Controller
+        tabBarControllerCustom.navigationItem.setLeftBarButton(backButtonItem, animated: true)
+        
+        print("MVC - NAV CONTROLLER: \(self.navigationController)")
+        if let navController = self.navigationController
+        {
+            navController.pushViewController(tabBarControllerCustom, animated: true)
+        }
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
+    }
+    
+    
+    // MARK: TAB BAR DELEGATE METHODS
+    
+    func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController)
+    {
+        print("MVC - TAB BAR - DID SELECT: \(viewController)")
+        if let tabBar = self.tabBarControllerCustom
+        {
+            if viewController == peopleVC
+            {
+                let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
+                let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
+                ncTitleText.text = "People"
+                ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 14)
+                ncTitleText.textColor = Constants.Colors.colorTextNavBar
+                ncTitleText.textAlignment = .center
+                ncTitle.addSubview(ncTitleText)
+                tabBar.navigationItem.titleView = ncTitle
+            }
+            else if viewController == accountVC
+            {
+                let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
+                let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
+                ncTitleText.text = "Account"
+                ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 14)
+                ncTitleText.textColor = Constants.Colors.colorTextNavBar
+                ncTitleText.textAlignment = .center
+                ncTitle.addSubview(ncTitleText)
+                tabBar.navigationItem.titleView = ncTitle
+            }
+        }
+        
+    }
+    
     
     // If the Add Button is tapped, check to see if the addingBlob indicator has already been activated (true)
     // If not, hide the normal buttons and just show the buttons needed for the Add Blob action (gray circle, slider, etc.)
     // If so, create a Nav Controller and a new BlobAddViewController and load the Nav Controller and pass the new Blob data
     func tapAddView(_ gesture: UITapGestureRecognizer)
     {
-        // Check whether the button has already been pushed - if not, expand the hidden buttons
-        // else, display the add view features
-        if !menuButtonBlobOpen
+        if addingBlob
         {
-            menuButtonBlobOpen = true
+            // If the addingBlob indicator is true, the user has already started the Add Blob process and has chosen a location and radius for the Blob
+            // Instantiate the BlobAddViewController and a Nav Controller and present the View Controller
             
-            // Add an animation to raise the hidden button
-            UIView.animate(withDuration: 0.2, animations:
-                {
-                    self.buttonListView.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonListSize, y: self.viewContainer.frame.height - 10 - Constants.Dim.mapViewButtonListSize * 2, width: Constants.Dim.mapViewButtonListSize, height: Constants.Dim.mapViewButtonListSize)
-                }, completion:
-                {(finished: Bool) -> Void in
-                    self.buttonAddImage.image = UIImage(named: Constants.Strings.iconStringMapViewAdd)
-            })
+            self.bringAddBlobViewControllerTopOfStack(true)
         }
         else
         {
-            if addingBlob
-            {
-                // If the addingBlob indicator is true, the user has already started the Add Blob process and has chosen a location and radius for the Blob
-                // Instantiate the BlobAddViewController and a Nav Controller and present the View Controller
-                
-                self.bringAddBlobViewControllerTopOfStack(true)
-            }
-            else
-            {
-                // If the addingBlob indicator is false, the user is just starting the Add Blob process, so
-                // hide the buttons not needed and show the Cancel Add Button
-                
-                // Change the add blob indicator to true before calling adjustMapViewCamera
-                addingBlob = true
-                
-                buttonAddImage.image = UIImage(named: Constants.Strings.iconStringMapViewCheck)
-                
-                viewContainer.addSubview(buttonCancelAdd)
-                mapView.addSubview(selectorMessageBox)
-                mapView.addSubview(selectorCircle)
-                mapView.addSubview(selectorSlider)
-                
-                // Adjust the Map Camera so that the map cannot be viewed at an angle while adding a new Blob
-                // The circle remains a circle when the map is angled, which is not a true representation of the Blob
-                // that will be added, so the mapView is kept unangled while a Blob is being added
-                adjustMapViewCamera()
-            }
+            // If the addingBlob indicator is false, the user is just starting the Add Blob process, so
+            // hide the buttons not needed and show the Cancel Add Button
+            
+            // Change the add blob indicator to true before calling adjustMapViewCamera
+            addingBlob = true
+            
+            buttonAddImage.image = UIImage(named: Constants.Strings.iconStringMapViewCheck)
+            
+            viewContainer.addSubview(buttonCancelAdd)
+            mapView.addSubview(selectorMessageBox)
+            mapView.addSubview(selectorCircle)
+            mapView.addSubview(selectorSlider)
+            
+            // Adjust the Map Camera so that the map cannot be viewed at an angle while adding a new Blob
+            // The circle remains a circle when the map is angled, which is not a true representation of the Blob
+            // that will be added, so the mapView is kept unangled while a Blob is being added
+            adjustMapViewCamera()
         }
         
         // Save an action in Core Data
@@ -1038,13 +1110,15 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // This version is used when the top VC is popped from a Nav Bar button
     func popViewController(_ sender: UIBarButtonItem)
     {
-        self.dismiss(animated: true, completion: {})
+//        self.dismiss(animated: true, completion: {})
+        self.navigationController!.popViewController(animated: true)
     }
     
     // Dismiss the latest View Controller presented from this VC
     func popViewController()
     {
-        self.dismiss(animated: true, completion: {})
+//        self.dismiss(animated: true, completion: {})
+        self.navigationController!.popViewController(animated: true)
     }
 
 // *COMPLETE****** Decide how the user should be tracked without making the interface annoying
@@ -1108,7 +1182,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             if previewBlob.blobExtraRequested
             {
                 // Create a back button and title for the Nav Bar
-                let backButtonItem = UIBarButtonItem(title: "MAP \u{2193}",
+                let backButtonItem = UIBarButtonItem(title: "\u{2190}",
                                                      style: UIBarButtonItemStyle.plain,
                                                      target: self,
                                                      action: #selector(MapViewController.popViewController(_:)))
@@ -1117,7 +1191,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
                 let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
                 ncTitleText.text = "All People"
-                ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 12)
+                ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 14)
                 ncTitleText.textColor = Constants.Colors.colorTextNavBar
                 ncTitleText.textAlignment = .center
                 ncTitle.addSubview(ncTitleText)
@@ -1126,14 +1200,14 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 let peopleVC = PeopleViewController()
                 peopleVC.peopleListTopPerson = previewBlob.blobUserID
                 
-                // Instantiate the Nav Controller and attach the Nav Bar items to the view controller settings
-                let navController = UINavigationController(rootViewController: peopleVC)
+                // Assign the created Nav Bar settings to the Tab Bar Controller
                 peopleVC.navigationItem.setLeftBarButton(backButtonItem, animated: true)
                 peopleVC.navigationItem.titleView = ncTitle
                 
-                // Change the Nav Bar color and present the view
-                navController.navigationBar.barTintColor = Constants.Colors.colorStatusBar
-                self.present(navController, animated: true, completion: nil)
+                if let navController = self.navigationController
+                {
+                    navController.pushViewController(peopleVC, animated: true)
+                }
             }
         }
         
@@ -1162,7 +1236,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 }
                 
                 // Create a back button and title for the Nav Bar
-                let backButtonItem = UIBarButtonItem(title: "MAP \u{2193}",
+                let backButtonItem = UIBarButtonItem(title: "\u{2190}",
                                                      style: UIBarButtonItemStyle.plain,
                                                      target: self,
                                                      action: #selector(MapViewController.popViewController(_:)))
@@ -1182,7 +1256,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 }
                 
                 ncTitleText.textColor = Constants.Colors.colorTextNavBar
-                ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 12)
+                ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 14)
                 ncTitleText.textAlignment = .center
                 ncTitle.addSubview(ncTitleText)
                 
@@ -1190,14 +1264,15 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 blobVC = BlobViewController()
                 blobVC.blob = pBlob
                 
-                // Instantiate the Nav Controller and attach the Nav Bar items to the view controller settings
-                let navController = UINavigationController(rootViewController: blobVC)
+                // Assign the created Nav Bar settings to the Tab Bar Controller
                 blobVC.navigationItem.setLeftBarButton(backButtonItem, animated: true)
                 blobVC.navigationItem.titleView = ncTitle
                 
-                // Change the Nav Bar color and present the view
-                navController.navigationBar.barTintColor = Constants.Colors.colorStatusBar
-                self.present(navController, animated: true, completion: nil)
+                print("MVC - NAV CONTROLLER: \(self.navigationController)")
+                if let navController = self.navigationController
+                {
+                    navController.pushViewController(blobVC, animated: true)
+                }
                 
                 // Reload the collectionView so that the previously selected Blob is no longer sticking out
                 self.refreshCollectionView()
@@ -1275,10 +1350,12 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     
     func refreshBlobs(_ userLocationCurrent: CLLocation)
     {
+        print("MVC - refreshBlobs - CURRENT LOCATION: \(userLocationCurrent), PREVIOUS LOCATION: \(self.lastBlobjotBlobsLocation)")
+        
         // Ensure that the distance change is greater than the minimum setting for updating Blobjot Blobs
         if let blobjotBlobsLocationPrevious = self.lastBlobjotBlobsLocation
         {
-            print("CURRENT LOCATION: \(userLocationCurrent), PREVIOUS LOCATION: \(blobjotBlobsLocationPrevious)")
+            print("MVC - CURRENT LOCATION: \(userLocationCurrent), PREVIOUS LOCATION: \(blobjotBlobsLocationPrevious)")
             let locationDistance = userLocationCurrent.distance(from: blobjotBlobsLocationPrevious)
             
             // Ensure that the distance change is greater than the minimum setting
@@ -1365,7 +1442,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                                     // If the userName or userImage does not exist, request them from FB
                                     if userObject.userName == nil || userObject.userImage == nil
                                     {
-                                        AWSPrepRequest(requestToCall: FBGetUserData(user: userObject, downloadImage: true), delegate: self as AWSRequestDelegate).prepRequest()
+                                        AWSPrepRequest(requestToCall: FBGetUserProfileData(user: userObject, downloadImage: true), delegate: self as AWSRequestDelegate).prepRequest()
                                     }
                                     
                                     break loopUserObjectCheck
@@ -1518,35 +1595,35 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     
     func mapView(_ mapView: GMSMapView, didTapAt coordinate: CLLocationCoordinate2D)
     {
-        // Check whether any menu button is expanded - if so, close them
-        if menuButtonMapOpen
-        {
-            menuButtonMapOpen = false
-            
-            // Add an animation to hide the buttons
-            UIView.animate(withDuration: 0.2, animations:
-                {
-                    self.buttonTrackUser.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonTrackUserSize, y: 5, width: Constants.Dim.mapViewButtonTrackUserSize, height: Constants.Dim.mapViewButtonTrackUserSize)
-                    self.buttonRefreshMap.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonTrackUserSize, y: 5, width: Constants.Dim.mapViewButtonTrackUserSize, height: Constants.Dim.mapViewButtonTrackUserSize)
-                }, completion:
-                {(finished: Bool) -> Void in
-                    self.buttonSearchViewImage.image = UIImage(named: Constants.Strings.iconStringMapViewSearchCombo)
-            })
-        }
-        // However, only close the Blob menu buttons if the addingBlob indicator is false - if adding a Blob, the Blob menu buttons should remain expanded
-        if menuButtonBlobOpen && !addingBlob
-        {
-            menuButtonBlobOpen = false
-            
-            // Add an animation to hide the buttons
-            UIView.animate(withDuration: 0.2, animations:
-                {
-                    self.buttonListView.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonListSize, y: self.viewContainer.frame.height - 5 - Constants.Dim.mapViewButtonListSize, width: Constants.Dim.mapViewButtonListSize, height: Constants.Dim.mapViewButtonListSize)
-                }, completion:
-                {(finished: Bool) -> Void in
-                    self.buttonAddImage.image = UIImage(named: Constants.Strings.iconStringMapViewAddCombo)
-            })
-        }
+//        // Check whether any menu button is expanded - if so, close them
+//        if menuButtonMapOpen
+//        {
+//            menuButtonMapOpen = false
+//            
+//            // Add an animation to hide the buttons
+//            UIView.animate(withDuration: 0.2, animations:
+//                {
+//                    self.buttonTrackUser.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonTrackUserSize, y: 5, width: Constants.Dim.mapViewButtonTrackUserSize, height: Constants.Dim.mapViewButtonTrackUserSize)
+//                    self.buttonRefreshMap.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonTrackUserSize, y: 5, width: Constants.Dim.mapViewButtonTrackUserSize, height: Constants.Dim.mapViewButtonTrackUserSize)
+//                }, completion:
+//                {(finished: Bool) -> Void in
+//                    self.buttonSearchViewImage.image = UIImage(named: Constants.Strings.iconStringMapViewSearchCombo)
+//            })
+//        }
+//        // However, only close the Blob menu buttons if the addingBlob indicator is false - if adding a Blob, the Blob menu buttons should remain expanded
+//        if menuButtonBlobOpen && !addingBlob
+//        {
+//            menuButtonBlobOpen = false
+//            
+//            // Add an animation to hide the buttons
+//            UIView.animate(withDuration: 0.2, animations:
+//                {
+//                    self.buttonListView.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonListSize, y: self.viewContainer.frame.height - 5 - Constants.Dim.mapViewButtonListSize, width: Constants.Dim.mapViewButtonListSize, height: Constants.Dim.mapViewButtonListSize)
+//                }, completion:
+//                {(finished: Bool) -> Void in
+//                    self.buttonAddImage.image = UIImage(named: Constants.Strings.iconStringMapViewAddCombo)
+//            })
+//        }
         
         /*
          1 - Check to see if the tap is within a Blob on the map
@@ -1631,35 +1708,35 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // Called before the map is moved
     func mapView(_ mapView: GMSMapView, willMove gesture: Bool)
     {
-        // Check whether any menu button is expanded - if so, close them
-        if menuButtonMapOpen
-        {
-            menuButtonMapOpen = false
-            
-            // Add an animation to hide the buttons
-            UIView.animate(withDuration: 0.2, animations:
-                {
-                    self.buttonTrackUser.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonTrackUserSize, y: 5, width: Constants.Dim.mapViewButtonTrackUserSize, height: Constants.Dim.mapViewButtonTrackUserSize)
-                    self.buttonRefreshMap.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonTrackUserSize, y: 5, width: Constants.Dim.mapViewButtonTrackUserSize, height: Constants.Dim.mapViewButtonTrackUserSize)
-                }, completion:
-                {(finished: Bool) -> Void in
-                    self.buttonSearchViewImage.image = UIImage(named: Constants.Strings.iconStringMapViewSearchCombo)
-            })
-        }
-        // However, only close the Blob menu buttons if the addingBlob indicator is false - if adding a Blob, the Blob menu buttons should remain expanded
-        if menuButtonBlobOpen && !addingBlob
-        {
-            menuButtonBlobOpen = false
-            
-            // Add an animation to hide the buttons
-            UIView.animate(withDuration: 0.2, animations:
-                {
-                    self.buttonListView.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonListSize, y: self.viewContainer.frame.height - 5 - Constants.Dim.mapViewButtonListSize, width: Constants.Dim.mapViewButtonListSize, height: Constants.Dim.mapViewButtonListSize)
-                }, completion:
-                {(finished: Bool) -> Void in
-                    self.buttonAddImage.image = UIImage(named: Constants.Strings.iconStringMapViewAddCombo)
-            })
-        }
+//        // Check whether any menu button is expanded - if so, close them
+//        if menuButtonMapOpen
+//        {
+//            menuButtonMapOpen = false
+//            
+//            // Add an animation to hide the buttons
+//            UIView.animate(withDuration: 0.2, animations:
+//                {
+//                    self.buttonTrackUser.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonTrackUserSize, y: 5, width: Constants.Dim.mapViewButtonTrackUserSize, height: Constants.Dim.mapViewButtonTrackUserSize)
+//                    self.buttonRefreshMap.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonTrackUserSize, y: 5, width: Constants.Dim.mapViewButtonTrackUserSize, height: Constants.Dim.mapViewButtonTrackUserSize)
+//                }, completion:
+//                {(finished: Bool) -> Void in
+//                    self.buttonSearchViewImage.image = UIImage(named: Constants.Strings.iconStringMapViewSearchCombo)
+//            })
+//        }
+//        // However, only close the Blob menu buttons if the addingBlob indicator is false - if adding a Blob, the Blob menu buttons should remain expanded
+//        if menuButtonBlobOpen && !addingBlob
+//        {
+//            menuButtonBlobOpen = false
+//            
+//            // Add an animation to hide the buttons
+//            UIView.animate(withDuration: 0.2, animations:
+//                {
+//                    self.buttonListView.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonListSize, y: self.viewContainer.frame.height - 5 - Constants.Dim.mapViewButtonListSize, width: Constants.Dim.mapViewButtonListSize, height: Constants.Dim.mapViewButtonListSize)
+//                }, completion:
+//                {(finished: Bool) -> Void in
+//                    self.buttonAddImage.image = UIImage(named: Constants.Strings.iconStringMapViewAddCombo)
+//            })
+//        }
         
         // If the user is adding a Blob, do not allow them to zoom lower than mapViewAddBlobMinZoom (higher view)
         if addingBlob
@@ -1914,8 +1991,8 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // Cell Selection Blob
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath)
     {
-        // Close the Search Box - the user is not interacting with this feature anymore
-        self.closeSearchBox()
+//        // Close the Search Box - the user is not interacting with this feature anymore
+//        self.closeSearchBox()
         
         // Clear the Preview Box for new Blob data
         self.clearPreview()
@@ -2026,40 +2103,40 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     
     // MARK: CUSTOM FUNCTIONS
     
-    // Check to see if the Search Bar is visible, and if so animate the container to hide it behind the Status Bar
-    // Once the animation completes, remove the Search Bar Container from the view container
-    func closeSearchBox()
-    {
-        if searchBarVisible
-        {
-            // Hide the search marker
-            if searchMarker != nil
-            {
-                searchMarker!.map = nil
-            }
-            
-            searchBarVisible = false
-            
-            // Add an animation to raise the search button container out of view
-            UIView.animate(withDuration: 0.2, animations:
-                {
-                    self.searchBarContainer.frame = CGRect(x: 0, y: 0 - Constants.Dim.mapViewSearchBarContainerHeight, width: self.viewContainer.frame.width, height: Constants.Dim.mapViewSearchBarContainerHeight)
-                    self.buttonSearchView.layer.shadowOffset = CGSize(width: 0, height: 0.0)
-                    self.buttonSearchView.layer.shadowOpacity = 0.2
-                    self.buttonSearchView.layer.shadowRadius = 0.0
-                }, completion:
-                {
-                    (value: Bool) in
-                    self.buttonSearchView.layer.shadowOffset = Constants.Dim.mapViewShadowOffset
-                    self.buttonSearchView.layer.shadowOpacity = Constants.Dim.mapViewShadowOpacity
-                    self.buttonSearchView.layer.shadowRadius = Constants.Dim.mapViewShadowRadius
-                    
-                    // Remove the Search Box from the view container so that a flip animation to show a new view controller
-                    // does not show the Search Box above the Status Bar
-                    self.searchBarContainer.removeFromSuperview()
-            })
-        }
-    }
+//    // Check to see if the Search Bar is visible, and if so animate the container to hide it behind the Status Bar
+//    // Once the animation completes, remove the Search Bar Container from the view container
+//    func closeSearchBox()
+//    {
+//        if searchBarVisible
+//        {
+//            // Hide the search marker
+//            if searchMarker != nil
+//            {
+//                searchMarker!.map = nil
+//            }
+//            
+//            searchBarVisible = false
+//            
+//            // Add an animation to raise the search button container out of view
+//            UIView.animate(withDuration: 0.2, animations:
+//                {
+//                    self.searchBarContainer.frame = CGRect(x: 0, y: 0 - Constants.Dim.mapViewSearchBarContainerHeight, width: self.viewContainer.frame.width, height: Constants.Dim.mapViewSearchBarContainerHeight)
+//                    self.buttonSearchView.layer.shadowOffset = CGSize(width: 0, height: 0.0)
+//                    self.buttonSearchView.layer.shadowOpacity = 0.2
+//                    self.buttonSearchView.layer.shadowRadius = 0.0
+//                }, completion:
+//                {
+//                    (value: Bool) in
+//                    self.buttonSearchView.layer.shadowOffset = Constants.Dim.mapViewShadowOffset
+//                    self.buttonSearchView.layer.shadowOpacity = Constants.Dim.mapViewShadowOpacity
+//                    self.buttonSearchView.layer.shadowRadius = Constants.Dim.mapViewShadowRadius
+//                    
+//                    // Remove the Search Box from the view container so that a flip animation to show a new view controller
+//                    // does not show the Search Box above the Status Bar
+//                    self.searchBarContainer.removeFromSuperview()
+//            })
+//        }
+//    }
     
     // Check to see if the Preview Box is low enough to be visible
     // If so, animate the raising of the Preview Box out of view
@@ -2180,20 +2257,20 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         selectorCircle.removeFromSuperview()
         selectorSlider.removeFromSuperview()
         
-        // Double-check that the Blob menu buttons are still expanded, and hide them if they are visible
-        if menuButtonBlobOpen
-        {
-            menuButtonBlobOpen = false
-            
-            // Add an animation to hide the buttons
-            UIView.animate(withDuration: 0.2, animations:
-                {
-                    self.buttonListView.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonListSize, y: self.viewContainer.frame.height - 5 - Constants.Dim.mapViewButtonListSize, width: Constants.Dim.mapViewButtonListSize, height: Constants.Dim.mapViewButtonListSize)
-                }, completion:
-                {(finished: Bool) -> Void in
-                    self.buttonAddImage.image = UIImage(named: Constants.Strings.iconStringMapViewAddCombo)
-            })
-        }
+//        // Double-check that the Blob menu buttons are still expanded, and hide them if they are visible
+//        if menuButtonBlobOpen
+//        {
+//            menuButtonBlobOpen = false
+//            
+//            // Add an animation to hide the buttons
+//            UIView.animate(withDuration: 0.2, animations:
+//                {
+//                    self.buttonListView.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonListSize, y: self.viewContainer.frame.height - 5 - Constants.Dim.mapViewButtonListSize, width: Constants.Dim.mapViewButtonListSize, height: Constants.Dim.mapViewButtonListSize)
+//                }, completion:
+//                {(finished: Bool) -> Void in
+//                    self.buttonAddImage.image = UIImage(named: Constants.Strings.iconStringMapViewAddCombo)
+//            })
+//        }
         
         // Change the add blob indicator back to false efore calling adjustMapViewCamera
         addingBlob = false
@@ -2337,12 +2414,12 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                             }
                             else
                             {
-                                AWSPrepRequest(requestToCall: FBGetUserData(user: user, downloadImage: true), delegate: self as AWSRequestDelegate).prepRequest()
+                                AWSPrepRequest(requestToCall: FBGetUserProfileData(user: user, downloadImage: true), delegate: self as AWSRequestDelegate).prepRequest()
                             }
                         }
                         else
                         {
-                            AWSPrepRequest(requestToCall: FBGetUserData(user: user, downloadImage: true), delegate: self as AWSRequestDelegate).prepRequest()
+                            AWSPrepRequest(requestToCall: FBGetUserProfileData(user: user, downloadImage: true), delegate: self as AWSRequestDelegate).prepRequest()
                         }
                         
                         break loopUserCheck
@@ -2450,6 +2527,19 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         addCircle.fillColor = Constants().blobColor(blobType, mainMap: true)
         addCircle.strokeColor = Constants().blobColor(blobType, mainMap: true)
         addCircle.strokeWidth = 1
+        // If the Blob is a Blobjot (Public) Blob, and it contains user-liked keywords, highlight the Blob edge
+        if blobType == Constants.BlobTypes.blobjot
+        {
+// *COMPLETE***** Check whether the Blob has user-liked keywords
+            for like in Constants.Data.currentUserLikes
+            {
+                if like == blobTitle
+                {
+                    addCircle.strokeColor = Constants().blobColorOpaque(blobType, mainMap: true)
+                    addCircle.strokeWidth = 5
+                }
+            }
+        }
         addCircle.map = self.mapView
         Constants.Data.mapCircles.append(addCircle)
         print("MVC-AMBM - ADDED CIRCLE")
@@ -2714,7 +2804,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                         // Show the error message
                         self.createAlertOkView("AWSGetSingleUserData Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                     }
-                case let fbGetUserData as FBGetUserData:
+                case let FBGetUserProfileData as FBGetUserProfileData:
                     // Do not distinguish between success and failure for this class - both need to have the userList updated
                     // Refresh the collection view
                     self.refreshCollectionView()
@@ -2723,7 +2813,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                     self.updateBlobActionTable()
                     
                     // Update the preview data
-                    self.refreshPreviewUserData(fbGetUserData.user)
+                    self.refreshPreviewUserData(FBGetUserProfileData.user)
                     
                     // Refresh child VCs
                     if self.blobVC != nil
