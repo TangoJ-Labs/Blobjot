@@ -362,6 +362,9 @@ class AWSLoginUser : AWSRequestObject
                     
 //                    UtilityFunctions().registerPushNotifications()
                     
+                    // Recall the user's Facebook likes to match with Public Blobs (Blobjot Blobs)
+                    AWSPrepRequest(requestToCall: FBGetUserLikes(), delegate: self.awsRequestDelegate!).prepRequest()
+                    
                     // If the secondary request object is not nil, process the carried (second) request; no need to
                     // pass the login response to the parent view controller since it did not explicitly call the login request
                     if let secondaryAwsRequestObject = self.secondaryAwsRequestObject
@@ -554,7 +557,15 @@ class AWSGetBlobjotBlobs : AWSRequestObject
                                 addBlob.blobRadius = checkBlob["blobRadius"] as! Double
                                 addBlob.blobType = Constants().blobTypes(checkBlob["blobType"] as! Int)
                                 addBlob.blobUserID = checkBlob["blobUserID"] as! String
-//                                addBlob.blobText = checkBlob["blobText"] as? String
+                                
+                                // The global user likes list should already exist (updated when the app started)
+                                for like in Constants.Data.currentUserLikes
+                                {
+                                    if like == checkBlob["blobText"] as? String
+                                    {
+                                        addBlob.blobPublicInterest = true
+                                    }
+                                }
                                 
                                 // Append the new Blob Object to the global Map Blobs Array
                                 Constants.Data.blobjotBlobs.append(addBlob)
@@ -585,7 +596,7 @@ class AWSGetBlobjotBlobs : AWSRequestObject
                             parentVC.processAwsReturn(self, success: true)
                         }
                         
-                        // Recall the user's Facebook likes to match with Public Blobs (Blobjot Blobs)
+                        // Recall the user's Facebook likes to match with Public Blobs (Blobjot Blobs) - should already exist, but this will update
                         AWSPrepRequest(requestToCall: FBGetUserLikes(), delegate: self.awsRequestDelegate!).prepRequest()
                     }
                 }

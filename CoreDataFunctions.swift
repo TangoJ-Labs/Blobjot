@@ -609,7 +609,6 @@ class CoreDataFunctions: AWSRequestDelegate
         var likes = [String]()
         for userLike in userLikes
         {
-            print("CD-LR - RETRIEVED LIKE: \(userLike.like)")
             likes.append(userLike.like!)
         }
         
@@ -639,7 +638,6 @@ class CoreDataFunctions: AWSRequestDelegate
         for like in likes
         {
             moc.delete(like)
-            print("CD-LD - LIKE DELETE: \(like.like)")
         }
         
         // Save the changes to the likes

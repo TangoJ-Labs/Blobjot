@@ -159,11 +159,12 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     var defaultBlobUser: User!
     
     // Store the local class variables so that information can be passed from background processes if needed
-    var activeBlobsVC: BlobsActiveTableViewController!
-    var accountVC: AccountViewController!
-    var peopleVC: PeopleViewController!
-    var addBlobVC: BlobAddViewController!
-    var tabBarControllerCustom: UITabBarController!
+    var activeBlobsVC: BlobsActiveTableViewController?
+    var blobsVC: BlobsTableViewController?
+    var accountVC: AccountViewController?
+    var peopleVC: PeopleViewController?
+    var addBlobVC: BlobAddViewController?
+    var tabBarControllerCustom: UITabBarController?
     
     // If the user is manually logging in, set the indicator for certain settings
     var newLogin: Bool = false
@@ -462,14 +463,14 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         let leftButtonItem = UIBarButtonItem(image: UIImage(named: "MV_list_icon.png"),
                                              style: UIBarButtonItemStyle.plain,
                                              target: self,
-                                             action: #selector(MapViewController.loadActiveBlobsViewController))
+                                             action: #selector(MapViewController.loadBlobsTabViewController))
         leftButtonItem.tintColor = Constants.Colors.colorTextNavBar
         self.navigationItem.setLeftBarButton(leftButtonItem, animated: true)
         
         let rightButtonItem = UIBarButtonItem(image: UIImage(named: "TAB_ICON_account_gray.png"),
                                              style: UIBarButtonItemStyle.plain,
                                              target: self,
-                                             action: #selector(MapViewController.loadTabViewController(_:)))
+                                             action: #selector(MapViewController.loadSettingsTabViewController(_:)))
         rightButtonItem.tintColor = Constants.Colors.colorTextNavBar
         self.navigationItem.setRightBarButton(rightButtonItem, animated: true)
         
@@ -639,8 +640,8 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         // Setup the Blob list
         Constants.Data.locationBlobs = [Constants.Data.defaultBlob]
         
-        // Recall the userLikes from Core Data and set them to the global variable
-        Constants.Data.currentUserLikes = CoreDataFunctions().likesRetrieve()
+//        // Recall the userLikes from Core Data and set them to the global variable
+//        Constants.Data.currentUserLikes = CoreDataFunctions().likesRetrieve()
         
         // Recall the Tutorial Views data in Core Data.  If it is empty for the current ViewController's tutorial, it has not been seen by the curren user.
         let tutorialViews = CoreDataFunctions().tutorialViewRetrieve()
@@ -918,10 +919,57 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: "prepPushView")
     }
     
-    func loadActiveBlobsViewController()
+    func loadBlobsTabViewController()
     {
         // Reset features on the MVC
         prepPushView()
+        
+//        // Create the Back Button Item and Title View for the Tab View
+//        // These settings will be passed up to the assigned Navigation Controller for the Tab View Controller
+//        let backButtonItem = UIBarButtonItem(title: "\u{2190}",
+//                                             style: UIBarButtonItemStyle.plain,
+//                                             target: self,
+//                                             action: #selector(MapViewController.popViewController(_:)))
+//        backButtonItem.tintColor = Constants.Colors.colorTextNavBar
+//        
+//        let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
+//        let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
+//        ncTitleText.text = "Nearby Blobs"
+//        ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 14)
+//        ncTitleText.textColor = Constants.Colors.colorTextNavBar
+//        ncTitleText.textAlignment = .center
+//        ncTitle.addSubview(ncTitleText)
+//        
+//        // Prepare the Active Blobs VC
+//        // Assign the created Nav Bar settings to the Tab Bar Controller
+//        activeBlobsVC = BlobsActiveTableViewController()
+//        activeBlobsVC.navigationItem.setLeftBarButton(backButtonItem, animated: true)
+//        activeBlobsVC.navigationItem.titleView = ncTitle
+        
+        ///////
+        // Prepare both of the Table View Controllers and add Tab Bar Items to them
+        activeBlobsVC = BlobsActiveTableViewController()
+        let activeBlobsTabBarItem = UITabBarItem()
+        activeBlobsTabBarItem.tag = 1
+        activeBlobsTabBarItem.image = UIImage(named: Constants.Strings.iconStringTabIconConnectionsGray)
+        activeBlobsTabBarItem.selectedImage = UIImage(named: Constants.Strings.iconStringTabIconConnectionsWhite)
+        activeBlobsTabBarItem.imageInsets = UIEdgeInsets(top: 5, left: 0, bottom: -5, right: 0)
+        activeBlobsVC!.tabBarItem = activeBlobsTabBarItem
+        
+        blobsVC = BlobsTableViewController()
+        let blobsTabBarItem = UITabBarItem()
+        blobsTabBarItem.tag = 2
+        blobsTabBarItem.image = UIImage(named: Constants.Strings.iconStringTabIconAccountGray)
+        blobsTabBarItem.selectedImage = UIImage(named: Constants.Strings.iconStringTabIconAccountWhite)
+        blobsTabBarItem.imageInsets = UIEdgeInsets(top: 5, left: 0, bottom: -5, right: 0)
+        blobsVC!.tabBarItem = blobsTabBarItem
+        
+        // Create the Tab Bar Controller to hold the Table View Controllers
+        tabBarControllerCustom = UITabBarController()
+        tabBarControllerCustom!.delegate = self
+        tabBarControllerCustom!.tabBar.barTintColor = Constants.Colors.colorStatusBarLight
+        tabBarControllerCustom!.tabBar.tintColor = Constants.Colors.colorTextNavBar
+        tabBarControllerCustom!.viewControllers = [activeBlobsVC!, blobsVC!]
         
         // Create the Back Button Item and Title View for the Tab View
         // These settings will be passed up to the assigned Navigation Controller for the Tab View Controller
@@ -931,66 +979,55 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                                              action: #selector(MapViewController.popViewController(_:)))
         backButtonItem.tintColor = Constants.Colors.colorTextNavBar
         
-        let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
-        let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
-        ncTitleText.text = "Nearby Blobs"
-        ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 14)
-        ncTitleText.textColor = Constants.Colors.colorTextNavBar
-        ncTitleText.textAlignment = .center
-        ncTitle.addSubview(ncTitleText)
-        
-        // Prepare the Active Blobs VC
         // Assign the created Nav Bar settings to the Tab Bar Controller
-        activeBlobsVC = BlobsActiveTableViewController()
-        activeBlobsVC.navigationItem.setLeftBarButton(backButtonItem, animated: true)
-        activeBlobsVC.navigationItem.titleView = ncTitle
+        tabBarControllerCustom!.navigationItem.setLeftBarButton(backButtonItem, animated: true)
         
-        print("MVC - NAV CONTROLLER: \(self.navigationController)")
+        print("MVC - LBTVC - NAV CONTROLLER: \(self.navigationController)")
         if let navController = self.navigationController
         {
-            navController.pushViewController(activeBlobsVC, animated: true)
+            navController.pushViewController(tabBarControllerCustom!, animated: true)
         }
         
         // Save an action in Core Data
         CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
-    func loadTabViewController(_ goToAccountTab: Bool)
+    func loadSettingsTabViewController(_ goToAccountTab: Bool)
     {
         // Reset features on the MVC
         prepPushView()
         
         // Prepare both of the Table View Controllers and add Tab Bar Items to them
         peopleVC = PeopleViewController()
-        peopleVC.peopleViewDelegate = self
-        peopleVC.tabBarUsed = true
+        peopleVC!.peopleViewDelegate = self
+        peopleVC!.tabBarUsed = true
         let peopleTabBarItem = UITabBarItem()
         peopleTabBarItem.tag = 1
         peopleTabBarItem.image = UIImage(named: Constants.Strings.iconStringTabIconConnectionsGray)
         peopleTabBarItem.selectedImage = UIImage(named: Constants.Strings.iconStringTabIconConnectionsWhite)
         peopleTabBarItem.imageInsets = UIEdgeInsets(top: 5, left: 0, bottom: -5, right: 0)
-        peopleVC.tabBarItem = peopleTabBarItem
+        peopleVC!.tabBarItem = peopleTabBarItem
         
         accountVC = AccountViewController()
-        accountVC.accountViewDelegate = self
+        accountVC!.accountViewDelegate = self
         let accountTabBarItem = UITabBarItem()
         accountTabBarItem.tag = 2
         accountTabBarItem.image = UIImage(named: Constants.Strings.iconStringTabIconAccountGray)
         accountTabBarItem.selectedImage = UIImage(named: Constants.Strings.iconStringTabIconAccountWhite)
         accountTabBarItem.imageInsets = UIEdgeInsets(top: 5, left: 0, bottom: -5, right: 0)
-        accountVC.tabBarItem = accountTabBarItem
+        accountVC!.tabBarItem = accountTabBarItem
         
         // Create the Tab Bar Controller to hold the Table View Controllers
         tabBarControllerCustom = UITabBarController()
-        tabBarControllerCustom.delegate = self
-        tabBarControllerCustom.tabBar.barTintColor = Constants.Colors.colorStatusBarLight
-        tabBarControllerCustom.tabBar.tintColor = Constants.Colors.colorTextNavBar
-        tabBarControllerCustom.viewControllers = [peopleVC, accountVC]
+        tabBarControllerCustom!.delegate = self
+        tabBarControllerCustom!.tabBar.barTintColor = Constants.Colors.colorStatusBarLight
+        tabBarControllerCustom!.tabBar.tintColor = Constants.Colors.colorTextNavBar
+        tabBarControllerCustom!.viewControllers = [peopleVC!, accountVC!]
         
         // If the account tab should be loaded, set the last (1) index to load
         if goToAccountTab
         {
-            tabBarControllerCustom.selectedIndex = 1
+            tabBarControllerCustom!.selectedIndex = 1
         }
         
         // Create the Back Button Item and Title View for the Tab View
@@ -1002,12 +1039,12 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         backButtonItem.tintColor = Constants.Colors.colorTextNavBar
         
         // Assign the created Nav Bar settings to the Tab Bar Controller
-        tabBarControllerCustom.navigationItem.setLeftBarButton(backButtonItem, animated: true)
+        tabBarControllerCustom!.navigationItem.setLeftBarButton(backButtonItem, animated: true)
         
-        print("MVC - NAV CONTROLLER: \(self.navigationController)")
+        print("MVC - LSTVC - NAV CONTROLLER: \(self.navigationController)")
         if let navController = self.navigationController
         {
-            navController.pushViewController(tabBarControllerCustom, animated: true)
+            navController.pushViewController(tabBarControllerCustom!, animated: true)
         }
         
         // Save an action in Core Data
@@ -1022,7 +1059,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         print("MVC - TAB BAR - DID SELECT: \(viewController)")
         if let tabBar = self.tabBarControllerCustom
         {
-            if viewController == peopleVC
+            if peopleVC != nil && viewController == peopleVC
             {
                 let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
                 let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
@@ -1033,11 +1070,33 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 ncTitle.addSubview(ncTitleText)
                 tabBar.navigationItem.titleView = ncTitle
             }
-            else if viewController == accountVC
+            else if accountVC != nil && viewController == accountVC
             {
                 let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
                 let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
                 ncTitleText.text = "Account"
+                ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 14)
+                ncTitleText.textColor = Constants.Colors.colorTextNavBar
+                ncTitleText.textAlignment = .center
+                ncTitle.addSubview(ncTitleText)
+                tabBar.navigationItem.titleView = ncTitle
+            }
+            else if activeBlobsVC != nil && viewController == activeBlobsVC
+            {
+                let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
+                let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
+                ncTitleText.text = "Nearby Blobs"
+                ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 14)
+                ncTitleText.textColor = Constants.Colors.colorTextNavBar
+                ncTitleText.textAlignment = .center
+                ncTitle.addSubview(ncTitleText)
+                tabBar.navigationItem.titleView = ncTitle
+            }
+            else if blobsVC != nil && viewController == blobsVC
+            {
+                let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
+                let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
+                ncTitleText.text = "All Blobs"
                 ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 14)
                 ncTitleText.textColor = Constants.Colors.colorTextNavBar
                 ncTitleText.textAlignment = .center
@@ -2210,10 +2269,10 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         if newVC || addBlobVC == nil
         {
             addBlobVC = BlobAddViewController()
-            addBlobVC.blobAddViewDelegate = self
+            addBlobVC!.blobAddViewDelegate = self
             // Pass the Blob coordinates and the current map zoom to the new View Controller
-            addBlobVC.blobCoords = mapView.camera.target
-            addBlobVC.mapZoom = mapView.camera.zoom
+            addBlobVC!.blobCoords = mapView.camera.target
+            addBlobVC!.mapZoom = mapView.camera.zoom
 //            addBlobVC.mapZoom = UtilityFunctions().mapZoomForBlobSize(Float(self.blobRadius))
             
             // Create a Nav Bar Back Button and Title
@@ -2238,13 +2297,13 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             let sliderLocation = CLLocation(latitude: point.latitude, longitude: point.longitude)
             
             // Pass the Blob Radius to the View Controller
-            addBlobVC.blobRadius = mapCenterLocation.distance(from: sliderLocation)
-            addBlobVC.navigationItem.setLeftBarButton(backButtonItem, animated: true)
-            addBlobVC.navigationItem.titleView = ncTitle
+            addBlobVC!.blobRadius = mapCenterLocation.distance(from: sliderLocation)
+            addBlobVC!.navigationItem.setLeftBarButton(backButtonItem, animated: true)
+            addBlobVC!.navigationItem.titleView = ncTitle
         }
         
         // Add the View Controller to the Nav Controller and present the Nav Controller
-        let navController = UINavigationController(rootViewController: addBlobVC)
+        let navController = UINavigationController(rootViewController: addBlobVC!)
         navController.navigationBar.barTintColor = Constants.Colors.colorStatusBar
         self.modalPresentationStyle = .popover
         self.present(navController, animated: true, completion: nil)
@@ -2502,10 +2561,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             // If a corresponding Map Circle does not exist, call createBlobOnMap to create a new one
             if !blobExists
             {
-                let blobCenter = CLLocationCoordinate2DMake(addBlob.blobLat, addBlob.blobLong)
                 print("MVC-AMBM - BLOB DOES NOT EXIST")
                 // Call local function to create a new Circle and add it to the Map View
-                self.createBlobOnMap(blobCenter, blobRadius: addBlob.blobRadius, blobType: addBlob.blobType, blobTitle: addBlob.blobID)
+                self.createBlobOnMap(addBlob)
             }
         }
         
@@ -2518,27 +2576,22 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     }
     
     // Receive the Blob data, create a new GMSCircle, and add it to the local Map View
-    func createBlobOnMap(_ blobCenter: CLLocationCoordinate2D, blobRadius: Double, blobType: Constants.BlobTypes, blobTitle: String)
+    func createBlobOnMap(_ blob: Blob)
     {
+        let blobCenter = CLLocationCoordinate2DMake(blob.blobLat, blob.blobLong)
+        
         let addCircle = GMSCircle()
         addCircle.position = blobCenter
-        addCircle.radius = blobRadius
-        addCircle.title = blobTitle
-        addCircle.fillColor = Constants().blobColor(blobType, mainMap: true)
-        addCircle.strokeColor = Constants().blobColor(blobType, mainMap: true)
+        addCircle.radius = blob.blobRadius
+        addCircle.title = blob.blobID
+        addCircle.fillColor = Constants().blobColor(blob.blobType, mainMap: true)
+        addCircle.strokeColor = Constants().blobColor(blob.blobType, mainMap: true)
         addCircle.strokeWidth = 1
         // If the Blob is a Blobjot (Public) Blob, and it contains user-liked keywords, highlight the Blob edge
-        if blobType == Constants.BlobTypes.blobjot
+        if blob.blobPublicInterest
         {
-// *COMPLETE***** Check whether the Blob has user-liked keywords
-            for like in Constants.Data.currentUserLikes
-            {
-                if like == blobTitle
-                {
-                    addCircle.strokeColor = Constants().blobColorOpaque(blobType, mainMap: true)
-                    addCircle.strokeWidth = 5
-                }
-            }
+            addCircle.strokeColor = Constants().blobColorOpaque(blob.blobType, mainMap: true)
+            addCircle.strokeWidth = 5
         }
         addCircle.map = self.mapView
         Constants.Data.mapCircles.append(addCircle)
@@ -2607,7 +2660,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         // Reload the current location blob view table if it is not nil
         if self.activeBlobsVC != nil
         {
-            self.activeBlobsVC.reloadTableView()
+            self.activeBlobsVC!.reloadTableView()
         }
     }
     
@@ -2615,7 +2668,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     {
         if self.activeBlobsVC != nil
         {
-            self.activeBlobsVC.reloadTableView()
+            self.activeBlobsVC!.reloadTableView()
         }
     }
     
@@ -2660,7 +2713,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                         if self.newLogin
                         {
                             // Load the account view to show the logged in user
-                            self.loadTabViewController(true)
+                            self.loadSettingsTabViewController(true)
                             self.showLoginScreenBool = false
                             
                             // Hide the logging in screen, indicator, and label

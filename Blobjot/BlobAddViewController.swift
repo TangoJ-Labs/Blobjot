@@ -28,7 +28,7 @@ protocol BlobAddViewControllerDelegate {
     func hideBackgroundActivityView(_ refreshBlobs: Bool)
     
     // Used to add the new Blob to the map
-    func createBlobOnMap(_ blobCenter: CLLocationCoordinate2D, blobRadius: Double, blobType: Constants.BlobTypes, blobTitle: String)
+    func createBlobOnMap(_ blob: Blob)
 }
 
 class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, UIPageViewControllerDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, GMSMapViewDelegate, BlobAddTypeViewControllerDelegate, BlobAddMediaViewControllerDelegate, BlobAddPeopleViewControllerDelegate, AWSRequestDelegate, HoleViewDelegate {
@@ -595,7 +595,7 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
                     
                     // Call the parent VC to add the new Blob to the map of the Map View
                     if let parentVC = self.blobAddViewDelegate {
-                        parentVC.createBlobOnMap(CLLocationCoordinate2DMake(self.blobCoords.latitude, self.blobCoords.longitude), blobRadius: self.blobRadius, blobType: self.blobType, blobTitle: mediaID)
+                        parentVC.createBlobOnMap(newBlob)
                     }
                     break loopTaggedUsers
                 }

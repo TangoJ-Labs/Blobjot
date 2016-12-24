@@ -28,6 +28,8 @@ class Blob
     var blobSelected = false
     var blobViewed = false
     
+    var blobPublicInterest = false // Indicates whether the Blobjot (Public) Blob has content that might be of interest to the user, based on the user's Facebook likes
+    
     convenience init(blobID: String, blobUserID: String, blobLat: Double, blobLong: Double, blobRadius: Double, blobType: Constants.BlobTypes, blobMediaType: Int, blobText: String)
     {
         self.init()

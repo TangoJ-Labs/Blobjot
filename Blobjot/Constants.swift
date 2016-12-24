@@ -151,9 +151,12 @@ struct Constants
         static let colorFacebookDarkBlue = UIColor(red: 59/255, green: 89/255, blue: 152/255, alpha: 1.0) //#3B5998
         
         static let colorTextStandard = UIColor(red: 0/255, green: 0/255, blue: 0/255, alpha: 0.3) //#000000
+        static let colorTextRed = UIColor(red: 242/255, green: 105/255, blue: 99/255, alpha: 1.0) //#F26963
         static let colorTextGray = UIColor(red: 38/255, green: 38/255, blue: 38/255, alpha: 1.0) //#262626
         static let colorTextGrayMedium = UIColor(red: 140/255, green: 140/255, blue: 140/255, alpha: 1.0) //#8C8C8C
         static let colorTextGrayLight = UIColor(red: 154/255, green: 154/255, blue: 154/255, alpha: 1.0) //#999999
+        static let colorTextGrayUltraLight = UIColor(red: 242/255, green: 242/255, blue: 242/255, alpha: 1.0) //#F2F2F2
+        static let colorTextWhite = UIColor.white
         
         static let colorUsernameAvailable = UIColor(red: 138/255, green: 112/255, blue: 178/255, alpha: 1.0) //#8A70B2
         static let colorUsernameNotAvailable = UIColor(red: 242/255, green: 105/255, blue: 99/255, alpha: 1.0) //#F26963
@@ -256,6 +259,11 @@ struct Constants
         static let blobsActiveTableViewIndicatorSize: CGFloat = 40
         static let blobsActiveTableViewContentSize: CGFloat = 90
         
+        static let blobsTableViewCellHeight: CGFloat = 100
+        static let blobsTableViewUserImageSize: CGFloat = 60
+        static let blobsTableViewIndicatorSize: CGFloat = 40
+        static let blobsTableViewContentSize: CGFloat = 90
+        
         static let accountTableViewCellHeight: CGFloat = 100
         static let blobsUserTableViewIndicatorSize: CGFloat = 40
         static let blobsUserTableViewContentSize: CGFloat = 90
@@ -303,6 +311,7 @@ struct Constants
         static let peopleTableViewCellReuseIdentifier = "peopleTableViewCell"
         static let locationBlobsCellReuseIdentifier = "locationBlobsCell"
         static let blobsActiveTableViewCellReuseIdentifier = "blobsActiveTableViewCell"
+        static let blobsTableViewCellReuseIdentifier = "blobsTableViewCell"
         static let accountTableViewCellReuseIdentifier = "accountTableViewCell"
         static let blobAddPeopleTableViewCellReuseIdentifier = "blobAddPeopleTableViewCell"
         static let blobTableViewCellBlobWithLabelReuseIdentifier = "blobTableViewCellBlobWithLabel"

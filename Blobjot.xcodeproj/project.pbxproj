@@ -39,6 +39,8 @@
 		B828802A1E0AD11800B62676 /* MV_list_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = B82880291E0AD11800B62676 /* MV_list_icon@2x.png */; };
 		B82880341E0C8CB200B62676 /* UserLike+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = B82880321E0C8CB200B62676 /* UserLike+CoreDataClass.swift */; };
 		B82880351E0C8CB200B62676 /* UserLike+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B82880331E0C8CB200B62676 /* UserLike+CoreDataProperties.swift */; };
+		B82880371E0DBDA900B62676 /* BlobsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B82880361E0DBDA800B62676 /* BlobsTableViewController.swift */; };
+		B828803B1E0DBDE000B62676 /* BlobsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B828803A1E0DBDE000B62676 /* BlobsTableViewCell.swift */; };
 		B8312FDA1DB3DA8700CFC715 /* LocationManagerSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8312FD91DB3DA8700CFC715 /* LocationManagerSetting.swift */; };
 		B8312FDB1DB3DA8700CFC715 /* LocationManagerSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8312FD91DB3DA8700CFC715 /* LocationManagerSetting.swift */; };
 		B8312FDC1DB3DA8700CFC715 /* LocationManagerSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8312FD91DB3DA8700CFC715 /* LocationManagerSetting.swift */; };
@@ -188,6 +190,8 @@
 		B828802B1E0C8C7000B62676 /* Blobjot_DataModel_1.5.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Blobjot_DataModel_1.5.xcdatamodel; sourceTree = "<group>"; };
 		B82880321E0C8CB200B62676 /* UserLike+CoreDataClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "UserLike+CoreDataClass.swift"; path = "../UserLike+CoreDataClass.swift"; sourceTree = "<group>"; };
 		B82880331E0C8CB200B62676 /* UserLike+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "UserLike+CoreDataProperties.swift"; path = "../UserLike+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		B82880361E0DBDA800B62676 /* BlobsTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlobsTableViewController.swift; sourceTree = "<group>"; };
+		B828803A1E0DBDE000B62676 /* BlobsTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlobsTableViewCell.swift; sourceTree = "<group>"; };
 		B8312FCC1DB3D9AE00CFC715 /* Blobjot-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Blobjot-Bridging-Header.h"; sourceTree = "<group>"; };
 		B8312FCD1DB3D9AF00CFC715 /* BlobjotTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "BlobjotTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		B8312FCE1DB3D9AF00CFC715 /* BlobjotUITests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "BlobjotUITests-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -458,6 +462,8 @@
 				B8541B741DBBD0B500867D82 /* BlobComment.swift */,
 				B80C563F1D51158000C4E683 /* BlobsActiveTableViewCell.swift */,
 				B80C56401D51158000C4E683 /* BlobsActiveTableViewController.swift */,
+				B828803A1E0DBDE000B62676 /* BlobsTableViewCell.swift */,
+				B82880361E0DBDA800B62676 /* BlobsTableViewController.swift */,
 				B88DFD871DBD50DF00255BA5 /* BlobTableViewCellBlob.swift */,
 				B88DFD8D1DBFC98E00255BA5 /* BlobTableViewCellComment.swift */,
 				B81822061D5B98F300B3A2BB /* BlobThumbnailObject.swift */,
@@ -888,10 +894,12 @@
 				B8312FDA1DB3DA8700CFC715 /* LocationManagerSetting.swift in Sources */,
 				B8B109261DE0B06F00EA3B41 /* UserCD+CoreDataProperties.swift in Sources */,
 				B80C564A1D51158000C4E683 /* BlobAddPeopleTableViewCell.swift in Sources */,
+				B828803B1E0DBDE000B62676 /* BlobsTableViewCell.swift in Sources */,
 				B8B108F11DCB673700EA3B41 /* CoreDataFunctions.swift in Sources */,
 				B86407081D7B13EB0084D6EF /* DataModel.xcdatamodeld in Sources */,
 				B81822071D5B98F300B3A2BB /* BlobThumbnailObject.swift in Sources */,
 				B80C564E1D51158000C4E683 /* BlobAddViewController.swift in Sources */,
+				B82880371E0DBDA900B62676 /* BlobsTableViewController.swift in Sources */,
 				B8541B731DB7D49000867D82 /* CustomClasses.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

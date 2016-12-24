@@ -14,7 +14,7 @@ class BlobsActiveTableViewController: UIViewController, UITableViewDataSource, U
     var screenSize: CGRect!
     var statusBarHeight: CGFloat!
     var navBarHeight: CGFloat!
-//    var tabBarHeight: CGFloat!
+    var tabBarHeight: CGFloat!
     var viewFrameY: CGFloat!
     
     var viewContainer: UIView!
@@ -44,17 +44,17 @@ class BlobsActiveTableViewController: UIViewController, UITableViewDataSource, U
         }
         viewFrameY = self.view.frame.minY
         screenSize = UIScreen.main.bounds
-//        if let tabBarHeight = self.navigationController?.navigationBar.frame.height
-//        {
-//            self.tabBarHeight = tabBarHeight
-//        }
-//        else
-//        {
-//            self.tabBarHeight = 49
-//        }
+        if let tabBarHeight = self.navigationController?.navigationBar.frame.height
+        {
+            self.tabBarHeight = tabBarHeight
+        }
+        else
+        {
+            self.tabBarHeight = 49
+        }
         
         // Add the view container to hold all other views (allows for shadows on all subviews)
-        viewContainer = UIView(frame: CGRect(x: 0, y: statusBarHeight + navBarHeight - viewFrameY, width: self.view.frame.width, height: self.view.frame.height - statusBarHeight - navBarHeight + viewFrameY))
+        viewContainer = UIView(frame: CGRect(x: 0, y: statusBarHeight + navBarHeight - viewFrameY, width: self.view.frame.width, height: self.view.frame.height - statusBarHeight - navBarHeight - tabBarHeight + viewFrameY))
         viewContainer.backgroundColor = Constants.Colors.standardBackground
         self.view.addSubview(viewContainer)
         
@@ -88,6 +88,18 @@ class BlobsActiveTableViewController: UIViewController, UITableViewDataSource, U
         statusBarView = UIView(frame: CGRect(x: 0, y: 0, width: screenSize.width, height: 20))
         statusBarView.backgroundColor = Constants.Colors.colorStatusBar
         self.view.addSubview(statusBarView)
+        
+        if let tabBar = self.tabBarController
+        {
+            let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
+            let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
+            ncTitleText.text = "Nearby Blobs"
+            ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 14)
+            ncTitleText.textColor = Constants.Colors.colorTextNavBar
+            ncTitleText.textAlignment = .center
+            ncTitle.addSubview(ncTitleText)
+            tabBar.navigationItem.titleView = ncTitle
+        }
 
         // Uncomment the following line to preserve selection between presentations
         // self.clearsSelectionOnViewWillAppear = false
@@ -142,6 +154,7 @@ class BlobsActiveTableViewController: UIViewController, UITableViewDataSource, U
         cell.selectedBackgroundView = sbv
         
         // Clear the content, if needed
+        cell.cellUserImage.image = nil
         cell.cellThumbnail.image = nil
         
         // Start animating the activity indicators
@@ -163,12 +176,13 @@ class BlobsActiveTableViewController: UIViewController, UITableViewDataSource, U
                     {
                         cell.cellUserImage.image = userObject.userImage
                         cell.userImageActivityIndicator.stopAnimating()
+                        
+                        cell.cellUserName.text = userObject.userName
                     }
                     break loopUserObjectCheck
                 }
             }
             cell.cellBlobTypeIndicator.backgroundColor = Constants().blobColorOpaque(Constants.Data.locationBlobs[blobIndex].blobType, mainMap: false)
-            cell.cellUserName.text = Constants.Data.locationBlobs[blobIndex].blobText
             
             let formatter = DateFormatter()
             formatter.dateFormat = "E, MMM d HH:mm"

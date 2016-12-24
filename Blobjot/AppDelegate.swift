@@ -79,6 +79,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         // Reset the global User list with Core Data
         UtilityFunctions().resetUserListWithCoreData()
         
+        // Reset the global User Likes list with Core Data
+        Constants.Data.currentUserLikes = CoreDataFunctions().likesRetrieve()
+        
         return true
     }
     
