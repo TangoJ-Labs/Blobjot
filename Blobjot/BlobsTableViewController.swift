@@ -35,7 +35,7 @@ class BlobsTableViewController: UIViewController, UITableViewDataSource, UITable
     var tableFilterClearTapGesture: UITapGestureRecognizer!
     
     // Create a local property to hold the child VC
-    var blobVC: BlobViewController!
+    var blobVC: BlobTableViewController!
     
     // Create a custom array of Blobs to exclude invisible Blobs
     var visibleBlobs = [Blob]()
@@ -561,7 +561,7 @@ class BlobsTableViewController: UIViewController, UITableViewDataSource, UITable
             ncTitle.addSubview(ncTitleText)
             
             // Instantiate the BlobViewController and pass the Preview Blob to the VC
-            blobVC = BlobViewController()
+            blobVC = BlobTableViewController()
             blobVC.blob = blob
             
             // Assign the created Nav Bar settings to the Tab Bar Controller

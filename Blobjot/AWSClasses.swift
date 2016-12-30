@@ -1592,34 +1592,34 @@ class AWSAddBlobView : AWSRequestObject
     }
 }
 
-class AWSGetBlobImage : AWSRequestObject
+class AWSGetBlobContentImage : AWSRequestObject
 {
-    var blob: Blob!
-    var blobImage: UIImage?
+    var blobContent: BlobContent!
+    var contentImage: UIImage?
     
-    required init(blob: Blob)
+    required init(blobContent: BlobContent)
     {
-        self.blob = blob
+        self.blobContent = blobContent
     }
     
     // Download Blob Image
     override func makeRequest()
     {
-        print("ATTEMPT TO DOWNLOAD IMAGE: \(self.blob.blobMediaID)")
+        print("ATTEMPT TO DOWNLOAD IMAGE: \(self.blobContent.contentMediaID)")
         
         // Verify the type of Blob (image or video)
-        if self.blob.blobMediaType == 1
+        if self.blobContent.contentType == 1
         {
-            if let blobMediaID = self.blob.blobMediaID
+            if let contentMediaID = self.blobContent.contentMediaID
             {
-                let downloadingFilePath = NSTemporaryDirectory() + blobMediaID // + Constants.Settings.frameImageFileType)
+                let downloadingFilePath = NSTemporaryDirectory() + contentMediaID // + Constants.Settings.frameImageFileType)
                 let downloadingFileURL = URL(fileURLWithPath: downloadingFilePath)
                 let transferManager = AWSS3TransferManager.default()
                 
                 // Download the Frame
                 let downloadRequest : AWSS3TransferManagerDownloadRequest = AWSS3TransferManagerDownloadRequest()
                 downloadRequest.bucket = Constants.Strings.S3BucketMedia
-                downloadRequest.key =  blobMediaID
+                downloadRequest.key =  contentMediaID
                 downloadRequest.downloadingFileURL = downloadingFileURL
                 
                 transferManager?.download(downloadRequest).continue(
@@ -1670,7 +1670,7 @@ class AWSGetBlobImage : AWSRequestObject
                                 let imageData = try? Data(contentsOf: URL(fileURLWithPath: downloadingFilePath))
                                 
                                 // Save the image to the local UIImage
-                                self.blobImage = UIImage(data: imageData!)
+                                self.contentImage = UIImage(data: imageData!)
                                 
                                 // Notify the parent view that the AWS call completed successfully
                                 if let parentVC = self.awsRequestDelegate
@@ -1875,10 +1875,10 @@ class AWSAddCommentForBlob : AWSRequestObject
     }
 }
 
-class AWSGetBlobComments : AWSRequestObject
+class AWSGetBlobContent : AWSRequestObject
 {
     var blobID: String!
-    var blobCommentArray = [BlobComment]()
+    var blobContentArray = [BlobContent]()
     
     required init(blobID: String)
     {
@@ -1894,12 +1894,12 @@ class AWSGetBlobComments : AWSRequestObject
         let json: NSDictionary = ["blob_id" : self.blobID]
         
         let lambdaInvoker = AWSLambdaInvoker.default()
-        lambdaInvoker.invokeFunction("Blobjot-GetBlobComments", jsonObject: json, completionHandler:
+        lambdaInvoker.invokeFunction("Blobjot-GetBlobContent", jsonObject: json, completionHandler:
             { (response, err) -> Void in
                 
                 if (err != nil)
                 {
-                    print("AC-GBC - GET BLOB COMMENTS ERROR: \(err)")
+                    print("AC-GBC - GET BLOB CONTENT ERROR: \(err)")
                     CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: err.debugDescription)
                     
                     // Record the server request attempt
@@ -1913,23 +1913,27 @@ class AWSGetBlobComments : AWSRequestObject
                 }
                 else if (response != nil)
                 {
+                    print("AC - GBC: CONTENT RESPONSE: \(response)")
                     // Convert the response to an array of AnyObjects
-                    if let rawBlobComments = response as? [AnyObject]
+                    if let rawBlobContent = response as? [AnyObject]
                     {
-                        for rawBlobComment in rawBlobComments
+                        for rawBlobContentObject in rawBlobContent
                         {
-                            if let jsonBlobComment = rawBlobComment as? [String: AnyObject]
+                            if let jsonBlobContent = rawBlobContentObject as? [String: AnyObject]
                             {
                                 // Finish converting the JSON AnyObjects and assign the data to a new Blob Object
-                                let addBlobComment = BlobComment()
-                                addBlobComment.commentID        = jsonBlobComment["commentID"] as! String
-                                addBlobComment.blobID           = jsonBlobComment["blobID"] as! String
-                                addBlobComment.userID           = jsonBlobComment["userID"] as! String
-                                addBlobComment.comment          = jsonBlobComment["comment"] as! String
-                                addBlobComment.commentDatetime  = Date(timeIntervalSince1970: jsonBlobComment["timestamp"] as! Double)
+                                let addBlobContent = BlobContent()
+                                addBlobContent.blobContentID    = jsonBlobContent["blobContentID"] as! String
+                                addBlobContent.blobID           = jsonBlobContent["blobID"] as! String
+                                addBlobContent.userID           = jsonBlobContent["contentUserID"] as! String
+                                addBlobContent.contentDatetime  = Date(timeIntervalSince1970: jsonBlobContent["timestamp"] as! Double)
+                                addBlobContent.contentType      = jsonBlobContent["contentMediaType"] as? Int
+                                addBlobContent.contentText      = jsonBlobContent["contentText"] as? String
+                                addBlobContent.contentMediaID   = jsonBlobContent["contentMediaID"] as? String
+                                addBlobContent.contentThumbnailID = jsonBlobContent["contentThumbnailID"] as? String
                                 
                                 // Append the new Blob Object to the local User Blobs Array
-                                self.blobCommentArray.append(addBlobComment)
+                                self.blobContentArray.append(addBlobContent)
                             }
                         }
                         

@@ -23,7 +23,7 @@ class BlobsActiveTableViewController: UIViewController, UITableViewDataSource, U
     var blobsActiveTableView: UITableView!
     
     // Create a local property to hold the child VC
-    var blobVC: BlobViewController!
+    var blobVC: BlobTableViewController!
 
     override func viewDidLoad()
     {
@@ -371,7 +371,7 @@ class BlobsActiveTableViewController: UIViewController, UITableViewDataSource, U
             ncTitle.addSubview(ncTitleText)
             
             // Instantiate the BlobViewController and pass the Preview Blob to the VC
-            blobVC = BlobViewController()
+            blobVC = BlobTableViewController()
             blobVC.blob = blob
             
             // Assign the created Nav Bar settings to the Tab Bar Controller

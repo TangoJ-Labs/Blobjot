@@ -69,7 +69,6 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
     var mapZoom: Float!
     
     // These variables will hold the Blob content created in the Page Views
-    var blobType = Constants.BlobTypes.temporary
 //    var blobText: String?
     var blobThumbnail: UIImage?
     var blobImage: UIImage?
@@ -84,6 +83,9 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
     var uploadVideoFilePath: String?
     var uploadThumbnailFilePath: String!
     
+    // Local property variables
+    var blobType = Constants.BlobTypes.temporary
+    var allowBlobTypeChange: Bool = true
     var selectedOneOrMorePeople: Bool = false
     var sendAttempted: Bool = false
 
@@ -100,14 +102,22 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
         self.navigationItem.setRightBarButton(rightButtonItem, animated: true)
         
         // Instantiate and assign delegates for the Page Viewer View Controllers
-        vc1 = BlobAddTypeViewController()
-        vc1.blobAddTypeDelegate = self
         vc2 = BlobAddTextViewController()
         vc3 = BlobAddMediaViewController()
         vc3.blobAddMediaDelegate = self
         vc4 = BlobAddPeopleViewController()
         vc4.blobAddPeopleDelegate = self
-        viewControllers = [vc1, vc2, vc3, vc4]
+        if allowBlobTypeChange
+        {
+            vc1 = BlobAddTypeViewController()
+            vc1.blobAddTypeDelegate = self
+            
+            viewControllers = [vc1, vc2, vc3, vc4]
+        }
+        else
+        {
+            viewControllers = [vc2, vc3, vc4]
+        }
 
         // Status Bar Settings
         UIApplication.shared.isStatusBarHidden = false
@@ -184,8 +194,8 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
         
         // Using the data passed from the parent VC (the Map View Controller), create a circle on the map where the user created the new Blob
         addCircle = GMSCircle(position: blobCoords, radius: blobRadius)
-        addCircle.fillColor = Constants.Colors.blobRed
-        addCircle.strokeColor = Constants.Colors.blobRed
+        addCircle.fillColor = Constants().blobColor(blobType, mainMap: false)
+        addCircle.strokeColor = Constants().blobColor(blobType, mainMap: false)
         addCircle.strokeWidth = 1
         addCircle.map = mapView
         

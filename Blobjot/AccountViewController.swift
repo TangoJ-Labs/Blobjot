@@ -65,7 +65,7 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
     var userBlobs = [Blob]()
     
     // Create a local property to hold the child VC
-    var blobVC: BlobViewController!
+    var blobVC: BlobTableViewController!
     
     
     override func viewDidLoad()
@@ -655,7 +655,7 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
             ncTitle.addSubview(ncTitleText)
             
             // Instantiate the BlobViewController and pass the Preview Blob to the VC
-            blobVC = BlobViewController()
+            blobVC = BlobTableViewController()
             blobVC.blob = blob
             blobVC.userBlob = true
             

@@ -23,6 +23,23 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     var navBarHeight: CGFloat!
     var viewFrameY: CGFloat!
     
+    // The components of the menu view
+    var menuContainer: UIView!
+    var menuAccountContainer: UIView!
+    var displayUserImageContainer: UIView!
+    var displayUserImageActivityIndicator: UIActivityIndicatorView!
+    var displayUserImage: UIImageView!
+    var displayUserLabel: UILabel!
+    var displayUserLabelActivityIndicator: UIActivityIndicatorView!
+    
+    var logoutButton: UIView!
+    var logoutButtonLabel: UILabel!
+    var locationButton: UIView!
+    var locationButtonLabel: UILabel!
+    
+    var menuPeopleTableButton: UIView!
+    var menuPeopleTableButtonLabel: UILabel!
+    
     // The views to hold major components of the view controller
     var viewContainer: UIView!
     var statusBarView: UIView!
@@ -33,12 +50,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     var selectorMessageLabel: UILabel!
     var selectorCircle: UIView!
     var selectorSlider: UISlider!
-    
-    // The search bar will be used to search Blobs on the map
-//    var searchBarContainer: UIView!
-//    var searchBar: UISearchBar!
-//    var searchBarExitView: UIView!
-//    var searchBarExitLabel: UILabel!
     
     var resultsViewController: GMSAutocompleteResultsViewController?
     var searchController: UISearchController?
@@ -65,10 +76,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     var buttonAddImage: UIImageView!
     var buttonCancelAdd: UIView!
     var buttonCancelAddImage: UIImageView!
-//    var buttonSearchView: UIView!
-//    var buttonSearchViewImage: UIImageView!
-//    var buttonListView: UIView!
-//    var buttonListViewImage: UIImageView!
     var buttonTrackUser: UIView!
     var buttonTrackUserImage: UIImageView!
     var buttonRefreshMap: UIView!
@@ -88,13 +95,15 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     var loginActivityIndicator: UIActivityIndicatorView!
     var loginProcessLabel: UILabel!
     
+    // The tap gestures for menu buttons
+    var logoutButtonTapGesture: UITapGestureRecognizer!
+    var locationButtonTapGesture: UITapGestureRecognizer!
+    var menuPeopleTableTapGesture: UITapGestureRecognizer!
+    
     // The tap gestures for buttons and other interactive components
-//    var searchExitTapGesture: UITapGestureRecognizer!
     var accountTapGesture: UITapGestureRecognizer!
     var buttonAddTapGesture: UITapGestureRecognizer!
     var buttonCancelAddTapGesture: UITapGestureRecognizer!
-//    var buttonSearchTapGesture: UITapGestureRecognizer!
-//    var buttonProfileTapGesture: UITapGestureRecognizer!
     var buttonTrackUserTapGesture: UITapGestureRecognizer!
     var buttonRefreshMapTapGesture: UITapGestureRecognizer!
     
@@ -106,6 +115,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     
     // Use the same size as the collection view items for the Preview User Image
     let previewUserImageSize = Constants.Dim.mapViewLocationBlobsCVItemSize
+    
+    var vcHeight: CGFloat!
+    var vcOffsetY: CGFloat!
     
     // Set the Preview Time Label Width for use with multiple views
     let previewTimeLabelWidth: CGFloat = 100
@@ -146,6 +158,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // Stores the markers that have been added to the map
     var blobMarkers = [GMSMarker]()
     
+    // MUST USE a local array, in case the global array is updated in the background
+    var userBlobs = [Blob]()
+    
     // The Blob shown in the preview box will be assigned for local access
     var previewBlob: Blob?
     
@@ -168,15 +183,13 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     
     // If the user is manually logging in, set the indicator for certain settings
     var newLogin: Bool = false
-    
     var showLoginScreenBool: Bool = false
     
-//    // Create boolean properties to indicate whether the menu buttons are open
-//    var menuButtonMapOpen: Bool = false
-//    var menuButtonBlobOpen: Bool = false
+    // Record when the menu is showing
+    var menuOpen: Bool = false
     
     // Create a local property to hold the child VC
-    var blobVC: BlobViewController!
+    var blobVC: BlobTableViewController!
     
     // Track the recent location changes in location and time changed
     var lastLocation: CLLocation?
@@ -211,15 +224,115 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         viewFrameY = self.view.frame.minY
         screenSize = UIScreen.main.bounds
         
-        let vcHeight = screenSize.height - statusBarHeight - navBarHeight
-        var vcY = statusBarHeight + navBarHeight
+        vcHeight = screenSize.height - statusBarHeight - navBarHeight
+        vcOffsetY = statusBarHeight + navBarHeight
         if statusBarHeight > 20 {
-            vcY = 20 + navBarHeight
+            vcOffsetY = 20 + navBarHeight
         }
         
+        // Add the menu container to hold all menu items and hide it off to the right of the screen
+        menuContainer = UIView(frame: CGRect(x: 0, y: vcOffsetY, width: screenSize.width, height: vcHeight))
+        menuContainer.backgroundColor = Constants.Colors.standardBackground
+        self.view.addSubview(menuContainer)
+        
+        menuAccountContainer = UIView(frame: CGRect(x: menuContainer.frame.width - Constants.Dim.mapViewMenuWidth, y: 0, width: Constants.Dim.mapViewMenuWidth, height: 200))
+        menuAccountContainer.backgroundColor = Constants.Colors.standardBackground
+        menuContainer.addSubview(menuAccountContainer)
+        
+        // Local User Account Box
+        displayUserLabel = UILabel(frame: CGRect(x: 0, y: 95, width: menuAccountContainer.frame.width / 2, height: 20))
+        displayUserLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 16)
+        displayUserLabel.textColor = Constants.Colors.colorTextGray
+        displayUserLabel.textAlignment = NSTextAlignment.center
+        displayUserLabel.isUserInteractionEnabled = true
+        menuAccountContainer.addSubview(displayUserLabel)
+        
+        // Add a loading indicator while downloading the logged in user name
+        displayUserLabelActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: 0, y: 90, width: menuAccountContainer.frame.width / 2, height: 30))
+        displayUserLabelActivityIndicator.color = UIColor.black
+        menuAccountContainer.addSubview(displayUserLabelActivityIndicator)
+        displayUserLabelActivityIndicator.startAnimating()
+        
+        displayUserImageContainer = UIView(frame: CGRect(x: (menuAccountContainer.frame.width / 4) - 40, y: 5, width: 80, height: 80))
+        displayUserImageContainer.layer.cornerRadius = displayUserImageContainer.frame.width / 2
+        displayUserImageContainer.backgroundColor = UIColor.white
+        displayUserImageContainer.layer.shadowOffset = CGSize(width: 0.5, height: 2)
+        displayUserImageContainer.layer.shadowOpacity = 0.5
+        displayUserImageContainer.layer.shadowRadius = 1.0
+        menuAccountContainer.addSubview(displayUserImageContainer)
+        
+        // Add a loading indicator while downloading the logged in user image
+        displayUserImageActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: 0, y: 0, width: displayUserImageContainer.frame.width, height: displayUserImageContainer.frame.height))
+        displayUserImageActivityIndicator.color = UIColor.black
+        displayUserImageContainer.addSubview(displayUserImageActivityIndicator)
+        displayUserImageActivityIndicator.startAnimating()
+        
+        displayUserImage = UIImageView(frame: CGRect(x: 0, y: 0, width: displayUserImageContainer.frame.width, height: displayUserImageContainer.frame.height))
+        displayUserImage.layer.cornerRadius = displayUserImageContainer.frame.width / 2
+        displayUserImage.contentMode = UIViewContentMode.scaleAspectFill
+        displayUserImage.clipsToBounds = true
+        displayUserImageContainer.addSubview(displayUserImage)
+        
+        // Add a custom logout button
+        logoutButton = UIView(frame: CGRect(x: (menuAccountContainer.frame.width * 3) / 4 - 65, y: 10, width: 130, height: 45))
+        logoutButton.layer.cornerRadius = 5
+        logoutButton.layer.borderWidth = 1
+        logoutButton.layer.borderColor = Constants.Colors.colorPurple.cgColor
+        logoutButton.backgroundColor = Constants.Colors.standardBackground
+        menuAccountContainer.addSubview(logoutButton)
+        
+        logoutButtonLabel = UILabel(frame: CGRect(x: 0, y: 0, width: logoutButton.frame.width, height: logoutButton.frame.height))
+        logoutButtonLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 16)
+        logoutButtonLabel.textColor = Constants.Colors.colorPurple
+        logoutButtonLabel.textAlignment = NSTextAlignment.center
+        logoutButtonLabel.numberOfLines = 2
+        logoutButtonLabel.lineBreakMode = NSLineBreakMode.byWordWrapping
+        logoutButtonLabel.text = "Log Out"
+        logoutButton.addSubview(logoutButtonLabel)
+        
+        // Add a custom location button
+        locationButton = UIView(frame: CGRect(x: (menuAccountContainer.frame.width * 3) / 4 - 65, y: menuAccountContainer.frame.height - 55, width: 130, height: 45))
+        locationButton.layer.cornerRadius = 5
+        locationButton.layer.borderWidth = 1
+        locationButton.layer.borderColor = Constants.Colors.colorPurple.cgColor
+        locationButton.backgroundColor = Constants.Colors.standardBackground
+        menuAccountContainer.addSubview(locationButton)
+        
+        locationButtonLabel = UILabel(frame: CGRect(x: 0, y: 0, width: locationButton.frame.width, height: locationButton.frame.height))
+        locationButtonLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 12)
+        locationButtonLabel.textColor = Constants.Colors.colorPurple
+        locationButtonLabel.textAlignment = NSTextAlignment.center
+        locationButtonLabel.numberOfLines = 2
+        locationButtonLabel.lineBreakMode = NSLineBreakMode.byWordWrapping
+        locationButton.addSubview(locationButtonLabel)
+        
+        let menuAccountContainerBorder = CALayer()
+        menuAccountContainerBorder.frame = CGRect(x: 0, y: menuAccountContainer.frame.height - 1, width: menuAccountContainer.frame.width, height: 1)
+        menuAccountContainerBorder.backgroundColor = Constants.Colors.standardBackgroundGray.cgColor
+        menuAccountContainer.layer.addSublayer(menuAccountContainerBorder)
+        
+        menuPeopleTableButton = UIView(frame: CGRect(x: menuContainer.frame.width - Constants.Dim.mapViewMenuWidth, y: menuAccountContainer.frame.height, width: Constants.Dim.mapViewMenuWidth, height: 50))
+        menuPeopleTableButton.backgroundColor = Constants.Colors.standardBackground
+        menuContainer.addSubview(menuPeopleTableButton)
+        
+        menuPeopleTableButtonLabel = UILabel(frame: CGRect(x: 0, y: 0, width: menuPeopleTableButton.frame.width, height: menuPeopleTableButton.frame.height))
+        menuPeopleTableButtonLabel.text = "People"
+        menuPeopleTableButtonLabel.textColor = Constants.Colors.colorTextGray
+        menuPeopleTableButtonLabel.textAlignment = .center
+        menuPeopleTableButtonLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 18)
+        menuPeopleTableButton.addSubview(menuPeopleTableButtonLabel)
+        
+        let menuPeopleTableButtonBorder = CALayer()
+        menuPeopleTableButtonBorder.frame = CGRect(x: 0, y: menuPeopleTableButton.frame.height - 1, width: menuPeopleTableButton.frame.width, height: 1)
+        menuPeopleTableButtonBorder.backgroundColor = Constants.Colors.standardBackgroundGray.cgColor
+        menuPeopleTableButton.layer.addSublayer(menuPeopleTableButtonBorder)
+        
         // Add the view container to hold all other views (allows for shadows on all subviews)
-        viewContainer = UIView(frame: CGRect(x: 0, y: vcY, width: screenSize.width, height: vcHeight))
+        viewContainer = UIView(frame: CGRect(x: 0, y: vcOffsetY, width: screenSize.width, height: vcHeight))
         viewContainer.backgroundColor = Constants.Colors.standardBackground
+        viewContainer.layer.shadowOffset = CGSize(width: 0, height: 0.2)
+        viewContainer.layer.shadowOpacity = 0.2
+        viewContainer.layer.shadowRadius = 1.0
         self.view.addSubview(viewContainer)
         
         // Create a camera with the default location (if location services are used, this should not be shown for long)
@@ -320,36 +433,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         buttonRefreshMapActivityIndicator.color = UIColor.white
         buttonRefreshMap.addSubview(buttonRefreshMapActivityIndicator)
         
-//        // The Search Button
-//        buttonSearchView = UIView(frame: CGRect(x: viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonSearchSize, y: 5, width: Constants.Dim.mapViewButtonSearchSize, height: Constants.Dim.mapViewButtonSearchSize))
-//        buttonSearchView.layer.cornerRadius = Constants.Dim.mapViewButtonSearchSize / 2
-//        buttonSearchView.backgroundColor = Constants.Colors.colorMapViewButton
-//        buttonSearchView.layer.shadowOffset = Constants.Dim.mapViewShadowOffset
-//        buttonSearchView.layer.shadowOpacity = Constants.Dim.mapViewShadowOpacity
-//        buttonSearchView.layer.shadowRadius = Constants.Dim.mapViewShadowRadius
-//        viewContainer.addSubview(buttonSearchView)
-//        
-//        buttonSearchViewImage = UIImageView(frame: CGRect(x: 5, y: 5, width: Constants.Dim.mapViewButtonSize - 10, height: Constants.Dim.mapViewButtonSize - 10))
-//        buttonSearchViewImage.image = UIImage(named: Constants.Strings.iconStringMapViewSearchCombo)
-//        buttonSearchViewImage.contentMode = UIViewContentMode.scaleAspectFit
-//        buttonSearchViewImage.clipsToBounds = true
-//        buttonSearchView.addSubview(buttonSearchViewImage)
-//        
-//        // Add the List Button in the top right corner, just below the search button
-//        buttonListView = UIView(frame: CGRect(x: viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonListSize, y: viewContainer.frame.height - 5 - Constants.Dim.mapViewButtonListSize, width: Constants.Dim.mapViewButtonListSize, height: Constants.Dim.mapViewButtonListSize))
-//        buttonListView.layer.cornerRadius = Constants.Dim.mapViewButtonListSize / 2
-//        buttonListView.backgroundColor = Constants.Colors.colorMapViewButton
-//        buttonListView.layer.shadowOffset = Constants.Dim.mapViewShadowOffset
-//        buttonListView.layer.shadowOpacity = Constants.Dim.mapViewShadowOpacity
-//        buttonListView.layer.shadowRadius = Constants.Dim.mapViewShadowRadius
-//        viewContainer.addSubview(buttonListView)
-//        
-//        buttonListViewImage = UIImageView(frame: CGRect(x: 5, y: 5, width: Constants.Dim.mapViewButtonSize - 10, height: Constants.Dim.mapViewButtonSize - 10))
-//        buttonListViewImage.image = UIImage(named: Constants.Strings.iconStringMapViewList)
-//        buttonListViewImage.contentMode = UIViewContentMode.scaleAspectFit
-//        buttonListViewImage.clipsToBounds = true
-//        buttonListView.addSubview(buttonListViewImage)
-        
         // Add the Add Button in the bottom right corner
         buttonAdd = UIView(frame: CGRect(x: viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonAddSize, y: viewContainer.frame.height - 5 - Constants.Dim.mapViewButtonAddSize, width: Constants.Dim.mapViewButtonAddSize, height: Constants.Dim.mapViewButtonAddSize))
         buttonAdd.layer.cornerRadius = Constants.Dim.mapViewButtonAddSize / 2
@@ -360,7 +443,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         viewContainer.addSubview(buttonAdd)
         
         buttonAddImage = UIImageView(frame: CGRect(x: 5, y: 5, width: Constants.Dim.mapViewButtonSize - 10, height: Constants.Dim.mapViewButtonSize - 10))
-        buttonAddImage.image = UIImage(named: Constants.Strings.iconStringMapViewAdd)
+        buttonAddImage.image = UIImage(named: Constants.Strings.iconStringBlobAdd)
         buttonAddImage.contentMode = UIViewContentMode.scaleAspectFit
         buttonAddImage.clipsToBounds = true
         buttonAdd.addSubview(buttonAddImage)
@@ -422,18 +505,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         locationBlobsCollectionView.showsVerticalScrollIndicator = false
         locationBlobsCollectionViewContainer.addSubview(locationBlobsCollectionView)
         
-//        // Add the Search Box with the width of the screen and a height so that only the top buttons will by covered when deployed
-//        // Initialize with the Search Bar Y location as negative so that the Search Bar is not visible
-//        searchBarContainer = UIView(frame: CGRect(x: 0, y: 0 - Constants.Dim.mapViewSearchBarContainerHeight, width: viewContainer.frame.width, height: Constants.Dim.mapViewSearchBarContainerHeight))
-//        searchBarContainer.backgroundColor = Constants.Colors.colorStatusBar
-//        searchBarContainer.layer.shadowOffset = Constants.Dim.mapViewShadowOffset
-//        searchBarContainer.layer.shadowOpacity = Constants.Dim.mapViewShadowOpacity
-//        searchBarContainer.layer.shadowRadius = Constants.Dim.mapViewShadowRadius
-//        
-//        // The search bar exit view and label should be on the right side of the search bar container
-//        searchBarExitView = UIView(frame: CGRect(x: viewContainer.frame.width - 50, y: 0, width: 50, height: 50))
-//        searchBarContainer.addSubview(searchBarExitView)
-        
         // MARK: SEARCH BAR COMPONENTS
         resultsViewController = GMSAutocompleteResultsViewController()
         resultsViewController?.delegate = self
@@ -449,7 +520,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         searchController?.searchBar.setValue("\u{2573}", forKey: "_cancelButtonText")
         searchController?.searchBar.clipsToBounds = true
         self.navigationItem.titleView = searchController?.searchBar
-//        searchBarContainer.addSubview((searchController?.searchBar)!)
         
         // When UISearchController presents the results view, present it in
         // this view controller, not one further up the chain.
@@ -460,10 +530,10 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         searchController?.obscuresBackgroundDuringPresentation = false
         searchController?.modalPresentationStyle = UIModalPresentationStyle.popover
         
-        let leftButtonItem = UIBarButtonItem(image: UIImage(named: "MV_list_icon.png"),
+        let leftButtonItem = UIBarButtonItem(image: UIImage(named: "TAB_ICON_active_blobs_gray.png"),
                                              style: UIBarButtonItemStyle.plain,
                                              target: self,
-                                             action: #selector(MapViewController.loadBlobsTabViewController))
+                                             action: #selector(MapViewController.dummyMethod))
         leftButtonItem.tintColor = Constants.Colors.colorTextNavBar
         self.navigationItem.setLeftBarButton(leftButtonItem, animated: true)
         
@@ -473,13 +543,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                                              action: #selector(MapViewController.loadSettingsTabViewController(_:)))
         rightButtonItem.tintColor = Constants.Colors.colorTextNavBar
         self.navigationItem.setRightBarButton(rightButtonItem, animated: true)
-        
-//        searchBarExitLabel = UILabel(frame: CGRect(x: 5, y: 5, width: 40, height: 40))
-//        searchBarExitLabel.text = "\u{2573}"
-//        searchBarExitLabel.textColor = Constants.Colors.colorTextNavBar
-//        searchBarExitLabel.textAlignment = .center
-//        searchBarExitLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 24)
-//        searchBarExitView.addSubview(searchBarExitLabel)
         
         // Add the Preview Box to be the same size as the Search Box
         // Initialize with the Y location as negative (hide the box) just like the Search Box
@@ -595,14 +658,17 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         statusBarView.backgroundColor = Constants.Colors.colorStatusBar
         self.view.addSubview(statusBarView)
         
-//        // Add the Tap Gesture Recognizers for all Buttons
-//        buttonSearchTapGesture = UITapGestureRecognizer(target: self, action: #selector(MapViewController.tapButtonSearch(_:)))
-//        buttonSearchTapGesture.numberOfTapsRequired = 1  // add single tap
-//        buttonSearchView.addGestureRecognizer(buttonSearchTapGesture)
+        logoutButtonTapGesture = UITapGestureRecognizer(target: self, action: #selector(AccountViewController.logoutButtonTapGesture(_:)))
+        logoutButtonTapGesture.numberOfTapsRequired = 1  // add single tap
+        logoutButton.addGestureRecognizer(logoutButtonTapGesture)
         
-//        searchExitTapGesture = UITapGestureRecognizer(target: self, action: #selector(MapViewController.tapSearchExit(_:)))
-//        searchExitTapGesture.numberOfTapsRequired = 1  // add single tap
-//        searchBarExitView.addGestureRecognizer(searchExitTapGesture)
+        locationButtonTapGesture = UITapGestureRecognizer(target: self, action: #selector(AccountViewController.locationButtonTapGesture(_:)))
+        locationButtonTapGesture.numberOfTapsRequired = 1  // add single tap
+        locationButton.addGestureRecognizer(locationButtonTapGesture)
+        
+        menuPeopleTableTapGesture = UITapGestureRecognizer(target: self, action: #selector(MapViewController.menuPeopleButtonTap(_:)))
+        menuPeopleTableTapGesture.numberOfTapsRequired = 1  // add single tap
+        menuPeopleTableButton.addGestureRecognizer(menuPeopleTableTapGesture)
         
         buttonTrackUserTapGesture = UITapGestureRecognizer(target: self, action: #selector(MapViewController.toggleTrackUser(_:)))
         buttonTrackUserTapGesture.numberOfTapsRequired = 1  // add single tap
@@ -643,6 +709,16 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
 //        // Recall the userLikes from Core Data and set them to the global variable
 //        Constants.Data.currentUserLikes = CoreDataFunctions().likesRetrieve()
         
+        // Refresh the Current User Elements
+        self.refreshCurrentUserElements()
+        print("MVC - CURRENT USER 1: \(Constants.Data.currentUser.userID)")
+        // Go ahead and request the user data from AWS again in case the data has been updated
+        if let currentUserID = Constants.Data.currentUser.userID
+        {
+            print("MVC - CALLING AWSGetSingleUserData FOR: \(currentUserID)")
+            AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: currentUserID, forPreviewBox: false), delegate: self as AWSRequestDelegate).prepRequest()
+        }
+        
         // Recall the Tutorial Views data in Core Data.  If it is empty for the current ViewController's tutorial, it has not been seen by the curren user.
         let tutorialViews = CoreDataFunctions().tutorialViewRetrieve()
         print("MVC: TUTORIAL VIEWS MAPVIEW: \(tutorialViews.tutorialMapViewDatetime)")
@@ -681,6 +757,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         return self.statusBarHidden
     }
     
+    func dummyMethod(){}
     
     // MARK: HOLE VIEW DELEGATE
     func holeViewRemoved(removingViewAtPosition: Int)
@@ -841,6 +918,85 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     
     // MARK: TAP GESTURE METHODS
     
+    // Log out the user from the app and facebook
+    func logoutButtonTapGesture(_ sender: UITapGestureRecognizer)
+    {
+        print("TRYING TO LOG OUT THE USER")
+        
+        // Log out the user from Facebook
+        let loginManager = FBSDKLoginManager()
+        loginManager.logOut()
+        
+        // Log out the user from the app
+        Constants.Data.currentUser = User()
+        Constants.credentialsProvider.clearCredentials()
+        
+        // Clear the data from the app
+        Constants.Data.mapBlobs = [Blob]()
+        Constants.Data.taggedBlobs = [Blob]()
+        Constants.Data.userBlobs = [Blob]()
+        Constants.Data.locationBlobs = [Blob]()
+        Constants.Data.blobThumbnailObjects = [BlobThumbnailObject]()
+        Constants.Data.userObjects = [User]()
+        
+        // Remove the userBlobs from the local array
+        self.userBlobs = [Blob]()
+        
+        for circle in Constants.Data.mapCircles
+        {
+            circle.map = nil
+        }
+        Constants.Data.mapCircles = [GMSCircle]()
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
+    }
+    
+    // Toggle the location manager type
+    func locationButtonTapGesture(_ sender: UITapGestureRecognizer)
+    {
+        // Toggle the location manager type
+        if Constants.Settings.locationManagerSetting == Constants.LocationManagerSettingType.always
+        {
+            // Change the locationManagerAlways toggle indicator
+            Constants.Settings.locationManagerSetting = Constants.LocationManagerSettingType.significant
+            
+            // Change the button color and text
+            locationButtonLabel.text = Constants.Strings.stringLMSignificant
+            
+            // Save the locationManagerSetting in Core Data
+            CoreDataFunctions().locationManagerSettingSave(Constants.LocationManagerSettingType.significant)
+        }
+        else if Constants.Settings.locationManagerSetting == Constants.LocationManagerSettingType.off
+        {
+            // Change the locationManagerAlways toggle indicator
+            Constants.Settings.locationManagerSetting = Constants.LocationManagerSettingType.always
+            
+            // Change the button color and text
+            locationButtonLabel.text = Constants.Strings.stringLMAlways
+            
+            // Save the locationManagerSetting in Core Data
+            CoreDataFunctions().locationManagerSettingSave(Constants.LocationManagerSettingType.always)
+        }
+        else
+        {
+            // Change the locationManagerAlways toggle indicator
+            Constants.Settings.locationManagerSetting = Constants.LocationManagerSettingType.off
+            
+            // Change the button color and text
+            locationButtonLabel.text = Constants.Strings.stringLMOff
+            
+            // Save the locationManagerSetting in Core Data
+            CoreDataFunctions().locationManagerSettingSave(Constants.LocationManagerSettingType.off)
+        }
+        
+        // Implement the changed settings immediately
+        UtilityFunctions().toggleLocationManagerSettings()
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
+    }
+    
     // If the low accuracy alert view is showing, tapping it will display the popup explaining that the user's current location range is too high
     func tapLowAccuracyView(_ gesture: UITapGestureRecognizer)
     {
@@ -850,55 +1006,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         // Save an action in Core Data
         CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
-    
-//    // When the Search Button is tapped, check to see if the search bar is visible
-//    // If it is not visible, and add it to the view and animate in down into view
-//    func tapButtonSearch(_ gesture: UITapGestureRecognizer)
-//    {        
-//        // Check whether the button has already been pushed - if not, expand the hidden buttons
-//        // else, display the search bar
-//        if !menuButtonMapOpen
-//        {
-//            menuButtonMapOpen = true
-//            
-//            // Add an animation to lower the hidden buttons
-//            UIView.animate(withDuration: 0.2, animations:
-//                {
-//                    self.buttonTrackUser.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonTrackUserSize, y: 10 + Constants.Dim.mapViewButtonTrackUserSize, width: Constants.Dim.mapViewButtonTrackUserSize, height: Constants.Dim.mapViewButtonTrackUserSize)
-//                    self.buttonRefreshMap.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonTrackUserSize, y: 15 + Constants.Dim.mapViewButtonTrackUserSize * 2, width: Constants.Dim.mapViewButtonTrackUserSize, height: Constants.Dim.mapViewButtonTrackUserSize)
-//                }, completion:
-//                { (finished: Bool) -> Void in
-//                    self.buttonSearchViewImage.image = UIImage(named: Constants.Strings.iconStringMapViewSearch)
-//            })
-//        }
-//        else
-//        {
-//            // Ensure that the search bar is not visible - if it is, the search button should not be visible to touch
-//            if !searchBarVisible
-//            {
-//                searchBarVisible = true
-//                viewContainer.addSubview(searchBarContainer)
-//                
-//                // Add an animation to lower the search button container into view
-//                UIView.animate(withDuration: 0.2, animations:
-//                    {
-//                        self.searchBarContainer.frame = CGRect(x: 0, y: 0, width: self.viewContainer.frame.width, height: Constants.Dim.mapViewSearchBarContainerHeight)
-//                    }, completion: nil)
-//            }
-//        }
-//        
-//        // Save an action in Core Data
-//        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
-//    }
-    
-//    // If the Search Box Exit Button is tapped, call the custom function to hide the box
-//    func tapSearchExit(_ gesture: UITapGestureRecognizer)
-//    {
-//        self.closeSearchBox()
-//        
-//        // Save an action in Core Data
-//        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
-//    }
     
     // If the List View Button is tapped, prepare a Navigation Controller and a Tab View Controller
     // Attach the needed Table Views to the Tab View Controller and load the Navigation Controller
@@ -924,29 +1031,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         // Reset features on the MVC
         prepPushView()
         
-//        // Create the Back Button Item and Title View for the Tab View
-//        // These settings will be passed up to the assigned Navigation Controller for the Tab View Controller
-//        let backButtonItem = UIBarButtonItem(title: "\u{2190}",
-//                                             style: UIBarButtonItemStyle.plain,
-//                                             target: self,
-//                                             action: #selector(MapViewController.popViewController(_:)))
-//        backButtonItem.tintColor = Constants.Colors.colorTextNavBar
-//        
-//        let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
-//        let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
-//        ncTitleText.text = "Nearby Blobs"
-//        ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 14)
-//        ncTitleText.textColor = Constants.Colors.colorTextNavBar
-//        ncTitleText.textAlignment = .center
-//        ncTitle.addSubview(ncTitleText)
-//        
-//        // Prepare the Active Blobs VC
-//        // Assign the created Nav Bar settings to the Tab Bar Controller
-//        activeBlobsVC = BlobsActiveTableViewController()
-//        activeBlobsVC.navigationItem.setLeftBarButton(backButtonItem, animated: true)
-//        activeBlobsVC.navigationItem.titleView = ncTitle
-        
-        ///////
         // Prepare both of the Table View Controllers and add Tab Bar Items to them
         activeBlobsVC = BlobsActiveTableViewController()
         let activeBlobsTabBarItem = UITabBarItem()
@@ -997,55 +1081,68 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         // Reset features on the MVC
         prepPushView()
         
-        // Prepare both of the Table View Controllers and add Tab Bar Items to them
-        peopleVC = PeopleViewController()
-        peopleVC!.peopleViewDelegate = self
-        peopleVC!.tabBarUsed = true
-        let peopleTabBarItem = UITabBarItem()
-        peopleTabBarItem.tag = 1
-        peopleTabBarItem.image = UIImage(named: Constants.Strings.iconStringTabIconConnectionsGray)
-        peopleTabBarItem.selectedImage = UIImage(named: Constants.Strings.iconStringTabIconConnectionsWhite)
-        peopleTabBarItem.imageInsets = UIEdgeInsets(top: 5, left: 0, bottom: -5, right: 0)
-        peopleVC!.tabBarItem = peopleTabBarItem
-        
-        accountVC = AccountViewController()
-        accountVC!.accountViewDelegate = self
-        let accountTabBarItem = UITabBarItem()
-        accountTabBarItem.tag = 2
-        accountTabBarItem.image = UIImage(named: Constants.Strings.iconStringTabIconAccountGray)
-        accountTabBarItem.selectedImage = UIImage(named: Constants.Strings.iconStringTabIconAccountWhite)
-        accountTabBarItem.imageInsets = UIEdgeInsets(top: 5, left: 0, bottom: -5, right: 0)
-        accountVC!.tabBarItem = accountTabBarItem
-        
-        // Create the Tab Bar Controller to hold the Table View Controllers
-        tabBarControllerCustom = UITabBarController()
-        tabBarControllerCustom!.delegate = self
-        tabBarControllerCustom!.tabBar.barTintColor = Constants.Colors.colorStatusBarLight
-        tabBarControllerCustom!.tabBar.tintColor = Constants.Colors.colorTextNavBar
-        tabBarControllerCustom!.viewControllers = [peopleVC!, accountVC!]
-        
-        // If the account tab should be loaded, set the last (1) index to load
-        if goToAccountTab
+        if !menuOpen
         {
-            tabBarControllerCustom!.selectedIndex = 1
+            // Add animations to show the menuContainer and shift the viewContainer to the left
+            UIView.animate(withDuration: 0.5, animations:
+                {
+                    self.viewContainer.frame = CGRect(x: 0 - Constants.Dim.mapViewMenuWidth, y: self.vcOffsetY, width: self.screenSize.width, height: self.vcHeight)
+            }, completion:
+                {
+                    (value: Bool) in
+                    self.menuOpen = true
+            })
         }
         
-        // Create the Back Button Item and Title View for the Tab View
-        // These settings will be passed up to the assigned Navigation Controller for the Tab View Controller
-        let backButtonItem = UIBarButtonItem(title: "\u{2190}",
-                                             style: UIBarButtonItemStyle.plain,
-                                             target: self,
-                                             action: #selector(MapViewController.popViewController(_:)))
-        backButtonItem.tintColor = Constants.Colors.colorTextNavBar
-        
-        // Assign the created Nav Bar settings to the Tab Bar Controller
-        tabBarControllerCustom!.navigationItem.setLeftBarButton(backButtonItem, animated: true)
-        
-        print("MVC - LSTVC - NAV CONTROLLER: \(self.navigationController)")
-        if let navController = self.navigationController
-        {
-            navController.pushViewController(tabBarControllerCustom!, animated: true)
-        }
+//        // Prepare both of the Table View Controllers and add Tab Bar Items to them
+//        peopleVC = PeopleViewController()
+//        peopleVC!.peopleViewDelegate = self
+//        peopleVC!.tabBarUsed = true
+//        let peopleTabBarItem = UITabBarItem()
+//        peopleTabBarItem.tag = 1
+//        peopleTabBarItem.image = UIImage(named: Constants.Strings.iconStringTabIconConnectionsGray)
+//        peopleTabBarItem.selectedImage = UIImage(named: Constants.Strings.iconStringTabIconConnectionsWhite)
+//        peopleTabBarItem.imageInsets = UIEdgeInsets(top: 5, left: 0, bottom: -5, right: 0)
+//        peopleVC!.tabBarItem = peopleTabBarItem
+//
+//        accountVC = AccountViewController()
+//        accountVC!.accountViewDelegate = self
+//        let accountTabBarItem = UITabBarItem()
+//        accountTabBarItem.tag = 2
+//        accountTabBarItem.image = UIImage(named: Constants.Strings.iconStringTabIconAccountGray)
+//        accountTabBarItem.selectedImage = UIImage(named: Constants.Strings.iconStringTabIconAccountWhite)
+//        accountTabBarItem.imageInsets = UIEdgeInsets(top: 5, left: 0, bottom: -5, right: 0)
+//        accountVC!.tabBarItem = accountTabBarItem
+//        
+//        // Create the Tab Bar Controller to hold the Table View Controllers
+//        tabBarControllerCustom = UITabBarController()
+//        tabBarControllerCustom!.delegate = self
+//        tabBarControllerCustom!.tabBar.barTintColor = Constants.Colors.colorStatusBarLight
+//        tabBarControllerCustom!.tabBar.tintColor = Constants.Colors.colorTextNavBar
+//        tabBarControllerCustom!.viewControllers = [peopleVC!, accountVC!]
+//        
+//        // If the account tab should be loaded, set the last (1) index to load
+//        if goToAccountTab
+//        {
+//            tabBarControllerCustom!.selectedIndex = 1
+//        }
+//        
+//        // Create the Back Button Item and Title View for the Tab View
+//        // These settings will be passed up to the assigned Navigation Controller for the Tab View Controller
+//        let backButtonItem = UIBarButtonItem(title: "\u{2190}",
+//                                             style: UIBarButtonItemStyle.plain,
+//                                             target: self,
+//                                             action: #selector(MapViewController.popViewController(_:)))
+//        backButtonItem.tintColor = Constants.Colors.colorTextNavBar
+//        
+//        // Assign the created Nav Bar settings to the Tab Bar Controller
+//        tabBarControllerCustom!.navigationItem.setLeftBarButton(backButtonItem, animated: true)
+//        
+//        print("MVC - LSTVC - NAV CONTROLLER: \(self.navigationController)")
+//        if let navController = self.navigationController
+//        {
+//            navController.pushViewController(tabBarControllerCustom!, animated: true)
+//        }
         
         // Save an action in Core Data
         CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
@@ -1107,6 +1204,43 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         
     }
     
+    // MARK: TAP DELEGATES
+    
+    func menuPeopleButtonTap(_ gesture: UITapGestureRecognizer)
+    {
+        // Prepare both of the Table View Controllers and add Tab Bar Items to them
+        peopleVC = PeopleViewController()
+        peopleVC!.peopleViewDelegate = self
+        
+        // Create the Back Button Item and Title View for the Tab View
+        // These settings will be passed up to the assigned Navigation Controller for the Tab View Controller
+        let backButtonItem = UIBarButtonItem(title: "\u{2190}",
+                                             style: UIBarButtonItemStyle.plain,
+                                             target: self,
+                                             action: #selector(MapViewController.popViewController(_:)))
+        backButtonItem.tintColor = Constants.Colors.colorTextNavBar
+        
+        // Assign the created Nav Bar settings to the Tab Bar Controller
+        peopleVC!.navigationItem.setLeftBarButton(backButtonItem, animated: true)
+        
+        let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
+        let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
+        ncTitleText.text = "People"
+        ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 14)
+        ncTitleText.textColor = Constants.Colors.colorTextNavBar
+        ncTitleText.textAlignment = .center
+        ncTitle.addSubview(ncTitleText)
+        peopleVC!.navigationItem.titleView = ncTitle
+        
+        if let navController = self.navigationController
+        {
+            navController.pushViewController(peopleVC!, animated: true)
+        }
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
+    }
+    
     
     // If the Add Button is tapped, check to see if the addingBlob indicator has already been activated (true)
     // If not, hide the normal buttons and just show the buttons needed for the Add Blob action (gray circle, slider, etc.)
@@ -1148,7 +1282,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // If the Cancel Add Blob button is tapped, show the buttons that were hidden and hide the elements used in the add blob process
     func tapCancelAddView(_ gesture: UITapGestureRecognizer)
     {
-        buttonAddImage.image = UIImage(named: Constants.Strings.iconStringMapViewAdd)
+        buttonAddImage.image = UIImage(named: Constants.Strings.iconStringBlobAdd)
         
         buttonCancelAdd.removeFromSuperview()
         selectorMessageBox.removeFromSuperview()
@@ -1169,14 +1303,12 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // This version is used when the top VC is popped from a Nav Bar button
     func popViewController(_ sender: UIBarButtonItem)
     {
-//        self.dismiss(animated: true, completion: {})
         self.navigationController!.popViewController(animated: true)
     }
     
     // Dismiss the latest View Controller presented from this VC
     func popViewController()
     {
-//        self.dismiss(animated: true, completion: {})
         self.navigationController!.popViewController(animated: true)
     }
 
@@ -1320,7 +1452,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 ncTitle.addSubview(ncTitleText)
                 
                 // Instantiate the BlobViewController and pass the Preview Blob to the VC
-                blobVC = BlobViewController()
+                blobVC = BlobTableViewController()
                 blobVC.blob = pBlob
                 
                 // Assign the created Nav Bar settings to the Tab Bar Controller
@@ -1654,36 +1786,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     
     func mapView(_ mapView: GMSMapView, didTapAt coordinate: CLLocationCoordinate2D)
     {
-//        // Check whether any menu button is expanded - if so, close them
-//        if menuButtonMapOpen
-//        {
-//            menuButtonMapOpen = false
-//            
-//            // Add an animation to hide the buttons
-//            UIView.animate(withDuration: 0.2, animations:
-//                {
-//                    self.buttonTrackUser.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonTrackUserSize, y: 5, width: Constants.Dim.mapViewButtonTrackUserSize, height: Constants.Dim.mapViewButtonTrackUserSize)
-//                    self.buttonRefreshMap.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonTrackUserSize, y: 5, width: Constants.Dim.mapViewButtonTrackUserSize, height: Constants.Dim.mapViewButtonTrackUserSize)
-//                }, completion:
-//                {(finished: Bool) -> Void in
-//                    self.buttonSearchViewImage.image = UIImage(named: Constants.Strings.iconStringMapViewSearchCombo)
-//            })
-//        }
-//        // However, only close the Blob menu buttons if the addingBlob indicator is false - if adding a Blob, the Blob menu buttons should remain expanded
-//        if menuButtonBlobOpen && !addingBlob
-//        {
-//            menuButtonBlobOpen = false
-//            
-//            // Add an animation to hide the buttons
-//            UIView.animate(withDuration: 0.2, animations:
-//                {
-//                    self.buttonListView.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonListSize, y: self.viewContainer.frame.height - 5 - Constants.Dim.mapViewButtonListSize, width: Constants.Dim.mapViewButtonListSize, height: Constants.Dim.mapViewButtonListSize)
-//                }, completion:
-//                {(finished: Bool) -> Void in
-//                    self.buttonAddImage.image = UIImage(named: Constants.Strings.iconStringMapViewAddCombo)
-//            })
-//        }
-        
         /*
          1 - Check to see if the tap is within a Blob on the map
                 - If so, highlight the Blob on the map
@@ -1691,6 +1793,20 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 - If so, show the full Preview AND highlight the userImage in the collection view
                 - If not, show the short Preview
         */
+        
+        // Check whether the menu is showing - if so, hide it
+        if menuOpen
+        {
+            UIView.animate(withDuration: 0.5, animations:
+                {
+                    self.viewContainer.frame = CGRect(x: 0, y: self.vcOffsetY, width: self.screenSize.width, height: self.vcHeight)
+            }, completion:
+                {
+                    (value: Bool) in
+                    self.menuOpen = false
+            })
+        }
+        
         // Create a tapped Blob indicator property so only the hightest tapped Blob is selected, but all others are deselected
         var tappedBlob = false
         loopMapBlobs: for mBlob in Constants.Data.mapBlobs
@@ -1767,36 +1883,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // Called before the map is moved
     func mapView(_ mapView: GMSMapView, willMove gesture: Bool)
     {
-//        // Check whether any menu button is expanded - if so, close them
-//        if menuButtonMapOpen
-//        {
-//            menuButtonMapOpen = false
-//            
-//            // Add an animation to hide the buttons
-//            UIView.animate(withDuration: 0.2, animations:
-//                {
-//                    self.buttonTrackUser.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonTrackUserSize, y: 5, width: Constants.Dim.mapViewButtonTrackUserSize, height: Constants.Dim.mapViewButtonTrackUserSize)
-//                    self.buttonRefreshMap.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonTrackUserSize, y: 5, width: Constants.Dim.mapViewButtonTrackUserSize, height: Constants.Dim.mapViewButtonTrackUserSize)
-//                }, completion:
-//                {(finished: Bool) -> Void in
-//                    self.buttonSearchViewImage.image = UIImage(named: Constants.Strings.iconStringMapViewSearchCombo)
-//            })
-//        }
-//        // However, only close the Blob menu buttons if the addingBlob indicator is false - if adding a Blob, the Blob menu buttons should remain expanded
-//        if menuButtonBlobOpen && !addingBlob
-//        {
-//            menuButtonBlobOpen = false
-//            
-//            // Add an animation to hide the buttons
-//            UIView.animate(withDuration: 0.2, animations:
-//                {
-//                    self.buttonListView.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonListSize, y: self.viewContainer.frame.height - 5 - Constants.Dim.mapViewButtonListSize, width: Constants.Dim.mapViewButtonListSize, height: Constants.Dim.mapViewButtonListSize)
-//                }, completion:
-//                {(finished: Bool) -> Void in
-//                    self.buttonAddImage.image = UIImage(named: Constants.Strings.iconStringMapViewAddCombo)
-//            })
-//        }
-        
         // If the user is adding a Blob, do not allow them to zoom lower than mapViewAddBlobMinZoom (higher view)
         if addingBlob
         {
@@ -2162,41 +2248,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     
     // MARK: CUSTOM FUNCTIONS
     
-//    // Check to see if the Search Bar is visible, and if so animate the container to hide it behind the Status Bar
-//    // Once the animation completes, remove the Search Bar Container from the view container
-//    func closeSearchBox()
-//    {
-//        if searchBarVisible
-//        {
-//            // Hide the search marker
-//            if searchMarker != nil
-//            {
-//                searchMarker!.map = nil
-//            }
-//            
-//            searchBarVisible = false
-//            
-//            // Add an animation to raise the search button container out of view
-//            UIView.animate(withDuration: 0.2, animations:
-//                {
-//                    self.searchBarContainer.frame = CGRect(x: 0, y: 0 - Constants.Dim.mapViewSearchBarContainerHeight, width: self.viewContainer.frame.width, height: Constants.Dim.mapViewSearchBarContainerHeight)
-//                    self.buttonSearchView.layer.shadowOffset = CGSize(width: 0, height: 0.0)
-//                    self.buttonSearchView.layer.shadowOpacity = 0.2
-//                    self.buttonSearchView.layer.shadowRadius = 0.0
-//                }, completion:
-//                {
-//                    (value: Bool) in
-//                    self.buttonSearchView.layer.shadowOffset = Constants.Dim.mapViewShadowOffset
-//                    self.buttonSearchView.layer.shadowOpacity = Constants.Dim.mapViewShadowOpacity
-//                    self.buttonSearchView.layer.shadowRadius = Constants.Dim.mapViewShadowRadius
-//                    
-//                    // Remove the Search Box from the view container so that a flip animation to show a new view controller
-//                    // does not show the Search Box above the Status Bar
-//                    self.searchBarContainer.removeFromSuperview()
-//            })
-//        }
-//    }
-    
     // Check to see if the Preview Box is low enough to be visible
     // If so, animate the raising of the Preview Box out of view
     func closePreview()
@@ -2303,13 +2354,17 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         }
         
         // Add the View Controller to the Nav Controller and present the Nav Controller
-        let navController = UINavigationController(rootViewController: addBlobVC!)
-        navController.navigationBar.barTintColor = Constants.Colors.colorStatusBar
-        self.modalPresentationStyle = .popover
-        self.present(navController, animated: true, completion: nil)
+//        let navController = UINavigationController(rootViewController: addBlobVC!)
+//        navController.navigationBar.barTintColor = Constants.Colors.colorStatusBar
+//        self.modalPresentationStyle = .popover
+//        self.present(navController, animated: true, completion: nil)
+        if let navController = self.navigationController
+        {
+            navController.pushViewController(addBlobVC!, animated: true)
+        }
         
         // Reset the button settings and remove the elements used in the Add Blob Process
-        buttonAddImage.image = UIImage(named: Constants.Strings.iconStringMapViewAdd)
+        buttonAddImage.image = UIImage(named: Constants.Strings.iconStringBlobAdd)
         
         buttonCancelAdd.removeFromSuperview()
         selectorMessageBox.removeFromSuperview()
@@ -2601,6 +2656,33 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
 //        blob.map = self.mapView
     }
     
+    // The AWS Delegate return methods will call this function when the logged in user has been added to the global user list
+    func refreshCurrentUserElements()
+    {
+        print("MVC-RCUE - REFRESH CURRENT USER DATA")
+        
+        // The Current User Data has already been loaded into the global current User object, and possibly updated
+        // from a fresh download of user data when this viewController was loaded
+        
+        // Show the logged in user's username in the display user label
+        if let username = Constants.Data.currentUser.userName
+        {
+            Constants.Data.currentUser.userName  = username
+            displayUserLabel.text = username
+            displayUserLabelActivityIndicator.stopAnimating()
+        }
+        
+        // Refresh the user image if it exists
+        if let userImage = Constants.Data.currentUser.userImage
+        {
+            self.displayUserImage.image = userImage
+            self.displayUserImageActivityIndicator.stopAnimating()
+            
+            // Store the new image in Core Data for immediate access in next VC loading
+            CoreDataFunctions().currentUserSave(user: Constants.Data.currentUser)
+        }
+    }
+    
     func getImageWithColor(_ color: UIColor, size: CGSize) -> UIImage
     {
         let rect = CGRect(x: 0, y: 0, width: size.width, height: size.height)
@@ -2712,8 +2794,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                     {
                         if self.newLogin
                         {
-                            // Load the account view to show the logged in user
-                            self.loadSettingsTabViewController(true)
                             self.showLoginScreenBool = false
                             
                             // Hide the logging in screen, indicator, and label
@@ -2730,6 +2810,14 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                             {
                                 self.refreshMap()
                             }
+                        }
+                        
+                        print("MVC - CURRENT USER 2: \(Constants.Data.currentUser.userID)")
+                        // Request the user data from AWS to display on the menu screen
+                        if let currentUserID = Constants.Data.currentUser.userID
+                        {
+                            print("MVC - CALLING AWSGetSingleUserData FOR: \(currentUserID)")
+                            AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: currentUserID, forPreviewBox: false), delegate: self as AWSRequestDelegate).prepRequest()
                         }
                     }
                     else
@@ -2834,6 +2922,10 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 case let awsGetSingleUserData as AWSGetSingleUserData:
                     if success
                     {
+                        print("MVC-RCUE - GOT USER DATA")
+                        // Refresh the user elements
+                        self.refreshCurrentUserElements()
+                        
                         // Refresh the collection view
                         self.refreshCollectionView()
                         
@@ -2861,6 +2953,10 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                     // Do not distinguish between success and failure for this class - both need to have the userList updated
                     // Refresh the collection view
                     self.refreshCollectionView()
+                    
+                    // This method is called from within AWSGetSingleUserData
+                    // Refresh the user elements
+                    self.refreshCurrentUserElements()
                     
                     // If the Blob Active View Controller is not null, send a refresh command so that the Parent VC's Child's VC's Table View's rows look for the new data
                     self.updateBlobActionTable()

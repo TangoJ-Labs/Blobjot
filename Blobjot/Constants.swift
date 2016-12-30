@@ -235,6 +235,8 @@ struct Constants
         static let mapViewButtonAccountSize: CGFloat = 40
         static let mapViewButtonTrackUserSize: CGFloat = 40
         
+        static let mapViewMenuWidth: CGFloat = 200
+        
         static let mapViewSearchBarContainerHeight: CGFloat = 45
         static let mapViewSearchBarHeight: CGFloat = 25
         static let mapViewPreviewContainerHeight: CGFloat = 45
@@ -272,8 +274,10 @@ struct Constants
         static let blobViewIndicatorSize: CGFloat = 60
         static let blobViewButtonSize: CGFloat = 40
         static let blobViewCellHeight: CGFloat = 20
-        static let blobViewCommentCellHeight: CGFloat = 35
-        static let blobViewCommentUserImageSize: CGFloat = 20
+        static let blobViewContentCellHeight: CGFloat = 35
+        static let blobViewContentUserImageSize: CGFloat = 20
+        
+        static let blobViewTypeIndicatorWidth: CGFloat = 5
         
         static let blobAddTypeCircleSize: CGFloat = 40
         
@@ -314,9 +318,7 @@ struct Constants
         static let blobsTableViewCellReuseIdentifier = "blobsTableViewCell"
         static let accountTableViewCellReuseIdentifier = "accountTableViewCell"
         static let blobAddPeopleTableViewCellReuseIdentifier = "blobAddPeopleTableViewCell"
-        static let blobTableViewCellBlobWithLabelReuseIdentifier = "blobTableViewCellBlobWithLabel"
-        static let blobTableViewCellBlobNoLabelReuseIdentifier = "blobTableViewCellBlobNoLabel"
-        static let blobTableViewCellCommentReuseIdentifier = "blobTableViewCellComment"
+        static let blobTableViewCellReuseIdentifier = "blobTableViewCell"
         
         static let cacheSessionViewHistory = "sessionViewHistory"
         
@@ -324,7 +326,7 @@ struct Constants
         static let iconStringBlobjotLogo = "BLOBJOT_purple.png"
         static let iconStringDefaultMedia = "defaultMedia.png"
         static let iconStringMapViewAddCombo = "MV_add_combo_icon.png"
-        static let iconStringMapViewAdd = "MV_add_icon.png"
+        static let iconStringBlobAdd = "add_icon.png"
         static let iconStringMapViewCheck = "MV_check_icon.png"
         static let iconStringMapViewClose = "MV_close_icon.png"
         static let iconStringMapViewList = "MV_list_icon.png"
