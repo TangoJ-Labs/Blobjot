@@ -684,7 +684,7 @@ class AWSGetBlobMinimumData : AWSRequestObject
                             // If the user has not been downloaded, request the user and the userImage
                             if !userExists
                             {
-                                let awsGetSingleUserData = AWSGetSingleUserData(userID: minBlob.blobUserID, forPreviewBox: false)
+                                let awsGetSingleUserData = AWSGetSingleUserData(userID: minBlob.blobUserID, forPreviewData: false)
                                 awsGetSingleUserData.targetBlob = minBlob
                                 AWSPrepRequest(requestToCall: awsGetSingleUserData, delegate: self.awsRequestDelegate!).prepRequest()
                             }
@@ -926,13 +926,13 @@ class AWSGetSingleUserData : AWSRequestObject
 {
     var user: User!
     var userID: String!
-    var forPreviewBox: Bool!
+    var forPreviewData: Bool!
     var targetBlob: Blob?
     
-    required init(userID: String, forPreviewBox: Bool)
+    required init(userID: String, forPreviewData: Bool)
     {
         self.userID = userID
-        self.forPreviewBox = forPreviewBox
+        self.forPreviewData = forPreviewData
         
         self.user = User()
         self.user.userID = userID
@@ -1043,6 +1043,7 @@ class AWSGetUserConnections : AWSRequestObject
                 }
                 else if (response != nil)
                 {
+                    print("AWS - USER CONNECTIONS: \(response)")
                     // Convert the response to an array of arrays
                     if let newUserConnectionArrays = response as? [[AnyObject]]
                     {
@@ -1514,6 +1515,8 @@ class AWSGetUserBlobs : AWSRequestObject
                                 addBlob.blobThumbnailID = checkBlob["blobThumbnailID"] as? String
                                 addBlob.blobMediaType = checkBlob["blobMediaType"] as? Int
                                 addBlob.blobMediaID = checkBlob["blobMediaID"] as? String
+                                
+                                addBlob.blobExtraRequested = true
                                 
                                 // Only add the Blob to the local array and Core Data if it is a permanent Blob
                                 if addBlob.blobType == Constants.BlobTypes.permanent
@@ -2123,6 +2126,7 @@ class FBGetUserProfileData : AWSRequestObject
                     {
                         if let resultDict = result as? [String:AnyObject]
                         {
+                            print("AC-FBSDK - RESULT : \(result)")
                             if let facebookName = resultDict["name"] as! String!
                             {
                                 print("AC-FBSDK - Name : \(facebookName)")
@@ -2199,7 +2203,7 @@ class FBGetUserProfileData : AWSRequestObject
             if let userID = self.user.userID
             {
                 // Go ahead and request the user data from AWS again since not all data was originally downloaded
-                AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: userID, forPreviewBox: false), delegate: self.awsRequestDelegate!).prepRequest()
+                AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: userID, forPreviewData: false), delegate: self.awsRequestDelegate!).prepRequest()
             }
         }
     }
@@ -2264,6 +2268,8 @@ class FBGetUserLikes : AWSRequestObject
                 {
                     // Reset the userLikes list
                     Constants.Data.currentUserLikes = [String]()
+                    
+                    print("AC-FBSDK - GUD - LIKES: \(result)")
                     
                     if let resultDict = result as? [String: Any]
                     {

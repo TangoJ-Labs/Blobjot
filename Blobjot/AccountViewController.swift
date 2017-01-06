@@ -1,5 +1,5 @@
 //
-//  MyBlobsTableViewController.swift
+//  UserBlobsTableViewController.swift
 //  Blobjot
 //
 //  Created by Sean Hart on 7/27/16.
@@ -295,7 +295,7 @@ class AccountViewController: UIViewController, UITableViewDataSource, UITableVie
         // Go ahead and request the user data from AWS again in case the data has been updated
         if let currentUserID = Constants.Data.currentUser.userID
         {
-            AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: currentUserID, forPreviewBox: false), delegate: self as AWSRequestDelegate).prepRequest()
+            AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: currentUserID, forPreviewData: false), delegate: self as AWSRequestDelegate).prepRequest()
         }
         
         // Recall the Tutorial Views data in Core Data.  If it is empty for the current ViewController's tutorial, it has not been seen by the curren user.

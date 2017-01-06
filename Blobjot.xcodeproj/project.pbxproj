@@ -24,7 +24,7 @@
 		B80C56511D51158000C4E683 /* AccountTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56411D51158000C4E683 /* AccountTableViewCell.swift */; };
 		B80C56521D51158000C4E683 /* AccountViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56421D51158000C4E683 /* AccountViewController.swift */; };
 		B80C56531D51158000C4E683 /* BlobTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56431D51158000C4E683 /* BlobTableViewController.swift */; };
-		B80C56541D51158000C4E683 /* LocationEventsCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56441D51158000C4E683 /* LocationEventsCollectionViewCell.swift */; };
+		B80C56541D51158000C4E683 /* MapViewLocationBlobsCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56441D51158000C4E683 /* MapViewLocationBlobsCell.swift */; };
 		B80C56551D51158000C4E683 /* PeopleTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56451D51158000C4E683 /* PeopleTableViewCell.swift */; };
 		B80C56561D51158000C4E683 /* PeopleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56461D51158000C4E683 /* PeopleViewController.swift */; };
 		B80C565A1D5116E000C4E683 /* defaultMedia.png in Resources */ = {isa = PBXBuildFile; fileRef = B80C56581D5116E000C4E683 /* defaultMedia.png */; };
@@ -68,6 +68,7 @@
 		B86407081D7B13EB0084D6EF /* DataModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = B86407061D7B13EB0084D6EF /* DataModel.xcdatamodeld */; };
 		B864070D1D7B14A40084D6EF /* BlobNotifications+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B86407091D7B14A40084D6EF /* BlobNotifications+CoreDataProperties.swift */; };
 		B864070E1D7B14A40084D6EF /* BlobNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B864070A1D7B14A40084D6EF /* BlobNotification.swift */; };
+		B877708A1E17FD620041ECD6 /* MapViewPreviewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B87770891E17FD620041ECD6 /* MapViewPreviewCell.swift */; };
 		B88131931D510EEE00021C4B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88131921D510EEE00021C4B /* AppDelegate.swift */; };
 		B881319D1D510EEE00021C4B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B881319C1D510EEE00021C4B /* Assets.xcassets */; };
 		B88131AB1D510EEF00021C4B /* BlobjotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88131AA1D510EEF00021C4B /* BlobjotTests.swift */; };
@@ -172,7 +173,7 @@
 		B80C56411D51158000C4E683 /* AccountTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = AccountTableViewCell.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		B80C56421D51158000C4E683 /* AccountViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = AccountViewController.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		B80C56431D51158000C4E683 /* BlobTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlobTableViewController.swift; sourceTree = "<group>"; };
-		B80C56441D51158000C4E683 /* LocationEventsCollectionViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocationEventsCollectionViewCell.swift; sourceTree = "<group>"; };
+		B80C56441D51158000C4E683 /* MapViewLocationBlobsCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapViewLocationBlobsCell.swift; sourceTree = "<group>"; };
 		B80C56451D51158000C4E683 /* PeopleTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PeopleTableViewCell.swift; sourceTree = "<group>"; };
 		B80C56461D51158000C4E683 /* PeopleViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PeopleViewController.swift; sourceTree = "<group>"; };
 		B80C56581D5116E000C4E683 /* defaultMedia.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = defaultMedia.png; sourceTree = "<group>"; };
@@ -217,6 +218,7 @@
 		B86407071D7B13EB0084D6EF /* DataModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = DataModel.xcdatamodel; sourceTree = "<group>"; };
 		B86407091D7B14A40084D6EF /* BlobNotifications+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "BlobNotifications+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		B864070A1D7B14A40084D6EF /* BlobNotification.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlobNotification.swift; sourceTree = "<group>"; };
+		B87770891E17FD620041ECD6 /* MapViewPreviewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapViewPreviewCell.swift; sourceTree = "<group>"; };
 		B881318F1D510EEE00021C4B /* Blobjot.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Blobjot.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B88131921D510EEE00021C4B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B881319C1D510EEE00021C4B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -470,9 +472,10 @@
 				B85FDE881D7DC2BA002A8FC7 /* CustomIdentityProvider.swift */,
 				B8C8C59C1D57544C004D773E /* Extensions.swift */,
 				B8B533A41DC9A50200B9ACC1 /* HoleView.swift */,
-				B80C56441D51158000C4E683 /* LocationEventsCollectionViewCell.swift */,
 				B80D17741D90E1C90032B0D8 /* LoginViewController.swift */,
 				B80C56351D5113B900C4E683 /* MapViewController.swift */,
+				B80C56441D51158000C4E683 /* MapViewLocationBlobsCell.swift */,
+				B87770891E17FD620041ECD6 /* MapViewPreviewCell.swift */,
 				B80C56451D51158000C4E683 /* PeopleTableViewCell.swift */,
 				B80C56461D51158000C4E683 /* PeopleViewController.swift */,
 				B80C56601D5183B100C4E683 /* User.swift */,
@@ -858,6 +861,7 @@
 				B80C56341D5112F100C4E683 /* Constants.swift in Sources */,
 				B85FDE891D7DC2BA002A8FC7 /* CustomIdentityProvider.swift in Sources */,
 				B86407051D7B0E720084D6EF /* DataController.swift in Sources */,
+				B877708A1E17FD620041ECD6 /* MapViewPreviewCell.swift in Sources */,
 				B80C56361D5113B900C4E683 /* MapViewController.swift in Sources */,
 				B80C56531D51158000C4E683 /* BlobTableViewController.swift in Sources */,
 				B80D177B1D98A5760032B0D8 /* UtilityFunctions.swift in Sources */,
@@ -875,7 +879,7 @@
 				B80C56611D5183B100C4E683 /* User.swift in Sources */,
 				B8B108F81DCB718200EA3B41 /* LogError+CoreDataProperties.swift in Sources */,
 				B8B109031DCFE52300EA3B41 /* UserCD+CoreDataClass.swift in Sources */,
-				B80C56541D51158000C4E683 /* LocationEventsCollectionViewCell.swift in Sources */,
+				B80C56541D51158000C4E683 /* MapViewLocationBlobsCell.swift in Sources */,
 				B80C564D1D51158000C4E683 /* BlobAddTypeViewController.swift in Sources */,
 				B80D17751D90E1C90032B0D8 /* LoginViewController.swift in Sources */,
 				B8B108F71DCB718200EA3B41 /* LogError+CoreDataClass.swift in Sources */,

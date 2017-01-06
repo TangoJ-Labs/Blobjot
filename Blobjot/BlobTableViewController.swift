@@ -743,7 +743,7 @@ class BlobTableViewController: UIViewController, GMSMapViewDelegate, UITableView
                                 }
                                 if !userExists
                                 {
-                                    AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: blobContentObject.userID, forPreviewBox: false), delegate: self as AWSRequestDelegate).prepRequest()
+                                    AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: blobContentObject.userID, forPreviewData: false), delegate: self as AWSRequestDelegate).prepRequest()
                                 }
                             }
                         }

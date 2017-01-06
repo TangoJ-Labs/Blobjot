@@ -7,7 +7,7 @@
 //
 
 import AWSCognito
-//import Darwin
+import Darwin
 import FBSDKLoginKit
 import GoogleMaps
 import GooglePlaces
@@ -79,8 +79,35 @@ class UtilityFunctions
     // The calculator for zoom to Blob size ratio
     func mapZoomForBlobSize(_ meters: Float) -> Float
     {
-        let zoom = (0 - (1/98)) * meters + (985/49)
+//        let zoom = (0 - (1/98)) * meters + (985/49)
+        let zoom = (0 - (1/30)) * meters + (985/49)
         return zoom
+    }
+    
+    // Calculate edge coordinates of a Blob
+    func blobEdgeCoordinates(_ center: CLLocationCoordinate2D, radius: Double, east: Bool) -> CLLocationCoordinate2D
+    {
+        let earthRad: Double = 6378100 // Radius of the Earth in meters
+        
+        var bearing: Double = 1.5708 // Bearing is 90 degrees converted to radians.
+        if !east
+        {
+            bearing = 4.71239 // Bearing is 270 degrees converted to radians.
+        }
+        
+        let lat1 = center.latitude.degreesToRadians // Current lat point converted to radians
+        let lon1 = center.longitude.degreesToRadians // Current long point converted to radians
+        
+        var lat2 = asin(sin(lat1) * cos(radius/earthRad) + cos(lat1) * sin(radius/earthRad) * cos(bearing))
+        var lon2 = lon1 + atan2(sin(bearing) * sin(radius/earthRad) * cos(lat1), cos(radius/earthRad) - sin(lat1) * sin(lat2))
+        
+        lat2 = lat2.radiansToDegrees
+        lon2 = lon2.radiansToDegrees
+        
+        print("UF - EDGE COORDS - LAT: \(lat2)")
+        print("UF - EDGE COORDS - LON: \(lon2)")
+        
+        return CLLocationCoordinate2DMake(lat2, lon2)
     }
     
 //    // Clear any place Blobs from the global mapBlobs
@@ -306,6 +333,25 @@ class UtilityFunctions
         UIGraphicsEndImageContext()
         
         return image
+    }
+    
+    func jsonToString(withJSONObject: Any) -> String
+    {
+        var result: String = "ERROR"
+        
+        do
+        {
+            let jsonData: NSData = try JSONSerialization.data(withJSONObject: withJSONObject, options: JSONSerialization.WritingOptions.prettyPrinted) as NSData
+            let jsonString = NSString(data: jsonData as Data, encoding: String.Encoding.utf8.rawValue)! as String
+            print("PVC - JSON: \(jsonString)")
+            result = jsonString
+        }
+        catch let error as NSError
+        {
+            print("PVC - ERROR JSON CREATION: \(error)")
+        }
+        
+        return result
     }
     
 }

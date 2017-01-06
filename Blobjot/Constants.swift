@@ -135,6 +135,7 @@ struct Constants
         static let standardBackgroundGray = UIColor(red: 104/255, green: 104/255, blue: 104/255, alpha: 1.0) //#686868
         static let standardBackgroundGrayTransparent = UIColor(red: 104/255, green: 104/255, blue: 104/255, alpha: 0.3) //#686868
         static let standardBackgroundGrayUltraLight = UIColor(red: 242/255, green: 242/255, blue: 242/255, alpha: 1.0) //#F2F2F2
+        static let standardBackgroundGrayUltraLightTransparent = UIColor(red: 242/255, green: 242/255, blue: 242/255, alpha: 0.3) //#F2F2F2
 //        static let colorStatusBar = UIColor(red: 38/255, green: 38/255, blue: 38/255, alpha: 1.0) //#262626
 //        static let colorTopBar = UIColor(red: 64/255, green: 64/255, blue: 64/255, alpha: 1.0) //#404040
 //        static let colorStatusBar = UIColor(red: 242/255, green: 242/255, blue: 242/255, alpha: 1.0) //#F2F2F2
@@ -218,6 +219,7 @@ struct Constants
         
         static var mapCircles = [GMSCircle]()
         static var locationBlobs = [Blob]()
+        static var previewBlobs = [Blob]()
         static var blobThumbnailObjects = [BlobThumbnailObject]()
         static var userObjects = [User]()
         static var userPublicArea = User(facebookID: "blobjotBlob", userID: "blobjotBlob", userName: "Public Area", userImage: UIImage(named: Constants.Strings.iconStringBlobjotLogo))
@@ -312,6 +314,10 @@ struct Constants
         static let S3BucketThumbnails = "blobjot-thumbnails"
         static let S3BucketMedia = "blobjot-media"
         
+        static let mapViewMessageDefaultBlob = "Blobs at your location will appear in this list."
+        static let mapViewMessageOutOfRange = "This Blob is not in range.  Travel within the perimeter of the Blob to see all of the content!"
+        
+        static let previewBlobsCellReuseIdentifier = "selectionBlobsCell"
         static let peopleTableViewCellReuseIdentifier = "peopleTableViewCell"
         static let locationBlobsCellReuseIdentifier = "locationBlobsCell"
         static let blobsActiveTableViewCellReuseIdentifier = "blobsActiveTableViewCell"
@@ -362,11 +368,13 @@ struct Constants
         static let maxServerTries: Int = 5
         static let maxServerTryRefreshTime: Double = 5000 // In milliseconds
         static let maxUserObjectSaveWithoutUse: Double = 43200000 // 12 Hours // In milliseconds
-        static let maxBlobObjectSaveWithoutUse: Double = 43200000 // 12 Hours // In milliseconds
+        static let maxBlobObjectSaveWithoutUse: Double = 0 // 43200000 // 12 Hours // In milliseconds
         
         static let mapViewDefaultLat: CLLocationDegrees = 29.758624
         static let mapViewDefaultLong: CLLocationDegrees = -95.366795
         static let mapViewDefaultZoom: Float = 10
+        static let mapViewAngledZoom: Float = 16
+        static let mapViewAngledDegrees: Double = 60.0
         
         static let userNameMaxLength: Int = 18
 //        static let userNameDisallowedCharacterSet = NSCharacterSet(charactersIn: "!@#$%^&*()-+={}|[]\\:;\'\"<>?,/~`").inverted

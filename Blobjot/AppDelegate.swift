@@ -378,7 +378,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
                                 // If the user has not been downloaded, request the user and the userImage and then notify the user
                                 if !userExists
                                 {
-                                    AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: blob.blobUserID, forPreviewBox: false), delegate: self as AWSRequestDelegate).prepRequest()
+                                    AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: blob.blobUserID, forPreviewData: false), delegate: self as AWSRequestDelegate).prepRequest()
                                 }
                             }
                         }

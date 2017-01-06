@@ -8,7 +8,7 @@
 
 import UIKit
 
-class LocationBlobsCollectionViewCell: UICollectionViewCell {
+class MapViewLocationBlobsCell: UICollectionViewCell {
     
     var cellContainer: UIView!
     var userImageContainer: UIView!

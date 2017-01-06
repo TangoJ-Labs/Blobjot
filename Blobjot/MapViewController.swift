@@ -15,7 +15,7 @@ import GooglePlacePicker
 import UIKit
 
 
-class MapViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, GMSMapViewDelegate, BlobAddViewControllerDelegate, GMSAutocompleteResultsViewControllerDelegate, FBSDKLoginButtonDelegate, UITabBarControllerDelegate, AWSRequestDelegate, PeopleViewControllerDelegate, AccountViewControllerDelegate, HoleViewDelegate
+class MapViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, UIScrollViewDelegate, GMSMapViewDelegate, BlobAddViewControllerDelegate, GMSAutocompleteResultsViewControllerDelegate, FBSDKLoginButtonDelegate, UITabBarControllerDelegate, AWSRequestDelegate, PeopleViewControllerDelegate, AccountViewControllerDelegate, HoleViewDelegate
 {
     // Save device settings to adjust view if needed
     var screenSize: CGRect!
@@ -37,8 +37,12 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     var locationButton: UIView!
     var locationButtonLabel: UILabel!
     
+    var menuInterestsTableButton: UIView!
+    var menuInterestsTableButtonLabel: UILabel!
     var menuPeopleTableButton: UIView!
     var menuPeopleTableButtonLabel: UILabel!
+    var menuFilterUserBlobsButton: UIView!
+    var menuFilterUserBlobsButtonLabel: UILabel!
     
     // The views to hold major components of the view controller
     var viewContainer: UIView!
@@ -56,15 +60,13 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     
     // The preview container will display a preview message for the Blob content
     var previewContainer: UIView!
-    var previewTimeLabel: UILabel!
-    var previewUserNameLabel: UILabel!
-    var previewUserNameActivityIndicator: UIActivityIndicatorView!
-    var previewUserImageView: UIImageView!
-    var previewUserImageActivityIndicator: UIActivityIndicatorView!
-    var previewBlobTypeIndicator: UIView!
-    var previewTextBox: UILabel!
-    var previewThumbnailView: UIImageView!
-    var previewThumbnailActivityIndicator: UIActivityIndicatorView!
+    var previewActivityIndicator: UIActivityIndicatorView!
+    var previewCollectionView: UICollectionView!
+    var previewCVLayout: UICollectionViewFlowLayout!
+    var previewCountCircleLeft: UIView!
+    var previewCountLabelLeft: UILabel!
+    var previewCountCircleRight: UIView!
+    var previewCountLabelRight: UILabel!
     
     // The location blob collection view will show which Blobs are currently in range
     var locationBlobsCollectionViewContainer: UIView!
@@ -98,7 +100,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // The tap gestures for menu buttons
     var logoutButtonTapGesture: UITapGestureRecognizer!
     var locationButtonTapGesture: UITapGestureRecognizer!
+    var menuInterestsTableTapGesture: UITapGestureRecognizer!
     var menuPeopleTableTapGesture: UITapGestureRecognizer!
+    var menuFilterUserBlobsTapGesture: UITapGestureRecognizer!
     
     // The tap gestures for buttons and other interactive components
     var accountTapGesture: UITapGestureRecognizer!
@@ -108,25 +112,18 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     var buttonRefreshMapTapGesture: UITapGestureRecognizer!
     
     var lowAccuracyViewTapGesture: UITapGestureRecognizer!
-    var previewUserTapGesture: UITapGestureRecognizer!
-    var previewContentTapGesture: UITapGestureRecognizer!
     var guideSwipeGestureRight: UISwipeGestureRecognizer!
     var guideSwipeGestureLeft: UISwipeGestureRecognizer!
     
-    // Use the same size as the collection view items for the Preview User Image
-    let previewUserImageSize = Constants.Dim.mapViewLocationBlobsCVItemSize
-    
     var vcHeight: CGFloat!
     var vcOffsetY: CGFloat!
-    
-    // Set the Preview Time Label Width for use with multiple views
-    let previewTimeLabelWidth: CGFloat = 100
     
     // Set the selectionMessageBox dimensions
     let selectorBoxWidth: CGFloat = 120
     let selectorBoxHeight: CGFloat = 40
     
     // View controller variables for temporary user settings and view controls
+    var previewStartingScrollPosition: CGFloat = 0
     
     // Indicates that map data was requested from AWS, and is still downloading
     var waitingForMapData: Bool = false
@@ -166,6 +163,15 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     
     // The User (Creator) of the Blob shown in the preview box will be assigned for local access
     var previewBlobUser: User?
+    
+    // Store the current cell being viewed in the preview collection view
+    var previewCurrentCell: Int = 0
+    
+    // Track which Blobs are being shown in the Preview Box to prevent overwriting the PreviewBlobs array when in use
+    var previewSelection: String = ""
+    
+    // Create a local Circle to be used for the Preview view if the Blob does not already exist in the global Circle array
+    var previewBlobCircle: GMSCircle!
     
     // Use only once - check when the user's location is first available, and move the map center to that location
     var userLocationInitialSet: Bool = false
@@ -235,12 +241,12 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         menuContainer.backgroundColor = Constants.Colors.standardBackground
         self.view.addSubview(menuContainer)
         
-        menuAccountContainer = UIView(frame: CGRect(x: menuContainer.frame.width - Constants.Dim.mapViewMenuWidth, y: 0, width: Constants.Dim.mapViewMenuWidth, height: 200))
+        menuAccountContainer = UIView(frame: CGRect(x: menuContainer.frame.width - Constants.Dim.mapViewMenuWidth, y: 0, width: Constants.Dim.mapViewMenuWidth, height: 230))
         menuAccountContainer.backgroundColor = Constants.Colors.standardBackground
         menuContainer.addSubview(menuAccountContainer)
         
         // Local User Account Box
-        displayUserLabel = UILabel(frame: CGRect(x: 0, y: 95, width: menuAccountContainer.frame.width / 2, height: 20))
+        displayUserLabel = UILabel(frame: CGRect(x: 0, y: 95, width: menuAccountContainer.frame.width, height: 20))
         displayUserLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 16)
         displayUserLabel.textColor = Constants.Colors.colorTextGray
         displayUserLabel.textAlignment = NSTextAlignment.center
@@ -248,12 +254,12 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         menuAccountContainer.addSubview(displayUserLabel)
         
         // Add a loading indicator while downloading the logged in user name
-        displayUserLabelActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: 0, y: 90, width: menuAccountContainer.frame.width / 2, height: 30))
+        displayUserLabelActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: 0, y: 90, width: menuAccountContainer.frame.width, height: 30))
         displayUserLabelActivityIndicator.color = UIColor.black
         menuAccountContainer.addSubview(displayUserLabelActivityIndicator)
         displayUserLabelActivityIndicator.startAnimating()
         
-        displayUserImageContainer = UIView(frame: CGRect(x: (menuAccountContainer.frame.width / 4) - 40, y: 5, width: 80, height: 80))
+        displayUserImageContainer = UIView(frame: CGRect(x: (menuAccountContainer.frame.width / 2) - 40, y: 5, width: 80, height: 80))
         displayUserImageContainer.layer.cornerRadius = displayUserImageContainer.frame.width / 2
         displayUserImageContainer.backgroundColor = UIColor.white
         displayUserImageContainer.layer.shadowOffset = CGSize(width: 0.5, height: 2)
@@ -274,7 +280,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         displayUserImageContainer.addSubview(displayUserImage)
         
         // Add a custom logout button
-        logoutButton = UIView(frame: CGRect(x: (menuAccountContainer.frame.width * 3) / 4 - 65, y: 10, width: 130, height: 45))
+        logoutButton = UIView(frame: CGRect(x: (menuAccountContainer.frame.width / 2) - 65, y: menuAccountContainer.frame.height - 105, width: 130, height: 45))
         logoutButton.layer.cornerRadius = 5
         logoutButton.layer.borderWidth = 1
         logoutButton.layer.borderColor = Constants.Colors.colorPurple.cgColor
@@ -291,7 +297,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         logoutButton.addSubview(logoutButtonLabel)
         
         // Add a custom location button
-        locationButton = UIView(frame: CGRect(x: (menuAccountContainer.frame.width * 3) / 4 - 65, y: menuAccountContainer.frame.height - 55, width: 130, height: 45))
+        locationButton = UIView(frame: CGRect(x: (menuAccountContainer.frame.width / 2) - 65, y: menuAccountContainer.frame.height - 55, width: 130, height: 45))
         locationButton.layer.cornerRadius = 5
         locationButton.layer.borderWidth = 1
         locationButton.layer.borderColor = Constants.Colors.colorPurple.cgColor
@@ -306,26 +312,92 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         locationButtonLabel.lineBreakMode = NSLineBreakMode.byWordWrapping
         locationButton.addSubview(locationButtonLabel)
         
+        // Retrieve the LocationManagerSettings in Core Data and assign that setting to the global locationManagerConstant property
+        // If Core Data does not have that setting data, assign the default setting "constant" to Core Data
+        // Also set the locationManager toggle button color and text based on the global setting
+        let locationManagerSettingArray = CoreDataFunctions().locationManagerSettingRetrieve()
+        if locationManagerSettingArray.count == 0
+        {
+            // If the array is empty, no previous setting was saved - set and save the default
+            
+            Constants.Settings.locationManagerSetting = Constants.LocationManagerSettingType.significant
+            locationButtonLabel.text = Constants.Strings.stringLMSignificant
+            
+            // Now save the default to Core Data
+            CoreDataFunctions().locationManagerSettingSave(Constants.LocationManagerSettingType.significant)
+        }
+        else
+        {
+            print("MVC - CD Location Manager Setting: \(locationManagerSettingArray[0].locationManagerSetting)")
+            if locationManagerSettingArray[0].locationManagerSetting == Constants.LocationManagerSettingType.always.rawValue
+            {
+                Constants.Settings.locationManagerSetting = Constants.LocationManagerSettingType.always
+                locationButtonLabel.text = Constants.Strings.stringLMAlways
+            }
+            else if locationManagerSettingArray[0].locationManagerSetting == Constants.LocationManagerSettingType.off.rawValue
+            {
+                Constants.Settings.locationManagerSetting = Constants.LocationManagerSettingType.off
+                locationButtonLabel.text = Constants.Strings.stringLMOff
+            }
+            else
+            {
+                Constants.Settings.locationManagerSetting = Constants.LocationManagerSettingType.significant
+                locationButtonLabel.text = Constants.Strings.stringLMSignificant
+            }
+        }
+        
         let menuAccountContainerBorder = CALayer()
         menuAccountContainerBorder.frame = CGRect(x: 0, y: menuAccountContainer.frame.height - 1, width: menuAccountContainer.frame.width, height: 1)
-        menuAccountContainerBorder.backgroundColor = Constants.Colors.standardBackgroundGray.cgColor
+        menuAccountContainerBorder.backgroundColor = Constants.Colors.colorPurple.cgColor
         menuAccountContainer.layer.addSublayer(menuAccountContainerBorder)
         
-        menuPeopleTableButton = UIView(frame: CGRect(x: menuContainer.frame.width - Constants.Dim.mapViewMenuWidth, y: menuAccountContainer.frame.height, width: Constants.Dim.mapViewMenuWidth, height: 50))
+        menuInterestsTableButton = UIView(frame: CGRect(x: menuContainer.frame.width - Constants.Dim.mapViewMenuWidth, y: menuAccountContainer.frame.height, width: Constants.Dim.mapViewMenuWidth, height: 50))
+        menuInterestsTableButton.backgroundColor = Constants.Colors.standardBackground
+        menuContainer.addSubview(menuInterestsTableButton)
+        
+        menuInterestsTableButtonLabel = UILabel(frame: CGRect(x: 0, y: 0, width: menuInterestsTableButton.frame.width, height: menuInterestsTableButton.frame.height))
+        menuInterestsTableButtonLabel.text = "Your Interests \u{2192}"
+        menuInterestsTableButtonLabel.textColor = Constants.Colors.colorPurple
+        menuInterestsTableButtonLabel.textAlignment = .center
+        menuInterestsTableButtonLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 18)
+        menuInterestsTableButton.addSubview(menuInterestsTableButtonLabel)
+        
+        let menuInterestsTableButtonBorder = CALayer()
+        menuInterestsTableButtonBorder.frame = CGRect(x: 0, y: menuInterestsTableButton.frame.height - 1, width: menuInterestsTableButton.frame.width, height: 1)
+        menuInterestsTableButtonBorder.backgroundColor = Constants.Colors.colorPurple.cgColor
+        menuInterestsTableButton.layer.addSublayer(menuInterestsTableButtonBorder)
+        
+        menuPeopleTableButton = UIView(frame: CGRect(x: menuContainer.frame.width - Constants.Dim.mapViewMenuWidth, y: menuAccountContainer.frame.height + menuInterestsTableButton.frame.height, width: Constants.Dim.mapViewMenuWidth, height: 50))
         menuPeopleTableButton.backgroundColor = Constants.Colors.standardBackground
         menuContainer.addSubview(menuPeopleTableButton)
         
         menuPeopleTableButtonLabel = UILabel(frame: CGRect(x: 0, y: 0, width: menuPeopleTableButton.frame.width, height: menuPeopleTableButton.frame.height))
-        menuPeopleTableButtonLabel.text = "People"
-        menuPeopleTableButtonLabel.textColor = Constants.Colors.colorTextGray
+        menuPeopleTableButtonLabel.text = "People \u{2192}"
+        menuPeopleTableButtonLabel.textColor = Constants.Colors.colorPurple
         menuPeopleTableButtonLabel.textAlignment = .center
         menuPeopleTableButtonLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 18)
         menuPeopleTableButton.addSubview(menuPeopleTableButtonLabel)
         
         let menuPeopleTableButtonBorder = CALayer()
         menuPeopleTableButtonBorder.frame = CGRect(x: 0, y: menuPeopleTableButton.frame.height - 1, width: menuPeopleTableButton.frame.width, height: 1)
-        menuPeopleTableButtonBorder.backgroundColor = Constants.Colors.standardBackgroundGray.cgColor
+        menuPeopleTableButtonBorder.backgroundColor = Constants.Colors.colorPurple.cgColor
         menuPeopleTableButton.layer.addSublayer(menuPeopleTableButtonBorder)
+        
+        menuFilterUserBlobsButton = UIView(frame: CGRect(x: menuContainer.frame.width - Constants.Dim.mapViewMenuWidth, y: menuContainer.frame.height - 50, width: Constants.Dim.mapViewMenuWidth, height: 50))
+        menuFilterUserBlobsButton.backgroundColor = Constants.Colors.standardBackground
+        menuContainer.addSubview(menuFilterUserBlobsButton)
+        
+        menuFilterUserBlobsButtonLabel = UILabel(frame: CGRect(x: 0, y: 0, width: menuFilterUserBlobsButton.frame.width, height: menuFilterUserBlobsButton.frame.height))
+        menuFilterUserBlobsButtonLabel.text = "Your Blobs"
+        menuFilterUserBlobsButtonLabel.textColor = Constants.Colors.colorPurple
+        menuFilterUserBlobsButtonLabel.textAlignment = .center
+        menuFilterUserBlobsButtonLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 18)
+        menuFilterUserBlobsButton.addSubview(menuFilterUserBlobsButtonLabel)
+        
+        let menuFilterUserBlobsButtonBorder = CALayer()
+        menuFilterUserBlobsButtonBorder.frame = CGRect(x: 0, y: 0, width: menuFilterUserBlobsButton.frame.width, height: 1)
+        menuFilterUserBlobsButtonBorder.backgroundColor = Constants.Colors.colorPurple.cgColor
+        menuFilterUserBlobsButton.layer.addSublayer(menuFilterUserBlobsButtonBorder)
         
         // Add the view container to hold all other views (allows for shadows on all subviews)
         viewContainer = UIView(frame: CGRect(x: 0, y: vcOffsetY, width: screenSize.width, height: vcHeight))
@@ -499,7 +571,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         locationBlobsCollectionView = UICollectionView(frame: CGRect(x: 0, y: 0, width: locationBlobsCollectionViewContainer.frame.width, height: locationBlobsCollectionViewContainer.frame.height), collectionViewLayout: locationBlobsCVLayout)
         locationBlobsCollectionView.dataSource = self
         locationBlobsCollectionView.delegate = self
-        locationBlobsCollectionView.register(LocationBlobsCollectionViewCell.self, forCellWithReuseIdentifier: Constants.Strings.locationBlobsCellReuseIdentifier)
+        locationBlobsCollectionView.register(MapViewLocationBlobsCell.self, forCellWithReuseIdentifier: Constants.Strings.locationBlobsCellReuseIdentifier)
         locationBlobsCollectionView.backgroundColor = UIColor.clear
         locationBlobsCollectionView.alwaysBounceVertical = false
         locationBlobsCollectionView.showsVerticalScrollIndicator = false
@@ -530,86 +602,73 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         searchController?.obscuresBackgroundDuringPresentation = false
         searchController?.modalPresentationStyle = UIModalPresentationStyle.popover
         
-        let leftButtonItem = UIBarButtonItem(image: UIImage(named: "TAB_ICON_active_blobs_gray.png"),
-                                             style: UIBarButtonItemStyle.plain,
-                                             target: self,
-                                             action: #selector(MapViewController.dummyMethod))
-        leftButtonItem.tintColor = Constants.Colors.colorTextNavBar
-        self.navigationItem.setLeftBarButton(leftButtonItem, animated: true)
+//        let leftButtonItem = UIBarButtonItem(image: UIImage(named: "TAB_ICON_active_blobs_gray.png"),
+//                                             style: UIBarButtonItemStyle.plain,
+//                                             target: self,
+//                                             action: #selector(MapViewController.dummyMethod))
+//        leftButtonItem.tintColor = Constants.Colors.colorTextNavBar
+//        self.navigationItem.setLeftBarButton(leftButtonItem, animated: true)
         
         let rightButtonItem = UIBarButtonItem(image: UIImage(named: "TAB_ICON_account_gray.png"),
                                              style: UIBarButtonItemStyle.plain,
                                              target: self,
-                                             action: #selector(MapViewController.loadSettingsTabViewController(_:)))
+                                             action: #selector(MapViewController.menuShow))
         rightButtonItem.tintColor = Constants.Colors.colorTextNavBar
         self.navigationItem.setRightBarButton(rightButtonItem, animated: true)
         
-        // Add the Preview Box to be the same size as the Search Box
-        // Initialize with the Y location as negative (hide the box) just like the Search Box
+        
+        // The preview table should show just below the navigation bar and fill the width of the screen
         previewContainer = UIView(frame: CGRect(x: 0, y: 0 - Constants.Dim.mapViewPreviewContainerHeight, width: viewContainer.frame.width, height: Constants.Dim.mapViewPreviewContainerHeight))
         previewContainer.backgroundColor = Constants.Colors.standardBackground
-        previewContainer.layer.shadowOffset = Constants.Dim.mapViewShadowOffset
-        previewContainer.layer.shadowOpacity = Constants.Dim.mapViewShadowOpacity
-        previewContainer.layer.shadowRadius = Constants.Dim.mapViewShadowRadius
-        previewContainer.isUserInteractionEnabled = true
         viewContainer.addSubview(previewContainer)
         
-        // The Preview Box User Image should fill the height of the Preview Box, be circular in shape, and on the left side of the Preview Box
-        previewUserImageView = UIImageView(frame: CGRect(x: 5, y: 3, width: previewUserImageSize, height: previewUserImageSize))
-        previewUserImageView.layer.cornerRadius = Constants.Dim.mapViewLocationBlobsCVItemSize / 2
-        previewUserImageView.contentMode = UIViewContentMode.scaleAspectFill
-        previewUserImageView.clipsToBounds = true
-        previewUserImageView.isUserInteractionEnabled = true
-        previewContainer.addSubview(previewUserImageView)
+        previewActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: 0, y: 0, width: previewContainer.frame.width, height: previewContainer.frame.height))
+        previewActivityIndicator.color = UIColor.black
+        previewContainer.addSubview(previewActivityIndicator)
+        previewActivityIndicator.startAnimating()
         
-        // Add a loading indicator in case the User Image is still downloading when the Preview Box is shown
-        // Give it the same size and location as the previewUserImageView
-        previewUserImageActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: 5, y: 5, width: previewUserImageSize, height: previewUserImageSize))
-        previewUserImageActivityIndicator.color = UIColor.black
-        previewContainer.addSubview(previewUserImageActivityIndicator)
+        // Add the Prevoew Collection View Controller and Subview to the Preview Container
+        previewCVLayout = UICollectionViewFlowLayout()
+        previewCVLayout.scrollDirection = .horizontal
+        previewCVLayout.sectionInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+        previewCVLayout.headerReferenceSize = CGSize(width: 0, height: 0)
+        previewCVLayout.footerReferenceSize = CGSize(width: 0, height: 0)
+        previewCVLayout.minimumLineSpacing = 0
+        previewCVLayout.itemSize = CGSize(width: previewContainer.frame.width, height: previewContainer.frame.height)
         
-        // The Preview Box User Name Label should start just to the right (5dp margin) of the Preview Box User Image and extend to the Time Label
-        previewUserNameLabel = UILabel(frame: CGRect(x: 10 + previewUserImageSize, y: 5, width: previewContainer.frame.width - 60 - Constants.Dim.mapViewPreviewContainerHeight - previewTimeLabelWidth, height: 15))
-        previewUserNameLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 12)
-        previewUserNameLabel.textColor = Constants.Colors.colorTextGrayLight
-        previewUserNameLabel.textAlignment = .left
-        previewUserNameLabel.isUserInteractionEnabled = false
-        previewContainer.addSubview(previewUserNameLabel)
+        previewCollectionView = UICollectionView(frame: CGRect(x: 0, y: 0, width: previewContainer.frame.width, height: previewContainer.frame.height), collectionViewLayout: previewCVLayout)
+        previewCollectionView.dataSource = self
+        previewCollectionView.delegate = self
+        previewCollectionView.register(MapViewPreviewCell.self, forCellWithReuseIdentifier: Constants.Strings.previewBlobsCellReuseIdentifier)
+        previewCollectionView.backgroundColor = UIColor.clear
+        previewCollectionView.alwaysBounceHorizontal = false
+        previewCollectionView.showsHorizontalScrollIndicator = false
+        previewContainer.addSubview(previewCollectionView)
         
-        // Add a loading indicator in case the User Name is still downloading when the Preview Box is shown
-        // Give it the same size and location as the previewUserNameLabel
-        previewUserNameActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: 10 + previewUserImageSize, y: 5, width: 25, height: 15))
-        previewUserNameActivityIndicator.color = UIColor.black
-        previewContainer.addSubview(previewUserNameActivityIndicator)
+        // The Preview Count Circles show how many Blobs are to the right or left in the preview collection view
+        previewCountCircleLeft = UIView(frame: CGRect(x: 0 - (previewContainer.frame.height / 2), y: 0, width: previewContainer.frame.height, height: previewContainer.frame.height))
+        previewCountCircleLeft.backgroundColor = Constants.Colors.standardBackgroundGrayUltraLightTransparent
+        previewCountCircleLeft.layer.cornerRadius = previewContainer.frame.height / 2
+        previewContainer.addSubview(previewCountCircleLeft)
         
-        // The Preview Box Time Label should start just to the right of the Preview Box User Name and extend to the Thumbnail Image
-        // Because the Thumbnail Image is square, you can use the Preview Container Height as a substitute for calculating the Thumbnail Image width
-        previewTimeLabel = UILabel(frame: CGRect(x: 10 + previewUserImageSize + previewUserNameLabel.frame.width, y: 5, width: previewTimeLabelWidth, height: 15))
-        previewTimeLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 12)
-        previewTimeLabel.textColor = Constants.Colors.colorTextGrayLight
-        previewTimeLabel.textAlignment = .right
-        previewTimeLabel.isUserInteractionEnabled = false
-        previewContainer.addSubview(previewTimeLabel)
+        previewCountLabelLeft = UILabel(frame: CGRect(x: previewCountCircleLeft.frame.width / 2, y: 0, width: previewCountCircleLeft.frame.width / 2, height: previewCountCircleLeft.frame.height))
+        previewCountLabelLeft.font = UIFont(name: Constants.Strings.fontRegular, size: 12)
+        previewCountLabelLeft.textColor = Constants.Colors.colorTextGrayLight
+        previewCountLabelLeft.textAlignment = .center
+        previewCountLabelLeft.isUserInteractionEnabled = false
+        previewCountCircleLeft.addSubview(previewCountLabelLeft)
         
-        // The Preview Box Text Box should be a single line of text (UILabel is sufficient), have the same X location and width as the 
-        // Preview Box User Name Label, and be placed just below the User Name Label
-        previewTextBox = UILabel(frame: CGRect(x: 50, y: 10 + previewUserNameLabel.frame.height, width: previewContainer.frame.width - 60 - Constants.Dim.mapViewPreviewContainerHeight, height: 15))
-        previewTextBox.font = UIFont(name: Constants.Strings.fontRegular, size: 12)
-        previewTextBox.isUserInteractionEnabled = false
-        previewContainer.addSubview(previewTextBox)
+        previewCountCircleRight = UIView(frame: CGRect(x: previewContainer.frame.width - (previewContainer.frame.height / 2), y: 0, width: previewContainer.frame.height, height: previewContainer.frame.height))
+        previewCountCircleRight.backgroundColor = Constants.Colors.standardBackgroundGrayUltraLightTransparent
+        previewCountCircleRight.layer.cornerRadius = previewContainer.frame.height / 2
+        previewContainer.addSubview(previewCountCircleRight)
         
-        // The Preview Box Thumbnail View should be square and on the right side of the Preview Box
-        previewThumbnailView = UIImageView(frame: CGRect(x: previewContainer.frame.width - Constants.Dim.mapViewPreviewContainerHeight, y: 0, width: Constants.Dim.mapViewPreviewContainerHeight, height: Constants.Dim.mapViewPreviewContainerHeight))
-        previewThumbnailView.contentMode = UIViewContentMode.scaleAspectFill
-        previewThumbnailView.clipsToBounds = true
-        previewThumbnailView.isUserInteractionEnabled = false
-        previewContainer.addSubview(previewThumbnailView)
-        
-        // Add a loading indicator in case the Thumbnail is still loading when the Preview Box is shown
-        // Give it the same size and location as the previewThumbnailView
-        previewThumbnailActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: previewContainer.frame.width - Constants.Dim.mapViewPreviewContainerHeight, y: 0, width: Constants.Dim.mapViewPreviewContainerHeight, height: Constants.Dim.mapViewPreviewContainerHeight))
-        previewThumbnailActivityIndicator.color = UIColor.black
-        previewContainer.addSubview(previewThumbnailActivityIndicator)
+        previewCountLabelRight = UILabel(frame: CGRect(x: 0, y: 0, width: previewCountCircleRight.frame.width / 2, height: previewCountCircleRight.frame.height))
+        previewCountLabelRight.font = UIFont(name: Constants.Strings.fontRegular, size: 12)
+        previewCountLabelRight.textColor = Constants.Colors.colorTextGrayLight
+        previewCountLabelRight.textAlignment = .center
+        previewCountLabelRight.isUserInteractionEnabled = false
+        previewCountCircleRight.addSubview(previewCountLabelRight)
         
         
         // Create the login screen, login box, and facebook login button
@@ -658,19 +717,23 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         statusBarView.backgroundColor = Constants.Colors.colorStatusBar
         self.view.addSubview(statusBarView)
         
-        logoutButtonTapGesture = UITapGestureRecognizer(target: self, action: #selector(AccountViewController.logoutButtonTapGesture(_:)))
+        logoutButtonTapGesture = UITapGestureRecognizer(target: self, action: #selector(MapViewController.tapLogoutButton(_:)))
         logoutButtonTapGesture.numberOfTapsRequired = 1  // add single tap
         logoutButton.addGestureRecognizer(logoutButtonTapGesture)
         
-        locationButtonTapGesture = UITapGestureRecognizer(target: self, action: #selector(AccountViewController.locationButtonTapGesture(_:)))
+        locationButtonTapGesture = UITapGestureRecognizer(target: self, action: #selector(MapViewController.tapLocationButton(_:)))
         locationButtonTapGesture.numberOfTapsRequired = 1  // add single tap
         locationButton.addGestureRecognizer(locationButtonTapGesture)
         
-        menuPeopleTableTapGesture = UITapGestureRecognizer(target: self, action: #selector(MapViewController.menuPeopleButtonTap(_:)))
+        menuPeopleTableTapGesture = UITapGestureRecognizer(target: self, action: #selector(MapViewController.tapMenuPeopleButton(_:)))
         menuPeopleTableTapGesture.numberOfTapsRequired = 1  // add single tap
         menuPeopleTableButton.addGestureRecognizer(menuPeopleTableTapGesture)
         
-        buttonTrackUserTapGesture = UITapGestureRecognizer(target: self, action: #selector(MapViewController.toggleTrackUser(_:)))
+        menuFilterUserBlobsTapGesture = UITapGestureRecognizer(target: self, action: #selector(MapViewController.tapMenuFilterUserBlobs(_:)))
+        menuFilterUserBlobsTapGesture.numberOfTapsRequired = 1  // add single tap
+        menuFilterUserBlobsButton.addGestureRecognizer(menuFilterUserBlobsTapGesture)
+        
+        buttonTrackUserTapGesture = UITapGestureRecognizer(target: self, action: #selector(MapViewController.tapToggleTrackUser(_:)))
         buttonTrackUserTapGesture.numberOfTapsRequired = 1  // add single tap
         buttonTrackUser.addGestureRecognizer(buttonTrackUserTapGesture)
         
@@ -690,15 +753,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         lowAccuracyViewTapGesture.numberOfTapsRequired = 1  // add single tap
         lowAccuracyView.addGestureRecognizer(lowAccuracyViewTapGesture)
         
-        // Add the Tap Gesture Recognizers for the Preview Box tap gestures
-        previewUserTapGesture = UITapGestureRecognizer(target: self, action: #selector(MapViewController.previewUserTap(_:)))
-        previewUserTapGesture.numberOfTapsRequired = 1  // add single tap
-        previewUserImageView.addGestureRecognizer(previewUserTapGesture)
-        
-        previewContentTapGesture = UITapGestureRecognizer(target: self, action: #selector(MapViewController.previewContentTap(_:)))
-        previewContentTapGesture.numberOfTapsRequired = 1  // add single tap
-        previewContainer.addGestureRecognizer(previewContentTapGesture)
-        
         // Add the Key Path Observers for changes in the user's location and for when the map is moved (the map camera)
         mapView.addObserver(self, forKeyPath: "myLocation", options:NSKeyValueObservingOptions(), context: nil)
         mapView.addObserver(self, forKeyPath: "camera", options:NSKeyValueObservingOptions(), context: nil)
@@ -716,7 +770,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         if let currentUserID = Constants.Data.currentUser.userID
         {
             print("MVC - CALLING AWSGetSingleUserData FOR: \(currentUserID)")
-            AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: currentUserID, forPreviewBox: false), delegate: self as AWSRequestDelegate).prepRequest()
+            AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: currentUserID, forPreviewData: false), delegate: self as AWSRequestDelegate).prepRequest()
         }
         
         // Recall the Tutorial Views data in Core Data.  If it is empty for the current ViewController's tutorial, it has not been seen by the curren user.
@@ -733,6 +787,8 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         {
             self.refreshMap()
         }
+        
+        CoreDataFunctions().blobsDeleteOld()
     }
     
     override func viewWillAppear(_ animated: Bool)
@@ -819,7 +875,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             holeView.holeViewDelegate = self
             viewContainer.addSubview(holeView)
         case 8:
-            self.showBlobPreview(Constants.Data.defaultBlob)
+            self.previewBlob(Constants.Data.defaultBlob)
             
             let holeView = HoleView(holeViewPosition: 9, frame: viewContainer.bounds, circleOffsetX: 100, circleOffsetY: -50, circleRadius: 140, textOffsetX: (viewContainer.bounds.width / 2) - 100, textOffsetY: 120, textWidth: 200, textFontSize: 24, text: "When you select a Blob, you can preview the Blob here, and tap the preview to view the entire Blob.")
             holeView.holeViewDelegate = self
@@ -919,7 +975,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // MARK: TAP GESTURE METHODS
     
     // Log out the user from the app and facebook
-    func logoutButtonTapGesture(_ sender: UITapGestureRecognizer)
+    func tapLogoutButton(_ sender: UITapGestureRecognizer)
     {
         print("TRYING TO LOG OUT THE USER")
         
@@ -953,7 +1009,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     }
     
     // Toggle the location manager type
-    func locationButtonTapGesture(_ sender: UITapGestureRecognizer)
+    func tapLocationButton(_ sender: UITapGestureRecognizer)
     {
         // Toggle the location manager type
         if Constants.Settings.locationManagerSetting == Constants.LocationManagerSettingType.always
@@ -1007,206 +1063,44 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
-    // If the List View Button is tapped, prepare a Navigation Controller and a Tab View Controller
-    // Attach the needed Table Views to the Tab View Controller and load the Navigation Controller
-    func prepPushView()
+    // Filter the preview data with the logged in user's Blobs and show the preview box
+    func tapMenuFilterUserBlobs(_ gesture: UITapGestureRecognizer)
     {
-        // Ensure that the Preview Screen is hidden
-        self.closePreview()
+        // Set the selection indicator
+        previewSelection = "UserBlobs"
         
-        // Set all map Circles back to default (no highlighting)
-        for mBlob in Constants.Data.mapBlobs
+        // Request the Blobs that the user has posted
+        AWSPrepRequest(requestToCall: AWSGetUserBlobs(), delegate: self as AWSRequestDelegate).prepRequest()
+        
+        // Reset the userBlobs array and try to load the userBlobs from Core Data
+        userBlobs = [Blob]()
+        let savedBlobs = CoreDataFunctions().blobRetrieve()
+        for sBlob in savedBlobs
         {
-            unhighlightMapCircleForBlob(mBlob)
+            if sBlob.blobUserID == Constants.Data.currentUser.userID && sBlob.blobType == Constants.BlobTypes.permanent
+            {
+                userBlobs.append(sBlob)
+            }
         }
         
-//        self.loadTabViewController(false)
+        // Sort the User Blobs from newest to oldest
+        userBlobs.sort(by: {$0.blobDatetime.timeIntervalSince1970 > $1.blobDatetime.timeIntervalSince1970})
         
-        // Save an action in Core Data
-        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: "prepPushView")
-    }
-    
-    func loadBlobsTabViewController()
-    {
-        // Reset features on the MVC
-        prepPushView()
+        // Set the previewBlobs array to the userBlobs array since the preview CollectionView will use the global previewBlobs
+        Constants.Data.previewBlobs = self.userBlobs
+        print("MVC - PREVIEW BLOBS COUNT: \(Constants.Data.previewBlobs.count)")
         
-        // Prepare both of the Table View Controllers and add Tab Bar Items to them
-        activeBlobsVC = BlobsActiveTableViewController()
-        let activeBlobsTabBarItem = UITabBarItem()
-        activeBlobsTabBarItem.tag = 1
-        activeBlobsTabBarItem.image = UIImage(named: Constants.Strings.iconStringTabIconConnectionsGray)
-        activeBlobsTabBarItem.selectedImage = UIImage(named: Constants.Strings.iconStringTabIconConnectionsWhite)
-        activeBlobsTabBarItem.imageInsets = UIEdgeInsets(top: 5, left: 0, bottom: -5, right: 0)
-        activeBlobsVC!.tabBarItem = activeBlobsTabBarItem
+        // Close the menu
+        self.menuHide()
         
-        blobsVC = BlobsTableViewController()
-        let blobsTabBarItem = UITabBarItem()
-        blobsTabBarItem.tag = 2
-        blobsTabBarItem.image = UIImage(named: Constants.Strings.iconStringTabIconAccountGray)
-        blobsTabBarItem.selectedImage = UIImage(named: Constants.Strings.iconStringTabIconAccountWhite)
-        blobsTabBarItem.imageInsets = UIEdgeInsets(top: 5, left: 0, bottom: -5, right: 0)
-        blobsVC!.tabBarItem = blobsTabBarItem
-        
-        // Create the Tab Bar Controller to hold the Table View Controllers
-        tabBarControllerCustom = UITabBarController()
-        tabBarControllerCustom!.delegate = self
-        tabBarControllerCustom!.tabBar.barTintColor = Constants.Colors.colorStatusBarLight
-        tabBarControllerCustom!.tabBar.tintColor = Constants.Colors.colorTextNavBar
-        tabBarControllerCustom!.viewControllers = [activeBlobsVC!, blobsVC!]
-        
-        // Create the Back Button Item and Title View for the Tab View
-        // These settings will be passed up to the assigned Navigation Controller for the Tab View Controller
-        let backButtonItem = UIBarButtonItem(title: "\u{2190}",
-                                             style: UIBarButtonItemStyle.plain,
-                                             target: self,
-                                             action: #selector(MapViewController.popViewController(_:)))
-        backButtonItem.tintColor = Constants.Colors.colorTextNavBar
-        
-        // Assign the created Nav Bar settings to the Tab Bar Controller
-        tabBarControllerCustom!.navigationItem.setLeftBarButton(backButtonItem, animated: true)
-        
-        print("MVC - LBTVC - NAV CONTROLLER: \(self.navigationController)")
-        if let navController = self.navigationController
-        {
-            navController.pushViewController(tabBarControllerCustom!, animated: true)
-        }
+        // Animate the preview box down into view
+        self.previewShow()
         
         // Save an action in Core Data
         CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
-    func loadSettingsTabViewController(_ goToAccountTab: Bool)
-    {
-        // Reset features on the MVC
-        prepPushView()
-        
-        if !menuOpen
-        {
-            // Add animations to show the menuContainer and shift the viewContainer to the left
-            UIView.animate(withDuration: 0.5, animations:
-                {
-                    self.viewContainer.frame = CGRect(x: 0 - Constants.Dim.mapViewMenuWidth, y: self.vcOffsetY, width: self.screenSize.width, height: self.vcHeight)
-            }, completion:
-                {
-                    (value: Bool) in
-                    self.menuOpen = true
-            })
-        }
-        
-//        // Prepare both of the Table View Controllers and add Tab Bar Items to them
-//        peopleVC = PeopleViewController()
-//        peopleVC!.peopleViewDelegate = self
-//        peopleVC!.tabBarUsed = true
-//        let peopleTabBarItem = UITabBarItem()
-//        peopleTabBarItem.tag = 1
-//        peopleTabBarItem.image = UIImage(named: Constants.Strings.iconStringTabIconConnectionsGray)
-//        peopleTabBarItem.selectedImage = UIImage(named: Constants.Strings.iconStringTabIconConnectionsWhite)
-//        peopleTabBarItem.imageInsets = UIEdgeInsets(top: 5, left: 0, bottom: -5, right: 0)
-//        peopleVC!.tabBarItem = peopleTabBarItem
-//
-//        accountVC = AccountViewController()
-//        accountVC!.accountViewDelegate = self
-//        let accountTabBarItem = UITabBarItem()
-//        accountTabBarItem.tag = 2
-//        accountTabBarItem.image = UIImage(named: Constants.Strings.iconStringTabIconAccountGray)
-//        accountTabBarItem.selectedImage = UIImage(named: Constants.Strings.iconStringTabIconAccountWhite)
-//        accountTabBarItem.imageInsets = UIEdgeInsets(top: 5, left: 0, bottom: -5, right: 0)
-//        accountVC!.tabBarItem = accountTabBarItem
-//        
-//        // Create the Tab Bar Controller to hold the Table View Controllers
-//        tabBarControllerCustom = UITabBarController()
-//        tabBarControllerCustom!.delegate = self
-//        tabBarControllerCustom!.tabBar.barTintColor = Constants.Colors.colorStatusBarLight
-//        tabBarControllerCustom!.tabBar.tintColor = Constants.Colors.colorTextNavBar
-//        tabBarControllerCustom!.viewControllers = [peopleVC!, accountVC!]
-//        
-//        // If the account tab should be loaded, set the last (1) index to load
-//        if goToAccountTab
-//        {
-//            tabBarControllerCustom!.selectedIndex = 1
-//        }
-//        
-//        // Create the Back Button Item and Title View for the Tab View
-//        // These settings will be passed up to the assigned Navigation Controller for the Tab View Controller
-//        let backButtonItem = UIBarButtonItem(title: "\u{2190}",
-//                                             style: UIBarButtonItemStyle.plain,
-//                                             target: self,
-//                                             action: #selector(MapViewController.popViewController(_:)))
-//        backButtonItem.tintColor = Constants.Colors.colorTextNavBar
-//        
-//        // Assign the created Nav Bar settings to the Tab Bar Controller
-//        tabBarControllerCustom!.navigationItem.setLeftBarButton(backButtonItem, animated: true)
-//        
-//        print("MVC - LSTVC - NAV CONTROLLER: \(self.navigationController)")
-//        if let navController = self.navigationController
-//        {
-//            navController.pushViewController(tabBarControllerCustom!, animated: true)
-//        }
-        
-        // Save an action in Core Data
-        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
-    }
-    
-    
-    // MARK: TAB BAR DELEGATE METHODS
-    
-    func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController)
-    {
-        print("MVC - TAB BAR - DID SELECT: \(viewController)")
-        if let tabBar = self.tabBarControllerCustom
-        {
-            if peopleVC != nil && viewController == peopleVC
-            {
-                let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
-                let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
-                ncTitleText.text = "People"
-                ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 14)
-                ncTitleText.textColor = Constants.Colors.colorTextNavBar
-                ncTitleText.textAlignment = .center
-                ncTitle.addSubview(ncTitleText)
-                tabBar.navigationItem.titleView = ncTitle
-            }
-            else if accountVC != nil && viewController == accountVC
-            {
-                let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
-                let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
-                ncTitleText.text = "Account"
-                ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 14)
-                ncTitleText.textColor = Constants.Colors.colorTextNavBar
-                ncTitleText.textAlignment = .center
-                ncTitle.addSubview(ncTitleText)
-                tabBar.navigationItem.titleView = ncTitle
-            }
-            else if activeBlobsVC != nil && viewController == activeBlobsVC
-            {
-                let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
-                let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
-                ncTitleText.text = "Nearby Blobs"
-                ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 14)
-                ncTitleText.textColor = Constants.Colors.colorTextNavBar
-                ncTitleText.textAlignment = .center
-                ncTitle.addSubview(ncTitleText)
-                tabBar.navigationItem.titleView = ncTitle
-            }
-            else if blobsVC != nil && viewController == blobsVC
-            {
-                let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
-                let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
-                ncTitleText.text = "All Blobs"
-                ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 14)
-                ncTitleText.textColor = Constants.Colors.colorTextNavBar
-                ncTitleText.textAlignment = .center
-                ncTitle.addSubview(ncTitleText)
-                tabBar.navigationItem.titleView = ncTitle
-            }
-        }
-        
-    }
-    
-    // MARK: TAP DELEGATES
-    
-    func menuPeopleButtonTap(_ gesture: UITapGestureRecognizer)
+    func tapMenuPeopleButton(_ gesture: UITapGestureRecognizer)
     {
         // Prepare both of the Table View Controllers and add Tab Bar Items to them
         peopleVC = PeopleViewController()
@@ -1299,22 +1193,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
-    // Dismiss the latest View Controller presented from this VC
-    // This version is used when the top VC is popped from a Nav Bar button
-    func popViewController(_ sender: UIBarButtonItem)
-    {
-        self.navigationController!.popViewController(animated: true)
-    }
-    
-    // Dismiss the latest View Controller presented from this VC
-    func popViewController()
-    {
-        self.navigationController!.popViewController(animated: true)
-    }
-
 // *COMPLETE****** Decide how the user should be tracked without making the interface annoying
     // If the Track User button is tapped, the track functionality is toggled
-    func toggleTrackUser(_ gesture: UITapGestureRecognizer)
+    func tapToggleTrackUser(_ gesture: UITapGestureRecognizer)
     {
         // Close the Preview Box - the user is not interacting with the Preview Box anymore
         closePreview()
@@ -1364,128 +1245,235 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
-    // If the Preview Box User Image is tapped, load the people view with the selected person at the top of the list
-    func previewUserTap(_ gesture: UITapGestureRecognizer)
+    // Dismiss the latest View Controller presented from this VC
+    // This version is used when the top VC is popped from a Nav Bar button
+    func popViewController(_ sender: UIBarButtonItem)
     {
-        if let previewBlob = self.previewBlob
+        self.navigationController!.popViewController(animated: true)
+    }
+    
+    // Dismiss the latest View Controller presented from this VC
+    func popViewController()
+    {
+        self.navigationController!.popViewController(animated: true)
+    }
+    
+    // If the List View Button is tapped, prepare a Navigation Controller and a Tab View Controller
+    // Attach the needed Table Views to the Tab View Controller and load the Navigation Controller
+    func prepPushView()
+    {
+        // Ensure that the Preview Screen is hidden
+        self.closePreview()
+        
+        // Set all map Circles back to default (no highlighting)
+        for mBlob in Constants.Data.mapBlobs
         {
-            // Ensure that the previewBlob is not the default Blob (Blobjot Blob)
-            if previewBlob.blobExtraRequested
-            {
-                // Create a back button and title for the Nav Bar
-                let backButtonItem = UIBarButtonItem(title: "\u{2190}",
-                                                     style: UIBarButtonItemStyle.plain,
-                                                     target: self,
-                                                     action: #selector(MapViewController.popViewController(_:)))
-                backButtonItem.tintColor = Constants.Colors.colorTextNavBar
-                
-                let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
-                let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
-                ncTitleText.text = "All People"
-                ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 14)
-                ncTitleText.textColor = Constants.Colors.colorTextNavBar
-                ncTitleText.textAlignment = .center
-                ncTitle.addSubview(ncTitleText)
-                
-                // Instantiate the PeopleViewController and pass the Preview Blob UserID to the VC
-                let peopleVC = PeopleViewController()
-                peopleVC.peopleListTopPerson = previewBlob.blobUserID
-                
-                // Assign the created Nav Bar settings to the Tab Bar Controller
-                peopleVC.navigationItem.setLeftBarButton(backButtonItem, animated: true)
-                peopleVC.navigationItem.titleView = ncTitle
-                
-                if let navController = self.navigationController
-                {
-                    navController.pushViewController(peopleVC, animated: true)
-                }
-            }
+            unhighlightMapCircleForBlob(mBlob)
+        }
+        
+//        self.loadTabViewController(false)
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: "prepPushView")
+    }
+    
+    func loadBlobsTabViewController()
+    {
+        // Reset features on the MVC
+        prepPushView()
+        
+        // Prepare both of the Table View Controllers and add Tab Bar Items to them
+        activeBlobsVC = BlobsActiveTableViewController()
+        let activeBlobsTabBarItem = UITabBarItem()
+        activeBlobsTabBarItem.tag = 1
+        activeBlobsTabBarItem.image = UIImage(named: Constants.Strings.iconStringTabIconConnectionsGray)
+        activeBlobsTabBarItem.selectedImage = UIImage(named: Constants.Strings.iconStringTabIconConnectionsWhite)
+        activeBlobsTabBarItem.imageInsets = UIEdgeInsets(top: 5, left: 0, bottom: -5, right: 0)
+        activeBlobsVC!.tabBarItem = activeBlobsTabBarItem
+        
+        blobsVC = BlobsTableViewController()
+        let blobsTabBarItem = UITabBarItem()
+        blobsTabBarItem.tag = 2
+        blobsTabBarItem.image = UIImage(named: Constants.Strings.iconStringTabIconAccountGray)
+        blobsTabBarItem.selectedImage = UIImage(named: Constants.Strings.iconStringTabIconAccountWhite)
+        blobsTabBarItem.imageInsets = UIEdgeInsets(top: 5, left: 0, bottom: -5, right: 0)
+        blobsVC!.tabBarItem = blobsTabBarItem
+        
+        // Create the Tab Bar Controller to hold the Table View Controllers
+        tabBarControllerCustom = UITabBarController()
+        tabBarControllerCustom!.delegate = self
+        tabBarControllerCustom!.tabBar.barTintColor = Constants.Colors.colorStatusBarLight
+        tabBarControllerCustom!.tabBar.tintColor = Constants.Colors.colorTextNavBar
+        tabBarControllerCustom!.viewControllers = [activeBlobsVC!, blobsVC!]
+        
+        // Create the Back Button Item and Title View for the Tab View
+        // These settings will be passed up to the assigned Navigation Controller for the Tab View Controller
+        let backButtonItem = UIBarButtonItem(title: "\u{2190}",
+                                             style: UIBarButtonItemStyle.plain,
+                                             target: self,
+                                             action: #selector(MapViewController.popViewController(_:)))
+        backButtonItem.tintColor = Constants.Colors.colorTextNavBar
+        
+        // Assign the created Nav Bar settings to the Tab Bar Controller
+        tabBarControllerCustom!.navigationItem.setLeftBarButton(backButtonItem, animated: true)
+        
+        print("MVC - LBTVC - NAV CONTROLLER: \(self.navigationController)")
+        if let navController = self.navigationController
+        {
+            navController.pushViewController(tabBarControllerCustom!, animated: true)
         }
         
         // Save an action in Core Data
         CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
-    // If the Preview Box Content (Text or Thumbnail) is tapped, load the blob view with the selected blob data
-    func previewContentTap(_ gesture: UITapGestureRecognizer)
+    func menuShow()
     {
-        // Ensure that the extra blob data has already been requested and that either the blob text or thumbnail is not nil
-        if let pBlob = previewBlob
+        // Reset features on the MVC
+        prepPushView()
+        
+        if !menuOpen
         {
-            if pBlob.blobExtraRequested && (pBlob.blobText != nil || pBlob.blobThumbnailID != nil)
-            {
-                // Close the Preview Box - the user is not interacting with the Preview Box anymore
-                closePreview()
-                
-                for mBlob in Constants.Data.mapBlobs
+            // Add animations to show the menuContainer and shift the viewContainer to the left
+            UIView.animate(withDuration: 0.5, animations:
                 {
-                    // Set all map Circles back to default (no highlighting)
-                    unhighlightMapCircleForBlob(mBlob)
-                    
-                    // Deselect all mapBlobs (so they don't stick out from the Collection View)
-                    mBlob.blobSelected = false
-                }
-                
-                // Create a back button and title for the Nav Bar
-                let backButtonItem = UIBarButtonItem(title: "\u{2190}",
-                                                     style: UIBarButtonItemStyle.plain,
-                                                     target: self,
-                                                     action: #selector(MapViewController.popViewController(_:)))
-                backButtonItem.tintColor = Constants.Colors.colorTextNavBar
-                
-                let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
-                let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
-                
-                // Try to access the locally stored preview Blob User to set the navigation bar title
-                if let previewUser = self.previewBlobUser
+                    self.viewContainer.frame = CGRect(x: 0 - Constants.Dim.mapViewMenuWidth, y: self.vcOffsetY, width: self.screenSize.width, height: self.vcHeight)
+            }, completion:
                 {
-                    ncTitleText.text = previewUser.userName
-                }
-                else
-                {
-                    ncTitleText.text = ""
-                }
-                
-                ncTitleText.textColor = Constants.Colors.colorTextNavBar
-                ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 14)
-                ncTitleText.textAlignment = .center
-                ncTitle.addSubview(ncTitleText)
-                
-                // Instantiate the BlobViewController and pass the Preview Blob to the VC
-                blobVC = BlobTableViewController()
-                blobVC.blob = pBlob
-                
-                // Assign the created Nav Bar settings to the Tab Bar Controller
-                blobVC.navigationItem.setLeftBarButton(backButtonItem, animated: true)
-                blobVC.navigationItem.titleView = ncTitle
-                
-                print("MVC - NAV CONTROLLER: \(self.navigationController)")
-                if let navController = self.navigationController
-                {
-                    navController.pushViewController(blobVC, animated: true)
-                }
-                
-                // Reload the collectionView so that the previously selected Blob is no longer sticking out
-                self.refreshCollectionView()
-            }
-            else if pBlob.blobID == Constants.Data.defaultBlob.blobID
-            {
-                // Show the error message
-                self.createAlertOkView("Blobjot", message: "Thanks for using Blobjot!  This placeholder Blob will always be visible and does not have a full Blob view, but try tapping on some other Blobs to see more details!")
-            }
-            else
-            {
-                // Show the error message
-                self.createAlertOkView("Blob not in range", message: "This Blob is not in range.  Travel within the perimeter of the Blob to see all the details!")
-            }
+                    (value: Bool) in
+                    self.menuOpen = true
+            })
         }
+        
+//        // Prepare both of the Table View Controllers and add Tab Bar Items to them
+//        peopleVC = PeopleViewController()
+//        peopleVC!.peopleViewDelegate = self
+//        peopleVC!.tabBarUsed = true
+//        let peopleTabBarItem = UITabBarItem()
+//        peopleTabBarItem.tag = 1
+//        peopleTabBarItem.image = UIImage(named: Constants.Strings.iconStringTabIconConnectionsGray)
+//        peopleTabBarItem.selectedImage = UIImage(named: Constants.Strings.iconStringTabIconConnectionsWhite)
+//        peopleTabBarItem.imageInsets = UIEdgeInsets(top: 5, left: 0, bottom: -5, right: 0)
+//        peopleVC!.tabBarItem = peopleTabBarItem
+//
+//        accountVC = AccountViewController()
+//        accountVC!.accountViewDelegate = self
+//        let accountTabBarItem = UITabBarItem()
+//        accountTabBarItem.tag = 2
+//        accountTabBarItem.image = UIImage(named: Constants.Strings.iconStringTabIconAccountGray)
+//        accountTabBarItem.selectedImage = UIImage(named: Constants.Strings.iconStringTabIconAccountWhite)
+//        accountTabBarItem.imageInsets = UIEdgeInsets(top: 5, left: 0, bottom: -5, right: 0)
+//        accountVC!.tabBarItem = accountTabBarItem
+//        
+//        // Create the Tab Bar Controller to hold the Table View Controllers
+//        tabBarControllerCustom = UITabBarController()
+//        tabBarControllerCustom!.delegate = self
+//        tabBarControllerCustom!.tabBar.barTintColor = Constants.Colors.colorStatusBarLight
+//        tabBarControllerCustom!.tabBar.tintColor = Constants.Colors.colorTextNavBar
+//        tabBarControllerCustom!.viewControllers = [peopleVC!, accountVC!]
+//        
+//        // If the account tab should be loaded, set the last (1) index to load
+//        if goToAccountTab
+//        {
+//            tabBarControllerCustom!.selectedIndex = 1
+//        }
+//        
+//        // Create the Back Button Item and Title View for the Tab View
+//        // These settings will be passed up to the assigned Navigation Controller for the Tab View Controller
+//        let backButtonItem = UIBarButtonItem(title: "\u{2190}",
+//                                             style: UIBarButtonItemStyle.plain,
+//                                             target: self,
+//                                             action: #selector(MapViewController.popViewController(_:)))
+//        backButtonItem.tintColor = Constants.Colors.colorTextNavBar
+//        
+//        // Assign the created Nav Bar settings to the Tab Bar Controller
+//        tabBarControllerCustom!.navigationItem.setLeftBarButton(backButtonItem, animated: true)
+//        
+//        print("MVC - LSTVC - NAV CONTROLLER: \(self.navigationController)")
+//        if let navController = self.navigationController
+//        {
+//            navController.pushViewController(tabBarControllerCustom!, animated: true)
+//        }
         
         // Save an action in Core Data
         CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
+    func menuHide()
+    {
+        // Ensure the menu is already open, then hide it
+        if menuOpen
+        {
+            UIView.animate(withDuration: 0.5, animations:
+                {
+                    self.viewContainer.frame = CGRect(x: 0, y: self.vcOffsetY, width: self.screenSize.width, height: self.vcHeight)
+            }, completion:
+                {
+                    (value: Bool) in
+                    self.menuOpen = false
+            })
+        }
+    }
     
-    // KEY-VALUE OBSERVER HANDLERS
+    
+    // MARK: TAB BAR DELEGATE METHODS
+    
+    func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController)
+    {
+        print("MVC - TAB BAR - DID SELECT: \(viewController)")
+        if let tabBar = self.tabBarControllerCustom
+        {
+            if peopleVC != nil && viewController == peopleVC
+            {
+                let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
+                let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
+                ncTitleText.text = "People"
+                ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 14)
+                ncTitleText.textColor = Constants.Colors.colorTextNavBar
+                ncTitleText.textAlignment = .center
+                ncTitle.addSubview(ncTitleText)
+                tabBar.navigationItem.titleView = ncTitle
+            }
+            else if accountVC != nil && viewController == accountVC
+            {
+                let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
+                let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
+                ncTitleText.text = "Account"
+                ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 14)
+                ncTitleText.textColor = Constants.Colors.colorTextNavBar
+                ncTitleText.textAlignment = .center
+                ncTitle.addSubview(ncTitleText)
+                tabBar.navigationItem.titleView = ncTitle
+            }
+            else if activeBlobsVC != nil && viewController == activeBlobsVC
+            {
+                let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
+                let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
+                ncTitleText.text = "Nearby Blobs"
+                ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 14)
+                ncTitleText.textColor = Constants.Colors.colorTextNavBar
+                ncTitleText.textAlignment = .center
+                ncTitle.addSubview(ncTitleText)
+                tabBar.navigationItem.titleView = ncTitle
+            }
+            else if blobsVC != nil && viewController == blobsVC
+            {
+                let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
+                let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
+                ncTitleText.text = "All Blobs"
+                ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 14)
+                ncTitleText.textColor = Constants.Colors.colorTextNavBar
+                ncTitleText.textAlignment = .center
+                ncTitle.addSubview(ncTitleText)
+                tabBar.navigationItem.titleView = ncTitle
+            }
+        }
+        
+    }
+    
+    
+    // MARK: KEY-VALUE OBSERVER HANDLERS
+    
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?)
     {
         // Detect if the user's location has changed
@@ -1642,12 +1630,8 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                             // If the user has not been downloaded, request the user and the userImage
                             if !userExists
                             {
-                                AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: blob.blobUserID, forPreviewBox: true), delegate: self as AWSRequestDelegate).prepRequest()
+                                AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: blob.blobUserID, forPreviewData: true), delegate: self as AWSRequestDelegate).prepRequest()
                             }
-                        }
-                        else
-                        {
-                            self.updatePreviewBoxData(Constants.Data.userPublicArea)
                         }
                     }
                     else
@@ -1763,7 +1747,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             }
             
             // Reload the Collection View
-            self.refreshCollectionView()
+            self.refreshLocationBlobsCollectionView()
             
             // Only hide the background activity indicator if the global sending property is false
             if !Constants.Data.stillSendingBlob && !self.waitingForMapData
@@ -1794,17 +1778,13 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 - If not, show the short Preview
         */
         
-        // Check whether the menu is showing - if so, hide it
-        if menuOpen
+        // Ensure the menu is hidden
+        self.menuHide()
+        
+        // Reset - remove the added preview circle, if existing
+        if previewBlobCircle != nil
         {
-            UIView.animate(withDuration: 0.5, animations:
-                {
-                    self.viewContainer.frame = CGRect(x: 0, y: self.vcOffsetY, width: self.screenSize.width, height: self.vcHeight)
-            }, completion:
-                {
-                    (value: Bool) in
-                    self.menuOpen = false
-            })
+            previewBlobCircle.map = nil
         }
         
         // Create a tapped Blob indicator property so only the hightest tapped Blob is selected, but all others are deselected
@@ -1844,7 +1824,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 }
                 
                 // Show the Preview Box with the selected Blob data
-                showBlobPreview(mBlob)
+                previewBlob(mBlob)
                 
                 // Loop through the Location Blob array to mark the top Blobs within tap range
                 loopLocationBlobCheck: for lBlob in Constants.Data.locationBlobs
@@ -1877,7 +1857,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         }
         
         // Reload the Collection View to ensure that any deselections also correct the User Image placement in the collection view
-        self.refreshCollectionView()
+        self.refreshLocationBlobsCollectionView()
     }
     
     // Called before the map is moved
@@ -1888,6 +1868,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         {
             if mapView.camera.zoom < Constants.Settings.mapViewAddBlobMinZoom
             {
+                print("MVC - MAPVIEW WILL MOVE - ANIMATE TO ZOOM")
                 mapView.animate(toZoom: Constants.Settings.mapViewAddBlobMinZoom)
                 
                 // Display the message box to explain the zoom minimum
@@ -1906,9 +1887,22 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         }
     }
     
-    // Called after the map is moved
+    // Called while the map is moved
     func mapView(_ mapView: GMSMapView, didChange position: GMSCameraPosition)
     {
+        print("MVC - MAPVIEW CHANGING POSITION")
+        
+//        // Adjust the Map Camera back to apply the correct camera angle
+//        adjustMapViewCamera()
+//        
+//        // Check the markers again since the zoom may have changed
+//        addMarkersToBlobs()
+    }
+    // Called after the map is moved
+    func mapView(_ mapView: GMSMapView, idleAt position: GMSCameraPosition)
+    {
+        print("MVC - MAPVIEW CHANGED POSITION")
+        
         // Adjust the Map Camera back to apply the correct camera angle
         adjustMapViewCamera()
         
@@ -1979,27 +1973,30 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // If not in the add blob process, angle the map automatically if the zoom is high enough
     func adjustMapViewCamera()
     {
+        print("MVC - ADJUSTING MAP CAMERA")
+        
         if !addingBlob
         {
+            print("MVC - MAP CAMERA CURRENT VEWING ANGLE: \(mapView.camera.viewingAngle)")
+            print("MVC - MAP CAMERA DESIRED VEWING ANGLE: \(Constants.Settings.mapViewAngledDegrees)")
             // When not in the add blob process, if the map zoom is 16 or higher, automatically angle the camera
-            if mapView.camera.zoom >= 16 && mapView.camera.viewingAngle < 60
+            // NOTE: Still firing, even if the view angles are the same - made adjustment by -1 to compensate
+            if mapView.camera.zoom >= Constants.Settings.mapViewAngledZoom && mapView.camera.viewingAngle < Constants.Settings.mapViewAngledDegrees - 1
             {
-                let desiredAngle = Double(60)
-                mapView.animate(toViewingAngle: desiredAngle)
-                
+                print("MVC - ADJUSTING MAP CAMERA - CHECK 2a")
+                mapView.animate(toViewingAngle: Constants.Settings.mapViewAngledDegrees)
             }
-            else if mapView.camera.zoom < 16 && mapView.camera.viewingAngle > 0
+            else if mapView.camera.zoom < Constants.Settings.mapViewAngledZoom && mapView.camera.viewingAngle > 0
             {
+                print("MVC - ADJUSTING MAP CAMERA - CHECK 2b")
                 // Keep the map from being angled if the zoom is too low
-                let desiredAngle = Double(0)
-                mapView.animate(toViewingAngle: desiredAngle)
+                mapView.animate(toViewingAngle: Double(0))
             }
         }
         else
         {
             // When in the add blob process, do not allow the map camera to angle
-            let desiredAngle = Double(0)
-            mapView.animate(toViewingAngle: desiredAngle)
+            mapView.animate(toViewingAngle: Double(0))
             
             // If the zoom is less than mapViewAddBlobMinZoom, zoom in to mapViewAddBlobMinZoom (enough to allow a Blob to encompass a city block)
             if mapView.camera.zoom < Constants.Settings.mapViewAddBlobMinZoom
@@ -2017,6 +2014,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 self.hideSelectorMessageBox()
             }
         }
+        print("MVC - ADJUSTED MAP CAMERA")
     }
     
     // Manually set the mapView camera
@@ -2051,83 +2049,286 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // Number of cells to make in CollectionView
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int
     {
-        // Resize the Location Blobs Collection View so that it only is tall enough to show all the Blobs
-        // Otherwise, the Map View would be blocked by the Collection View and not allow touch responses
-        
-        // Calculate the height of all the cells together (multiplied by the number of Blobs)
-        let maxCVHeight = Constants.Dim.mapViewLocationBlobsCVCellSize * CGFloat(Constants.Data.locationBlobs.count)
-        // Determine the height of the viewContainer
-        var cvHeight = viewContainer.frame.height
-        // If the max height of all Blob cells together is less than the View Container height, then use the smaller height (the total cell(s) height)
-        if maxCVHeight < cvHeight
+        if collectionView == locationBlobsCollectionView
         {
-            cvHeight = maxCVHeight
+            // Resize the Location Blobs Collection View so that it only is tall enough to show all the Blobs
+            // Otherwise, the Map View would be blocked by the Collection View and not allow touch responses
+            
+            // Calculate the height of all the cells together (multiplied by the number of Blobs)
+            let maxCVHeight = Constants.Dim.mapViewLocationBlobsCVCellSize * CGFloat(Constants.Data.locationBlobs.count)
+            // Determine the height of the viewContainer
+            var cvHeight = viewContainer.frame.height
+            // If the max height of all Blob cells together is less than the View Container height, then use the smaller height (the total cell(s) height)
+            if maxCVHeight < cvHeight
+            {
+                cvHeight = maxCVHeight
+            }
+            locationBlobsCollectionViewContainer.frame.size.height = cvHeight
+            locationBlobsCollectionView.frame.size.height = cvHeight
+            
+            return Constants.Data.locationBlobs.count
         }
-        locationBlobsCollectionViewContainer.frame.size.height = cvHeight
-        locationBlobsCollectionView.frame.size.height = cvHeight
-        
-        return Constants.Data.locationBlobs.count
+        else if collectionView == previewCollectionView
+        {
+            // Any selected preview list will be assigned to the previewBlobs array for use
+            return Constants.Data.previewBlobs.count
+        }
+        else
+        {
+            return Constants.Data.previewBlobs.count
+        }
     }
     
     // Create cells for CollectionView
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell
     {
-        // Create reference to CollectionView cell
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: Constants.Strings.locationBlobsCellReuseIdentifier, for: indexPath) as! LocationBlobsCollectionViewCell
-        
-        // Reset the needed views and start the indicator animation
-        cell.userImage.image = nil
-        cell.userImageActivityIndicator.startAnimating()
-        
-        // When the Blob is indicated as selected (blobSelected), the User Image is moved 10dp to the right (see below)
-        // Reset the User Image location for all Blobs in case the Blob is no longer selected
-        cell.userImageContainer.frame = CGRect(x: 5, y: 5, width: Constants.Dim.mapViewLocationBlobsCVItemSize, height: Constants.Dim.mapViewLocationBlobsCVItemSize)
-        
-        
-        // If the cell is the first one, it is the default blob, so show the Blobjot logo
-        if (indexPath as NSIndexPath).row > 0
+        if collectionView == locationBlobsCollectionView
         {
-            // Ensure that the blob is not a BLOBJOT BLOB
-            if Constants.Data.locationBlobs[(indexPath as NSIndexPath).row].blobType != Constants.BlobTypes.blobjot
+            // Create reference to CollectionView cell
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: Constants.Strings.locationBlobsCellReuseIdentifier, for: indexPath) as! MapViewLocationBlobsCell
+            
+            // Reset the needed views and start the indicator animation
+            cell.userImage.image = nil
+            cell.userImageActivityIndicator.startAnimating()
+            
+            // When the Blob is indicated as selected (blobSelected), the User Image is moved 10dp to the right (see below)
+            // Reset the User Image location for all Blobs in case the Blob is no longer selected
+            cell.userImageContainer.frame = CGRect(x: 5, y: 5, width: Constants.Dim.mapViewLocationBlobsCVItemSize, height: Constants.Dim.mapViewLocationBlobsCVItemSize)
+            
+            
+            // If the cell is the first one, it is the default blob, so show the Blobjot logo
+            if (indexPath as NSIndexPath).row > 0
             {
-                // Add the associated User Image to the User Image View
-                if let userID = Constants.Data.locationBlobs[(indexPath as NSIndexPath).row].blobUserID
+                // Ensure that the blob is not a BLOBJOT BLOB
+                if Constants.Data.locationBlobs[(indexPath as NSIndexPath).row].blobType != Constants.BlobTypes.blobjot
                 {
-                    // Find the correct User Object in the global list and assign the User Image, if it exists
-                    loopUserObjectCheck: for userObject in Constants.Data.userObjects
+                    // Add the associated User Image to the User Image View
+                    if let userID = Constants.Data.locationBlobs[(indexPath as NSIndexPath).row].blobUserID
                     {
-                        if userObject.userID == userID
+                        // Find the correct User Object in the global list and assign the User Image, if it exists
+                        loopUserObjectCheck: for userObject in Constants.Data.userObjects
                         {
-                            if userObject.userImage != nil
+                            if userObject.userID == userID
                             {
-                                cell.userImage.image = userObject.userImage
-                                cell.userImageActivityIndicator.stopAnimating()
+                                if userObject.userImage != nil
+                                {
+                                    cell.userImage.image = userObject.userImage
+                                    cell.userImageActivityIndicator.stopAnimating()
+                                }
+                                
+                                break loopUserObjectCheck
                             }
-                            
-                            break loopUserObjectCheck
                         }
                     }
+                }
+                else
+                {
+                    // Assign the default Public Area Blob to the user data features
+                    cell.userImage.image = Constants.Data.userPublicArea.userImage
+                    cell.userImageActivityIndicator.stopAnimating()
                 }
             }
             else
             {
-                // Assign the default Public Area Blob to the user data features
-                cell.userImage.image = Constants.Data.userPublicArea.userImage
+                cell.userImage.image = UIImage(named: Constants.Strings.iconStringBlobjotLogo)
                 cell.userImageActivityIndicator.stopAnimating()
             }
+            
+            // Check to see if the Blob has been selected, and move the User Image to the right
+            if Constants.Data.locationBlobs[(indexPath as NSIndexPath).row].blobSelected
+            {
+                cell.userImageContainer.frame = CGRect(x: 5 + Constants.Dim.mapViewLocationBlobsCVHighlightAdjustSize, y: 5, width: Constants.Dim.mapViewLocationBlobsCVItemSize, height: Constants.Dim.mapViewLocationBlobsCVItemSize)
+            }
+            return cell
+        }
+        else if collectionView == previewCollectionView
+        {
+            // Create reference to CollectionView cell
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: Constants.Strings.previewBlobsCellReuseIdentifier, for: indexPath) as! MapViewPreviewCell
+            
+            print("MVC - CV - CREATING PREVIEW CELL AT INDEX: \(indexPath.row)")
+            
+            // Reference the blob in the selected Blobs array
+            let blob = Constants.Data.previewBlobs[(indexPath as NSIndexPath).row]
+            
+            if blob.blobType == Constants.BlobTypes.blobjot
+            {
+                cell.previewUserImageView.image = UIImage(named: Constants.Strings.iconStringBlobjotLogo)
+                cell.previewUserNameLabel.text = "Public Area"
+                
+                // Display the current year
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateFormat = "YYYY"
+                let stringDate: String = dateFormatter.string(from: Date())
+                cell.previewTimeLabel.text = stringDate
+                
+                // Create and assign a user to the previewBlobUser
+                let publicAreaUser = User()
+                publicAreaUser.userID = "blobjotBlob"
+                publicAreaUser.facebookID = "blobjotBlob"
+                publicAreaUser.userName = "Public Area"
+                publicAreaUser.userImage = UIImage(named: Constants.Strings.iconStringBlobjotLogo)
+                self.previewBlobUser = publicAreaUser
+                
+                //Stop animating the activity indicator
+                cell.previewThumbnailActivityIndicator.stopAnimating()
+                cell.previewUserImageActivityIndicator.stopAnimating()
+                cell.previewUserNameActivityIndicator.stopAnimating()
+            }
+            else
+            {
+                // Check if the user has already been downloaded ONLY IF NOT A BLOBJOT BLOB
+                // If a Blob outside the range of the user was clicked, the user may not have already been downloaded
+                var userExists = false
+                loopUserCheck: for user in Constants.Data.userObjects
+                {
+                    if user.userID == blob.blobUserID
+                    {
+                        userExists = true
+                        
+                        // Assign the user to the previewBlobUser
+                        self.previewBlobUser = user
+                        
+                        // Assign the user's image and username to the preview
+                        if user.userName != nil
+                        {
+                            cell.previewUserNameLabel.text = user.userName
+                            cell.previewUserNameActivityIndicator.stopAnimating()
+                            
+                            if user.userImage != nil
+                            {
+                                cell.previewUserImageView.image = user.userImage
+                                cell.previewUserImageActivityIndicator.stopAnimating()
+                            }
+                            else
+                            {
+                                AWSPrepRequest(requestToCall: FBGetUserProfileData(user: user, downloadImage: true), delegate: self as AWSRequestDelegate).prepRequest()
+                            }
+                        }
+                        else
+                        {
+                            AWSPrepRequest(requestToCall: FBGetUserProfileData(user: user, downloadImage: true), delegate: self as AWSRequestDelegate).prepRequest()
+                        }
+                        
+                        break loopUserCheck
+                    }
+                }
+                // If the user has not been downloaded, request the user and the userImage
+                if !userExists
+                {
+                    AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: blob.blobUserID, forPreviewData: true), delegate: self as AWSRequestDelegate).prepRequest()
+                }
+                
+                // Set the Preview Time Label to show the age of the Blob
+                if let datetime = blob.blobDatetime
+                {
+                    // Capture the number of hours it has been since the Blob was created (as a positive integer)
+                    let dateAgeHrs: Int = -1 * Int(datetime.timeIntervalSinceNow / 3600)
+                    
+                    // Set the date age label.  If the age is less than 24 hours, just show it in hours.  Otherwise, show the number of days and hours.
+                    var stringAge = String(dateAgeHrs / Int(24)) + " days" //+ String(dateAgeHrs % 24) + " hrs"
+                    if dateAgeHrs < 24
+                    {
+                        stringAge = String(dateAgeHrs) + " hrs"
+                    }
+                    else if dateAgeHrs < 48
+                    {
+                        stringAge = "1 day"
+                    }
+                    cell.previewTimeLabel.text = stringAge
+                }
+            }
+            
+            // Check whether the Blob text has been added to the Blob, and if so, display the text
+            // If not, check whether the extra data has already been requested
+            // if not, this means the Blob is not (or has not been) in range
+            // If it has been requested, but no text exists, do nothing (leave the text area blank)
+            if let bText = blob.blobText
+            {
+                cell.previewTextBox.textColor = Constants.Colors.colorPreviewTextNormal
+                cell.previewTextBox.text = bText
+            }
+            else if !blob.blobExtraRequested
+            {
+                cell.previewTextBox.textColor = Constants.Colors.colorPreviewTextError
+                cell.previewTextBox.text = "This Blob is not in range."
+            }
+            
+            print("MVC - BLOB PREVIEW EXTRA REQUESTED: \(blob.blobExtraRequested)")
+            // If Blob extra data has been requested, the Blob is in range, so download the Thumbnail,
+            // otherwise, move the Blob age and text all the way to the right side of the Preview Box
+            if blob.blobExtraRequested
+            {
+                print("MVC - BLOB PREVIEW MEDIA TYPE: \(blob.blobMediaType)")
+                if let blobMediaType = blob.blobMediaType
+                {
+                    print("MVC - BLOB PREVIEW THUMBNAIL - CHECK 1")
+                    // Check whether the Blob has media - if not, do not show the Thumbnail box
+                    if blobMediaType > 0
+                    {
+                        print("MVC - BLOB PREVIEW THUMBNAIL - CHECK 2")
+                        // Check to see if the thumbnail was already downloaded
+                        // If not, the return function from AWS will apply the thumbnail to the preview box
+                        // Loop through the BlobThumbnailObjects array
+                        var thumbnailExists = false
+                        loopThumbnail: for tObject in Constants.Data.blobThumbnailObjects
+                        {
+                            print("MVC - BLOB PREVIEW THUMBNAIL - CHECK 3")
+                            // Check each thumbnail object to see if matches
+                            if tObject.blobThumbnailID == blob.blobThumbnailID
+                            {
+                                print("MVC - BLOB PREVIEW THUMBNAIL - CHECK 4")
+                                // Check to make sure the thumbnail has already been downloaded
+                                if let thumbnailImage = tObject.blobThumbnail
+                                {
+                                    print("MVC - BLOB PREVIEW THUMBNAIL - CHECK 5")
+                                    // Setthe Preview Thumbnail image
+                                    cell.previewThumbnailView.image = thumbnailImage
+                                    
+                                    // Stop animating the activity indicator
+                                    cell.previewThumbnailActivityIndicator.stopAnimating()
+                                    
+                                    // Assign the thumbnail image to the previewBlob
+                                    self.previewBlob?.blobThumbnail = thumbnailImage
+                                    
+                                    // Add the thumbnail subview to the cell
+                                    cell.previewContainer.addSubview(cell.previewThumbnailView)
+                                    
+                                    // Move the time label to the left of the thumbnail, since it exists
+                                    cell.previewTimeLabel.frame = CGRect(x: cell.previewContainer.frame.width - 10 - cell.previewContainer.frame.height / 2 - cell.previewTimeLabelWidth - cell.previewThumbnailView.frame.width, y: 5, width: cell.previewTimeLabelWidth, height: 15)
+                                    
+                                    // Adjust the other preview features to not overlap with the moved time label
+                                    cell.previewUserNameLabel.frame = CGRect(x: cell.postUserImageOffset, y: 5, width: cell.previewContainer.frame.width - 15 - cell.postUserImageOffset - cell.previewTimeLabelWidth - cell.previewThumbnailView.frame.width, height: 15)
+                                    cell.previewTextBox.frame = CGRect(x: cell.postUserImageOffset, y: 10 + cell.previewUserNameLabel.frame.height, width: cell.previewContainer.frame.width - 15 - cell.postUserImageOffset - cell.previewTimeLabelWidth - cell.previewThumbnailView.frame.width, height: CGFloat(15))
+                                    
+                                    thumbnailExists = true
+                                    
+                                    break loopThumbnail
+                                }
+                            }
+                        }
+                        if !thumbnailExists
+                        {
+                            print("MVC - BLOB PREVIEW THUMBNAIL - CHECK 6")
+                            // Request the thumbnail image if the thumbnailID exists
+                            if blob.blobThumbnailID != nil
+                            {
+                                print("MVC - BLOB PREVIEW THUMBNAIL - CHECK 7")
+                                AWSPrepRequest(requestToCall: AWSGetThumbnailImage(blob: blob), delegate: self as AWSRequestDelegate).prepRequest()
+                            }
+                        }
+                    }
+                }
+            }
+            return cell
         }
         else
         {
-            cell.userImage.image = UIImage(named: Constants.Strings.iconStringBlobjotLogo)
-            cell.userImageActivityIndicator.stopAnimating()
+            print("MVC - CV - USING WRONG CELL TYPE")
+            // Create reference to CollectionView cell
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: Constants.Strings.previewBlobsCellReuseIdentifier, for: indexPath) as! MapViewPreviewCell
+            return cell
         }
-        
-        // Check to see if the Blob has been selected, and move the User Image to the right
-        if Constants.Data.locationBlobs[(indexPath as NSIndexPath).row].blobSelected
-        {
-            cell.userImageContainer.frame = CGRect(x: 5 + Constants.Dim.mapViewLocationBlobsCVHighlightAdjustSize, y: 5, width: Constants.Dim.mapViewLocationBlobsCVItemSize, height: Constants.Dim.mapViewLocationBlobsCVItemSize)
-        }
-        return cell
     }
     
     
@@ -2136,45 +2337,121 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // Cell Selection Blob
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath)
     {
-//        // Close the Search Box - the user is not interacting with this feature anymore
-//        self.closeSearchBox()
-        
         // Clear the Preview Box for new Blob data
         self.clearPreview()
         
-        // Loop through the Map Blobs, reset the Map Circles' borders, find the matching Location Blob and highlight its border
-        // Do NOT break the Map Blobs loop early.  All Map Blobs should be checked and corresponding Map Circle's border reset
-        for mBlob in Constants.Data.mapBlobs
+        if collectionView == locationBlobsCollectionView
         {
-            mBlob.blobSelected = false
-            
-            // Reset the border for the Map Circle that matches the Map Blob
-            unhighlightMapCircleForBlob(mBlob)
-            
-            // Check whether the current Map Blob matches the Location Blob at the selected index
-            // If so, find the Map Circle that matches the current Map Blob and highlight that Map Circle's border
-            if mBlob.blobID == Constants.Data.locationBlobs[(indexPath as NSIndexPath).row].blobID
+            // If the cell is the first one, it is the default blob, so show the Blobjot Blob message
+            if (indexPath as NSIndexPath).row == 0
             {
-                mBlob.blobSelected = true
-                
-                // Reload the Collection View
-                self.refreshCollectionView()
-                
-                loopMapCircles: for circle in Constants.Data.mapCircles
+                self.createAlertOkView("Blobjot", message: Constants.Strings.mapViewMessageDefaultBlob)
+            }
+            else
+            {
+                // Loop through the Map Blobs, reset the Map Circles' borders, find the matching Location Blob and highlight its border
+                // Do NOT break the Map Blobs loop early.  All Map Blobs should be checked and corresponding Map Circle's border reset
+                for mBlob in Constants.Data.mapBlobs
                 {
-                    if circle.title == mBlob.blobID
+                    mBlob.blobSelected = false
+                    
+                    // Reset the border for the Map Circle that matches the Map Blob
+                    unhighlightMapCircleForBlob(mBlob)
+                    
+                    // Check whether the current Map Blob matches the Location Blob at the selected index
+                    // If so, find the Map Circle that matches the current Map Blob and highlight that Map Circle's border
+                    if mBlob.blobID == Constants.Data.locationBlobs[(indexPath as NSIndexPath).row].blobID
                     {
-                        circle.strokeColor = Constants.Colors.blobHighlight
-                        circle.strokeWidth = 3
+                        mBlob.blobSelected = true
                         
-                        break loopMapCircles
+                        // Reload the Collection View
+                        self.refreshLocationBlobsCollectionView()
+                        
+                        loopMapCircles: for circle in Constants.Data.mapCircles
+                        {
+                            if circle.title == mBlob.blobID
+                            {
+                                circle.strokeColor = Constants.Colors.blobHighlight
+                                circle.strokeWidth = 3
+                                
+                                break loopMapCircles
+                            }
+                        }
                     }
+                }
+                
+                // Call the function to prepare and show the Preview Box using the data from the Location Blob at the selected index
+                previewBlob(Constants.Data.locationBlobs[(indexPath as NSIndexPath).row])
+            }
+        }
+        else
+        {
+            // Ensure that the extra blob data has already been requested and that either the blob text or thumbnail is not nil
+            if let pBlob = previewBlob
+            {
+                if pBlob.blobExtraRequested && (pBlob.blobText != nil || pBlob.blobThumbnailID != nil)
+                {
+                    // Close the Preview Box - the user is not interacting with the Preview Box anymore
+                    closePreview()
+                    
+                    for mBlob in Constants.Data.mapBlobs
+                    {
+                        // Set all map Circles back to default (no highlighting)
+                        unhighlightMapCircleForBlob(mBlob)
+                        
+                        // Deselect all mapBlobs (so they don't stick out from the Collection View)
+                        mBlob.blobSelected = false
+                    }
+                    
+                    // Create a back button and title for the Nav Bar
+                    let backButtonItem = UIBarButtonItem(title: "\u{2190}",
+                                                         style: UIBarButtonItemStyle.plain,
+                                                         target: self,
+                                                         action: #selector(MapViewController.popViewController(_:)))
+                    backButtonItem.tintColor = Constants.Colors.colorTextNavBar
+                    
+                    let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
+                    let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
+                    
+                    // Try to access the locally stored preview Blob User to set the navigation bar title
+                    if let previewUser = self.previewBlobUser
+                    {
+                        ncTitleText.text = previewUser.userName
+                    }
+                    else
+                    {
+                        ncTitleText.text = ""
+                    }
+                    
+                    ncTitleText.textColor = Constants.Colors.colorTextNavBar
+                    ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 14)
+                    ncTitleText.textAlignment = .center
+                    ncTitle.addSubview(ncTitleText)
+                    
+                    // Instantiate the BlobViewController and pass the Preview Blob to the VC
+                    blobVC = BlobTableViewController()
+                    blobVC.blob = pBlob
+                    
+                    // Assign the created Nav Bar settings to the Tab Bar Controller
+                    blobVC.navigationItem.setLeftBarButton(backButtonItem, animated: true)
+                    blobVC.navigationItem.titleView = ncTitle
+                    
+                    print("MVC - NAV CONTROLLER: \(self.navigationController)")
+                    if let navController = self.navigationController
+                    {
+                        navController.pushViewController(blobVC, animated: true)
+                    }
+                    
+                    // Reload the collectionView so that the previously selected Blob is no longer sticking out
+                    self.refreshLocationBlobsCollectionView()
+                }
+                else
+                {
+                    // Show the error message
+                    self.createAlertOkView("Blob not in range", message: Constants.Strings.mapViewMessageOutOfRange)
                 }
             }
         }
-        
-        // Call the function to prepare and show the Preview Box using the data from the Location Blob at the selected index
-        showBlobPreview(Constants.Data.locationBlobs[(indexPath as NSIndexPath).row])
         
         // Save an action in Core Data
         CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
@@ -2188,6 +2465,28 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // Cell Touch Release Blob
     func collectionView(_ collectionView: UICollectionView, didUnhighlightItemAt indexPath: IndexPath)
     {
+    }
+    
+    
+    // MARK: SCROLL VIEW DELEGATE METHODS
+    
+    func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool)
+    {
+        print("MVC - SCROLL VIEW: \(scrollView) WILL DECELERATE: \(decelerate)")
+        // Snap the cells to each cell to only show one at a time
+        // Only fire if the scrollView is not decelerating, otherwise it will fire immediately from scrollViewWillBeginDecelerating
+        if !decelerate
+        {
+            snapToNearestPreviewCell()
+        }
+    }
+    
+    func scrollViewWillBeginDecelerating(_ scrollView: UIScrollView)
+    {
+        print("MVC - SCROLL VIEW: \(scrollView) WILL BEGIN DECELERATING")
+        // Snap the cells to each cell to only show one at a time
+//        scrollView.setContentOffset(scrollView.contentOffset, animated: true)
+        snapToNearestPreviewCell()
     }
     
     
@@ -2269,34 +2568,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // Reset all Preview Box settings and values
     func clearPreview()
     {
-        self.previewThumbnailView.image = nil
-        self.previewTextBox.text = nil
-        self.previewUserImageView.image = UIImage(named: "PROFILE_DEFAULT.png")
-        self.previewUserNameLabel.text = nil
-        self.previewTimeLabel.text = nil
         
-        self.previewTimeLabel.frame = CGRect(x: 10 + self.previewUserImageSize + self.previewUserNameLabel.frame.width, y: 5, width: self.previewTimeLabelWidth, height: 15)
-        self.previewTextBox.frame = CGRect(x: 50, y: 10 + previewUserNameLabel.frame.height, width: previewContainer.frame.width - 60 - Constants.Dim.mapViewPreviewContainerHeight, height: 15)
-        
-        //Stop animating the activity indicators
-        self.previewThumbnailActivityIndicator.stopAnimating()
-        self.previewUserImageActivityIndicator.stopAnimating()
-        self.previewUserNameActivityIndicator.stopAnimating()
-    }
-    
-    // If the preview Blob user data has not yet been downloaded, call this method to refresh the user data in the preview
-    func refreshPreviewUserData(_ user: User)
-    {
-        // Refresh the User Name
-        self.previewUserNameLabel.text = user.userName
-        self.previewUserNameActivityIndicator.stopAnimating()
-        
-        // Refresh the User Image, if it exists
-        if user.userImage != nil
-        {
-            self.previewUserImageView.image = user.userImage
-            self.previewUserImageActivityIndicator.stopAnimating()
-        }
     }
     
     func hideBackgroundActivityView(_ refreshBlobs: Bool)
@@ -2353,11 +2625,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             addBlobVC!.navigationItem.titleView = ncTitle
         }
         
-        // Add the View Controller to the Nav Controller and present the Nav Controller
-//        let navController = UINavigationController(rootViewController: addBlobVC!)
-//        navController.navigationBar.barTintColor = Constants.Colors.colorStatusBar
-//        self.modalPresentationStyle = .popover
-//        self.present(navController, animated: true, completion: nil)
         if let navController = self.navigationController
         {
             navController.pushViewController(addBlobVC!, animated: true)
@@ -2371,21 +2638,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         selectorCircle.removeFromSuperview()
         selectorSlider.removeFromSuperview()
         
-//        // Double-check that the Blob menu buttons are still expanded, and hide them if they are visible
-//        if menuButtonBlobOpen
-//        {
-//            menuButtonBlobOpen = false
-//            
-//            // Add an animation to hide the buttons
-//            UIView.animate(withDuration: 0.2, animations:
-//                {
-//                    self.buttonListView.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.mapViewButtonListSize, y: self.viewContainer.frame.height - 5 - Constants.Dim.mapViewButtonListSize, width: Constants.Dim.mapViewButtonListSize, height: Constants.Dim.mapViewButtonListSize)
-//                }, completion:
-//                {(finished: Bool) -> Void in
-//                    self.buttonAddImage.image = UIImage(named: Constants.Strings.iconStringMapViewAddCombo)
-//            })
-//        }
-        
         // Change the add blob indicator back to false efore calling adjustMapViewCamera
         addingBlob = false
         
@@ -2397,199 +2649,25 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     }
     
     // The function to lower the previewBox
-    func lowerPreviewBox()
+    func previewShow()
     {
-        //Stop animating the activity indicator (if not already stopped)
-        self.previewThumbnailActivityIndicator.stopAnimating()
-        
-        self.previewTimeLabel.frame = CGRect(x: previewContainer.frame.width - 5 - self.previewTimeLabelWidth, y: 5, width: self.previewTimeLabelWidth, height: 15)
-        self.previewTextBox.frame = CGRect(x: 50, y: 10 + previewUserNameLabel.frame.height, width: previewContainer.frame.width - 65, height: 15)
-    }
-    
-    // Add Blob data to the Preview Box elements and animate the Preview Box lowering into view
-    func showBlobPreview(_ blob: Blob)
-    {
-        //Animate the activity indicator
-        self.previewThumbnailActivityIndicator.startAnimating()
-        self.previewUserImageActivityIndicator.startAnimating()
-        self.previewUserNameActivityIndicator.startAnimating()
-        
-        // Assign the local previewBlob to the passed blob so that other functions can access the selected blob
-        self.previewBlob = blob
-        
-        // If Blob extra data has been requested, the Blob is in range, so download the Thumbnail,
-        // otherwise, move the Blob age and text all the way to the right side of the Preview Box
-        if blob.blobExtraRequested
-        {
-            // Check whether the Blob has media - if not, do not show the Thumbnail box
-            if blob.blobMediaType != nil && blob.blobMediaType == 0
-            {
-                self.lowerPreviewBox()
-            }
-            else
-            {
-                // Check to see if the thumbnail was already downloaded
-                // If not, the return function from AWS will apply the thumbnail to the preview box
-                // Loop through the BlobThumbnailObjects array
-                loopThumbnail: for tObject in Constants.Data.blobThumbnailObjects
-                {
-                    // Check each thumbnail object to see if matches
-                    if tObject.blobThumbnailID == blob.blobThumbnailID
-                    {
-                        // Check to make sure the thumbnail has already been downloaded
-                        if let thumbnailImage = tObject.blobThumbnail
-                        {
-                            // Setthe Preview Thumbnail image
-                            self.previewThumbnailView.image = thumbnailImage
-                            
-                            // Stop animating the activity indicator
-                            self.previewThumbnailActivityIndicator.stopAnimating()
-                            
-                            // Assign the thumbnail image to the previewBlob
-                            self.previewBlob?.blobThumbnail = thumbnailImage
-                            
-                            break loopThumbnail
-                        }
-                    }
-                }
-            }
-        }
-        else
-        {
-            self.lowerPreviewBox()
-        }
-        
-        // Check whether the Blob is the default (first) Blob in the Location Blob list
-        // Otherwise, find the associated User Image and User Name for the Blob User ID as add them to the proper Preview Box elements
-        if blob.blobID == "default"
-        {
-            previewUserImageView.image = UIImage(named: Constants.Strings.iconStringBlobjotLogo)
-            previewUserNameLabel.text = "Blobjot"
-            previewTimeLabel.text = "Since 2016"
-            
-            // Assign the user to the previewBlobUser
-            self.previewBlobUser = defaultBlobUser
-            
-            //Stop animating the activity indicator
-            self.previewThumbnailActivityIndicator.stopAnimating()
-            self.previewUserImageActivityIndicator.stopAnimating()
-            self.previewUserNameActivityIndicator.stopAnimating()
-        }
-        else if blob.blobType == Constants.BlobTypes.blobjot
-        {
-            previewUserImageView.image = UIImage(named: Constants.Strings.iconStringBlobjotLogo)
-            previewUserNameLabel.text = "Public Area"
-            
-            // Display the current year
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "YYYY"
-            let stringDate: String = dateFormatter.string(from: Date())
-            previewTimeLabel.text = stringDate
-            
-            // Create and assign a user to the previewBlobUser
-            let publicAreaUser = User()
-            publicAreaUser.userID = "blobjotBlob"
-            publicAreaUser.facebookID = "blobjotBlob"
-            publicAreaUser.userName = "Public Area"
-            publicAreaUser.userImage = UIImage(named: Constants.Strings.iconStringBlobjotLogo)
-            self.previewBlobUser = publicAreaUser
-            
-            //Stop animating the activity indicator
-            self.previewThumbnailActivityIndicator.stopAnimating()
-            self.previewUserImageActivityIndicator.stopAnimating()
-            self.previewUserNameActivityIndicator.stopAnimating()
-        }
-        else
-        {
-            // Check if the user has already been downloaded ONLY IF NOT A BLOBJOT BLOB
-            // If a Blob outside the range of the user was clicked, the user may not have already been downloaded
-            if blob.blobType != Constants.BlobTypes.blobjot
-            {
-                var userExists = false
-                loopUserCheck: for user in Constants.Data.userObjects
-                {
-                    if user.userID == blob.blobUserID
-                    {
-                        userExists = true
-                        
-                        // Assign the user to the previewBlobUser
-                        self.previewBlobUser = user
-                        
-                        // Assign the user's image and username to the preview
-                        if user.userName != nil
-                        {
-                            previewUserNameLabel.text = user.userName
-                            self.previewUserNameActivityIndicator.stopAnimating()
-                            
-                            if user.userImage != nil
-                            {
-                                previewUserImageView.image = user.userImage
-                                self.previewUserImageActivityIndicator.stopAnimating()
-                            }
-                            else
-                            {
-                                AWSPrepRequest(requestToCall: FBGetUserProfileData(user: user, downloadImage: true), delegate: self as AWSRequestDelegate).prepRequest()
-                            }
-                        }
-                        else
-                        {
-                            AWSPrepRequest(requestToCall: FBGetUserProfileData(user: user, downloadImage: true), delegate: self as AWSRequestDelegate).prepRequest()
-                        }
-                        
-                        break loopUserCheck
-                    }
-                }
-                // If the user has not been downloaded, request the user and the userImage
-                if !userExists
-                {
-                    AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: blob.blobUserID, forPreviewBox: true), delegate: self as AWSRequestDelegate).prepRequest()
-                }
-            }
-            else
-            {
-                self.updatePreviewBoxData(Constants.Data.userPublicArea)
-            }
-            
-            // Set the Preview Time Label to show the age of the Blob
-            if let datetime = blob.blobDatetime
-            {
-                // Capture the number of hours it has been since the Blob was created (as a positive integer)
-                let dateAgeHrs: Int = -1 * Int(datetime.timeIntervalSinceNow / 3600)
-                
-                // Set the date age label.  If the age is less than 24 hours, just show it in hours.  Otherwise, show the number of days and hours.
-                var stringAge = String(dateAgeHrs / Int(24)) + " days" //+ String(dateAgeHrs % 24) + " hrs"
-                if dateAgeHrs < 24
-                {
-                    stringAge = String(dateAgeHrs) + " hrs"
-                }
-                else if dateAgeHrs < 48
-                {
-                    stringAge = "1 day"
-                }
-                previewTimeLabel.text = stringAge
-            }
-        }
-        
-        // Check whether the Blob text has been added to the Blob, and if so, display the text
-        // If not, check whether the extra data has already been requested
-        // if not, this means the Blob is not (or has not been) in range
-        // If it has been requested, but no text exists, do nothing (leave the text area blank)
-        if let bText = blob.blobText
-        {
-            previewTextBox.textColor = Constants.Colors.colorPreviewTextNormal
-            previewTextBox.text = bText
-        }
-        else if !blob.blobExtraRequested
-        {
-            previewTextBox.textColor = Constants.Colors.colorPreviewTextError
-            previewTextBox.text = "This Blob is not in range."
-        }
+        print("MVC - PV - SHOW PREVIEW")
+        refreshPreviewCollectionView()
         
         // Add an animation to lower the preview container into view
         UIView.animate(withDuration: 0.2, animations:
             {
                 self.previewContainer.frame = CGRect(x: 0, y: 0, width: self.viewContainer.frame.width, height: Constants.Dim.mapViewPreviewContainerHeight)
-            }, completion: nil)
+        }, completion: nil)
+    }
+    
+    // Add Blob data to the Preview Box elements and animate the Preview Box lowering into view
+    func previewBlob(_ blob: Blob)
+    {
+        // Assign the local previewBlob to the passed blob so that other functions can access the selected blob
+        self.previewBlob = blob
+        
+        self.previewShow()
         
         // Save an action in Core Data
         CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
@@ -2683,6 +2761,152 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         }
     }
     
+    func snapToNearestPreviewCell()
+    {
+        print("MVC - PV - SNAP TO CELL")
+        
+        // Calculate the scroll position relative to the cells
+        let cellWidth = self.previewContainer.frame.width
+        let positionByCell = previewCollectionView.contentOffset.x / cellWidth
+        print("MVC - PV - positionByCell: \(positionByCell)")
+        
+        // Find the nearest cell - use the previous scroll position to deterime whether the 
+        // user is scrolling up or down in order to snap in the direction of the scroll
+        var nearestCell = positionByCell.rounded(FloatingPointRoundingRule.up)
+        if previewCollectionView.contentOffset.x - previewStartingScrollPosition < 0
+        {
+            nearestCell = positionByCell.rounded(FloatingPointRoundingRule.down)
+        }
+        print("MVC - PV - nearestCell: \(nearestCell)")
+        
+        // Ensure that the nearestCell is not greater than or equal to the array length (array is 0-indexed)
+        var nearestCellInt = Int(nearestCell)
+        if nearestCellInt >= Constants.Data.previewBlobs.count
+        {
+            nearestCellInt = Constants.Data.previewBlobs.count - 1
+        }
+        
+        // Save the current cell locally
+        previewCurrentCell = nearestCellInt
+        
+        // Create an indexPath and animate the scroll to the proper cell
+        let indexPath = NSIndexPath(item: nearestCellInt, section: 0)
+        print("MVC - PV - SCROLLING TO CELL: \(indexPath.row)")
+        previewCollectionView.scrollToItem(at: indexPath as IndexPath, at: .centeredHorizontally, animated: true)
+        
+        // Save the current scroll position for the next scroll calculation
+        previewStartingScrollPosition = nearestCell * cellWidth
+        print("MVC - PV - NEW STARTING SCROLL POSITION: \(previewStartingScrollPosition)")
+        
+        // Set the new preview count label text
+        previewCountLabelLeft.text = String(nearestCellInt)
+        previewCountLabelRight.text = String(Constants.Data.previewBlobs.count - nearestCellInt - 1)
+        
+        // Process the preview Circle and adjust the map camera
+        processPreviewCircleForCell(cell: nearestCellInt)
+    }
+    
+    func processPreviewCircleForCell(cell: Int)
+    {
+        print("MVC - PV - PROCESS PREVIEW CIRCLE FOR CELL: \(cell)")
+        
+        // Reset - remove circle highlights
+        unhighlightMapCircleForAllBlobs()
+        
+        // Reset - remove the added preview circle
+        if previewBlobCircle != nil
+        {
+            previewBlobCircle.map = nil
+        }
+        
+        // Recall the currently viewed Blob in the preview
+        let pBlob = Constants.Data.previewBlobs[cell]
+        
+        // Add the current Blob to the map, if it does not already exist
+        var mBlobExists = false
+        mapBlobLoop: for mBlob in Constants.Data.mapBlobs
+        {
+            if mBlob.blobID == pBlob.blobID
+            {
+                mBlobExists = true
+                
+                // Highlight the edge of the Blob
+                loopMapCircles: for circle in Constants.Data.mapCircles
+                {
+                    if circle.title == mBlob.blobID
+                    {
+                        circle.strokeColor = Constants.Colors.blobHighlight
+                        circle.strokeWidth = 3
+                        
+                        break loopMapCircles
+                    }
+                }
+                
+                print("MVC - PV - MAP ANIMATE TO PREVIEW CIRCLE 1")
+                // Move the map to the Blob
+                mapCameraMoveToBlob(mBlob)
+                
+                break mapBlobLoop
+            }
+        }
+        
+        // If the Blob doesn't already exist on the map, add the circle and move the map to it
+        if !mBlobExists
+        {
+            // Add the Blob to the map
+            previewBlobCircle = GMSCircle()
+            previewBlobCircle.position = CLLocationCoordinate2DMake(pBlob.blobLat, pBlob.blobLong)
+            previewBlobCircle.radius = pBlob.blobRadius
+            previewBlobCircle.title = pBlob.blobID
+            previewBlobCircle.fillColor = Constants().blobColor(pBlob.blobType, mainMap: true)
+            previewBlobCircle.strokeColor = Constants.Colors.blobHighlight
+            previewBlobCircle.strokeWidth = 3
+            previewBlobCircle.map = self.mapView
+            
+            print("MVC - PV - MAP ANIMATE TO PREVIEW CIRCLE 2")
+            // Move the map to the Blob
+            mapCameraMoveToBlob(pBlob)
+        }
+    }
+    
+    // Move the map to focus on a Blob
+    func mapCameraMoveToBlob(_ blob: Blob)
+    {
+        let blobCenter = CLLocationCoordinate2DMake(blob.blobLat, blob.blobLong)
+//        let blobEdgeEast = UtilityFunctions().blobEdgeCoordinates(blobCenter, radius: pBlob.blobRadius, east: true)
+//        let blobEdgeWest = UtilityFunctions().blobEdgeCoordinates(blobCenter, radius: pBlob.blobRadius, east: false)
+//        let coordBounds = GMSCoordinateBounds(coordinate: blobEdgeEast, coordinate: blobEdgeWest)
+//        let cameraUpdate = GMSCameraUpdate.fit(coordBounds)
+//        self.mapView.animate(with: cameraUpdate)
+        let cameraPosition = GMSCameraPosition(target: blobCenter, zoom: UtilityFunctions().mapZoomForBlobSize(Float(blob.blobRadius)), bearing: 0.0, viewingAngle: mapView.camera.viewingAngle)
+        self.mapView.animate(to: cameraPosition)
+    }
+    
+//    func snapToNearestCell(scrollView: UIScrollView)
+//    {
+//        // ONLY USE FOR THE PREVIEW COLLECTION VIEW (only uses y-offset, so only for horizontal collection views)
+//        if scrollView == previewCollectionView
+//        {
+//            //pick first cell to get width
+//            let indexPath = NSIndexPath(item: 0, section: 0)
+//            if let cell = previewCollectionView.cellForItem(at: indexPath as IndexPath) as UICollectionViewCell?
+//            {
+//                let cellWidth = cell.frame.size.width
+//                
+//                cellLoop: for i in 0..<previewCollectionView.numberOfItems(inSection: 0)
+//                {
+//                    if scrollView.contentOffset.y <= CGFloat(i) * cellWidth + cellWidth / 2
+//                    {
+//                        let indexPath = NSIndexPath(item: i, section: 0)
+//                        print("MVC - SV - SCROLLING TO CELL: \(indexPath.row)")
+//                        previewCollectionView.scrollToItem(at: indexPath as IndexPath, at: .centeredHorizontally, animated: true)
+//                        break cellLoop
+//                    }
+//                }
+//            }
+//        }
+//    }
+    
     func getImageWithColor(_ color: UIColor, size: CGSize) -> UIImage
     {
         let rect = CGRect(x: 0, y: 0, width: size.width, height: size.height)
@@ -2695,6 +2919,23 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     }
     
     // Loop through all Map Circles and remove all highlighting (set back to normal)
+    func unhighlightMapCircleForAllBlobs()
+    {
+        for circle in Constants.Data.mapCircles
+        {
+            mapBlobLoop: for mBlob in Constants.Data.mapBlobs
+            {
+                if mBlob.blobID == circle.title
+                {
+                    circle.strokeColor = Constants().blobColor(mBlob.blobType, mainMap: true)
+                    circle.strokeWidth = 1
+                    
+                    break mapBlobLoop
+                }
+            }
+        }
+    }
+    // Remove highlighting for the passed Blob
     func unhighlightMapCircleForBlob(_ blob: Blob)
     {
         loopMapCircles: for circle in Constants.Data.mapCircles
@@ -2734,7 +2975,15 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     {
     }
     
-    func refreshCollectionView()
+    func updateBlobActionTable()
+    {
+        if self.activeBlobsVC != nil
+        {
+            self.activeBlobsVC!.reloadTableView()
+        }
+    }
+    
+    func refreshLocationBlobsCollectionView()
     {
         // Reload the Collection View
         self.locationBlobsCollectionView.performSelector(onMainThread: #selector(UICollectionView.reloadData), with: nil, waitUntilDone: true)
@@ -2746,30 +2995,34 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         }
     }
     
-    func updateBlobActionTable()
+    func refreshPreviewCollectionView()
     {
-        if self.activeBlobsVC != nil
-        {
-            self.activeBlobsVC!.reloadTableView()
-        }
-    }
-    
-    func updatePreviewBoxData(_ user: User)
-    {
-        // Assign the user to the previewBlobUser
-        self.previewBlobUser = user
+        print("MVC - PV - REFRESH PREVIEW - PREVIEW COUNT: \(Constants.Data.previewBlobs.count)")
         
-        // Set the preview box with the downloaded data
-        self.previewUserNameLabel.text = user.userName
-        
-        // If the new User data is for the same user and the Preview user and the preview User data is nil, refresh the preview box
-        if let pBlob = self.previewBlob
+        // Recalculate the count labels
+        if Constants.Data.previewBlobs.count == 0
         {
-            if pBlob.blobUserID == user.userID && self.previewUserNameLabel.text == nil
-            {
-                self.refreshPreviewUserData(user)
-            }
+            previewCountLabelLeft.text = ""
+            previewCountLabelRight.text = ""
         }
+        else
+        {
+            // Recall the current cell and calculate the labels
+            previewCountLabelLeft.text = String(previewCurrentCell)
+            previewCountLabelRight.text = String(Constants.Data.previewBlobs.count - previewCurrentCell - 1)
+            
+            // Process the first circle for the first Blob
+            processPreviewCircleForCell(cell: previewCurrentCell)
+        }
+        
+        // Reload the Collection View
+        self.previewCollectionView.reloadData()
+//        self.previewCollectionView.performSelector(onMainThread: #selector(UICollectionView.reloadData), with: nil, waitUntilDone: true)
+//        DispatchQueue.main.async(execute:
+//            {
+//                print("MVC - PV - REFRESH PREVIEW ON MAIN THREAD")
+//                self.previewCollectionView.reloadData()
+//        });
     }
     
     
@@ -2817,7 +3070,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                         if let currentUserID = Constants.Data.currentUser.userID
                         {
                             print("MVC - CALLING AWSGetSingleUserData FOR: \(currentUserID)")
-                            AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: currentUserID, forPreviewBox: false), delegate: self as AWSRequestDelegate).prepRequest()
+                            AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: currentUserID, forPreviewData: false), delegate: self as AWSRequestDelegate).prepRequest()
                         }
                     }
                     else
@@ -2867,7 +3120,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                     if success
                     {
                         // Refresh the collection view and show the blob notification if needed
-                        self.refreshCollectionView()
+                        self.refreshLocationBlobsCollectionView()
                         self.displayNotification(awsGetBlobData.blob)
                         
                         // Refresh child VCs
@@ -2881,43 +3134,15 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                         // Show the error message
                         self.createAlertOkView("AWSGetBlobExtraData Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                     }
-                case let awsGetThumbnailImage as AWSGetThumbnailImage:
+                case _ as AWSGetThumbnailImage:
                     if success
                     {
-                        // Loop through the BlobThumbnailObjects array
-                        loopThumbnail: for tObject in Constants.Data.blobThumbnailObjects
-                        {
-                            // Check each thumbnail object to see if matches
-                            if tObject.blobThumbnailID == awsGetThumbnailImage.blob.blobThumbnailID
-                            {
-                                // Check to make sure the thumbnail has already been downloaded
-                                if let thumbnailImage = tObject.blobThumbnail
-                                {
-                                    // Ensure that the same Blob is being previewed
-                                    if let previewBlob = self.previewBlob
-                                    {
-                                        if previewBlob.blobID == awsGetThumbnailImage.blob.blobID
-                                        {
-                                            // Setthe Preview Thumbnail image
-                                            self.previewThumbnailView.image = thumbnailImage
-                                            
-                                            // Stop animating the activity indicator
-                                            self.previewThumbnailActivityIndicator.stopAnimating()
-                                            
-                                            // Assign the thumbnail image to the previewBlob
-                                            self.previewBlob?.blobThumbnail = thumbnailImage
-                                        }
-                                    }
-                                    
-                                    break loopThumbnail
-                                }
-                            }
-                        }
+                        // Update the previewData array for any new thumbnails
+                        self.refreshPreviewCollectionView()
                     }
                     else
                     {
-                        // Show the error message
-                        self.createAlertOkView("AWSGetThumbnailImage Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                        print("AVC-awsGetThumbnailImage: ERROR")
                     }
                 case let awsGetSingleUserData as AWSGetSingleUserData:
                     if success
@@ -2927,15 +3152,15 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                         self.refreshCurrentUserElements()
                         
                         // Refresh the collection view
-                        self.refreshCollectionView()
+                        self.refreshLocationBlobsCollectionView()
                         
                         // If the Blob Active View Controller is not null, send a refresh command so that the Parent VC's Child's VC's Table View's rows look for the new data
                         self.updateBlobActionTable()
                         
                         // If the MapView called this method to update the Preview Box, send the needed data to the PreviewBox
-                        if awsGetSingleUserData.forPreviewBox!
+                        if awsGetSingleUserData.forPreviewData!
                         {
-                            self.updatePreviewBoxData(awsGetSingleUserData.user)
+                            self.refreshPreviewCollectionView()
                         }
                         
                         // Refresh child VCs
@@ -2949,10 +3174,40 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                         // Show the error message
                         self.createAlertOkView("AWSGetSingleUserData Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                     }
-                case let FBGetUserProfileData as FBGetUserProfileData:
+                case _ as AWSGetUserBlobs:
+                    if success
+                    {
+                        print("MVC - PV - AWSGetUserBlobs RETURN")
+                        
+                        if Constants.Data.userBlobs.count > 0
+                        {
+                            // Assign the global User Blobs to the local array
+                            self.userBlobs = Constants.Data.userBlobs
+                            
+                            // Sort the User Blobs from newest to oldest
+                            self.userBlobs.sort(by: {$0.blobDatetime.timeIntervalSince1970 > $1.blobDatetime.timeIntervalSince1970})
+                            
+                            // Ensure that the UserBlobs filter is still applied to prevent overwriting another filter
+                            if self.previewSelection == "UserBlobs"
+                            {
+                                // Set the previewBlobs array to the userBlobs array since the preview CollectionView will use the global previewBlobs
+                                Constants.Data.previewBlobs = self.userBlobs
+                                
+                                // Refresh the Preview Collection View
+                                self.refreshPreviewCollectionView()
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Show the error message
+                        let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                        self.present(alertController, animated: true, completion: nil)
+                    }
+                case _ as FBGetUserProfileData:
                     // Do not distinguish between success and failure for this class - both need to have the userList updated
                     // Refresh the collection view
-                    self.refreshCollectionView()
+                    self.refreshLocationBlobsCollectionView()
                     
                     // This method is called from within AWSGetSingleUserData
                     // Refresh the user elements
@@ -2962,7 +3217,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                     self.updateBlobActionTable()
                     
                     // Update the preview data
-                    self.refreshPreviewUserData(FBGetUserProfileData.user)
+                    self.refreshPreviewCollectionView()
                     
                     // Refresh child VCs
                     if self.blobVC != nil
