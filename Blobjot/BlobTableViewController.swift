@@ -11,7 +11,7 @@ import AWSS3
 import GoogleMaps
 import UIKit
 
-class BlobTableViewController: UIViewController, GMSMapViewDelegate, UITableViewDataSource, UITableViewDelegate, UIScrollViewDelegate, BlobAddViewControllerDelegate, AWSRequestDelegate
+class BlobTableViewController: UIViewController, GMSMapViewDelegate, UITableViewDataSource, UITableViewDelegate, UIScrollViewDelegate, AWSRequestDelegate
 {
     // Save device settings to adjust view if needed
     var screenSize: CGRect!
@@ -55,9 +55,6 @@ class BlobTableViewController: UIViewController, GMSMapViewDelegate, UITableView
     
     // An array to hold the content
     var blobContentArray = [BlobContent]()
-    
-    // Local instance of Add Blob View
-    var addBlobVC: BlobAddViewController!
     
     // Dimension properties
     let addContentViewOffsetX = 10 + Constants.Dim.blobViewContentUserImageSize
@@ -273,12 +270,8 @@ class BlobTableViewController: UIViewController, GMSMapViewDelegate, UITableView
         // The Blob Type Indicator should be a small vertical bar on the far left edge
         blobTypeIndicatorView = UIView(frame: CGRect(x: 0, y: 0, width: Constants.Dim.blobViewTypeIndicatorWidth, height: cellHeight))
         
-        // Ensure blobType is not null
-        if let blobType = blob.blobType
-        {
-            // Assign the Blob Type color to the Blob Indicator
-            blobTypeIndicatorView.backgroundColor = Constants().blobColorOpaque(blobType, mainMap: false)
-        }
+        // Assign the Blob Type color to the Blob Indicator
+        blobTypeIndicatorView.backgroundColor = Constants().blobColorOpaque(blob.blobType, blobFeature: blob.blobFeature, blobAccess: blob.blobAccess, mainMap: false)
         cellContainer.addSubview(blobTypeIndicatorView)
         
         // The User Image should be in the upper right quadrant
@@ -543,7 +536,7 @@ class BlobTableViewController: UIViewController, GMSMapViewDelegate, UITableView
     
     func blobContentButtonTap(_ gesture: UITapGestureRecognizer)
     {
-        bringAddBlobViewControllerTopOfStack(false)
+//        bringAddBlobViewControllerTopOfStack(false)
     }
     
     
@@ -578,50 +571,47 @@ class BlobTableViewController: UIViewController, GMSMapViewDelegate, UITableView
         AWSPrepRequest(requestToCall: AWSGetBlobContent(blobID: self.blob.blobID), delegate: self as AWSRequestDelegate).prepRequest()
     }
 
-    func bringAddBlobViewControllerTopOfStack(_ newVC: Bool)
-    {
-        if newVC || addBlobVC == nil
-        {
-            addBlobVC = BlobAddViewController()
-            addBlobVC!.blobAddViewDelegate = self
-            
-            // Pass the Blob type, coordinates, and the current map zoom to the new View Controller (from the currently viewed blob)
-            addBlobVC!.blobType = blob.blobType
-            addBlobVC!.blobCoords = CLLocationCoordinate2DMake(blob.blobLat, blob.blobLong)
-            addBlobVC!.mapZoom = UtilityFunctions().mapZoomForBlobSize(Float(blob.blobRadius))
-            
-            //Indicate that the Blob Add VC should not show the VC to change the Blob type
-            addBlobVC!.allowBlobTypeChange = false
-            
-            // Create a Nav Bar Back Button and Title
-            let backButtonItem = UIBarButtonItem(title: "CANCEL",
-                                                 style: UIBarButtonItemStyle.plain,
-                                                 target: self,
-                                                 action: #selector(self.popViewController(_:)))
-            backButtonItem.tintColor = Constants.Colors.colorTextNavBar
-            
-            let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
-            let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
-            ncTitleText.text = "Add Content"
-            ncTitleText.textColor = Constants.Colors.colorTextNavBar
-            ncTitleText.textAlignment = .center
-            ncTitle.addSubview(ncTitleText)
-            
-            // Pass the Blob Radius to the View Controller
-            addBlobVC!.blobRadius = blob.blobRadius
-            addBlobVC!.navigationItem.setLeftBarButton(backButtonItem, animated: true)
-            addBlobVC!.navigationItem.titleView = ncTitle
-        }
-        
-        // Add the View Controller to the Nav Controller and present the Nav Controller
-        if let navController = self.navigationController
-        {
-            navController.pushViewController(addBlobVC!, animated: true)
-        }
-        
-        // Save an action in Core Data
-        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
-    }
+//    func bringAddBlobViewControllerTopOfStack(_ newVC: Bool)
+//    {
+//        if newVC || addBlobVC == nil
+//        {
+//            addBlobVC = BlobAddViewController()
+//            addBlobVC!.blobAddViewDelegate = self
+//            
+//            // Pass the Blob type, coordinates, and the current map zoom to the new View Controller (from the currently viewed blob)
+//            addBlobVC!.blobType = blob.blobType
+//            addBlobVC!.blobCoords = CLLocationCoordinate2DMake(blob.blobLat, blob.blobLong)
+//            addBlobVC!.mapZoom = UtilityFunctions().mapZoomForBlobSize(Float(blob.blobRadius))
+//            
+//            // Create a Nav Bar Back Button and Title
+//            let backButtonItem = UIBarButtonItem(title: "CANCEL",
+//                                                 style: UIBarButtonItemStyle.plain,
+//                                                 target: self,
+//                                                 action: #selector(self.popViewController(_:)))
+//            backButtonItem.tintColor = Constants.Colors.colorTextNavBar
+//            
+//            let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
+//            let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
+//            ncTitleText.text = "Add Content"
+//            ncTitleText.textColor = Constants.Colors.colorTextNavBar
+//            ncTitleText.textAlignment = .center
+//            ncTitle.addSubview(ncTitleText)
+//            
+//            // Pass the Blob Radius to the View Controller
+//            addBlobVC!.blobRadius = blob.blobRadius
+//            addBlobVC!.navigationItem.setLeftBarButton(backButtonItem, animated: true)
+//            addBlobVC!.navigationItem.titleView = ncTitle
+//        }
+//        
+//        // Add the View Controller to the Nav Controller and present the Nav Controller
+//        if let navController = self.navigationController
+//        {
+//            navController.pushViewController(addBlobVC!, animated: true)
+//        }
+//        
+//        // Save an action in Core Data
+//        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
+//    }
     
     // The parent VC will hide any activity indicators showing background activity
     func hideBackgroundActivityView(_ refreshBlobs: Bool)

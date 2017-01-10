@@ -454,7 +454,23 @@ class AWSGetMapData : AWSRequestObject
                                 addBlob.blobLat = checkBlob["blobLat"] as! Double
                                 addBlob.blobLong = checkBlob["blobLong"] as! Double
                                 addBlob.blobRadius = checkBlob["blobRadius"] as! Double
-                                addBlob.blobType = Constants().blobTypes(checkBlob["blobType"] as! Int)
+                                addBlob.blobType = Constants().blobType(checkBlob["blobType"] as! Int)
+                                if let blobFeature = checkBlob["blobFeature"]
+                                {
+                                    addBlob.blobFeature = Constants().blobFeature(blobFeature as! Int)
+                                }
+                                else
+                                {
+                                    addBlob.blobFeature = Constants.BlobFeature.standard
+                                }
+                                if let blobAccess = checkBlob["blobAccess"]
+                                {
+                                    addBlob.blobAccess = Constants().blobAccess(blobAccess as! Int)
+                                }
+                                else
+                                {
+                                    addBlob.blobAccess = Constants.BlobAccess.followers
+                                }
                                 addBlob.blobUserID = checkBlob["blobUserID"] as! String
                                 
                                 // Append the new Blob Object to the global Tagged Blobs Array
@@ -480,124 +496,6 @@ class AWSGetMapData : AWSRequestObject
                             print("AC-GMD - CALLED PARENT")
                             parentVC.processAwsReturn(self, success: true)
                         }
-                    }
-                }
-        })
-    }
-}
-
-class AWSGetBlobjotBlobs : AWSRequestObject
-{
-    var userLat: Float!
-    var userLng: Float!
-    
-    required init(userLat: Float, userLng: Float)
-    {
-        self.userLat = userLat
-        self.userLng = userLng
-    }
-    
-    // The initial request for Map Blob data - called when the View Controller is instantiated
-    override func makeRequest()
-    {
-        print("AC-GBB - COGNITO ID: \(Constants.credentialsProvider.identityId)")
-        // Create some JSON to send the logged in userID
-        // Create some JSON to send the Blob data
-        var json = [String: Any]()
-        json["user_lat"] = String(self.userLat)
-        json["user_lng"] = String(self.userLng)
-        json["search_type"] = "park"
-        
-        let lambdaInvoker = AWSLambdaInvoker.default()
-        lambdaInvoker.invokeFunction("Blobjot-GetBlobjotBlobs", jsonObject: json, completionHandler:
-            { (response, err) -> Void in
-                
-                if (err != nil)
-                {
-                    print("AC-GBB - GET MAP DATA ERROR: \(err)")
-                    print("AC-GBB - GET MAP DATA ERROR CODE: \(err!._code)")
-                    CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: err.debugDescription)
-                    
-                    // Process the error codes and alert the user if needed
-                    if err!._code == 1 && Constants.Data.currentUser.userID != nil
-                    {
-                        // Record the server request attempt
-                        Constants.Data.serverTries += 1
-                        
-                        // Notify the parent view that the AWS call completed with an error
-                        if let parentVC = self.awsRequestDelegate
-                        {
-                            parentVC.processAwsReturn(self, success: false)
-                        }
-                    }
-                }
-                else if (response != nil)
-                {
-                    // Convert the response to an array of AnyObjects
-                    if let newBlobjotBlobs = response as? [AnyObject]
-                    {
-                        print("AC-GBB - BLOB COUNT: \(newBlobjotBlobs.count)")
-                        
-                        // Clear any place Blobs from the global blobjotBlobs
-                        Constants.Data.blobjotBlobs = [Blob]()
-                        
-                        // Loop through each AnyObject (Blob) in the array
-                        for newBlob in newBlobjotBlobs
-                        {
-                            // Convert the AnyObject to JSON with keys and AnyObject values
-                            // Then convert the AnyObject values to Strings or Numbers depending on their key
-                            if let checkBlob = newBlob as? [String: AnyObject]
-                            {
-                                // Finish converting the JSON AnyObjects and assign the data to a new Blob Object
-                                let addBlob = Blob()
-                                addBlob.blobID = checkBlob["blobID"] as! String
-                                addBlob.blobDatetime = Date(timeIntervalSince1970: checkBlob["blobTimestamp"] as! Double)
-                                addBlob.blobLat = checkBlob["blobLat"] as! Double
-                                addBlob.blobLong = checkBlob["blobLong"] as! Double
-                                addBlob.blobRadius = checkBlob["blobRadius"] as! Double
-                                addBlob.blobType = Constants().blobTypes(checkBlob["blobType"] as! Int)
-                                addBlob.blobUserID = checkBlob["blobUserID"] as! String
-                                
-                                // The global user likes list should already exist (updated when the app started)
-                                for like in Constants.Data.currentUserLikes
-                                {
-                                    if like == checkBlob["blobText"] as? String
-                                    {
-                                        addBlob.blobPublicInterest = true
-                                    }
-                                }
-                                
-                                // Append the new Blob Object to the global Map Blobs Array
-                                Constants.Data.blobjotBlobs.append(addBlob)
-                                
-                                // If the Blob does not currently exist in the MapBlobs array, append it
-                                var mBlobExists: Bool = false
-                                loopMapBlobs: for mBlob in Constants.Data.mapBlobs
-                                {
-                                    if mBlob.blobID == addBlob.blobID
-                                    {
-                                        mBlobExists = true
-                                        break loopMapBlobs
-                                    }
-                                }
-                                if !mBlobExists
-                                {
-                                    Constants.Data.mapBlobs.append(addBlob)
-                                }
-                            }
-                        }
-                        
-                        // Sort the mapBlobs
-                        UtilityFunctions().sortMapBlobs()
-                        
-                        // Notify the parent view that the AWS call completed successfully
-                        if let parentVC = self.awsRequestDelegate
-                        {
-                            parentVC.processAwsReturn(self, success: true)
-                        }
-                        
-                        // Recall the user's Facebook likes to match with Public Blobs (Blobjot Blobs) - should already exist, but this will update
-                        AWSPrepRequest(requestToCall: FBGetUserLikes(), delegate: self.awsRequestDelegate!).prepRequest()
                     }
                 }
         })
@@ -653,7 +551,7 @@ class AWSGetBlobMinimumData : AWSRequestObject
                         minBlob.blobLat = checkBlob["blobLat"] as? Double
                         minBlob.blobLong = checkBlob["blobLong"] as? Double
                         minBlob.blobRadius = checkBlob["blobRadius"] as? Double
-                        minBlob.blobType = Constants().blobTypes(checkBlob["blobType"] as! Int)
+                        minBlob.blobType = Constants().blobType(checkBlob["blobType"] as! Int)
                         minBlob.blobUserID = checkBlob["blobUserID"] as? String
                         
                         Constants.Data.taggedBlobs.append(minBlob)
@@ -662,32 +560,29 @@ class AWSGetBlobMinimumData : AWSRequestObject
                         // A new Blob was added, so sort the global mapBlobs array
                         UtilityFunctions().sortMapBlobs()
                         
-                        // Check if the user has already been downloaded IF NOT A BLOBJOT BLOB
-                        if minBlob.blobType != Constants.BlobTypes.blobjot
+                        // Check if the user has already been downloaded
+                        var userExists = false
+                        loopUserCheck: for user in Constants.Data.userObjects
                         {
-                            var userExists = false
-                            loopUserCheck: for user in Constants.Data.userObjects
+                            if user.userID == minBlob.blobUserID
                             {
-                                if user.userID == minBlob.blobUserID
+                                userExists = true
+                                
+                                // Notify the parent view that the AWS call completed successfully
+                                if let parentVC = self.awsRequestDelegate
                                 {
-                                    userExists = true
-                                    
-                                    // Notify the parent view that the AWS call completed successfully
-                                    if let parentVC = self.awsRequestDelegate
-                                    {
-                                        parentVC.processAwsReturn(self, success: true)
-                                    }
-                                    
-                                    break loopUserCheck
+                                    parentVC.processAwsReturn(self, success: true)
                                 }
+                                
+                                break loopUserCheck
                             }
-                            // If the user has not been downloaded, request the user and the userImage
-                            if !userExists
-                            {
-                                let awsGetSingleUserData = AWSGetSingleUserData(userID: minBlob.blobUserID, forPreviewData: false)
-                                awsGetSingleUserData.targetBlob = minBlob
-                                AWSPrepRequest(requestToCall: awsGetSingleUserData, delegate: self.awsRequestDelegate!).prepRequest()
-                            }
+                        }
+                        // If the user has not been downloaded, request the user and the userImage
+                        if !userExists
+                        {
+                            let awsGetSingleUserData = AWSGetSingleUserData(userID: minBlob.blobUserID, forPreviewData: false)
+                            awsGetSingleUserData.targetBlob = minBlob
+                            AWSPrepRequest(requestToCall: awsGetSingleUserData, delegate: self.awsRequestDelegate!).prepRequest()
                         }
                     }
                 }
@@ -1081,7 +976,7 @@ class AWSGetUserConnections : AWSRequestObject
                                                 // If the user is the currently logged in user, ensure that the user is connected to themselves
                                                 if userObject.userID! == currentUserID
                                                 {
-                                                    userObject.userStatus = Constants.UserStatusTypes.connected
+                                                    userObject.userStatus = Constants.UserStatusTypes.following
                                                 }
                                                 else
                                                 {
@@ -1289,11 +1184,12 @@ class AWSUploadBlobData : AWSRequestObject
     var blobThumbnailID: String!
     var blobTimestamp: Double!
     var blobType: Int!
-    var blobTaggedUsers: [String]!
+    var blobFeature: Int!
+    var blobAccess: Int!
     var blobUserID: String!
     var blobUserName: String!
     
-    required init(blobID: String, blobLat: Double, blobLong: Double, blobMediaID: String!, blobMediaType: Int, blobRadius: Double, blobText: String, blobThumbnailID: String!, blobTimestamp: Double, blobType: Int, blobTaggedUsers: [String], blobUserID: String, blobUserName: String)
+    required init(blobID: String, blobLat: Double, blobLong: Double, blobMediaID: String!, blobMediaType: Int, blobRadius: Double, blobText: String, blobThumbnailID: String!, blobTimestamp: Double, blobType: Int, blobFeature: Int, blobAccess: Int, blobUserID: String, blobUserName: String)
     {
         self.blobID = blobID
         self.blobLat = blobLat
@@ -1305,7 +1201,8 @@ class AWSUploadBlobData : AWSRequestObject
         self.blobThumbnailID = blobThumbnailID
         self.blobTimestamp = blobTimestamp
         self.blobType = blobType
-        self.blobTaggedUsers = blobTaggedUsers
+        self.blobFeature = blobFeature
+        self.blobAccess = blobAccess
         self.blobUserID = blobUserID
         self.blobUserName = blobUserName
     }
@@ -1327,7 +1224,8 @@ class AWSUploadBlobData : AWSRequestObject
         json["blobThumbnailID"] = self.blobThumbnailID
         json["blobTimestamp"]   = String(self.blobTimestamp)
         json["blobType"]        = String(self.blobType)
-        json["blobTaggedUsers"] = self.blobTaggedUsers
+        json["blobFeature"]     = String(self.blobFeature)
+        json["blobAccess"]      = String(self.blobAccess)
         json["blobUserID"]      = self.blobUserID
         json["blobUserName"]    = self.blobUserName
         
@@ -1509,7 +1407,7 @@ class AWSGetUserBlobs : AWSRequestObject
                                 addBlob.blobLat = checkBlob["blobLat"] as! Double
                                 addBlob.blobLong = checkBlob["blobLong"] as! Double
                                 addBlob.blobRadius = checkBlob["blobRadius"] as! Double
-                                addBlob.blobType = Constants().blobTypes(checkBlob["blobType"] as! Int)
+                                addBlob.blobType = Constants().blobType(checkBlob["blobType"] as! Int)
                                 addBlob.blobUserID = checkBlob["blobUserID"] as! String
                                 addBlob.blobText = checkBlob["blobText"] as? String
                                 addBlob.blobThumbnailID = checkBlob["blobThumbnailID"] as? String
@@ -1518,15 +1416,11 @@ class AWSGetUserBlobs : AWSRequestObject
                                 
                                 addBlob.blobExtraRequested = true
                                 
-                                // Only add the Blob to the local array and Core Data if it is a permanent Blob
-                                if addBlob.blobType == Constants.BlobTypes.permanent
-                                {
-                                    // Append the new Blob Object to the local User Blobs Array
-                                    Constants.Data.userBlobs.append(addBlob)
-                                    
-                                    // Save to Core Data
-                                    CoreDataFunctions().blobSave(blob: addBlob)
-                                }
+                                // Append the new Blob Object to the local User Blobs Array
+                                Constants.Data.userBlobs.append(addBlob)
+                                
+                                // Save to Core Data
+                                CoreDataFunctions().blobSave(blob: addBlob)
                             }
                         }
                         // Sort the User Blobs

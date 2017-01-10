@@ -76,6 +76,13 @@ class UtilityFunctions
         }
     }
     
+    // Reset the preview Blobs list and set the current preview index to nil
+    func resetPreviewData()
+    {
+        Constants.Data.previewBlobs = [Blob]()
+        Constants.Data.previewCurrentIndex = nil
+    }
+    
     // The calculator for zoom to Blob size ratio
     func mapZoomForBlobSize(_ meters: Float) -> Float
     {
@@ -115,7 +122,7 @@ class UtilityFunctions
 //    {
 //        for (bIndex, blob) in Constants.Data.mapBlobs.enumerated()
 //        {
-//            if blob.blobType == Constants.BlobTypes.blobjot
+//            if blob.blobType == Constants.BlobType.blobjot
 //            {
 //                Constants.Data.mapBlobs.remove(at: bIndex)
 //            }

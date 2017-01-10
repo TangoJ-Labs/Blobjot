@@ -250,7 +250,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
             notificationBlob.blobLat = Double(userInfo["blobLat"] as! String)!
             notificationBlob.blobLong = Double(userInfo["blobLong"] as! String)!
             notificationBlob.blobRadius = Double(userInfo["blobRadius"] as! String)!
-            notificationBlob.blobType = Constants().blobTypes(Int(userInfo["blobType"] as! String)!)
+            notificationBlob.blobType = Constants().blobType(Int(userInfo["blobType"] as! String)!)
             notificationBlob.blobUserID = userInfo["blobUserID"] as? String
             
             Constants.Data.taggedBlobs.append(notificationBlob)
@@ -360,7 +360,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
                             AWSPrepRequest(requestToCall: AWSGetBlobExtraData(blob: blob), delegate: self as AWSRequestDelegate).prepRequest()
                             
                             // Ensure that the blob type is not a BLOBJOT BLOB
-                            if blob.blobType != Constants.BlobTypes.blobjot
+                            if blob.blobAccess != Constants.BlobAccess.followers
                             {
 // *OPTIMIZE***** ADD THE USER CHECK TO BLOB EXTRA DATA AND ENSURE THAT THIS IS NOT DUPLICATED IN OTHER BLOB EXTRA DATA CALLS
                                 // When downloading Blob data, always request the user data if it does not already exist

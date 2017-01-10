@@ -16,7 +16,9 @@ class Blob
     var blobLat: Double!
     var blobLong: Double!
     var blobRadius: Double!
-    var blobType: Constants.BlobTypes!
+    var blobType: Constants.BlobType!
+    var blobFeature: Constants.BlobFeature!
+    var blobAccess: Constants.BlobAccess!
     var blobUserID: String!
     var blobText: String?
     var blobMediaType: Int?
@@ -30,7 +32,7 @@ class Blob
     
     var blobPublicInterest = false // Indicates whether the Blobjot (Public) Blob has content that might be of interest to the user, based on the user's Facebook likes
     
-    convenience init(blobID: String, blobUserID: String, blobLat: Double, blobLong: Double, blobRadius: Double, blobType: Constants.BlobTypes, blobMediaType: Int, blobText: String)
+    convenience init(blobID: String, blobUserID: String, blobLat: Double, blobLong: Double, blobRadius: Double, blobType: Constants.BlobType, blobFeature: Constants.BlobFeature, blobAccess: Constants.BlobAccess, blobMediaType: Int, blobText: String)
     {
         self.init()
         
@@ -40,6 +42,8 @@ class Blob
         self.blobLong = blobLong
         self.blobRadius = blobRadius
         self.blobType = blobType
+        self.blobFeature = blobFeature
+        self.blobAccess = blobAccess
         self.blobMediaType = blobMediaType
         self.blobText = blobText
     }

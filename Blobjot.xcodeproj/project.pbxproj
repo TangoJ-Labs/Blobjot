@@ -14,15 +14,8 @@
 		B80C56341D5112F100C4E683 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56331D5112F100C4E683 /* Constants.swift */; };
 		B80C56361D5113B900C4E683 /* MapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56351D5113B900C4E683 /* MapViewController.swift */; };
 		B80C56491D51158000C4E683 /* BlobAddMediaViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56391D51158000C4E683 /* BlobAddMediaViewController.swift */; };
-		B80C564A1D51158000C4E683 /* BlobAddPeopleTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C563A1D51158000C4E683 /* BlobAddPeopleTableViewCell.swift */; };
-		B80C564B1D51158000C4E683 /* BlobAddPeopleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C563B1D51158000C4E683 /* BlobAddPeopleViewController.swift */; };
 		B80C564C1D51158000C4E683 /* BlobAddTextViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C563C1D51158000C4E683 /* BlobAddTextViewController.swift */; };
-		B80C564D1D51158000C4E683 /* BlobAddTypeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C563D1D51158000C4E683 /* BlobAddTypeViewController.swift */; };
 		B80C564E1D51158000C4E683 /* BlobAddViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C563E1D51158000C4E683 /* BlobAddViewController.swift */; };
-		B80C564F1D51158000C4E683 /* BlobsActiveTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C563F1D51158000C4E683 /* BlobsActiveTableViewCell.swift */; };
-		B80C56501D51158000C4E683 /* BlobsActiveTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56401D51158000C4E683 /* BlobsActiveTableViewController.swift */; };
-		B80C56511D51158000C4E683 /* AccountTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56411D51158000C4E683 /* AccountTableViewCell.swift */; };
-		B80C56521D51158000C4E683 /* AccountViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56421D51158000C4E683 /* AccountViewController.swift */; };
 		B80C56531D51158000C4E683 /* BlobTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56431D51158000C4E683 /* BlobTableViewController.swift */; };
 		B80C56541D51158000C4E683 /* MapViewLocationBlobsCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56441D51158000C4E683 /* MapViewLocationBlobsCell.swift */; };
 		B80C56551D51158000C4E683 /* PeopleTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56451D51158000C4E683 /* PeopleTableViewCell.swift */; };
@@ -39,8 +32,6 @@
 		B828802A1E0AD11800B62676 /* MV_list_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = B82880291E0AD11800B62676 /* MV_list_icon@2x.png */; };
 		B82880341E0C8CB200B62676 /* UserLike+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = B82880321E0C8CB200B62676 /* UserLike+CoreDataClass.swift */; };
 		B82880351E0C8CB200B62676 /* UserLike+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B82880331E0C8CB200B62676 /* UserLike+CoreDataProperties.swift */; };
-		B82880371E0DBDA900B62676 /* BlobsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B82880361E0DBDA800B62676 /* BlobsTableViewController.swift */; };
-		B828803B1E0DBDE000B62676 /* BlobsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B828803A1E0DBDE000B62676 /* BlobsTableViewCell.swift */; };
 		B8312FDA1DB3DA8700CFC715 /* LocationManagerSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8312FD91DB3DA8700CFC715 /* LocationManagerSetting.swift */; };
 		B8312FDB1DB3DA8700CFC715 /* LocationManagerSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8312FD91DB3DA8700CFC715 /* LocationManagerSetting.swift */; };
 		B8312FDC1DB3DA8700CFC715 /* LocationManagerSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8312FD91DB3DA8700CFC715 /* LocationManagerSetting.swift */; };
@@ -163,15 +154,8 @@
 		B80C56331D5112F100C4E683 /* Constants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = Constants.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		B80C56351D5113B900C4E683 /* MapViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapViewController.swift; sourceTree = "<group>"; };
 		B80C56391D51158000C4E683 /* BlobAddMediaViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlobAddMediaViewController.swift; sourceTree = "<group>"; };
-		B80C563A1D51158000C4E683 /* BlobAddPeopleTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlobAddPeopleTableViewCell.swift; sourceTree = "<group>"; };
-		B80C563B1D51158000C4E683 /* BlobAddPeopleViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlobAddPeopleViewController.swift; sourceTree = "<group>"; };
 		B80C563C1D51158000C4E683 /* BlobAddTextViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlobAddTextViewController.swift; sourceTree = "<group>"; };
-		B80C563D1D51158000C4E683 /* BlobAddTypeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlobAddTypeViewController.swift; sourceTree = "<group>"; };
 		B80C563E1D51158000C4E683 /* BlobAddViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlobAddViewController.swift; sourceTree = "<group>"; };
-		B80C563F1D51158000C4E683 /* BlobsActiveTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = BlobsActiveTableViewCell.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
-		B80C56401D51158000C4E683 /* BlobsActiveTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = BlobsActiveTableViewController.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
-		B80C56411D51158000C4E683 /* AccountTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = AccountTableViewCell.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
-		B80C56421D51158000C4E683 /* AccountViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = AccountViewController.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		B80C56431D51158000C4E683 /* BlobTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlobTableViewController.swift; sourceTree = "<group>"; };
 		B80C56441D51158000C4E683 /* MapViewLocationBlobsCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapViewLocationBlobsCell.swift; sourceTree = "<group>"; };
 		B80C56451D51158000C4E683 /* PeopleTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PeopleTableViewCell.swift; sourceTree = "<group>"; };
@@ -190,8 +174,6 @@
 		B828802B1E0C8C7000B62676 /* Blobjot_DataModel_1.5.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Blobjot_DataModel_1.5.xcdatamodel; sourceTree = "<group>"; };
 		B82880321E0C8CB200B62676 /* UserLike+CoreDataClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "UserLike+CoreDataClass.swift"; path = "../UserLike+CoreDataClass.swift"; sourceTree = "<group>"; };
 		B82880331E0C8CB200B62676 /* UserLike+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "UserLike+CoreDataProperties.swift"; path = "../UserLike+CoreDataProperties.swift"; sourceTree = "<group>"; };
-		B82880361E0DBDA800B62676 /* BlobsTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlobsTableViewController.swift; sourceTree = "<group>"; };
-		B828803A1E0DBDE000B62676 /* BlobsTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlobsTableViewCell.swift; sourceTree = "<group>"; };
 		B8312FCC1DB3D9AE00CFC715 /* Blobjot-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Blobjot-Bridging-Header.h"; sourceTree = "<group>"; };
 		B8312FCD1DB3D9AF00CFC715 /* BlobjotTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "BlobjotTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		B8312FCE1DB3D9AF00CFC715 /* BlobjotUITests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "BlobjotUITests-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -448,22 +430,13 @@
 		B88131911D510EEE00021C4B /* Blobjot */ = {
 			isa = PBXGroup;
 			children = (
-				B80C56411D51158000C4E683 /* AccountTableViewCell.swift */,
-				B80C56421D51158000C4E683 /* AccountViewController.swift */,
 				B88131921D510EEE00021C4B /* AppDelegate.swift */,
 				B80D17761D922FF20032B0D8 /* AWSClasses.swift */,
 				B80C56301D51126800C4E683 /* Blob.swift */,
 				B80C56391D51158000C4E683 /* BlobAddMediaViewController.swift */,
-				B80C563A1D51158000C4E683 /* BlobAddPeopleTableViewCell.swift */,
-				B80C563B1D51158000C4E683 /* BlobAddPeopleViewController.swift */,
 				B80C563C1D51158000C4E683 /* BlobAddTextViewController.swift */,
-				B80C563D1D51158000C4E683 /* BlobAddTypeViewController.swift */,
 				B80C563E1D51158000C4E683 /* BlobAddViewController.swift */,
 				B8541B741DBBD0B500867D82 /* BlobContent.swift */,
-				B80C563F1D51158000C4E683 /* BlobsActiveTableViewCell.swift */,
-				B80C56401D51158000C4E683 /* BlobsActiveTableViewController.swift */,
-				B828803A1E0DBDE000B62676 /* BlobsTableViewCell.swift */,
-				B82880361E0DBDA800B62676 /* BlobsTableViewController.swift */,
 				B88DFD871DBD50DF00255BA5 /* BlobTableViewCell.swift */,
 				B80C56431D51158000C4E683 /* BlobTableViewController.swift */,
 				B81822061D5B98F300B3A2BB /* BlobThumbnailObject.swift */,
@@ -866,40 +839,31 @@
 				B80C56531D51158000C4E683 /* BlobTableViewController.swift in Sources */,
 				B80D177B1D98A5760032B0D8 /* UtilityFunctions.swift in Sources */,
 				B80C56311D51126800C4E683 /* Blob.swift in Sources */,
-				B80C564B1D51158000C4E683 /* BlobAddPeopleViewController.swift in Sources */,
 				B80C56491D51158000C4E683 /* BlobAddMediaViewController.swift in Sources */,
 				B8B109011DCFE52300EA3B41 /* BlobCD+CoreDataClass.swift in Sources */,
 				B80C56561D51158000C4E683 /* PeopleViewController.swift in Sources */,
 				B8B1092A1DE3D72600EA3B41 /* TutorialViews+CoreDataClass.swift in Sources */,
 				B82880341E0C8CB200B62676 /* UserLike+CoreDataClass.swift in Sources */,
 				B8B1090B1DDB46D100EA3B41 /* CurrentUser+CoreDataProperties.swift in Sources */,
-				B80C56501D51158000C4E683 /* BlobsActiveTableViewController.swift in Sources */,
 				B8B109251DE0B06F00EA3B41 /* BlobCD+CoreDataProperties.swift in Sources */,
 				B82880351E0C8CB200B62676 /* UserLike+CoreDataProperties.swift in Sources */,
 				B80C56611D5183B100C4E683 /* User.swift in Sources */,
 				B8B108F81DCB718200EA3B41 /* LogError+CoreDataProperties.swift in Sources */,
 				B8B109031DCFE52300EA3B41 /* UserCD+CoreDataClass.swift in Sources */,
 				B80C56541D51158000C4E683 /* MapViewLocationBlobsCell.swift in Sources */,
-				B80C564D1D51158000C4E683 /* BlobAddTypeViewController.swift in Sources */,
 				B80D17751D90E1C90032B0D8 /* LoginViewController.swift in Sources */,
 				B8B108F71DCB718200EA3B41 /* LogError+CoreDataClass.swift in Sources */,
 				B8B108F91DCB718200EA3B41 /* LogUserflow+CoreDataClass.swift in Sources */,
 				B80C564C1D51158000C4E683 /* BlobAddTextViewController.swift in Sources */,
-				B80C56511D51158000C4E683 /* AccountTableViewCell.swift in Sources */,
-				B80C564F1D51158000C4E683 /* BlobsActiveTableViewCell.swift in Sources */,
 				B864070D1D7B14A40084D6EF /* BlobNotifications+CoreDataProperties.swift in Sources */,
-				B80C56521D51158000C4E683 /* AccountViewController.swift in Sources */,
 				B88131931D510EEE00021C4B /* AppDelegate.swift in Sources */,
 				B88DFD881DBD50DF00255BA5 /* BlobTableViewCell.swift in Sources */,
 				B8312FDA1DB3DA8700CFC715 /* LocationManagerSetting.swift in Sources */,
 				B8B109261DE0B06F00EA3B41 /* UserCD+CoreDataProperties.swift in Sources */,
-				B80C564A1D51158000C4E683 /* BlobAddPeopleTableViewCell.swift in Sources */,
-				B828803B1E0DBDE000B62676 /* BlobsTableViewCell.swift in Sources */,
 				B8B108F11DCB673700EA3B41 /* CoreDataFunctions.swift in Sources */,
 				B86407081D7B13EB0084D6EF /* DataModel.xcdatamodeld in Sources */,
 				B81822071D5B98F300B3A2BB /* BlobThumbnailObject.swift in Sources */,
 				B80C564E1D51158000C4E683 /* BlobAddViewController.swift in Sources */,
-				B82880371E0DBDA900B62676 /* BlobsTableViewController.swift in Sources */,
 				B8541B731DB7D49000867D82 /* CustomClasses.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -16,8 +16,8 @@ import Photos
 import UIKit
 
 // Create a protocol with functions declared in other View Controllers implementing this protocol (delegate)
-protocol BlobAddViewControllerDelegate {
-    
+protocol BlobAddViewControllerDelegate
+{
     // When called, the parent View Controller dismisses the top VC (should be this one)
     func popViewController()
     
@@ -31,8 +31,8 @@ protocol BlobAddViewControllerDelegate {
     func createBlobOnMap(_ blob: Blob)
 }
 
-class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, UIPageViewControllerDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, GMSMapViewDelegate, BlobAddTypeViewControllerDelegate, BlobAddMediaViewControllerDelegate, BlobAddPeopleViewControllerDelegate, AWSRequestDelegate, HoleViewDelegate {
-    
+class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, UIPageViewControllerDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, GMSMapViewDelegate, BlobAddTextViewControllerDelegate, BlobAddMediaViewControllerDelegate, AWSRequestDelegate, HoleViewDelegate
+{
     // Add a delegate variable which the parent view controller can pass its own delegate instance to and have access to the protocol
     // (and have its own functions called that are listed in the protocol)
     var blobAddViewDelegate: BlobAddViewControllerDelegate?
@@ -50,17 +50,28 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
     var pageViewContainer: UIView!
     var pageViewController: UIPageViewController!
     var pageControl: UIPageControl!
+    var toggleInvisibleContainer: UIView!
+    var toggleInvisibleSwitch: UISwitch!
+    var toggleAccessContainer: UIView!
+    var toggleAccessSwitch: UISwitch!
     var mapView: GMSMapView!
+    
+    var toggleMessageBoxAccess: UIView!
+    var toggleMessageLabelAccess: UILabel!
+    var toggleMessageBoxInvisible: UIView!
+    var toggleMessageLabelInvisible: UILabel!
+    
+    // Set the MessageBox dimensions
+    let messageBoxWidth: CGFloat = 120
+    let toggleContainerHeight: CGFloat = 30
     
     var viewScreen: UIView!
     var viewScreenActivityIndicator: UIActivityIndicatorView!
     
     // Declare the view controllers that make up the page viewer
     var viewControllers: [UIViewController]!
-    var vc1: BlobAddTypeViewController!
-    var vc2: BlobAddTextViewController!
-    var vc3: BlobAddMediaViewController!
-    var vc4: BlobAddPeopleViewController!
+    var vc1: BlobAddTextViewController!
+    var vc2: BlobAddMediaViewController!
     
     // These variables should be passed data from the Map View concerning the Blob created
     var addCircle: GMSCircle!
@@ -69,10 +80,8 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
     var mapZoom: Float!
     
     // These variables will hold the Blob content created in the Page Views
-//    var blobText: String?
     var blobThumbnail: UIImage?
     var blobImage: UIImage?
-//    var blobUserTags = [String]()
     var blobMediaType = 0
     
     var randomMediaID: String?
@@ -84,12 +93,14 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
     var uploadThumbnailFilePath: String!
     
     // Local property variables
-    var blobType = Constants.BlobTypes.temporary
-    var allowBlobTypeChange: Bool = true
-    var selectedOneOrMorePeople: Bool = false
+    var blobType = Constants.BlobType.origin
+    var blobFeature = Constants.BlobFeature.standard
+    var blobAccess = Constants.BlobAccess.standard
+    var blobColor: UIColor!
     var sendAttempted: Bool = false
-
-    override func viewDidLoad() {
+    
+    override func viewDidLoad()
+    {
         super.viewDidLoad()
         
         // Create and set the Nav Bar right button here, and not in the parent VC because this View Controller needs
@@ -102,22 +113,11 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
         self.navigationItem.setRightBarButton(rightButtonItem, animated: true)
         
         // Instantiate and assign delegates for the Page Viewer View Controllers
-        vc2 = BlobAddTextViewController()
-        vc3 = BlobAddMediaViewController()
-        vc3.blobAddMediaDelegate = self
-        vc4 = BlobAddPeopleViewController()
-        vc4.blobAddPeopleDelegate = self
-        if allowBlobTypeChange
-        {
-            vc1 = BlobAddTypeViewController()
-            vc1.blobAddTypeDelegate = self
-            
-            viewControllers = [vc1, vc2, vc3, vc4]
-        }
-        else
-        {
-            viewControllers = [vc2, vc3, vc4]
-        }
+        vc1 = BlobAddTextViewController()
+        vc1.blobAddTextDelegate = self
+        vc2 = BlobAddMediaViewController()
+        vc2.blobAddMediaDelegate = self
+        viewControllers = [vc1, vc2]
 
         // Status Bar Settings
         UIApplication.shared.isStatusBarHidden = false
@@ -152,6 +152,58 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
         pageControl.currentPageIndicatorTintColor = Constants.Colors.colorPurple
         viewContainer.addSubview(pageControl)
         
+        // Prepare the view container to hold the invisible Blob toggle
+        toggleAccessContainer = UIView(frame: CGRect(x: viewContainer.frame.width - 60, y: viewContainer.frame.height + 10 - viewContainer.frame.width, width: 50, height: toggleContainerHeight))
+        toggleAccessSwitch = UISwitch(frame: CGRect(x: 0, y: 0, width: toggleAccessContainer.frame.width, height: toggleAccessContainer.frame.height))
+        toggleAccessSwitch.onTintColor = Constants.Colors.colorBlue
+        toggleAccessSwitch.tintColor = Constants.Colors.colorBlue
+        toggleAccessContainer.addSubview(toggleAccessSwitch)
+        
+        // Add the listener for the toggleSwitch
+        toggleAccessSwitch.addTarget(self, action: #selector(BlobAddViewController.switchAccessChanged), for: .valueChanged)
+        
+        // Add a message box for the access toggle
+        toggleMessageBoxAccess = UIView(frame: CGRect(x: 0 - messageBoxWidth, y: viewContainer.frame.height + 10 - viewContainer.frame.width, width: messageBoxWidth, height: toggleContainerHeight))
+        toggleMessageBoxAccess.layer.cornerRadius = 5
+        toggleMessageBoxAccess.backgroundColor = UIColor.white
+        toggleMessageBoxAccess.layer.shadowOffset = Constants.Dim.mapViewShadowOffset
+        toggleMessageBoxAccess.layer.shadowOpacity = Constants.Dim.mapViewShadowOpacity
+        toggleMessageBoxAccess.layer.shadowRadius = Constants.Dim.mapViewShadowRadius
+        toggleMessageBoxAccess.isHidden = true
+        
+        toggleMessageLabelAccess = UILabel(frame: CGRect(x: 0, y: 0, width: toggleMessageBoxAccess.frame.width, height: toggleMessageBoxAccess.frame.height))
+        toggleMessageLabelAccess.text = "Followers Only"
+        toggleMessageLabelAccess.textColor = Constants.Colors.colorTextGray
+        toggleMessageLabelAccess.textAlignment = .center
+        toggleMessageLabelAccess.font = UIFont(name: Constants.Strings.fontRegular, size: 12)
+        toggleMessageBoxAccess.addSubview(toggleMessageLabelAccess)
+        
+        // Prepare the view container to hold the invisible Blob toggle
+        toggleInvisibleContainer = UIView(frame: CGRect(x: viewContainer.frame.width - 60, y: viewContainer.frame.height + 20 + toggleContainerHeight - viewContainer.frame.width, width: 50, height: toggleContainerHeight))
+        toggleInvisibleSwitch = UISwitch(frame: CGRect(x: 0, y: 0, width: toggleInvisibleContainer.frame.width, height: toggleInvisibleContainer.frame.height))
+        toggleInvisibleSwitch.onTintColor = Constants.Colors.blobGrayOpaque
+        toggleInvisibleSwitch.tintColor = Constants.Colors.blobGrayOpaque
+        toggleInvisibleContainer.addSubview(toggleInvisibleSwitch)
+        
+        // Add a message box for the access toggle
+        toggleMessageBoxInvisible = UIView(frame: CGRect(x: 0 - messageBoxWidth, y: viewContainer.frame.height + 20 + toggleContainerHeight - viewContainer.frame.width, width: messageBoxWidth, height: toggleContainerHeight))
+        toggleMessageBoxInvisible.layer.cornerRadius = 5
+        toggleMessageBoxInvisible.backgroundColor = UIColor.white
+        toggleMessageBoxInvisible.layer.shadowOffset = Constants.Dim.mapViewShadowOffset
+        toggleMessageBoxInvisible.layer.shadowOpacity = Constants.Dim.mapViewShadowOpacity
+        toggleMessageBoxInvisible.layer.shadowRadius = Constants.Dim.mapViewShadowRadius
+        toggleMessageBoxInvisible.isHidden = true
+        
+        toggleMessageLabelInvisible = UILabel(frame: CGRect(x: 0, y: 0, width: toggleMessageBoxInvisible.frame.width, height: toggleMessageBoxInvisible.frame.height))
+        toggleMessageLabelInvisible.text = "Invisible Blob"
+        toggleMessageLabelInvisible.textColor = Constants.Colors.colorTextGray
+        toggleMessageLabelInvisible.textAlignment = .center
+        toggleMessageLabelInvisible.font = UIFont(name: Constants.Strings.fontRegular, size: 12)
+        toggleMessageBoxInvisible.addSubview(toggleMessageLabelInvisible)
+        
+        // Add the listener for the toggleInvisibleSwitch
+        toggleInvisibleSwitch.addTarget(self, action: #selector(BlobAddViewController.switchInvisibleChanged), for: .valueChanged)
+        
         // Add the Map View under the page controller, and extend it to the bottom of the view
         // The Map View should be on the bottom of the view so that if the keyboard is opened, it covers the Map View
         // and not the Page Viewer (which is what needs to use the keyboard)
@@ -180,6 +232,15 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
             CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: error.localizedDescription)
         }
         viewContainer.addSubview(mapView)
+        viewContainer.addSubview(toggleAccessContainer)
+        viewContainer.addSubview(toggleMessageBoxAccess)
+        viewContainer.addSubview(toggleMessageBoxInvisible)
+        
+        // If the BlobType is a Location Blob, add the toggle for an invisible Blob
+        if blobType == Constants.BlobType.location
+        {
+            viewContainer.addSubview(toggleInvisibleContainer)
+        }
         
         // Add the viewScreen and loading indicator for use when the Blob is being uploaded
         viewScreen = UIView(frame: CGRect(x: 0, y: 0, width: viewContainer.frame.width, height: viewContainer.frame.height))
@@ -193,11 +254,15 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
         mapView.animate(toViewingAngle: desiredAngle)
         
         // Using the data passed from the parent VC (the Map View Controller), create a circle on the map where the user created the new Blob
+        blobColor = Constants().blobColor(blobType, blobFeature: blobFeature, blobAccess: blobAccess, mainMap: false)
         addCircle = GMSCircle(position: blobCoords, radius: blobRadius)
-        addCircle.fillColor = Constants().blobColor(blobType, mainMap: false)
-        addCircle.strokeColor = Constants().blobColor(blobType, mainMap: false)
+        addCircle.fillColor = blobColor
+        addCircle.strokeColor = blobColor
         addCircle.strokeWidth = 1
         addCircle.map = mapView
+        
+        // Run the checkContent function to turn the Send button gray
+        _ = checkContent()
         
         AWSPrepRequest(requestToCall: AWSGetRandomID(randomIdType: "random_media_id"), delegate: self as AWSRequestDelegate).prepRequest()
         
@@ -243,6 +308,56 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
         }
     }
     
+    // MARK: SWITCH LISTENER METHODS
+    func switchAccessChanged()
+    {
+        print("BAVC - SWITCH ACCESS TOGGLE: \(toggleAccessSwitch.isOn)")
+        
+        if toggleAccessSwitch.isOn
+        {
+            // Change the followerOnly indicator
+            
+            // Show the message
+            showMessageBoxAccess()
+        }
+        else
+        {
+            // Change the followerOnly indicator
+            
+            // Hide the message
+            hideMessageBoxAccess()
+        }
+    }
+    func switchInvisibleChanged()
+    {
+        print("BAVC - SWITCH INVISIBLE TOGGLE: \(toggleInvisibleSwitch.isOn)")
+        
+        if toggleInvisibleSwitch.isOn
+        {
+            // Change the mapView Blob color
+            addCircle.fillColor = Constants.Colors.blobGray
+            addCircle.strokeColor = Constants.Colors.blobGray
+            
+            // Change the BlobType
+            blobFeature = Constants.BlobFeature.invisible
+            
+            // Show the message
+            showMessageBoxInvisible()
+        }
+        else
+        {
+            // Change the mapView Blob color
+            addCircle.fillColor = Constants.Colors.blobYellow
+            addCircle.strokeColor = Constants.Colors.blobYellow
+            
+            // Change the BlobType
+            blobFeature = Constants.BlobFeature.standard
+            
+            // Hide the message
+            hideMessageBoxInvisible()
+        }
+    }
+    
     
     // MARK: PAGE VIEW CONTROLLER - DATA SOURCE METHODS
     
@@ -280,11 +395,6 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
         {
             let index = viewControllers.index(of: pendingVC)
             pageControl.currentPage = index!
-            
-            if index! == 0
-            {
-                print(vc2.blobTextView.text)
-            }
         }
     }
     
@@ -354,7 +464,7 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
                 }
                 
                 // Hide the video indicator since the media is an image
-                vc3.videoPlayIndicator.text = ""
+                vc2.videoPlayIndicator.text = ""
             }
         }
         
@@ -375,7 +485,7 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
             }
             
             // Show the blobImage in the Media View in the Page View
-            vc3.mediaPickerImage.image = blobImage
+            vc2.mediaPickerImage.image = blobImage
         }
         
         // Save an action in Core Data
@@ -395,91 +505,71 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
     
     // MARK: CUSTOM FUNCTIONS
     
-    // For the delegate methods called in this View Controller, use a centralized function to change 
-    // the Circle color on the Map View and pass down the color indicator changes to the BlobAddType (vc1) View Controller
-    func changeMapCircleType(_ type: Constants.BlobTypes)
+    // Show the messageBoxAccess
+    func showMessageBoxAccess()
     {
-        // Save the lastest type for access when uploading
-        self.blobType = type
+        self.toggleMessageBoxAccess.isHidden = false
         
-        // Set the settings to default before evaluating the type
-        var color = Constants().blobColor(.temporary, mainMap: false)
-        var resetSelectAllMessage = false
+        // Add an animation to show and then hide the selectorMessageBox //0 - (self.selectorBoxHeight + 10)
+        UIView.animate(withDuration: 0.5, animations:
+            {
+                self.toggleMessageBoxAccess.frame = CGRect(x: 10, y: self.viewContainer.frame.height + 10 - self.viewContainer.frame.width, width: self.messageBoxWidth, height: self.toggleContainerHeight)
+        }, completion: nil)
         
-        // Evaluate the type and mark the correct selection with a check mark and change the circle color
-        // Be sure to reset the Select All Message on the User Tag Page View if a specific color is selected
-        switch type {
-        case .temporary:
-            color = Constants().blobColor(.temporary, mainMap: false)
-            
-            vc1.typeContainer1CheckLabel.text = "\u{2713}"
-            vc1.typeContainer2CheckLabel.text = ""
-            vc1.typeContainer3CheckLabel.text = ""
-            
-            resetSelectAllMessage = true
-            
-        case .permanent:
-            color = Constants().blobColor(.permanent, mainMap: false)
-            
-            vc1.typeContainer1CheckLabel.text = ""
-            vc1.typeContainer2CheckLabel.text = "\u{2713}"
-            vc1.typeContainer3CheckLabel.text = ""
-            
-            resetSelectAllMessage = true
-            
-        case .blobjot:
-            color = Constants().blobColor(.blobjot, mainMap: false)
-            
-            vc1.typeContainer1CheckLabel.text = ""
-            vc1.typeContainer2CheckLabel.text = ""
-            vc1.typeContainer3CheckLabel.text = ""
-            
-        case .invisible:
-            color = Constants().blobColor(.invisible, mainMap: false)
-            
-            vc1.typeContainer1CheckLabel.text = ""
-            vc1.typeContainer2CheckLabel.text = ""
-            vc1.typeContainer3CheckLabel.text = "\u{2713}"
-            
-            resetSelectAllMessage = true
-        
-        // Default to a Temporary Blob in case of an error
-        default:
-            color = Constants().blobColor(.temporary, mainMap: false)
-            
-            vc1.typeContainer1CheckLabel.text = "\u{2713}"
-            vc1.typeContainer2CheckLabel.text = ""
-            vc1.typeContainer3CheckLabel.text = ""
-            
-            resetSelectAllMessage = true
-        }
-        
-        // If the select all message is marked to be reset, uncheck the Select All box and hide the overlay message
-        if resetSelectAllMessage && vc4.selectAllBox != nil
-        {
-            vc4.selectAll = false
-            vc4.selectAllBox.text = ""
-            vc4.selectAllMessage.removeFromSuperview()
-            vc4.searchBarContainer.addSubview(vc4.searchBar)
-        }
-        
-        // Finally, change the Circle to the selected type color
-        addCircle.fillColor = color
-        addCircle.strokeColor = color
+    }
+    // Hide the messageBoxAccess
+    func hideMessageBoxAccess()
+    {
+        // Add an animation to show and then hide the selectorMessageBox //0 - (self.selectorBoxHeight + 10)
+        UIView.animate(withDuration: 0.5, animations:
+            {
+                self.toggleMessageBoxAccess.frame = CGRect(x: 0 - self.messageBoxWidth, y: self.viewContainer.frame.height + 10 - self.viewContainer.frame.width, width: self.messageBoxWidth, height: self.toggleContainerHeight)
+        }, completion:
+            {
+                (value: Bool) in
+                self.toggleMessageBoxAccess.isHidden = true
+        })
     }
     
-    // Functions from the BlobAddPeopleVC indicating the number of people selected
-    // Store the person selected indicator (to allow a user to send or not) and
-    // change the color of the "Send" button to show that the Blob can be sent
-    func selectedPerson()
+    // Show the MessageBoxInvisible
+    func showMessageBoxInvisible()
     {
-        self.selectedOneOrMorePeople = true
-        rightButtonItem.tintColor = UIColor.white
+        self.toggleMessageBoxInvisible.isHidden = false
+        
+        // Add an animation to show and then hide the selectorTypeMessageBox
+        UIView.animate(withDuration: 0.5, animations:
+            {
+                self.toggleMessageBoxInvisible.frame = CGRect(x: 10, y: self.viewContainer.frame.height + 20 + self.toggleContainerHeight - self.viewContainer.frame.width, width: self.messageBoxWidth, height: self.toggleContainerHeight)
+        }, completion: nil)
     }
-    func deselectedAllPeople()
+    // Hide the MessageBoxInvisible
+    func hideMessageBoxInvisible()
     {
-        self.selectedOneOrMorePeople = false
-        rightButtonItem.tintColor = UIColor.lightGray
+        // Add an animation to show and then hide the selectorTypeMessageBox
+        UIView.animate(withDuration: 0.5, animations:
+            {
+                self.toggleMessageBoxInvisible.frame = CGRect(x: 0 - self.messageBoxWidth, y: self.viewContainer.frame.height + 20 + self.toggleContainerHeight - self.viewContainer.frame.width, width: self.messageBoxWidth, height: self.toggleContainerHeight)
+        }, completion:
+            {
+                (value: Bool) in
+                self.toggleMessageBoxInvisible.isHidden = true
+        })
+    }
+    
+    // Indicate that content has been added (text or media)
+    // change the color of the "Send" button to show that the Blob can be sent
+    func checkContent() -> Bool
+    {
+        if (vc1.blobTextView.text != nil && vc1.blobTextView.text != "") || uploadThumbnailFilePath != nil
+        {
+            rightButtonItem.tintColor = UIColor.white
+            return true
+        }
+        else
+        {
+            rightButtonItem.tintColor = UIColor.lightGray
+            return false
+        }
     }
     
     // The function called by the "Send" button on the Nav Bar
@@ -488,7 +578,7 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
     {
         // Ensure that this is the first time the Blob send has been attempted
         // and that at least one person has been selected
-        if !self.sendAttempted && self.selectedOneOrMorePeople
+        if !self.sendAttempted && checkContent()
         {
             self.sendAttempted = true
             
@@ -538,37 +628,10 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
     
     func processBlobData(_ blobID: String, mediaID: String, uploadKey: String, currentTime: Double)
     {
-        // Save the list of tagged users
-        // If all users are selected, apply all connected users in the global user array
-        var taggedUsers = [String]()
-        if self.vc4.selectAll
-        {
-            for user in Constants.Data.userObjects
-            {
-                if user.userStatus == Constants.UserStatusTypes.connected
-                {
-                    if let userID = user.userID
-                    {
-                        taggedUsers.append(userID)
-                    }
-                }
-            }
-        }
-        else
-        {
-            for selectUser in self.vc4.peopleListSelected
-            {
-                if let userID = selectUser.userID
-                {
-                    taggedUsers.append(userID)
-                }
-            }
-        }
-        
         if let currentUserName = Constants.Data.currentUser.userName
         {
             // Upload the Blob data to Lamda and then DynamoDB
-            AWSPrepRequest(requestToCall: AWSUploadBlobData(blobID: blobID, blobLat: self.blobCoords.latitude, blobLong: self.blobCoords.longitude, blobMediaID: uploadKey, blobMediaType: self.blobMediaType, blobRadius: self.blobRadius, blobText: self.vc2.blobTextView.text, blobThumbnailID: mediaID + ".png", blobTimestamp: currentTime, blobType: self.blobType.rawValue, blobTaggedUsers: taggedUsers, blobUserID: Constants.Data.currentUser.userID!, blobUserName: currentUserName), delegate: self as AWSRequestDelegate).prepRequest()
+            AWSPrepRequest(requestToCall: AWSUploadBlobData(blobID: blobID, blobLat: self.blobCoords.latitude, blobLong: self.blobCoords.longitude, blobMediaID: uploadKey, blobMediaType: self.blobMediaType, blobRadius: self.blobRadius, blobText: self.vc1.blobTextView.text, blobThumbnailID: mediaID + ".png", blobTimestamp: currentTime, blobType: self.blobType.rawValue, blobFeature: self.blobFeature.rawValue, blobAccess: self.blobAccess.rawValue, blobUserID: Constants.Data.currentUser.userID!, blobUserName: currentUserName), delegate: self as AWSRequestDelegate).prepRequest()
             
             // Create a new Blob locally so that the Circle can immediately be added to the map
             let newBlob = Blob()
@@ -579,7 +642,7 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
             newBlob.blobRadius = self.blobRadius
             newBlob.blobType = self.blobType
             newBlob.blobUserID = Constants.Data.currentUser.userID!
-            newBlob.blobText = self.vc2.blobTextView.text
+            newBlob.blobText = self.vc1.blobTextView.text
             if let thumbnailFilePath = self.uploadThumbnailFilePath
             {
                 newBlob.blobMediaType = 1
@@ -591,24 +654,16 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
             }
             Constants.Data.userBlobs.append(newBlob)
             
-            // Check to see if the logged in user was tagged
-            loopTaggedUsers: for person in taggedUsers
-            {
-                // If the logged in user was tagged, add the Blob to the mapBlobs so that it shows on the Map View
-                if person == Constants.Data.currentUser.userID!
-                {
-                    Constants.Data.taggedBlobs.append(newBlob)
-                    Constants.Data.mapBlobs.append(newBlob)
-                    
-                    // A new Blob was added, so sort the global mapBlobs array
-                    UtilityFunctions().sortMapBlobs()
-                    
-                    // Call the parent VC to add the new Blob to the map of the Map View
-                    if let parentVC = self.blobAddViewDelegate {
-                        parentVC.createBlobOnMap(newBlob)
-                    }
-                    break loopTaggedUsers
-                }
+            // Add the Blob to the global lists
+            Constants.Data.taggedBlobs.append(newBlob)
+            Constants.Data.mapBlobs.append(newBlob)
+            
+            // A new Blob was added, so sort the global mapBlobs array
+            UtilityFunctions().sortMapBlobs()
+            
+            // Call the parent VC to add the new Blob to the map of the Map View
+            if let parentVC = self.blobAddViewDelegate {
+                parentVC.createBlobOnMap(newBlob)
             }
             
             // Sort the mapBlobs

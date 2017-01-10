@@ -9,7 +9,18 @@
 import UIKit
 
 
-class BlobAddTextViewController: UIViewController, UITextViewDelegate {
+// Create a protocol with functions declared in other View Controllers implementing this protocol (delegate)
+protocol BlobAddTextViewControllerDelegate
+{
+    // When called, the parent View Controller checks for content
+    func checkContent() -> Bool
+}
+
+class BlobAddTextViewController: UIViewController, UITextViewDelegate
+{
+    // Add a delegate variable which the parent view controller can pass its own delegate instance to and have access to the protocol
+    // (and have its own functions called that are listed in the protocol)
+    var blobAddTextDelegate: BlobAddTextViewControllerDelegate?
     
     // Declare the view components
     var viewContainer: UIView!
@@ -17,7 +28,8 @@ class BlobAddTextViewController: UIViewController, UITextViewDelegate {
     var blobTextView: UITextView!
     var blobTextViewDefaultText: UILabel!
     
-    override func viewDidLoad() {
+    override func viewDidLoad()
+    {
         super.viewDidLoad()
         
         // Add the view container to hold all other views (decrease size to match pageViewController)
@@ -47,13 +59,20 @@ class BlobAddTextViewController: UIViewController, UITextViewDelegate {
         blobTextView.addSubview(blobTextViewDefaultText)
     }
 
-    override func didReceiveMemoryWarning() {
+    override func didReceiveMemoryWarning()
+    {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
     
-    func textViewShouldBeginEditing(_ textView: UITextView) -> Bool {
+    func textViewShouldBeginEditing(_ textView: UITextView) -> Bool
+    {
         blobTextViewDefaultText.removeFromSuperview()
+        
+        if let parentVC = self.blobAddTextDelegate
+        {
+            _ = parentVC.checkContent()
+        }
         
         return true
     }

@@ -11,14 +11,14 @@ import UIKit
 
 
 // Create a protocol with functions declared in other View Controllers implementing this protocol (delegate)
-protocol BlobAddMediaViewControllerDelegate {
-    
+protocol BlobAddMediaViewControllerDelegate
+{
     // When called, the parent View Controller instantiates the Media Picker View Controller
     func pickMediaPicker()
 }
 
-class BlobAddMediaViewController: UIViewController {
-    
+class BlobAddMediaViewController: UIViewController
+{
     // Add a delegate variable which the parent view controller can pass its own delegate instance to and have access to the protocol
     // (and have its own functions called that are listed in the protocol)
     var blobAddMediaDelegate: BlobAddMediaViewControllerDelegate?

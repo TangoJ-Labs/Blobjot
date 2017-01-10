@@ -315,7 +315,7 @@ class CoreDataFunctions: AWSRequestDelegate
             addBlob.blobLat = cdBlob.blobLat as Double!
             addBlob.blobLong = cdBlob.blobLong as Double!
             addBlob.blobRadius = cdBlob.blobRadius as Double!
-            addBlob.blobType = cdBlob.blobType.map { Constants.BlobTypes(rawValue: Int($0)) }!
+            addBlob.blobType = cdBlob.blobType.map { Constants.BlobType(rawValue: Int($0)) }!
             addBlob.blobUserID = cdBlob.blobUserID
             addBlob.blobText = cdBlob.blobText
             addBlob.blobMediaType = cdBlob.blobMediaType as Int?
