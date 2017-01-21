@@ -26,12 +26,10 @@
 		B80D17771D922FF20032B0D8 /* AWSClasses.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80D17761D922FF20032B0D8 /* AWSClasses.swift */; };
 		B80D17791D9712C60032B0D8 /* style.json in Resources */ = {isa = PBXBuildFile; fileRef = B80D17781D9712C50032B0D8 /* style.json */; };
 		B80D177B1D98A5760032B0D8 /* UtilityFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80D177A1D98A5760032B0D8 /* UtilityFunctions.swift */; };
-		B81822071D5B98F300B3A2BB /* BlobThumbnailObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = B81822061D5B98F300B3A2BB /* BlobThumbnailObject.swift */; };
+		B81822071D5B98F300B3A2BB /* ThumbnailObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = B81822061D5B98F300B3A2BB /* ThumbnailObject.swift */; };
 		B82880271E0AD10A00B62676 /* MV_list_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = B82880251E0AD10A00B62676 /* MV_list_icon.png */; };
 		B82880281E0AD10A00B62676 /* MV_list_icon@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = B82880261E0AD10A00B62676 /* MV_list_icon@3x.png */; };
 		B828802A1E0AD11800B62676 /* MV_list_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = B82880291E0AD11800B62676 /* MV_list_icon@2x.png */; };
-		B82880341E0C8CB200B62676 /* UserLike+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = B82880321E0C8CB200B62676 /* UserLike+CoreDataClass.swift */; };
-		B82880351E0C8CB200B62676 /* UserLike+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B82880331E0C8CB200B62676 /* UserLike+CoreDataProperties.swift */; };
 		B8312FDA1DB3DA8700CFC715 /* LocationManagerSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8312FD91DB3DA8700CFC715 /* LocationManagerSetting.swift */; };
 		B8312FDB1DB3DA8700CFC715 /* LocationManagerSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8312FD91DB3DA8700CFC715 /* LocationManagerSetting.swift */; };
 		B8312FDC1DB3DA8700CFC715 /* LocationManagerSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8312FD91DB3DA8700CFC715 /* LocationManagerSetting.swift */; };
@@ -60,6 +58,12 @@
 		B864070D1D7B14A40084D6EF /* BlobNotifications+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B86407091D7B14A40084D6EF /* BlobNotifications+CoreDataProperties.swift */; };
 		B864070E1D7B14A40084D6EF /* BlobNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B864070A1D7B14A40084D6EF /* BlobNotification.swift */; };
 		B877708A1E17FD620041ECD6 /* MapViewPreviewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B87770891E17FD620041ECD6 /* MapViewPreviewCell.swift */; };
+		B877B5811E30E431007151EE /* BlobContentCD+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = B877B57E1E30E431007151EE /* BlobContentCD+CoreDataClass.swift */; };
+		B877B5821E30E431007151EE /* BlobContentCD+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B877B57F1E30E431007151EE /* BlobContentCD+CoreDataProperties.swift */; };
+		B877B5851E30E471007151EE /* BlobCD+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = B877B5831E30E471007151EE /* BlobCD+CoreDataClass.swift */; };
+		B877B5861E30E471007151EE /* BlobCD+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B877B5841E30E471007151EE /* BlobCD+CoreDataProperties.swift */; };
+		B877B58D1E33F400007151EE /* UserInterest+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = B877B58B1E33F400007151EE /* UserInterest+CoreDataClass.swift */; };
+		B877B58E1E33F400007151EE /* UserInterest+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B877B58C1E33F400007151EE /* UserInterest+CoreDataProperties.swift */; };
 		B88131931D510EEE00021C4B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88131921D510EEE00021C4B /* AppDelegate.swift */; };
 		B881319D1D510EEE00021C4B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B881319C1D510EEE00021C4B /* Assets.xcassets */; };
 		B88131AB1D510EEF00021C4B /* BlobjotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88131AA1D510EEF00021C4B /* BlobjotTests.swift */; };
@@ -75,11 +79,9 @@
 		B8B108F81DCB718200EA3B41 /* LogError+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B108F41DCB718200EA3B41 /* LogError+CoreDataProperties.swift */; };
 		B8B108F91DCB718200EA3B41 /* LogUserflow+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B108F51DCB718200EA3B41 /* LogUserflow+CoreDataClass.swift */; };
 		B8B108FA1DCB718200EA3B41 /* LogUserflow+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B108F61DCB718200EA3B41 /* LogUserflow+CoreDataProperties.swift */; };
-		B8B109011DCFE52300EA3B41 /* BlobCD+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B108FD1DCFE52200EA3B41 /* BlobCD+CoreDataClass.swift */; };
 		B8B109031DCFE52300EA3B41 /* UserCD+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B108FF1DCFE52200EA3B41 /* UserCD+CoreDataClass.swift */; };
 		B8B1090A1DDB46D100EA3B41 /* CurrentUser+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B109071DDB46D100EA3B41 /* CurrentUser+CoreDataClass.swift */; };
 		B8B1090B1DDB46D100EA3B41 /* CurrentUser+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B109081DDB46D100EA3B41 /* CurrentUser+CoreDataProperties.swift */; };
-		B8B109251DE0B06F00EA3B41 /* BlobCD+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B109231DE0B06F00EA3B41 /* BlobCD+CoreDataProperties.swift */; };
 		B8B109261DE0B06F00EA3B41 /* UserCD+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B109241DE0B06F00EA3B41 /* UserCD+CoreDataProperties.swift */; };
 		B8B1092A1DE3D72600EA3B41 /* TutorialViews+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B109281DE3D72600EA3B41 /* TutorialViews+CoreDataClass.swift */; };
 		B8B1092B1DE3D72600EA3B41 /* TutorialViews+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B109291DE3D72600EA3B41 /* TutorialViews+CoreDataProperties.swift */; };
@@ -167,13 +169,11 @@
 		B80D17761D922FF20032B0D8 /* AWSClasses.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AWSClasses.swift; sourceTree = "<group>"; };
 		B80D17781D9712C50032B0D8 /* style.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = style.json; path = Blobjot/style.json; sourceTree = "<group>"; };
 		B80D177A1D98A5760032B0D8 /* UtilityFunctions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UtilityFunctions.swift; sourceTree = "<group>"; };
-		B81822061D5B98F300B3A2BB /* BlobThumbnailObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlobThumbnailObject.swift; sourceTree = "<group>"; };
+		B81822061D5B98F300B3A2BB /* ThumbnailObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ThumbnailObject.swift; sourceTree = "<group>"; };
 		B82880251E0AD10A00B62676 /* MV_list_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MV_list_icon.png; sourceTree = "<group>"; };
 		B82880261E0AD10A00B62676 /* MV_list_icon@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "MV_list_icon@3x.png"; sourceTree = "<group>"; };
 		B82880291E0AD11800B62676 /* MV_list_icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "MV_list_icon@2x.png"; sourceTree = "<group>"; };
 		B828802B1E0C8C7000B62676 /* Blobjot_DataModel_1.5.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Blobjot_DataModel_1.5.xcdatamodel; sourceTree = "<group>"; };
-		B82880321E0C8CB200B62676 /* UserLike+CoreDataClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "UserLike+CoreDataClass.swift"; path = "../UserLike+CoreDataClass.swift"; sourceTree = "<group>"; };
-		B82880331E0C8CB200B62676 /* UserLike+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "UserLike+CoreDataProperties.swift"; path = "../UserLike+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		B8312FCC1DB3D9AE00CFC715 /* Blobjot-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Blobjot-Bridging-Header.h"; sourceTree = "<group>"; };
 		B8312FCD1DB3D9AF00CFC715 /* BlobjotTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "BlobjotTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		B8312FCE1DB3D9AF00CFC715 /* BlobjotUITests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "BlobjotUITests-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -201,6 +201,13 @@
 		B86407091D7B14A40084D6EF /* BlobNotifications+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "BlobNotifications+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		B864070A1D7B14A40084D6EF /* BlobNotification.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlobNotification.swift; sourceTree = "<group>"; };
 		B87770891E17FD620041ECD6 /* MapViewPreviewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapViewPreviewCell.swift; sourceTree = "<group>"; };
+		B877B57C1E30E2CF007151EE /* Blobjot_DataModel_2.0.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Blobjot_DataModel_2.0.xcdatamodel; sourceTree = "<group>"; };
+		B877B57E1E30E431007151EE /* BlobContentCD+CoreDataClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "BlobContentCD+CoreDataClass.swift"; path = "../BlobContentCD+CoreDataClass.swift"; sourceTree = "<group>"; };
+		B877B57F1E30E431007151EE /* BlobContentCD+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "BlobContentCD+CoreDataProperties.swift"; path = "../BlobContentCD+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		B877B5831E30E471007151EE /* BlobCD+CoreDataClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "BlobCD+CoreDataClass.swift"; sourceTree = "<group>"; };
+		B877B5841E30E471007151EE /* BlobCD+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "BlobCD+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		B877B58B1E33F400007151EE /* UserInterest+CoreDataClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "UserInterest+CoreDataClass.swift"; path = "../UserInterest+CoreDataClass.swift"; sourceTree = "<group>"; };
+		B877B58C1E33F400007151EE /* UserInterest+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "UserInterest+CoreDataProperties.swift"; path = "../UserInterest+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		B881318F1D510EEE00021C4B /* Blobjot.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Blobjot.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B88131921D510EEE00021C4B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B881319C1D510EEE00021C4B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -224,13 +231,11 @@
 		B8B108F51DCB718200EA3B41 /* LogUserflow+CoreDataClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "LogUserflow+CoreDataClass.swift"; path = "../LogUserflow+CoreDataClass.swift"; sourceTree = "<group>"; };
 		B8B108F61DCB718200EA3B41 /* LogUserflow+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "LogUserflow+CoreDataProperties.swift"; path = "../LogUserflow+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		B8B108FC1DCFE29600EA3B41 /* Blobjot_DataModel_1.1.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Blobjot_DataModel_1.1.xcdatamodel; sourceTree = "<group>"; };
-		B8B108FD1DCFE52200EA3B41 /* BlobCD+CoreDataClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "BlobCD+CoreDataClass.swift"; path = "../BlobCD+CoreDataClass.swift"; sourceTree = "<group>"; };
 		B8B108FF1DCFE52200EA3B41 /* UserCD+CoreDataClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "UserCD+CoreDataClass.swift"; path = "../UserCD+CoreDataClass.swift"; sourceTree = "<group>"; };
 		B8B109051DDB469500EA3B41 /* Blobjot_DataModel_1.2.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Blobjot_DataModel_1.2.xcdatamodel; sourceTree = "<group>"; };
 		B8B109071DDB46D100EA3B41 /* CurrentUser+CoreDataClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "CurrentUser+CoreDataClass.swift"; path = "../CurrentUser+CoreDataClass.swift"; sourceTree = "<group>"; };
 		B8B109081DDB46D100EA3B41 /* CurrentUser+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "CurrentUser+CoreDataProperties.swift"; path = "../CurrentUser+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		B8B1090E1DE0AD7900EA3B41 /* Blobjot_DataModel_1.3.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Blobjot_DataModel_1.3.xcdatamodel; sourceTree = "<group>"; };
-		B8B109231DE0B06F00EA3B41 /* BlobCD+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "BlobCD+CoreDataProperties.swift"; path = "../BlobCD+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		B8B109241DE0B06F00EA3B41 /* UserCD+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "UserCD+CoreDataProperties.swift"; path = "../UserCD+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		B8B109271DE3D70600EA3B41 /* Blobjot_DataModel_1.4.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Blobjot_DataModel_1.4.xcdatamodel; sourceTree = "<group>"; };
 		B8B109281DE3D72600EA3B41 /* TutorialViews+CoreDataClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "TutorialViews+CoreDataClass.swift"; sourceTree = "<group>"; };
@@ -402,7 +407,6 @@
 			isa = PBXGroup;
 			children = (
 				B80C56571D5116CD00C4E683 /* Assets */,
-				B8B108FB1DCB719300EA3B41 /* CoreData */,
 				B88131911D510EEE00021C4B /* Blobjot */,
 				B88131A91D510EEF00021C4B /* BlobjotTests */,
 				B88131B41D510EEF00021C4B /* BlobjotUITests */,
@@ -430,6 +434,7 @@
 		B88131911D510EEE00021C4B /* Blobjot */ = {
 			isa = PBXGroup;
 			children = (
+				B8C187E71E33FD5100CBAA12 /* CoreData */,
 				B88131921D510EEE00021C4B /* AppDelegate.swift */,
 				B80D17761D922FF20032B0D8 /* AWSClasses.swift */,
 				B80C56301D51126800C4E683 /* Blob.swift */,
@@ -439,7 +444,7 @@
 				B8541B741DBBD0B500867D82 /* BlobContent.swift */,
 				B88DFD871DBD50DF00255BA5 /* BlobTableViewCell.swift */,
 				B80C56431D51158000C4E683 /* BlobTableViewController.swift */,
-				B81822061D5B98F300B3A2BB /* BlobThumbnailObject.swift */,
+				B81822061D5B98F300B3A2BB /* ThumbnailObject.swift */,
 				B80C56331D5112F100C4E683 /* Constants.swift */,
 				B8541B721DB7D48D00867D82 /* CustomClasses.swift */,
 				B85FDE881D7DC2BA002A8FC7 /* CustomIdentityProvider.swift */,
@@ -475,11 +480,13 @@
 			path = BlobjotUITests;
 			sourceTree = "<group>";
 		};
-		B8B108FB1DCB719300EA3B41 /* CoreData */ = {
+		B8C187E71E33FD5100CBAA12 /* CoreData */ = {
 			isa = PBXGroup;
 			children = (
-				B8B108FD1DCFE52200EA3B41 /* BlobCD+CoreDataClass.swift */,
-				B8B109231DE0B06F00EA3B41 /* BlobCD+CoreDataProperties.swift */,
+				B877B5831E30E471007151EE /* BlobCD+CoreDataClass.swift */,
+				B877B5841E30E471007151EE /* BlobCD+CoreDataProperties.swift */,
+				B877B57E1E30E431007151EE /* BlobContentCD+CoreDataClass.swift */,
+				B877B57F1E30E431007151EE /* BlobContentCD+CoreDataProperties.swift */,
 				B864070A1D7B14A40084D6EF /* BlobNotification.swift */,
 				B86407091D7B14A40084D6EF /* BlobNotifications+CoreDataProperties.swift */,
 				B8B108F01DCB673700EA3B41 /* CoreDataFunctions.swift */,
@@ -496,11 +503,10 @@
 				B8B109291DE3D72600EA3B41 /* TutorialViews+CoreDataProperties.swift */,
 				B8B108FF1DCFE52200EA3B41 /* UserCD+CoreDataClass.swift */,
 				B8B109241DE0B06F00EA3B41 /* UserCD+CoreDataProperties.swift */,
-				B82880321E0C8CB200B62676 /* UserLike+CoreDataClass.swift */,
-				B82880331E0C8CB200B62676 /* UserLike+CoreDataProperties.swift */,
+				B877B58B1E33F400007151EE /* UserInterest+CoreDataClass.swift */,
+				B877B58C1E33F400007151EE /* UserInterest+CoreDataProperties.swift */,
 			);
 			name = CoreData;
-			path = Blobjot;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -832,6 +838,7 @@
 				B8B1090A1DDB46D100EA3B41 /* CurrentUser+CoreDataClass.swift in Sources */,
 				B864070E1D7B14A40084D6EF /* BlobNotification.swift in Sources */,
 				B80C56341D5112F100C4E683 /* Constants.swift in Sources */,
+				B877B5811E30E431007151EE /* BlobContentCD+CoreDataClass.swift in Sources */,
 				B85FDE891D7DC2BA002A8FC7 /* CustomIdentityProvider.swift in Sources */,
 				B86407051D7B0E720084D6EF /* DataController.swift in Sources */,
 				B877708A1E17FD620041ECD6 /* MapViewPreviewCell.swift in Sources */,
@@ -840,29 +847,30 @@
 				B80D177B1D98A5760032B0D8 /* UtilityFunctions.swift in Sources */,
 				B80C56311D51126800C4E683 /* Blob.swift in Sources */,
 				B80C56491D51158000C4E683 /* BlobAddMediaViewController.swift in Sources */,
-				B8B109011DCFE52300EA3B41 /* BlobCD+CoreDataClass.swift in Sources */,
 				B80C56561D51158000C4E683 /* PeopleViewController.swift in Sources */,
 				B8B1092A1DE3D72600EA3B41 /* TutorialViews+CoreDataClass.swift in Sources */,
-				B82880341E0C8CB200B62676 /* UserLike+CoreDataClass.swift in Sources */,
 				B8B1090B1DDB46D100EA3B41 /* CurrentUser+CoreDataProperties.swift in Sources */,
-				B8B109251DE0B06F00EA3B41 /* BlobCD+CoreDataProperties.swift in Sources */,
-				B82880351E0C8CB200B62676 /* UserLike+CoreDataProperties.swift in Sources */,
 				B80C56611D5183B100C4E683 /* User.swift in Sources */,
 				B8B108F81DCB718200EA3B41 /* LogError+CoreDataProperties.swift in Sources */,
 				B8B109031DCFE52300EA3B41 /* UserCD+CoreDataClass.swift in Sources */,
 				B80C56541D51158000C4E683 /* MapViewLocationBlobsCell.swift in Sources */,
+				B877B5861E30E471007151EE /* BlobCD+CoreDataProperties.swift in Sources */,
 				B80D17751D90E1C90032B0D8 /* LoginViewController.swift in Sources */,
 				B8B108F71DCB718200EA3B41 /* LogError+CoreDataClass.swift in Sources */,
 				B8B108F91DCB718200EA3B41 /* LogUserflow+CoreDataClass.swift in Sources */,
 				B80C564C1D51158000C4E683 /* BlobAddTextViewController.swift in Sources */,
+				B877B58E1E33F400007151EE /* UserInterest+CoreDataProperties.swift in Sources */,
 				B864070D1D7B14A40084D6EF /* BlobNotifications+CoreDataProperties.swift in Sources */,
+				B877B58D1E33F400007151EE /* UserInterest+CoreDataClass.swift in Sources */,
+				B877B5851E30E471007151EE /* BlobCD+CoreDataClass.swift in Sources */,
 				B88131931D510EEE00021C4B /* AppDelegate.swift in Sources */,
 				B88DFD881DBD50DF00255BA5 /* BlobTableViewCell.swift in Sources */,
 				B8312FDA1DB3DA8700CFC715 /* LocationManagerSetting.swift in Sources */,
+				B877B5821E30E431007151EE /* BlobContentCD+CoreDataProperties.swift in Sources */,
 				B8B109261DE0B06F00EA3B41 /* UserCD+CoreDataProperties.swift in Sources */,
 				B8B108F11DCB673700EA3B41 /* CoreDataFunctions.swift in Sources */,
 				B86407081D7B13EB0084D6EF /* DataModel.xcdatamodeld in Sources */,
-				B81822071D5B98F300B3A2BB /* BlobThumbnailObject.swift in Sources */,
+				B81822071D5B98F300B3A2BB /* ThumbnailObject.swift in Sources */,
 				B80C564E1D51158000C4E683 /* BlobAddViewController.swift in Sources */,
 				B8541B731DB7D49000867D82 /* CustomClasses.swift in Sources */,
 			);
@@ -1166,6 +1174,7 @@
 		B86407061D7B13EB0084D6EF /* DataModel.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				B877B57C1E30E2CF007151EE /* Blobjot_DataModel_2.0.xcdatamodel */,
 				B828802B1E0C8C7000B62676 /* Blobjot_DataModel_1.5.xcdatamodel */,
 				B8B109271DE3D70600EA3B41 /* Blobjot_DataModel_1.4.xcdatamodel */,
 				B8B1090E1DE0AD7900EA3B41 /* Blobjot_DataModel_1.3.xcdatamodel */,
@@ -1174,7 +1183,7 @@
 				B8B108F21DCB6FDC00EA3B41 /* Blobjot_DataModel_1.0.xcdatamodel */,
 				B86407071D7B13EB0084D6EF /* DataModel.xcdatamodel */,
 			);
-			currentVersion = B828802B1E0C8C7000B62676 /* Blobjot_DataModel_1.5.xcdatamodel */;
+			currentVersion = B877B57C1E30E2CF007151EE /* Blobjot_DataModel_2.0.xcdatamodel */;
 			path = DataModel.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;

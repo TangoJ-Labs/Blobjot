@@ -8,9 +8,8 @@
 
 import UIKit
 
-class BlobThumbnailObject {
-    
-    var blobThumbnailID: String!
-    var blobThumbnail: UIImage?
-    
+class ThumbnailObject
+{
+    var thumbnailID: String!
+    var thumbnail: UIImage?
 }

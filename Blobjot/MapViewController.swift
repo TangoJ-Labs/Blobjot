@@ -71,9 +71,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     var previewCountLabelRight: UILabel!
     
     // The location blob collection view will show which Blobs are currently in range
-    var locationBlobsCollectionViewContainer: UIView!
-    var locationBlobsCollectionView: UICollectionView!
-    var locationBlobsCVLayout: UICollectionViewFlowLayout!
+    var locationBlobContentCollectionViewContainer: UIView!
+    var locationBlobContentCollectionView: UICollectionView!
+    var locationBlobContentCVLayout: UICollectionViewFlowLayout!
     
     // The navigation buttons to show other view controllers
     var buttonAdd: UIView!
@@ -172,14 +172,16 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     var blobMarkers = [GMSMarker]()
     
     // MUST USE a local array, in case the global array is updated in the background
-    var userBlobs = [Blob]()
+    var mapBlobContent = [BlobContent]()
+    var userBlobContent = [BlobContent]()
     
-    // The Blob shown in the preview box will be assigned for local access
-    var previewBlob: Blob?
+//    // The Blob shown in the preview box will be assigned for local access
+//    var previewBlob: Blob?
+//    
+//    // The User (Creator) of the Blob shown in the preview box will be assigned for local access
+//    var previewBlobUser: User?
     
-    // The User (Creator) of the Blob shown in the preview box will be assigned for local access
-    var previewBlobUser: User?
-    
+//******* IS THIS NECESSARY?
     // Track which Blobs are being shown in the Preview Box to prevent overwriting the PreviewBlobs array when in use
     var previewSelection: String = ""
     
@@ -189,8 +191,8 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // Use only once - check when the user's location is first available, and move the map center to that location
     var userLocationInitialSet: Bool = false
     
-    // A default Blob User to use with the default Blob
-    var defaultBlobUser: User!
+//    // A default Blob User to use with the default Blob
+//    var defaultBlobUser: User!
     
     // Store the local class variables so that information can be passed from background processes if needed
     var peopleVC: PeopleViewController?
@@ -218,12 +220,12 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         super.viewDidLoad()
         self.edgesForExtendedLayout = UIRectEdge.all
         
-        // Create a fake user for the default blob
-        defaultBlobUser = User()
-        defaultBlobUser.userID = "default"
-        defaultBlobUser.userName = "default"
-        defaultBlobUser.userImage = UIImage(named: Constants.Strings.iconStringBlobjotLogo)
-        defaultBlobUser.userStatus = Constants.UserStatusTypes.following
+//        // Create a fake user for the default blob
+//        defaultBlobUser = User()
+//        defaultBlobUser.userID = "default"
+//        defaultBlobUser.userName = "default"
+//        defaultBlobUser.userImage = UIImage(named: Constants.Strings.iconStringBlobjotLogo)
+//        defaultBlobUser.userStatus = Constants.UserStatusTypes.following
         
         // Record the status bar settings to adjust the view if needed
         UIApplication.shared.isStatusBarHidden = false
@@ -629,26 +631,26 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         // Add the Current Location Collection View Container in the top left corner, under the status bar
         // Give it a clear background, and initialize with a height of 0 - the height will be adjusted to the number of cells
         // so that the mapView will not be blocked by the Collection View
-        locationBlobsCollectionViewContainer = UIView(frame: CGRect(x: 0, y: 0, width: Constants.Dim.mapViewLocationBlobsCVCellSize + Constants.Dim.mapViewLocationBlobsCVHighlightAdjustSize, height: 0))
-        locationBlobsCollectionViewContainer.backgroundColor = UIColor.clear
-        viewContainer.addSubview(locationBlobsCollectionViewContainer)
+        locationBlobContentCollectionViewContainer = UIView(frame: CGRect(x: 0, y: 0, width: Constants.Dim.mapViewLocationBlobsCVCellSize + Constants.Dim.mapViewLocationBlobsCVHighlightAdjustSize, height: 0))
+        locationBlobContentCollectionViewContainer.backgroundColor = UIColor.clear
+        viewContainer.addSubview(locationBlobContentCollectionViewContainer)
         
         // Add the Collection View Controller and Subview to the Collection View Container
-        locationBlobsCVLayout = UICollectionViewFlowLayout()
-        locationBlobsCVLayout.sectionInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
-        locationBlobsCVLayout.headerReferenceSize = CGSize(width: locationBlobsCollectionViewContainer.frame.width, height: 0)
-        locationBlobsCVLayout.footerReferenceSize = CGSize(width: locationBlobsCollectionViewContainer.frame.width, height: 0)
-        locationBlobsCVLayout.minimumLineSpacing = 0
-        locationBlobsCVLayout.itemSize = CGSize(width: Constants.Dim.mapViewLocationBlobsCVCellSize, height: Constants.Dim.mapViewLocationBlobsCVCellSize)
+        locationBlobContentCVLayout = UICollectionViewFlowLayout()
+        locationBlobContentCVLayout.sectionInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+        locationBlobContentCVLayout.headerReferenceSize = CGSize(width: locationBlobContentCollectionViewContainer.frame.width, height: 0)
+        locationBlobContentCVLayout.footerReferenceSize = CGSize(width: locationBlobContentCollectionViewContainer.frame.width, height: 0)
+        locationBlobContentCVLayout.minimumLineSpacing = 0
+        locationBlobContentCVLayout.itemSize = CGSize(width: Constants.Dim.mapViewLocationBlobsCVCellSize, height: Constants.Dim.mapViewLocationBlobsCVCellSize)
         
-        locationBlobsCollectionView = UICollectionView(frame: CGRect(x: 0, y: 0, width: locationBlobsCollectionViewContainer.frame.width, height: locationBlobsCollectionViewContainer.frame.height), collectionViewLayout: locationBlobsCVLayout)
-        locationBlobsCollectionView.dataSource = self
-        locationBlobsCollectionView.delegate = self
-        locationBlobsCollectionView.register(MapViewLocationBlobsCell.self, forCellWithReuseIdentifier: Constants.Strings.locationBlobsCellReuseIdentifier)
-        locationBlobsCollectionView.backgroundColor = UIColor.clear
-        locationBlobsCollectionView.alwaysBounceVertical = false
-        locationBlobsCollectionView.showsVerticalScrollIndicator = false
-        locationBlobsCollectionViewContainer.addSubview(locationBlobsCollectionView)
+        locationBlobContentCollectionView = UICollectionView(frame: CGRect(x: 0, y: 0, width: locationBlobContentCollectionViewContainer.frame.width, height: locationBlobContentCollectionViewContainer.frame.height), collectionViewLayout: locationBlobContentCVLayout)
+        locationBlobContentCollectionView.dataSource = self
+        locationBlobContentCollectionView.delegate = self
+        locationBlobContentCollectionView.register(MapViewLocationBlobsCell.self, forCellWithReuseIdentifier: Constants.Strings.locationBlobsCellReuseIdentifier)
+        locationBlobContentCollectionView.backgroundColor = UIColor.clear
+        locationBlobContentCollectionView.alwaysBounceVertical = false
+        locationBlobContentCollectionView.showsVerticalScrollIndicator = false
+        locationBlobContentCollectionViewContainer.addSubview(locationBlobContentCollectionView)
         
         // MARK: SEARCH BAR COMPONENTS
         resultsViewController = GMSAutocompleteResultsViewController()
@@ -834,11 +836,11 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         mapView.addObserver(self, forKeyPath: "myLocation", options:NSKeyValueObservingOptions(), context: nil)
         mapView.addObserver(self, forKeyPath: "camera", options:NSKeyValueObservingOptions(), context: nil)
         
-        // Setup the Blob list
-        Constants.Data.locationBlobs = [Constants.Data.defaultBlob]
+        // Setup the BlobContent list for the user's current location
+        Constants.Data.locationBlobContent = [Constants.Data.defaultBlobContent]
         
 //        // Recall the userLikes from Core Data and set them to the global variable
-//        Constants.Data.currentUserLikes = CoreDataFunctions().likesRetrieve()
+//        Constants.Data.currentUserInterests = CoreDataFunctions().likesRetrieve()
         
         // Refresh the Current User Elements
         self.refreshCurrentUserElements()
@@ -865,7 +867,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             self.refreshMap()
         }
         
-        CoreDataFunctions().blobsDeleteOld()
+        let coreDataFunctionsInstance = CoreDataFunctions()
+        coreDataFunctionsInstance.blobsDeleteOld()
+        coreDataFunctionsInstance.blobContentDeleteOld()
     }
     
     override func viewWillAppear(_ animated: Bool)
@@ -895,8 +899,8 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // MARK: HOLE VIEW DELEGATE
     func holeViewRemoved(removingViewAtPosition: Int)
     {
-        let blobColorOrigin = Constants().blobColor(Constants.BlobType.origin, blobFeature: Constants.BlobFeature.standard, blobAccess: Constants.BlobAccess.standard, mainMap: true)
-        let blobColorLocationInvisible = Constants().blobColor(Constants.BlobType.location, blobFeature: Constants.BlobFeature.invisible, blobAccess: Constants.BlobAccess.standard, mainMap: true)
+        let blobColorOrigin = Constants().blobColor(Constants.BlobType.origin, blobFeature: Constants.BlobFeature.standard, blobAccess: Constants.BlobAccess.standard, blobAccount: Constants.BlobAccount.standard, mainMap: true)
+        let blobColorLocationInvisible = Constants().blobColor(Constants.BlobType.location, blobFeature: Constants.BlobFeature.invisible, blobAccess: Constants.BlobAccess.standard, blobAccount: Constants.BlobAccount.standard, mainMap: true)
         
         switch removingViewAtPosition
         {
@@ -955,7 +959,8 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             holeView.holeViewDelegate = self
             viewContainer.addSubview(holeView)
         case 8:
-            self.previewBlob(Constants.Data.defaultBlob)
+            Constants.Data.previewBlobContent = [Constants.Data.defaultBlobContent]
+            self.previewShow()
             
             let holeView = HoleView(holeViewPosition: 9, frame: viewContainer.bounds, circleOffsetX: 100, circleOffsetY: -50, circleRadius: 140, textOffsetX: (viewContainer.bounds.width / 2) - 100, textOffsetY: 120, textWidth: 200, textFontSize: 24, text: "When you select a Blob, you can preview the Blob here, and tap the preview to view the entire Blob.")
             holeView.holeViewDelegate = self
@@ -1068,15 +1073,19 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         Constants.credentialsProvider.clearCredentials()
         
         // Clear the data from the app
-        Constants.Data.mapBlobs = [Blob]()
-        Constants.Data.taggedBlobs = [Blob]()
-        Constants.Data.userBlobs = [Blob]()
-        Constants.Data.locationBlobs = [Blob]()
-        Constants.Data.blobThumbnailObjects = [BlobThumbnailObject]()
+        Constants.Data.allBlobs = [Blob]()
+        Constants.Data.mapBlobIDs = [String]()
+        Constants.Data.blobContent = [BlobContent]()
+        Constants.Data.userBlobContentIDs = [String]()
+        Constants.Data.locationBlobContent = [BlobContent]()
+        Constants.Data.previewBlobContent = [BlobContent]()
+        Constants.Data.previewCurrentIndex = nil
+        
+        Constants.Data.thumbnailObjects = [ThumbnailObject]()
         Constants.Data.userObjects = [User]()
         
         // Remove the userBlobs from the local array
-        self.userBlobs = [Blob]()
+        self.userBlobContent = [BlobContent]()
         
         for circle in Constants.Data.mapCircles
         {
@@ -1150,31 +1159,31 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         previewSelection = "UserBlobs"
         
         // Request the Blobs that the user has posted
-        AWSPrepRequest(requestToCall: AWSGetUserBlobs(), delegate: self as AWSRequestDelegate).prepRequest()
+        AWSPrepRequest(requestToCall: AWSGetUserBlobContent(), delegate: self as AWSRequestDelegate).prepRequest()
         
         // Reset the userBlobs array and try to load the userBlobs from Core Data
-        userBlobs = [Blob]()
-        let savedBlobs = CoreDataFunctions().blobRetrieve()
-        for sBlob in savedBlobs
+        userBlobContent = [BlobContent]()
+        let savedBlobContent = CoreDataFunctions().blobContentRetrieve()
+        for sBlobContent in savedBlobContent
         {
-            if sBlob.blobUserID == Constants.Data.currentUser.userID
+            if sBlobContent.userID == Constants.Data.currentUser.userID
             {
-                userBlobs.append(sBlob)
+                userBlobContent.append(sBlobContent)
             }
         }
         
         // Sort the User Blobs from newest to oldest
-        userBlobs.sort(by: {$0.blobDatetime.timeIntervalSince1970 > $1.blobDatetime.timeIntervalSince1970})
+        userBlobContent.sort(by: {$0.contentDatetime.timeIntervalSince1970 > $1.contentDatetime.timeIntervalSince1970})
         
         // Reset the global preview Blobs list to ensure all associated variables are also reset
         UtilityFunctions().resetPreviewData()
         
         // Set the previewBlobs array to the userBlobs array since the preview CollectionView will use the global previewBlobs
-        Constants.Data.previewBlobs = self.userBlobs
-        print("MVC - PREVIEW BLOBS COUNT: \(Constants.Data.previewBlobs.count)")
+        Constants.Data.previewBlobContent = self.userBlobContent
+        print("MVC - PREVIEW BLOBS COUNT: \(Constants.Data.previewBlobContent.count)")
         
         // If the previewBlobs array is populated, indicate that the preview index is on the first Blob
-        if Constants.Data.previewBlobs.count > 0
+        if Constants.Data.previewBlobContent.count > 0
         {
             Constants.Data.previewCurrentIndex = 0
         }
@@ -1366,10 +1375,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         closePreview()
         
         // Set all map Circles back to default (no highlighting)
-        for mBlob in Constants.Data.mapBlobs
-        {
-            unhighlightMapCircleForBlob(mBlob)
-        }
+        unhighlightMapCircleForAllBlobs()
         
         // Check to see if the user is already being tracked (toggle functionality)
         if userTrackingCamera
@@ -1431,10 +1437,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         self.closePreview()
         
         // Set all map Circles back to default (no highlighting)
-        for mBlob in Constants.Data.mapBlobs
-        {
-            unhighlightMapCircleForBlob(mBlob)
-        }
+        unhighlightMapCircleForAllBlobs()
         
 //        self.loadTabViewController(false)
         
@@ -1616,10 +1619,10 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             self.lowAccuracyView.isHidden = true
             
             // Clear the array of current location Blobs and add the default Blob as the first element
-            Constants.Data.locationBlobs = [Constants.Data.defaultBlob]
+            Constants.Data.locationBlobContent = [Constants.Data.defaultBlobContent]
             
-            // Loop through the array of map Blobs to find which Blobs are in range of the user's current location
-            for blob in Constants.Data.mapBlobs
+            // Loop through the array of all Blobs to find which Blobs are in range of the user's current location
+            for blob in Constants.Data.allBlobs
             {
                 // Find the minimum distance possible to the Blob center from the user's location
                 // Determine the raw distance from the Blob center to the user's location
@@ -1633,55 +1636,71 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 // request the extra Blob data (Blob Text and/or Blob Media)
                 if minUserDistanceFromBlobCenter <= blob.blobRadius
                 {
-                    // Ensure that the Blob data has not already been requested
-                    // If so, append the Blob to the Location Blob Array
-                    if !blob.blobExtraRequested
+                    // Ensure that the Blob is one that should be displayed on the map
+                    loopBlobIDs: for mBlobID in Constants.Data.mapBlobIDs
                     {
-                        blob.blobExtraRequested = true
-                        
-                        AWSPrepRequest(requestToCall: AWSGetBlobExtraData(blob: blob), delegate: self as AWSRequestDelegate).prepRequest()
-                        
-                        // When downloading Blob data, always request the user data if it does not already exist
-                        // Find the correct User Object in the global list
-                        var userExists = false
-                        loopUserObjectCheck: for userObject in Constants.Data.userObjects
+                        if mBlobID == blob.blobID
                         {
-                            if userObject.userID == blob.blobUserID
+                            // The BlobID was found, so proceed with finding the BlobContent
+                            for blobContent in Constants.Data.blobContent
                             {
-                                userExists = true
-                                
-                                // If the userName or userImage does not exist, request them from FB
-                                if userObject.userName == nil || userObject.userImage == nil
+                                if blobContent.blobID == blob.blobID
                                 {
-                                    AWSPrepRequest(requestToCall: FBGetUserProfileData(user: userObject, downloadImage: true), delegate: self as AWSRequestDelegate).prepRequest()
+                                    // Ensure that the BlobContent data has not already been requested
+                                    // If so, append the BlobContent to the Location BlobContent Array
+                                    if !blobContent.contentExtraRequested
+                                    {
+                                        blobContent.contentExtraRequested = true
+                                        
+                                        AWSPrepRequest(requestToCall: AWSGetBlobContentData(blobContentID: blobContent.blobContentID, minimalOnly: false), delegate: self as AWSRequestDelegate).prepRequest()
+                                        
+                                        // When downloading BlobContent data, always request the user data if it does not already exist
+                                        // Find the correct User Object in the global list
+                                        var userExists = false
+                                        loopUserObjectCheck: for userObject in Constants.Data.userObjects
+                                        {
+                                            if userObject.userID == blobContent.userID
+                                            {
+                                                userExists = true
+                                                
+                                                // If the userName or userImage does not exist, request them from FB
+                                                if userObject.userName == nil || userObject.userImage == nil
+                                                {
+                                                    AWSPrepRequest(requestToCall: FBGetUserProfileData(user: userObject, downloadImage: true), delegate: self as AWSRequestDelegate).prepRequest()
+                                                }
+                                                
+                                                break loopUserObjectCheck
+                                            }
+                                        }
+                                        // If the user has not been downloaded, request the user and the userImage
+                                        if !userExists
+                                        {
+                                            AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: blobContent.userID, forPreviewData: true), delegate: self as AWSRequestDelegate).prepRequest()
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Constants.Data.locationBlobContent.append(blobContent)
+                                    }
+                                    
+                                    // If the Blob is invisible, change the circle to gray
+                                    if blob.blobFeature == Constants.BlobFeature.invisible
+                                    {
+                                        loopMapCirclesCheck: for circle in Constants.Data.mapCircles
+                                        {
+                                            if circle.title == blob.blobID
+                                            {
+                                                // Indicate that it is "not used on the main map" to get the gray color returned
+                                                circle.fillColor = Constants().blobColor(blob.blobType, blobFeature: blob.blobFeature, blobAccess: blob.blobAccess, blobAccount: blob.blobAccount, mainMap: false)
+                                                
+                                                break loopMapCirclesCheck
+                                            }
+                                        }
+                                    }
                                 }
-                                
-                                break loopUserObjectCheck
                             }
-                        }
-                        // If the user has not been downloaded, request the user and the userImage
-                        if !userExists
-                        {
-                            AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: blob.blobUserID, forPreviewData: true), delegate: self as AWSRequestDelegate).prepRequest()
-                        }
-                    }
-                    else
-                    {
-                        Constants.Data.locationBlobs.append(blob)
-                    }
-                    
-                    // If the Blob is invisible, change the circle to gray
-                    if blob.blobFeature == Constants.BlobFeature.invisible
-                    {
-                        loopMapCirclesCheck: for circle in Constants.Data.mapCircles
-                        {
-                            if circle.title == blob.blobID
-                            {
-                                // Indicate that it is "not used on the main map" to get the gray color returned
-                                circle.fillColor = Constants().blobColor(blob.blobType, blobFeature: blob.blobFeature, blobAccess: blob.blobAccess, mainMap: false)
-                                
-                                break loopMapCirclesCheck
-                            }
+                            
+                            break loopBlobIDs
                         }
                     }
                 }
@@ -1689,41 +1708,52 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 {
                     // Blob is not within user radius
                     
-                    // Since the Blob is not within the current radius, remove the extra data and change the color, if it is an invisible Blob
+                    // ONLY FOR LOCATION RESTRICTED BLOBS: Since the Blob is not within the current radius, remove the extra data from all 
+                    // BlobContent associated with the Blob, and change the Blob color, if it is an invisible Blob
                     
-                    // If the Blob is not in range of the user's current location, but the Blob's extra data has already been requested,
-                    // delete the extra data and indicate that the Blob's extra data has not been requested ONLY FOR LOCATION RESTRICTED BLOBS
-                    // If the Blob was deleted in the last IF statement (if viewed and not permanent), then this step is unnecessary
-                    if blob.blobType == Constants.BlobType.location && blob.blobExtraRequested
+                    // If the Blob is not in range of the user's current location, but the BlobContent's extra data has already been requested,
+                    // delete the extra data and indicate that the BlobContent's extra data has not been requested
+                    if blob.blobType == Constants.BlobType.location
                     {
-                        // Remove all of the extra data
-                        blob.blobText = nil
-                        blob.blobThumbnailID = nil
-                        blob.blobMediaType = nil
-                        blob.blobMediaID = nil
-                        
-                        // Indicate that the extra data has not been requested
-// *ISSUE ********** If the data has been requested, but not added to the Blob yet, it could be added again after this step, causing bugs
-                        blob.blobExtraRequested = false
-                    }
-                    // If the Blob is invisible, change the circle back to clear
-                    if blob.blobFeature == Constants.BlobFeature.invisible
-                    {
-                        loopMapCirclesCheck: for circle in Constants.Data.mapCircles
+                        for blobContent in Constants.Data.blobContent
                         {
-                            if circle.title == blob.blobID
+                            if blobContent.blobID == blob.blobID
                             {
-                                circle.fillColor = Constants().blobColor(blob.blobType, blobFeature: blob.blobFeature, blobAccess: blob.blobAccess, mainMap: true)
+                                if blobContent.contentExtraRequested
+                                {
+                                    // Remove all of the extra data
+                                    blobContent.contentText = nil
+                                    blobContent.contentThumbnailID = nil
+                                    blobContent.contentType = nil
+                                    blobContent.contentMediaID = nil
+                                    
+                                    // Indicate that the extra data has not been requested
+// *ISSUE ********** If the data has been requested, but not added to the Blob yet, it could be added again after this step, causing bugs
+                                    blobContent.contentExtraRequested = false
+                                }
                                 
-                                break loopMapCirclesCheck
+                                // If the Blob is invisible, change the circle back to clear
+                                if blob.blobFeature == Constants.BlobFeature.invisible
+                                {
+                                    loopMapCirclesCheck: for circle in Constants.Data.mapCircles
+                                    {
+                                        if circle.title == blob.blobID
+                                        {
+                                            circle.fillColor = Constants().blobColor(blob.blobType, blobFeature: blob.blobFeature, blobAccess: blob.blobAccess, blobAccount: blob.blobAccount, mainMap: true)
+                                            
+                                            break loopMapCirclesCheck
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
+                    
                 }
             }
             
             // Add Markers on top of the Blobs
-            addMarkersToBlobs()
+            processBlobMarkers()
             
             // Reload the Collection View
             self.refreshLocationBlobsCollectionView()
@@ -1769,9 +1799,8 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         // Clear the preview Blob list to prepare a new list of Blobs
         UtilityFunctions().resetPreviewData()
         
-        // Create a tapped Blob indicator property so only the hightest tapped Blob is selected, but all others are deselected
-        var tappedBlob = false
-        for mBlob in Constants.Data.mapBlobs
+        // Find all Blobs that overlap the tapped point
+        for mBlob in Constants.Data.allBlobs
         {
 //            print("MVC - TB - CHECKING BLOB: \(mBlob.blobID)")
             // Mark all Blobs as not selected so that any map tap can deselect a currently selected Blob
@@ -1787,12 +1816,27 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             // and another Blob has not been tapped (the highest Blob should only be highlighted)
             // and the Blob is not invisible (unless the user is within the invisible Blob's radius)
             // If all that is true, highlight the edge of the Blob, show the Preview Box with the Blob
-            if tapFromBlobCenterDistance <= mBlob.blobRadius && !tappedBlob && (mBlob.blobFeature != Constants.BlobFeature.invisible || mBlob.blobExtraRequested)
+            var withinTappedBlob = false
+            if let myLocation = mapView.myLocation
+            {
+                if myLocation.distance(from: CLLocation(latitude: mBlob.blobLat, longitude: mBlob.blobLong)) < mBlob.blobRadius
+                {
+                    withinTappedBlob = true
+                }
+            }
+            
+            if tapFromBlobCenterDistance <= mBlob.blobRadius && (mBlob.blobFeature != Constants.BlobFeature.invisible || withinTappedBlob)
             {
                 print("MVC - TB - TAPPED BLOB: \(mBlob.blobID)")
-//                tappedBlob = true
-                // Add the Blob to the list of preview Blobs
-                Constants.Data.previewBlobs.append(mBlob)
+                // Find all BlobContent for the tapped Blob
+                for blobContent in Constants.Data.blobContent
+                {
+                    if blobContent.blobID == mBlob.blobID
+                    {
+                        // Add the BlobContent to the list of preview BlobContent
+                        Constants.Data.previewBlobContent.append(blobContent)
+                    }
+                }
                 
 //                // Reset the Preview Box
 //                self.clearPreview()
@@ -1813,22 +1857,19 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
 //                // Show the Preview Box with the selected Blob data
 //                previewBlob(mBlob)
                 
-                // Loop through the Location Blob array to mark the top Blobs within tap range
-                loopLocationBlobCheck: for lBlob in Constants.Data.locationBlobs
+                // Loop through the Location BlobContent array to mark the top Blobs within tap range
+                loopLocationBlobContentCheck: for lBlobContent in Constants.Data.locationBlobContent
                 {
-                    // Mark all Blobs as not selected so that any map tap can deselect a currently selected Blob
-                    lBlob.blobSelected = false
+                    // Mark all BlobContent as not selected so that any map tap can deselect a currently selected Blob & BlobContent
+                    lBlobContent.blobSelected = false
                     
-                    // Calculate the distance from the tap to the center of the Blob
-                    let tapFromBlobCenterDistance: Double! = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude).distance(from: CLLocation(latitude: lBlob.blobLat, longitude: lBlob.blobLong))
-                    
-                    // Check to see if the tap distance from the Blob is equal to or less than the Blob radius and
-                    // if so, indicate that the Blob was tapped (this variable can be used to highlight the Blob within the Collection View)
-                    if tapFromBlobCenterDistance <= lBlob.blobRadius
+                    // Check to see if the BlobContent is connected to the tapped Blob and
+                    // if so, indicate that the Blob was tapped (this variable can be used to highlight the BlobContent within the Collection View)
+                    if lBlobContent.blobID == mBlob.blobID
                     {
-                        lBlob.blobSelected = true
+                        lBlobContent.blobSelected = true
                         
-                        break loopLocationBlobCheck
+                        break loopLocationBlobContentCheck
                     }
                 }
                 
@@ -1844,7 +1885,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
 //        }
         
         // Show the preview box if the previewList contains data, otherwise close the Preview box
-        if Constants.Data.previewBlobs.count > 0
+        if Constants.Data.previewBlobContent.count > 0
         {
             // Indicate that the preview index is on the first Blob
             Constants.Data.previewCurrentIndex = 0
@@ -1909,37 +1950,52 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
 //        adjustMapViewCamera()
 //        
 //        // Check the markers again since the zoom may have changed
-//        addMarkersToBlobs()
+//        processBlobMarkers()
     }
     // Called after the map is moved
     func mapView(_ mapView: GMSMapView, idleAt position: GMSCameraPosition)
     {
-        print("MVC - MAPVIEW CHANGED POSITION")
+        print("MVC - MAPVIEW CHANGED POSITION - ZOOM: \(mapView.camera.zoom)")
         
         // Adjust the Map Camera back to apply the correct camera angle
         adjustMapViewCamera()
         
-//        // Check the markers again since the zoom may have changed
-//        addMarkersToBlobs()
+        // Check the markers again since the zoom may have changed
+        processBlobMarkers()
     }
     
-    // Add markers for Blobs on the map
-    func addMarkersToBlobs()
+    // Add markers for Blobs on the map if the zoom is high enough
+    func processBlobMarkers()
     {
-        // Check each circle radius compared to the zoom height and add a marker if the zoom is too low for a Blob size
-        // Nullify all current markers
-        for marker in self.blobMarkers
+        // Ensure that the zoom is close enough
+        if mapView.camera.zoom >= Constants.Settings.mapViewAngledZoom
         {
-            marker.map = nil
-        }
-        self.blobMarkers = [GMSMarker]()
-        for blob in Constants.Data.mapBlobs
-        {
-            // Add the marker to the map for the Blob if the radius of the marker is the same or larger than the visible radius of the Blob
-            // The equation relating Blob radius to Camera Zoom is:  Radius = Zoom * -30 + 480
-            if blob.blobRadius <= (Double(mapView.camera.zoom) * -30) + 480
+            // Nullify all current markers
+            for marker in self.blobMarkers
             {
-                addMarker(blob)
+                marker.map = nil
+            }
+            self.blobMarkers = [GMSMarker]()
+        }
+        else if blobMarkers.count < 1
+        {
+            // Nullify all current markers
+            for marker in self.blobMarkers
+            {
+                marker.map = nil
+            }
+            self.blobMarkers = [GMSMarker]()
+            
+            for mBlobID in Constants.Data.mapBlobIDs
+            {
+                blobLoop: for blob in Constants.Data.allBlobs
+                {
+                    if blob.blobID == mBlobID
+                    {
+                        addMarker(blob)
+                        break blobLoop
+                    }
+                }
             }
         }
     }
@@ -1947,7 +2003,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     func addMarker(_ blob: Blob)
     {
         let dotDiameter: CGFloat = 6
-        let dot = UIImage(color: Constants().blobColorOpaque(blob.blobType, blobFeature: blob.blobFeature, blobAccess: blob.blobAccess, mainMap: true), size: CGSize(width: dotDiameter, height: dotDiameter))
+        let dot = UIImage(color: Constants().blobColorOpaque(blob.blobType, blobFeature: blob.blobFeature, blobAccess: blob.blobAccess, blobAccount: blob.blobAccount, mainMap: true), size: CGSize(width: dotDiameter, height: dotDiameter))
         let markerView = UIImageView(image: dot)
         markerView.layer.cornerRadius = markerView.frame.height / 2
         markerView.contentMode = UIViewContentMode.scaleAspectFill
@@ -2104,13 +2160,13 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // Number of cells to make in CollectionView
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int
     {
-        if collectionView == locationBlobsCollectionView
+        if collectionView == locationBlobContentCollectionView
         {
             // Resize the Location Blobs Collection View so that it only is tall enough to show all the Blobs
             // Otherwise, the Map View would be blocked by the Collection View and not allow touch responses
             
             // Calculate the height of all the cells together (multiplied by the number of Blobs)
-            let maxCVHeight = Constants.Dim.mapViewLocationBlobsCVCellSize * CGFloat(Constants.Data.locationBlobs.count)
+            let maxCVHeight = Constants.Dim.mapViewLocationBlobsCVCellSize * CGFloat(Constants.Data.locationBlobContent.count)
             // Determine the height of the viewContainer
             var cvHeight = viewContainer.frame.height
             // If the max height of all Blob cells together is less than the View Container height, then use the smaller height (the total cell(s) height)
@@ -2118,26 +2174,26 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             {
                 cvHeight = maxCVHeight
             }
-            locationBlobsCollectionViewContainer.frame.size.height = cvHeight
-            locationBlobsCollectionView.frame.size.height = cvHeight
+            locationBlobContentCollectionViewContainer.frame.size.height = cvHeight
+            locationBlobContentCollectionView.frame.size.height = cvHeight
             
-            return Constants.Data.locationBlobs.count
+            return Constants.Data.locationBlobContent.count
         }
         else if collectionView == previewCollectionView
         {
             // Any selected preview list will be assigned to the previewBlobs array for use
-            return Constants.Data.previewBlobs.count
+            return Constants.Data.previewBlobContent.count
         }
         else
         {
-            return Constants.Data.previewBlobs.count
+            return Constants.Data.previewBlobContent.count
         }
     }
     
     // Create cells for CollectionView
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell
     {
-        if collectionView == locationBlobsCollectionView
+        if collectionView == locationBlobContentCollectionView
         {
             // Create reference to CollectionView cell
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: Constants.Strings.locationBlobsCellReuseIdentifier, for: indexPath) as! MapViewLocationBlobsCell
@@ -2155,7 +2211,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             if (indexPath as NSIndexPath).row > 0
             {
                 // Add the associated User Image to the User Image View
-                if let userID = Constants.Data.locationBlobs[(indexPath as NSIndexPath).row].blobUserID
+                if let userID = Constants.Data.locationBlobContent[(indexPath as NSIndexPath).row].userID
                 {
                     // Find the correct User Object in the global list and assign the User Image, if it exists
                     loopUserObjectCheck: for userObject in Constants.Data.userObjects
@@ -2179,8 +2235,8 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 cell.userImageActivityIndicator.stopAnimating()
             }
             
-            // Check to see if the Blob has been selected, and move the User Image to the right
-            if Constants.Data.locationBlobs[(indexPath as NSIndexPath).row].blobSelected
+            // Check to see if the Blob for this BlobContent has been selected, and if so move the User Image to the right
+            if Constants.Data.locationBlobContent[(indexPath as NSIndexPath).row].blobSelected
             {
                 cell.userImageContainer.frame = CGRect(x: 5 + Constants.Dim.mapViewLocationBlobsCVHighlightAdjustSize, y: 5, width: Constants.Dim.mapViewLocationBlobsCVItemSize, height: Constants.Dim.mapViewLocationBlobsCVItemSize)
             }
@@ -2193,20 +2249,20 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             
             print("MVC - CV - CREATING PREVIEW CELL AT INDEX: \(indexPath.row)")
             
-            // Reference the blob in the selected Blobs array
-            let blob = Constants.Data.previewBlobs[(indexPath as NSIndexPath).row]
+            // Reference the BlobContent in the selected BlobContent array
+            let blobContent = Constants.Data.previewBlobContent[(indexPath as NSIndexPath).row]
             
-            // Check if the user has already been downloaded ONLY IF NOT A BLOBJOT BLOB
+            // Check if the user has already been downloaded
             // If a Blob outside the range of the user was clicked, the user may not have already been downloaded
             var userExists = false
             loopUserCheck: for user in Constants.Data.userObjects
             {
-                if user.userID == blob.blobUserID
+                if user.userID == blobContent.userID
                 {
                     userExists = true
                     
-                    // Assign the user to the previewBlobUser
-                    self.previewBlobUser = user
+//                    // Assign the user to the previewBlobUser
+//                    self.previewBlobUser = user
                     
                     // Assign the user's image and username to the preview
                     if user.userName != nil
@@ -2235,11 +2291,11 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             // If the user has not been downloaded, request the user and the userImage
             if !userExists
             {
-                AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: blob.blobUserID, forPreviewData: true), delegate: self as AWSRequestDelegate).prepRequest()
+                AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: blobContent.userID, forPreviewData: true), delegate: self as AWSRequestDelegate).prepRequest()
             }
             
             // Set the Preview Time Label to show the age of the Blob
-            if let datetime = blob.blobDatetime
+            if let datetime = blobContent.contentDatetime
             {
                 // Capture the number of hours it has been since the Blob was created (as a positive integer)
                 let dateAgeHrs: Int = -1 * Int(datetime.timeIntervalSinceNow / 3600)
@@ -2257,57 +2313,57 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 cell.previewTimeLabel.text = stringAge
             }
             
-            // Check whether the Blob text has been added to the Blob, and if so, display the text
+            // Check whether the BlobContent text has been added to the BlobContent, and if so, display the text
             // If not, check whether the extra data has already been requested
-            // if not, this means the Blob is not (or has not been) in range
+            // if not, this means the Blob for the BlobContent is not (or has not been) in range
             // If it has been requested, but no text exists, do nothing (leave the text area blank)
-            if let bText = blob.blobText
+            if let bText = blobContent.contentText
             {
                 cell.previewTextBox.textColor = Constants.Colors.colorPreviewTextNormal
                 cell.previewTextBox.text = bText
             }
-            else if !blob.blobExtraRequested
+            else if !blobContent.contentExtraRequested
             {
                 cell.previewTextBox.textColor = Constants.Colors.colorPreviewTextError
                 cell.previewTextBox.text = Constants.Strings.mapViewLabelOutOfRange
             }
             
-            print("MVC - BLOB PREVIEW EXTRA REQUESTED: \(blob.blobExtraRequested)")
-            // If Blob extra data has been requested, the Blob is in range, so download the Thumbnail,
-            // otherwise, move the Blob age and text all the way to the right side of the Preview Box
-            if blob.blobExtraRequested
+            print("MVC - BLOB CONTENT PREVIEW EXTRA REQUESTED: \(blobContent.contentExtraRequested)")
+            // If BlobContent extra data has been requested, the Blob is in range, so download the Thumbnail,
+            // otherwise, move the BlobContent age and text all the way to the right side of the Preview Box
+            if blobContent.contentExtraRequested
             {
-                print("MVC - BLOB PREVIEW MEDIA TYPE: \(blob.blobMediaType)")
-                if let blobMediaType = blob.blobMediaType
+                print("MVC - BLOB CONTENT PREVIEW MEDIA TYPE: \(blobContent.contentType)")
+                if let contentType = blobContent.contentType
                 {
-                    print("MVC - BLOB PREVIEW THUMBNAIL - CHECK 1")
-                    // Check whether the Blob has media - if not, do not show the Thumbnail box
-                    if blobMediaType > 0
+                    print("MVC - BLOB CONTENT PREVIEW THUMBNAIL - CHECK 1")
+                    // Check whether the BlobContent has media - if not, do not show the Thumbnail box
+                    if contentType.rawValue > 0
                     {
-                        print("MVC - BLOB PREVIEW THUMBNAIL - CHECK 2")
+                        print("MVC - BLOB CONTENT PREVIEW THUMBNAIL - CHECK 2")
                         // Check to see if the thumbnail was already downloaded
                         // If not, the return function from AWS will apply the thumbnail to the preview box
                         // Loop through the BlobThumbnailObjects array
                         var thumbnailExists = false
-                        loopThumbnail: for tObject in Constants.Data.blobThumbnailObjects
+                        loopThumbnail: for tObject in Constants.Data.thumbnailObjects
                         {
-                            print("MVC - BLOB PREVIEW THUMBNAIL - CHECK 3")
+                            print("MVC - BLOB CONTENT PREVIEW THUMBNAIL - CHECK 3")
                             // Check each thumbnail object to see if matches
-                            if tObject.blobThumbnailID == blob.blobThumbnailID
+                            if tObject.thumbnailID == blobContent.contentThumbnailID
                             {
-                                print("MVC - BLOB PREVIEW THUMBNAIL - CHECK 4")
+                                print("MVC - BLOB CONTENT PREVIEW THUMBNAIL - CHECK 4")
                                 // Check to make sure the thumbnail has already been downloaded
-                                if let thumbnailImage = tObject.blobThumbnail
+                                if let thumbnailImage = tObject.thumbnail
                                 {
-                                    print("MVC - BLOB PREVIEW THUMBNAIL - CHECK 5")
-                                    // Setthe Preview Thumbnail image
+                                    print("MVC - BLOB CONTENT PREVIEW THUMBNAIL - CHECK 5")
+                                    // Set the Preview Thumbnail image
                                     cell.previewThumbnailView.image = thumbnailImage
                                     
                                     // Stop animating the activity indicator
                                     cell.previewThumbnailActivityIndicator.stopAnimating()
                                     
-                                    // Assign the thumbnail image to the previewBlob
-                                    self.previewBlob?.blobThumbnail = thumbnailImage
+//                                    // Assign the thumbnail image to the previewBlob
+//                                    self.previewBlob?.blobThumbnail = thumbnailImage
                                     
                                     // Add the thumbnail subview to the cell
                                     cell.previewContainer.addSubview(cell.previewThumbnailView)
@@ -2327,12 +2383,12 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                         }
                         if !thumbnailExists
                         {
-                            print("MVC - BLOB PREVIEW THUMBNAIL - CHECK 6")
+                            print("MVC - BLOB CONTENT PREVIEW THUMBNAIL - CHECK 6")
                             // Request the thumbnail image if the thumbnailID exists
-                            if blob.blobThumbnailID != nil
+                            if let thumbnailID = blobContent.contentThumbnailID
                             {
-                                print("MVC - BLOB PREVIEW THUMBNAIL - CHECK 7")
-                                AWSPrepRequest(requestToCall: AWSGetThumbnailImage(blob: blob), delegate: self as AWSRequestDelegate).prepRequest()
+                                print("MVC - BLOB CONTENT PREVIEW THUMBNAIL - CHECK 7")
+                                AWSPrepRequest(requestToCall: AWSGetThumbnailImage(contentThumbnailID: thumbnailID), delegate: self as AWSRequestDelegate).prepRequest()
                             }
                         }
                     }
@@ -2358,7 +2414,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         // Clear the Preview Box for new Blob data
         self.clearPreview()
         
-        if collectionView == locationBlobsCollectionView
+        if collectionView == locationBlobContentCollectionView
         {
             // If the cell is the first one, it is the default blob, so show the Blobjot Blob message
             if (indexPath as NSIndexPath).row == 0
@@ -2367,107 +2423,97 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             }
             else
             {
-                // Loop through the Map Blobs, reset the Map Circles' borders, find the matching Location Blob and highlight its border
+                // Loop through the Map Blob IDs, find the associated Blob, reset the Map Circles' borders, find the matching Location Blob and highlight its border
                 // Do NOT break the Map Blobs loop early.  All Map Blobs should be checked and corresponding Map Circle's border reset
-                for mBlob in Constants.Data.mapBlobs
+                loopMapBlobs: for mBlobID in Constants.Data.mapBlobIDs
                 {
-                    mBlob.blobSelected = false
-                    
-                    // Reset the border for the Map Circle that matches the Map Blob
-                    unhighlightMapCircleForBlob(mBlob)
-                    
-                    // Check whether the current Map Blob matches the Location Blob at the selected index
-                    // If so, find the Map Circle that matches the current Map Blob and highlight that Map Circle's border
-                    if mBlob.blobID == Constants.Data.locationBlobs[(indexPath as NSIndexPath).row].blobID
+                    // Find the actual Blob object
+                    for mBlob in Constants.Data.allBlobs
                     {
-                        mBlob.blobSelected = true
-                        
-                        // Reload the Collection View
-                        self.refreshLocationBlobsCollectionView()
-                        
-                        loopMapCircles: for circle in Constants.Data.mapCircles
+                        if mBlob.blobID == mBlobID
                         {
-                            if circle.title == mBlob.blobID
+                            mBlob.blobSelected = false
+                            
+                            // Reset the border for the Map Circle that matches the Map Blob
+                            unhighlightMapCircleForBlob(mBlob)
+                            
+                            if let associatedBlobID = Constants.Data.locationBlobContent[(indexPath as NSIndexPath).row].blobID
                             {
-                                circle.strokeColor = Constants.Colors.blobHighlight
-                                circle.strokeWidth = 3
+                                // Call the function to prepare and show the Preview Box using the data from the Location BlobContent at the selected index
+                                previewBlobContentForBlobID(associatedBlobID)
                                 
-                                break loopMapCircles
+                                // Check whether the current Map Blob matches the Location BlobContent BlobID at the selected index
+                                // If so, find the Map Circle that matches the current Map Blob and highlight that Map Circle's border
+                                if mBlob.blobID == associatedBlobID
+                                {
+                                    mBlob.blobSelected = true
+                                    
+                                    // Reload the Collection View
+                                    self.refreshLocationBlobsCollectionView()
+                                    
+                                    loopMapCircles: for circle in Constants.Data.mapCircles
+                                    {
+                                        if circle.title == mBlob.blobID
+                                        {
+                                            circle.strokeColor = Constants.Colors.blobHighlight
+                                            circle.strokeWidth = 3
+                                            
+                                            break loopMapCircles
+                                        }
+                                    }
+                                }
                             }
+                            break loopMapBlobs
                         }
                     }
                 }
-                
-                // Call the function to prepare and show the Preview Box using the data from the Location Blob at the selected index
-                previewBlob(Constants.Data.locationBlobs[(indexPath as NSIndexPath).row])
             }
         }
         else
         {
-            // Ensure that the extra blob data has already been requested and that either the blob text or thumbnail is not nil
-            if let pBlob = previewBlob
+            // ELSE should be the previewBlobCollectionView
+            
+            // Ensure that the preview BlobContent array is not empty
+            // Then show the detailed BlobContent list view
+            if Constants.Data.previewBlobContent.count > 0
             {
-                if pBlob.blobExtraRequested && (pBlob.blobText != nil || pBlob.blobThumbnailID != nil)
+                // Close the Preview Box - the user is not interacting with the Preview Box anymore
+                closePreview()
+                
+                unhighlightMapCircleForAllBlobs()
+                
+                // Create a back button and title for the Nav Bar
+                let backButtonItem = UIBarButtonItem(title: "\u{2190}",
+                                                     style: UIBarButtonItemStyle.plain,
+                                                     target: self,
+                                                     action: #selector(MapViewController.popViewController(_:)))
+                backButtonItem.tintColor = Constants.Colors.colorTextNavBar
+                
+                let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
+                let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
+                ncTitleText.text = "All selected content"
+                
+                ncTitleText.textColor = Constants.Colors.colorTextNavBar
+                ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 14)
+                ncTitleText.textAlignment = .center
+                ncTitle.addSubview(ncTitleText)
+                
+                // Instantiate the BlobViewController and pass the Preview Blob to the VC
+                blobVC = BlobTableViewController()
+                blobVC.blobContentArray = Constants.Data.previewBlobContent
+                
+                // Assign the created Nav Bar settings to the Tab Bar Controller
+                blobVC.navigationItem.setLeftBarButton(backButtonItem, animated: true)
+                blobVC.navigationItem.titleView = ncTitle
+                
+                print("MVC - NAV CONTROLLER: \(self.navigationController)")
+                if let navController = self.navigationController
                 {
-                    // Close the Preview Box - the user is not interacting with the Preview Box anymore
-                    closePreview()
-                    
-                    for mBlob in Constants.Data.mapBlobs
-                    {
-                        // Set all map Circles back to default (no highlighting)
-                        unhighlightMapCircleForBlob(mBlob)
-                        
-                        // Deselect all mapBlobs (so they don't stick out from the Collection View)
-                        mBlob.blobSelected = false
-                    }
-                    
-                    // Create a back button and title for the Nav Bar
-                    let backButtonItem = UIBarButtonItem(title: "\u{2190}",
-                                                         style: UIBarButtonItemStyle.plain,
-                                                         target: self,
-                                                         action: #selector(MapViewController.popViewController(_:)))
-                    backButtonItem.tintColor = Constants.Colors.colorTextNavBar
-                    
-                    let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
-                    let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
-                    
-                    // Try to access the locally stored preview Blob User to set the navigation bar title
-                    if let previewUser = self.previewBlobUser
-                    {
-                        ncTitleText.text = previewUser.userName
-                    }
-                    else
-                    {
-                        ncTitleText.text = ""
-                    }
-                    
-                    ncTitleText.textColor = Constants.Colors.colorTextNavBar
-                    ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 14)
-                    ncTitleText.textAlignment = .center
-                    ncTitle.addSubview(ncTitleText)
-                    
-                    // Instantiate the BlobViewController and pass the Preview Blob to the VC
-                    blobVC = BlobTableViewController()
-                    blobVC.blob = pBlob
-                    
-                    // Assign the created Nav Bar settings to the Tab Bar Controller
-                    blobVC.navigationItem.setLeftBarButton(backButtonItem, animated: true)
-                    blobVC.navigationItem.titleView = ncTitle
-                    
-                    print("MVC - NAV CONTROLLER: \(self.navigationController)")
-                    if let navController = self.navigationController
-                    {
-                        navController.pushViewController(blobVC, animated: true)
-                    }
-                    
-                    // Reload the collectionView so that the previously selected Blob is no longer sticking out
-                    self.refreshLocationBlobsCollectionView()
+                    navController.pushViewController(blobVC, animated: true)
                 }
-                else
-                {
-                    // Show the error message
-                    self.createAlertOkView("Blob not in range", message: Constants.Strings.mapViewMessageOutOfRange)
-                }
+                
+                // Reload the collectionView so that the previously selected Blob is no longer sticking out
+                self.refreshLocationBlobsCollectionView()
             }
         }
         
@@ -2586,7 +2632,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // Reset all Preview Box settings and values
     func clearPreview()
     {
+        Constants.Data.previewBlobContent = [BlobContent]()
         
+        refreshPreviewCollectionView()
     }
     
     func hideBackgroundActivityView(_ refreshBlobs: Bool)
@@ -2683,11 +2731,20 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         }, completion: nil)
     }
     
-    // Add Blob data to the Preview Box elements and animate the Preview Box lowering into view
-    func previewBlob(_ blob: Blob)
+    // Add BlobContent data to the Preview Box elements and animate the Preview Box lowering into view
+    func previewBlobContentForBlobID(_ blobID: String)
     {
-        // Assign the local previewBlob to the passed blob so that other functions can access the selected blob
-        self.previewBlob = blob
+        // Clear the previewBlobContent array
+        Constants.Data.previewBlobContent = [BlobContent]()
+        
+        // Assign the global previewBlobContent to all BlobContent that matches the passed BlobID
+        for blobContent in Constants.Data.blobContent
+        {
+            if blobContent.blobID == blobID
+            {
+                Constants.Data.previewBlobContent.append(blobContent)
+            }
+        }
         
         self.previewShow()
         
@@ -2698,32 +2755,41 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // Loop through the Map Blobs, check if they have already been added as Map Circles, and create a Map Circle if needed
     func addMapBlobsToMap()
     {
-        print("MVC-AMBM - ADDING MAP BLOBS")
+        // The mapBlobIDs list has been updated AND WILL BE SORTED CORRECTLY IMMEDIATELY AFTER DOWNLOADING
+        // and all Blobs are in the allBlobs array
         // Loop through Map Blobs and check for corresponding Map Circles
-        for addBlob in Constants.Data.mapBlobs
+        for mBlobID in Constants.Data.mapBlobIDs
         {
-            var blobExists = false
-            loopCircleCheck: for circle in Constants.Data.mapCircles
+            blobLoop: for blob in Constants.Data.allBlobs
             {
-                if circle.title == addBlob.blobID
+                if blob.blobID == mBlobID
                 {
-                    blobExists = true
-                    print("MVC-AMBM - BLOB EXISTS")
-                    break loopCircleCheck
+                    var blobExists = false
+                    loopCircleCheck: for circle in Constants.Data.mapCircles
+                    {
+                        if circle.title == blob.blobID
+                        {
+                            blobExists = true
+                            print("MVC-AMBM - BLOB EXISTS")
+                            break loopCircleCheck
+                        }
+                    }
+                    
+                    // If a corresponding Map Circle does not exist, call createBlobOnMap to create a new one
+                    if !blobExists
+                    {
+                        print("MVC-AMBM - BLOB DOES NOT EXIST")
+                        // Call local function to create a new Circle and add it to the Map View
+                        self.createBlobOnMap(blob)
+                    }
+                    
+                    break blobLoop
                 }
-            }
-            
-            // If a corresponding Map Circle does not exist, call createBlobOnMap to create a new one
-            if !blobExists
-            {
-                print("MVC-AMBM - BLOB DOES NOT EXIST")
-                // Call local function to create a new Circle and add it to the Map View
-                self.createBlobOnMap(addBlob)
             }
         }
         
         // Now add the markers to the Blobs
-        self.addMarkersToBlobs()
+        self.processBlobMarkers()
 
         // ADDED FOR MANUAL LOCATION RELOAD
         // Reload the current location's Blobs to show in the Collection View
@@ -2739,8 +2805,8 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         addCircle.position = blobCenter
         addCircle.radius = blob.blobRadius
         addCircle.title = blob.blobID
-        addCircle.fillColor = Constants().blobColor(blob.blobType, blobFeature: blob.blobFeature, blobAccess: blob.blobAccess, mainMap: true)
-        addCircle.strokeColor = Constants().blobColor(blob.blobType, blobFeature: blob.blobFeature, blobAccess: blob.blobAccess, mainMap: true)
+        addCircle.fillColor = Constants().blobColor(blob.blobType, blobFeature: blob.blobFeature, blobAccess: blob.blobAccess, blobAccount: blob.blobAccount, mainMap: true)
+        addCircle.strokeColor = Constants().blobColor(blob.blobType, blobFeature: blob.blobFeature, blobAccess: blob.blobAccess, blobAccount: blob.blobAccount, mainMap: true)
         addCircle.strokeWidth = 1
         addCircle.map = self.mapView
         Constants.Data.mapCircles.append(addCircle)
@@ -2797,9 +2863,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         
         // Ensure that the nearestCell is not greater than or equal to the array length (array is 0-indexed)
         var nearestCellInt = Int(nearestCell)
-        if nearestCellInt >= Constants.Data.previewBlobs.count
+        if nearestCellInt >= Constants.Data.previewBlobContent.count
         {
-            nearestCellInt = Constants.Data.previewBlobs.count - 1
+            nearestCellInt = Constants.Data.previewBlobContent.count - 1
         }
         else if nearestCellInt < 0
         {
@@ -2828,9 +2894,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             previewCountLabelLeft.text = ""
         }
         
-        if Constants.Data.previewBlobs.count - nearestCellInt - 1 > 0
+        if Constants.Data.previewBlobContent.count - nearestCellInt - 1 > 0
         {
-            previewCountLabelRight.text = String(Constants.Data.previewBlobs.count - nearestCellInt - 1)
+            previewCountLabelRight.text = String(Constants.Data.previewBlobContent.count - nearestCellInt - 1)
         }
         else
         {
@@ -2855,20 +2921,20 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         }
         
         // Recall the currently viewed Blob in the preview
-        let pBlob = Constants.Data.previewBlobs[cell]
+        let pBlobContent = Constants.Data.previewBlobContent[cell]
         
         // Add the current Blob to the map, if it does not already exist
         var mBlobExists = false
-        mapBlobLoop: for mBlob in Constants.Data.mapBlobs
+        mapBlobLoop: for mBlobID in Constants.Data.mapBlobIDs
         {
-            if mBlob.blobID == pBlob.blobID
+            if mBlobID == pBlobContent.blobID
             {
                 mBlobExists = true
                 
                 // Highlight the edge of the Blob
                 loopMapCircles: for circle in Constants.Data.mapCircles
                 {
-                    if circle.title == mBlob.blobID
+                    if circle.title == mBlobID
                     {
                         circle.strokeColor = Constants.Colors.blobHighlight
                         circle.strokeWidth = 3
@@ -2878,8 +2944,16 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 }
                 
                 print("MVC - PV - MAP ANIMATE TO PREVIEW CIRCLE 1")
-                // Move the map to the Blob
-                mapCameraMoveToBlob(mBlob)
+                // Find the actual Blob object
+                blobLoop: for blob in Constants.Data.allBlobs
+                {
+                    if blob.blobID == mBlobID
+                    {
+                        // Move the map to the Blob
+                        mapCameraMoveToBlob(blob)
+                        break blobLoop
+                    }
+                }
                 
                 break mapBlobLoop
             }
@@ -2888,19 +2962,28 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         // If the Blob doesn't already exist on the map, add the circle and move the map to it
         if !mBlobExists
         {
-            // Add the Blob to the map
-            previewBlobCircle = GMSCircle()
-            previewBlobCircle.position = CLLocationCoordinate2DMake(pBlob.blobLat, pBlob.blobLong)
-            previewBlobCircle.radius = pBlob.blobRadius
-            previewBlobCircle.title = pBlob.blobID
-            previewBlobCircle.fillColor = Constants().blobColor(pBlob.blobType, blobFeature: pBlob.blobFeature, blobAccess: pBlob.blobAccess, mainMap: true)
-            previewBlobCircle.strokeColor = Constants.Colors.blobHighlight
-            previewBlobCircle.strokeWidth = 3
-            previewBlobCircle.map = self.mapView
-            
-            print("MVC - PV - MAP ANIMATE TO PREVIEW CIRCLE 2")
-            // Move the map to the Blob
-            mapCameraMoveToBlob(pBlob)
+            // Find the actual Blob object
+            blobLoop: for blob in Constants.Data.allBlobs
+            {
+                if blob.blobID == pBlobContent.blobID
+                {
+                    // Add the Blob to the map
+                    previewBlobCircle = GMSCircle()
+                    previewBlobCircle.position = CLLocationCoordinate2DMake(blob.blobLat, blob.blobLong)
+                    previewBlobCircle.radius = blob.blobRadius
+                    previewBlobCircle.title = blob.blobID
+                    previewBlobCircle.fillColor = Constants().blobColor(blob.blobType, blobFeature: blob.blobFeature, blobAccess: blob.blobAccess, blobAccount: blob.blobAccount, mainMap: true)
+                    previewBlobCircle.strokeColor = Constants.Colors.blobHighlight
+                    previewBlobCircle.strokeWidth = 3
+                    previewBlobCircle.map = self.mapView
+                    
+                    print("MVC - PV - MAP ANIMATE TO PREVIEW CIRCLE 2")
+                    // Move the map to the Blob
+                    mapCameraMoveToBlob(blob)
+                    
+                    break blobLoop
+                }
+            }
         }
     }
     
@@ -2956,16 +3039,19 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // Loop through all Map Circles and remove all highlighting (set back to normal)
     func unhighlightMapCircleForAllBlobs()
     {
-        for circle in Constants.Data.mapCircles
+        // Set all map Circles back to default (no highlighting)
+        for mBlobID in Constants.Data.mapBlobIDs
         {
-            mapBlobLoop: for mBlob in Constants.Data.mapBlobs
+            loopAllBlobs: for blob in Constants.Data.allBlobs
             {
-                if mBlob.blobID == circle.title
+                if blob.blobID == mBlobID
                 {
-                    circle.strokeColor = Constants().blobColor(mBlob.blobType, blobFeature: mBlob.blobFeature, blobAccess: mBlob.blobAccess, mainMap: true)
-                    circle.strokeWidth = 1
+                    unhighlightMapCircleForBlob(blob)
                     
-                    break mapBlobLoop
+                    // Deselect all mapBlobs (so they don't stick out from the Collection View)
+                    blob.blobSelected = false
+                    
+                    break loopAllBlobs
                 }
             }
         }
@@ -2977,7 +3063,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         {
             if circle.title == blob.blobID
             {
-                circle.strokeColor = Constants().blobColor(blob.blobType, blobFeature: blob.blobFeature, blobAccess: blob.blobAccess, mainMap: true)
+                circle.strokeColor = Constants().blobColor(blob.blobType, blobFeature: blob.blobFeature, blobAccess: blob.blobAccess, blobAccount: blob.blobAccount, mainMap: true)
                 circle.strokeWidth = 1
                 
                 break loopMapCircles
@@ -3006,19 +3092,19 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     }
     
     
-    func displayNotification(_ blob: Blob)
+    func displayNotification(_ blobContentID: String)
     {
     }
     
     func refreshLocationBlobsCollectionView()
     {
         // Reload the Collection View
-        self.locationBlobsCollectionView.performSelector(onMainThread: #selector(UICollectionView.reloadData), with: nil, waitUntilDone: true)
+        self.locationBlobContentCollectionView.performSelector(onMainThread: #selector(UICollectionView.reloadData), with: nil, waitUntilDone: true)
     }
     
     func refreshPreviewCollectionView()
     {
-        print("MVC - PV - REFRESH PREVIEW - PREVIEW COUNT: \(Constants.Data.previewBlobs.count)")
+        print("MVC - PV - REFRESH PREVIEW - PREVIEW COUNT: \(Constants.Data.previewBlobContent.count)")
         
         // Reset the count labels
         previewCountLabelLeft.text = ""
@@ -3033,9 +3119,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             {
                 previewCountLabelLeft.text = String(previewCurrentCell)
             }
-            if Constants.Data.previewBlobs.count - previewCurrentCell - 1 > 0
+            if Constants.Data.previewBlobContent.count - previewCurrentCell - 1 > 0
             {
-                previewCountLabelRight.text = String(Constants.Data.previewBlobs.count - previewCurrentCell - 1)
+                previewCountLabelRight.text = String(Constants.Data.previewBlobContent.count - previewCurrentCell - 1)
             }
             
             // Process the first circle for the first Blob
@@ -3126,12 +3212,12 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                         // Show the error message
                         self.createAlertOkView("AWSGetMapData Network Error", message: "I'm sorry, you appear to be having network issues.  Please refresh the map to try again.")
                     }
-                case let awsGetBlobData as AWSGetBlobExtraData:
+                case let awsGetBlobContentData as AWSGetBlobContentData:
                     if success
                     {
                         // Refresh the collection view and show the blob notification if needed
                         self.refreshLocationBlobsCollectionView()
-                        self.displayNotification(awsGetBlobData.blob)
+                        self.displayNotification(awsGetBlobContentData.blobContentID)
                         
                         // Refresh child VCs
                         if self.blobVC != nil
@@ -3181,30 +3267,42 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                         // Show the error message
                         self.createAlertOkView("AWSGetSingleUserData Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                     }
-                case _ as AWSGetUserBlobs:
+                case _ as AWSGetUserBlobContent:
                     if success
                     {
-                        print("MVC - PV - AWSGetUserBlobs RETURN")
+                        print("MVC - PV - AWSGetUserBlobContent RETURN")
                         
-                        if Constants.Data.userBlobs.count > 0
+                        // Reset the local userBlobContent array and find all BlobContent for the current user
+                        self.userBlobContent = [BlobContent]()
+                        if Constants.Data.userBlobContentIDs.count > 0
                         {
-                            // Assign the global User Blobs to the local array
-                            self.userBlobs = Constants.Data.userBlobs
+                            // Assign the global BlobContent that are assigned to the current user to the local array
+                            for userBCID in Constants.Data.userBlobContentIDs
+                            {
+                                blobContentLoop: for blobContent in Constants.Data.blobContent
+                                {
+                                    if blobContent.blobContentID == userBCID
+                                    {
+                                        self.userBlobContent.append(blobContent)
+                                        break blobContentLoop
+                                    }
+                                }
+                            }
                             
                             // Sort the User Blobs from newest to oldest
-                            self.userBlobs.sort(by: {$0.blobDatetime.timeIntervalSince1970 > $1.blobDatetime.timeIntervalSince1970})
+                            self.userBlobContent.sort(by: {$0.contentDatetime.timeIntervalSince1970 > $1.contentDatetime.timeIntervalSince1970})
                             
                             // Ensure that the UserBlobs filter is still applied to prevent overwriting another filter
                             if self.previewSelection == "UserBlobs"
                             {
-                                // Reset the global preview Blobs list to ensure all associated variables are also reset
+                                // Reset the global preview BlobContent list to ensure all associated variables are also reset
                                 UtilityFunctions().resetPreviewData()
                                 
-                                // Set the previewBlobs array to the userBlobs array since the preview CollectionView will use the global previewBlobs
-                                Constants.Data.previewBlobs = self.userBlobs
+                                // Set the previewBlobContent array to the userBlobContent array since the preview CollectionView will use the global previewBlobContent
+                                Constants.Data.previewBlobContent = self.userBlobContent
                                 
-                                // If the previewBlobs array is populated, indicate that the preview index is on the first Blob
-                                if Constants.Data.previewBlobs.count > 0
+                                // If the previewBlobContent array is populated, indicate that the preview index is on the first Blob
+                                if Constants.Data.previewBlobContent.count > 0
                                 {
                                     Constants.Data.previewCurrentIndex = 0
                                 }

@@ -96,6 +96,7 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
     var blobType = Constants.BlobType.origin
     var blobFeature = Constants.BlobFeature.standard
     var blobAccess = Constants.BlobAccess.standard
+    var blobAccount = Constants.BlobAccount.standard
     var blobColor: UIColor!
     var sendAttempted: Bool = false
     
@@ -254,7 +255,7 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
         mapView.animate(toViewingAngle: desiredAngle)
         
         // Using the data passed from the parent VC (the Map View Controller), create a circle on the map where the user created the new Blob
-        blobColor = Constants().blobColor(blobType, blobFeature: blobFeature, blobAccess: blobAccess, mainMap: false)
+        blobColor = Constants().blobColor(blobType, blobFeature: blobFeature, blobAccess: blobAccess, blobAccount: blobAccount, mainMap: false)
         addCircle = GMSCircle(position: blobCoords, radius: blobRadius)
         addCircle.fillColor = blobColor
         addCircle.strokeColor = blobColor
@@ -316,6 +317,7 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
         if toggleAccessSwitch.isOn
         {
             // Change the followerOnly indicator
+            blobAccess = Constants.BlobAccess.followers
             
             // Show the message
             showMessageBoxAccess()
@@ -323,6 +325,7 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
         else
         {
             // Change the followerOnly indicator
+            blobAccess = Constants.BlobAccess.standard
             
             // Hide the message
             hideMessageBoxAccess()
@@ -628,52 +631,52 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
     
     func processBlobData(_ blobID: String, mediaID: String, uploadKey: String, currentTime: Double)
     {
-        if let currentUserName = Constants.Data.currentUser.userName
-        {
-            // Upload the Blob data to Lamda and then DynamoDB
-            AWSPrepRequest(requestToCall: AWSUploadBlobData(blobID: blobID, blobLat: self.blobCoords.latitude, blobLong: self.blobCoords.longitude, blobMediaID: uploadKey, blobMediaType: self.blobMediaType, blobRadius: self.blobRadius, blobText: self.vc1.blobTextView.text, blobThumbnailID: mediaID + ".png", blobTimestamp: currentTime, blobType: self.blobType.rawValue, blobFeature: self.blobFeature.rawValue, blobAccess: self.blobAccess.rawValue, blobUserID: Constants.Data.currentUser.userID!, blobUserName: currentUserName), delegate: self as AWSRequestDelegate).prepRequest()
-            
-            // Create a new Blob locally so that the Circle can immediately be added to the map
-            let newBlob = Blob()
-            newBlob.blobID = mediaID
-            newBlob.blobDatetime = Date(timeIntervalSince1970: currentTime)
-            newBlob.blobLat = self.blobCoords.latitude
-            newBlob.blobLong = self.blobCoords.longitude
-            newBlob.blobRadius = self.blobRadius
-            newBlob.blobType = self.blobType
-            newBlob.blobUserID = Constants.Data.currentUser.userID!
-            newBlob.blobText = self.vc1.blobTextView.text
-            if let thumbnailFilePath = self.uploadThumbnailFilePath
-            {
-                newBlob.blobMediaType = 1
-                newBlob.blobThumbnail = UIImage(contentsOfFile: thumbnailFilePath)
-            }
-            else
-            {
-                newBlob.blobMediaType = 0
-            }
-            Constants.Data.userBlobs.append(newBlob)
-            
-            // Add the Blob to the global lists
-            Constants.Data.taggedBlobs.append(newBlob)
-            Constants.Data.mapBlobs.append(newBlob)
-            
-            // A new Blob was added, so sort the global mapBlobs array
-            UtilityFunctions().sortMapBlobs()
-            
-            // Call the parent VC to add the new Blob to the map of the Map View
-            if let parentVC = self.blobAddViewDelegate {
-                parentVC.createBlobOnMap(newBlob)
-            }
-            
-            // Sort the mapBlobs
-            UtilityFunctions().sortMapBlobs()
-        }
-        else
-        {
-            // Try to get the logged in user's FB data again (username is missing)
-            AWSPrepRequest(requestToCall: FBGetUserProfileData(user: Constants.Data.currentUser, downloadImage: true), delegate: self as AWSRequestDelegate).prepRequest()
-        }
+//        if let currentUserName = Constants.Data.currentUser.userName
+//        {
+//            // Upload the Blob data to Lamda and then DynamoDB
+//            AWSPrepRequest(requestToCall: AWSUploadBlobData(blobID: blobID, blobLat: self.blobCoords.latitude, blobLong: self.blobCoords.longitude, blobMediaID: uploadKey, blobMediaType: self.blobMediaType, blobRadius: self.blobRadius, blobText: self.vc1.blobTextView.text, blobThumbnailID: mediaID + ".png", blobTimestamp: currentTime, blobType: self.blobType.rawValue, blobFeature: self.blobFeature.rawValue, blobAccess: self.blobAccess.rawValue, blobUserID: Constants.Data.currentUser.userID!, blobUserName: currentUserName), delegate: self as AWSRequestDelegate).prepRequest()
+//            
+//            // Create a new Blob locally so that the Circle can immediately be added to the map
+//            let newBlob = Blob()
+//            newBlob.blobID = mediaID
+//            newBlob.blobDatetime = Date(timeIntervalSince1970: currentTime)
+//            newBlob.blobLat = self.blobCoords.latitude
+//            newBlob.blobLong = self.blobCoords.longitude
+//            newBlob.blobRadius = self.blobRadius
+//            newBlob.blobType = self.blobType
+//            newBlob.blobUserID = Constants.Data.currentUser.userID!
+//            newBlob.blobText = self.vc1.blobTextView.text
+//            if let thumbnailFilePath = self.uploadThumbnailFilePath
+//            {
+//                newBlob.blobMediaType = 1
+//                newBlob.blobThumbnail = UIImage(contentsOfFile: thumbnailFilePath)
+//            }
+//            else
+//            {
+//                newBlob.blobMediaType = 0
+//            }
+//            Constants.Data.userBlobs.append(newBlob)
+//            
+//            // Add the Blob to the global lists
+//            Constants.Data.taggedBlobs.append(newBlob)
+//            Constants.Data.mapBlobs.append(newBlob)
+//            
+//            // A new Blob was added, so sort the global mapBlobs array
+//            UtilityFunctions().sortMapBlobs()
+//            
+//            // Call the parent VC to add the new Blob to the map of the Map View
+//            if let parentVC = self.blobAddViewDelegate {
+//                parentVC.createBlobOnMap(newBlob)
+//            }
+//            
+//            // Sort the mapBlobs
+//            UtilityFunctions().sortMapBlobs()
+//        }
+//        else
+//        {
+//            // Try to get the logged in user's FB data again (username is missing)
+//            AWSPrepRequest(requestToCall: FBGetUserProfileData(user: Constants.Data.currentUser, downloadImage: true), delegate: self as AWSRequestDelegate).prepRequest()
+//        }
     }
     
     func popVC()
@@ -722,7 +725,8 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
                         // and then add the Blob locally (into User Blobs and Map Blobs, if the current user was tagged)
                         // Do this inside this if statement otherwise the Blob will be added twice (the upload Media method
                         // is used for the thumbnail too
-                        if awsUploadMediaToBucket.bucket == Constants.Strings.S3BucketMedia {
+                        if awsUploadMediaToBucket.bucket == Constants.Strings.S3BucketMedia
+                        {
                             self.processBlobData(awsUploadMediaToBucket.mediaID, mediaID: awsUploadMediaToBucket.mediaID, uploadKey: awsUploadMediaToBucket.uploadKey, currentTime: awsUploadMediaToBucket.currentTime)
                         }
                     }

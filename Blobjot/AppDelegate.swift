@@ -73,14 +73,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         
         UIApplication.shared.applicationIconBadgeNumber = Constants.Data.badgeNumber
         
-//        CoreDataFunctions().usersDeleteOld()
-//        CoreDataFunctions().blobsDeleteOld()
+        let coreDataFunctionsInstance = CoreDataFunctions()
+        coreDataFunctionsInstance.usersDeleteOld()
+        coreDataFunctionsInstance.blobsDeleteOld()
+        coreDataFunctionsInstance.blobContentDeleteOld()
         
         // Reset the global User list with Core Data
         UtilityFunctions().resetUserListWithCoreData()
         
         // Reset the global User Likes list with Core Data
-        Constants.Data.currentUserLikes = CoreDataFunctions().likesRetrieve()
+        Constants.Data.currentUserInterests = CoreDataFunctions().interestsRetrieve()
         
         return true
     }
@@ -103,8 +105,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         self.updateLocationManager()
         
         // Delete Blobs and Users not recently used to save space
-        CoreDataFunctions().usersDeleteOld()
-        CoreDataFunctions().blobsDeleteOld()
+        let coreDataFunctionsInstance = CoreDataFunctions()
+        coreDataFunctionsInstance.usersDeleteOld()
+        coreDataFunctionsInstance.blobsDeleteOld()
+        coreDataFunctionsInstance.blobContentDeleteOld()
     }
     
     func applicationWillEnterForeground(_ application: UIApplication)
@@ -179,7 +183,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
                 if let tappedBlobID = userInfo["blobID"] as? String
                 {
                     // Find the Blob in the global mapBlobs
-                    checkMapBlobLoop: for blob in Constants.Data.mapBlobs
+                    checkMapBlobLoop: for blob in Constants.Data.allBlobs
                     {
                         if blob.blobID == tappedBlobID
                         {
@@ -220,14 +224,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     {
         print("AD-RN - DID RECEIVE - REMOTE - NOTIFICATION: \(userInfo)")
         
-        self.handlePushNotification(userInfo: userInfo)
+        // If the notification is a new Blob, process the notification
+        if userInfo["blobID"] != nil
+        {
+            self.handleBlobPushNotification(userInfo: userInfo)
+        }
     }
     
     func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void)
     {
         print("AD-RN - DID RECEIVE - REMOTE - NOTIFICATION - BACKGROUND: \(userInfo)")
         
-        self.handlePushNotification(userInfo: userInfo)
+        // If the notification is a new Blob, process the notification
+        if userInfo["blobID"] != nil
+        {
+            self.handleBlobPushNotification(userInfo: userInfo)
+        }
         
         completionHandler(UIBackgroundFetchResult.newData)
     }
@@ -236,11 +248,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     {
         print("AD-RN - HANDLE ACTION WITH IDENTIFIER: \(identifier) FOR REMOTE NOTIFICATION: \(userInfo)")
         
-        self.handlePushNotification(userInfo: userInfo)
+        // If the notification is a new Blob, process the notification
+        if userInfo["blobID"] != nil
+        {
+            self.handleBlobPushNotification(userInfo: userInfo)
+        }
     }
     
     // CUSTOM HANDLER FOR PUSH NOTIFICATIONS
-    func handlePushNotification(userInfo: [AnyHashable: Any])
+    func handleBlobPushNotification(userInfo: [AnyHashable: Any])
     {
         if let blobID = userInfo["blobID"] as? String
         {
@@ -251,10 +267,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
             notificationBlob.blobLong = Double(userInfo["blobLong"] as! String)!
             notificationBlob.blobRadius = Double(userInfo["blobRadius"] as! String)!
             notificationBlob.blobType = Constants().blobType(Int(userInfo["blobType"] as! String)!)
-            notificationBlob.blobUserID = userInfo["blobUserID"] as? String
+            if let blobAccount = userInfo["blobAccount"]
+            {
+                notificationBlob.blobAccount = Constants().blobAccount(blobAccount as! Int)
+            }
+            if let blobFeature = userInfo["blobFeature"]
+            {
+                notificationBlob.blobFeature = Constants().blobFeature(blobFeature as! Int)
+            }
+            if let blobAccess = userInfo["blobAccess"]
+            {
+                notificationBlob.blobAccess = Constants().blobAccess(blobAccess as! Int)
+            }
             
-            Constants.Data.taggedBlobs.append(notificationBlob)
-            Constants.Data.mapBlobs.append(notificationBlob)
+            Constants.Data.allBlobs.append(notificationBlob)
             
             if let userName = userInfo["userName"] as? String
             {
@@ -263,7 +289,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
             }
             
 //            // Only request the extra Blob data if it has not already been requested
-//            AWSPrepRequest(requestToCall: AWSGetBlobMinimumData(blobID: blobID, notifyUser: true), delegate: self as AWSRequestDelegate).prepRequest()
+//            AWSPrepRequest(requestToCall: AWSGetBlobData(blobID: blobID, notifyUser: true), delegate: self as AWSRequestDelegate).prepRequest()
         }
     }
     
@@ -320,10 +346,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         if userRangeRadius <= Constants.Settings.locationAccuracyMaxBackground
         {
             // Clear the array of current location Blobs and add the default Blob as the first element
-            Constants.Data.locationBlobs = [Constants.Data.defaultBlob]
+            Constants.Data.locationBlobContent = [Constants.Data.defaultBlobContent]
             
             // Loop through the array of map Blobs to find which Blobs are in range of the user's current location
-            for blob in Constants.Data.mapBlobs
+            for blob in Constants.Data.allBlobs
             {
                 // Find the minimum distance possible to the Blob center from the user's location
                 // Determine the raw distance from the Blob center to the user's location
@@ -337,56 +363,59 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
                 // request the extra Blob data (Blob Text and/or Blob Media)
                 if minUserDistanceFromBlobCenter <= blob.blobRadius
                 {
-                    // Check to see if the current user has already been notified of the Blob
-                    // Because a Blob notification is saved in BlobViewController each time the Blob is viewed,
-                    // multiple entries with the same blobID may exist, but the loop will stop after reaching the first entry
-                    var blobNotExists = false
-                    checkBlobNotLoop: for blobNotObject in blobNotifications
+                    // Store the requested userIDs to prevent repeated requests
+                    var userDataRequests = [String]()
+                    
+                    // FInd the BlobContent associated with this Blob
+                    for blobContent in Constants.Data.blobContent
                     {
-                        if blobNotObject.blobID == blob.blobID
+                        if blobContent.blobID == blob.blobID
                         {
-                            blobNotExists = true
-                            break checkBlobNotLoop
-                        }
-                    }
-                    if !blobNotExists
-                    {
-                        // Ensure that the Blob data has not already been requested
-                        // If it as been requested, just append the Blob to the Location Blob Array
-                        if !blob.blobExtraRequested {
-                            blob.blobExtraRequested = true
-                            
-                            // Only request the extra Blob data if it has not already been requested
-                            AWSPrepRequest(requestToCall: AWSGetBlobExtraData(blob: blob), delegate: self as AWSRequestDelegate).prepRequest()
-                            
-                            // Ensure that the blob type is not a BLOBJOT BLOB
-                            if blob.blobAccess != Constants.BlobAccess.followers
+                            // Ensure that the BlobContent data has not already been requested
+                            // If it as been requested, just append the BlobContent to the Location BlobContent Array
+                            if !blobContent.contentExtraRequested
                             {
-// *OPTIMIZE***** ADD THE USER CHECK TO BLOB EXTRA DATA AND ENSURE THAT THIS IS NOT DUPLICATED IN OTHER BLOB EXTRA DATA CALLS
-                                // When downloading Blob data, always request the user data if it does not already exist
+                                blobContent.contentExtraRequested = true
+                                
+                                // Only request the extra BlobContent data if it has not already been requested
+                                AWSPrepRequest(requestToCall: AWSGetBlobContentData(blobContentID: blobContent.blobContentID, minimalOnly: false), delegate: self as AWSRequestDelegate).prepRequest()
+                                
+                                // When downloading BlobContent data, always request the user data if it does not already exist
                                 // Find the correct User Object in the global list
                                 var userExists = false
                                 loopUserObjectCheck: for userObject in Constants.Data.userObjects
                                 {
-                                    if userObject.userID == blob.blobUserID
+                                    if userObject.userID == blobContent.userID
                                     {
                                         userExists = true
-                                        
                                         break loopUserObjectCheck
+                                    }
+                                }
+                                // Check whether the userID was recently requested to prevent duplicate requests
+                                loopRecentRequests: for userID in userDataRequests
+                                {
+                                    if userID == blobContent.userID
+                                    {
+                                        userExists = true
+                                        break loopRecentRequests
                                     }
                                 }
                                 // If the user has not been downloaded, request the user and the userImage and then notify the user
                                 if !userExists
                                 {
-                                    AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: blob.blobUserID, forPreviewData: false), delegate: self as AWSRequestDelegate).prepRequest()
+                                    AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: blobContent.userID, forPreviewData: false), delegate: self as AWSRequestDelegate).prepRequest()
+                                    
+                                    // Store the userID in recent requests to prevent duplicate requests
+                                    userDataRequests.append(blobContent.userID)
                                 }
                             }
-                        }
-                        else
-                        {
-                            Constants.Data.locationBlobs.append(blob)
+                            else
+                            {
+                                Constants.Data.locationBlobContent.append(blobContent)
+                            }
                         }
                     }
+                    
                 }
             }
         }
@@ -407,18 +436,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
                 // Process the return data based on the method used
                 switch objectType
                 {
-                case let awsGetBlobExtraData as AWSGetBlobExtraData:
+                case let _ as AWSGetBlobContentData:
                     if success
                     {
-                        // Show the blob notification if needed
-                        UtilityFunctions().displayLocalBlobNotification(awsGetBlobExtraData.blob)
+//                        // Show the blob notification if needed
+//                        UtilityFunctions().displayLocalBlobNotification(awsGetBlobContentData.blobContentID)
                     }
                     else
                     {
                         // Show the error message
                         UtilityFunctions().createAlertOkViewInTopVC("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                     }
-//                case let awsGetBlobMinimumData as AWSGetBlobMinimumData:
+//                case let awsGetBlobMinimumData as AWSGetBlobData:
 //                    if success
 //                    {
 //                        // Fire a notification to alert the user that a new Blob has been added

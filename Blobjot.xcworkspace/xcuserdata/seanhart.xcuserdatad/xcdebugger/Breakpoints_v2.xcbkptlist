@@ -24,12 +24,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Blobjot/AWSClasses.swift"
-            timestampString = "505611714.217556"
+            timestampString = "506713522.86752"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "834"
-            endingLineNumber = "834"
-            landmarkName = "init(userID:forPreviewData:)"
+            startingLineNumber = "855"
+            endingLineNumber = "855"
+            landmarkName = "makeRequest()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -40,11 +40,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Blobjot/MapViewController.swift"
-            timestampString = "505709357.59994"
+            timestampString = "506713522.86752"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "920"
-            endingLineNumber = "920"
+            startingLineNumber = "923"
+            endingLineNumber = "923"
             landmarkName = "holeViewRemoved(removingViewAtPosition:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -56,11 +56,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Blobjot/MapViewController.swift"
-            timestampString = "505709357.59994"
+            timestampString = "506713522.86752"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "992"
-            endingLineNumber = "992"
+            startingLineNumber = "996"
+            endingLineNumber = "996"
             landmarkName = "MapViewController"
             landmarkType = "3">
          </BreakpointContent>
@@ -120,12 +120,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "CoreDataFunctions.swift"
-            timestampString = "504219730.55894"
+            timestampString = "506713522.86752"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "721"
-            endingLineNumber = "721"
-            landmarkName = "tutorialViewRetrieve()"
+            startingLineNumber = "880"
+            endingLineNumber = "880"
+            landmarkName = "tutorialViewSave(tutorialViews:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -136,11 +136,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Blobjot/MapViewController.swift"
-            timestampString = "505709357.59994"
+            timestampString = "506713522.86752"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "981"
-            endingLineNumber = "981"
+            startingLineNumber = "985"
+            endingLineNumber = "985"
             landmarkName = "holeViewRemoved(removingViewAtPosition:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -152,12 +152,44 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Blobjot/MapViewController.swift"
-            timestampString = "505713587.123012"
+            timestampString = "506723500.330928"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "2680"
-            endingLineNumber = "2680"
+            startingLineNumber = "2723"
+            endingLineNumber = "2723"
             landmarkName = "previewShow()"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Blobjot/User.swift"
+            timestampString = "506527073.332664"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "17"
+            endingLineNumber = "17"
+            landmarkName = "User"
+            landmarkType = "3">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Blobjot/BlobTableViewController.swift"
+            timestampString = "506713522.86752"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "490"
+            endingLineNumber = "490"
+            landmarkName = "tableViewHeight()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

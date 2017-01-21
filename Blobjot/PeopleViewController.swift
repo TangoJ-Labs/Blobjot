@@ -243,17 +243,17 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
             AWSPrepRequest(requestToCall: FBGetUserProfileData(user: cellUserObject, downloadImage: true), delegate: self as AWSRequestDelegate).prepRequest()
         }
         
-        if cellUserObject.userStatus == Constants.UserStatusTypes.following
-        {
-            cell.cellConnectIndicator.image = UIImage(named: Constants.Strings.iconStringConnectionViewPending)
-            cell.cellActionMessage.text = "Following"
-        }
-        else if cellUserObject.userStatus == Constants.UserStatusTypes.notFollowing
+        if cellUserObject.userStatus == Constants.UserStatusType.standard
         {
             cell.cellConnectIndicator.image = UIImage(named: Constants.Strings.iconStringConnectionViewCheck)
             cell.cellActionMessage.text = ""
         }
-        else if cellUserObject.userStatus == Constants.UserStatusTypes.blocked
+        else if cellUserObject.userStatus == Constants.UserStatusType.following
+        {
+            cell.cellConnectIndicator.image = UIImage(named: Constants.Strings.iconStringConnectionViewPending)
+            cell.cellActionMessage.text = "Following"
+        }
+        else if cellUserObject.userStatus == Constants.UserStatusType.blocked
         {
             cell.cellConnectIndicator.image = UIImage(named: Constants.Strings.iconStringConnectionViewAddConnection)
             cell.cellActionMessage.text = "User Blocked"
@@ -313,19 +313,7 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
                 
                 return [you]
             }
-            else if rowUser.userStatus == Constants.UserStatusTypes.following
-            {
-                // FOLLOWING USERS
-                let delete = UITableViewRowAction(style: .normal, title: "Unfollow")
-                { action, index in
-                    // Call to change the userStatus to 1 (NotFollowing) and prepare the view
-                    self.updateUserStatusType(rowUserID, peopleListIndex: (indexPath as NSIndexPath).row, userStatus: Constants.UserStatusTypes.notFollowing)
-                }
-                delete.backgroundColor = Constants.Colors.blobRedOpaque
-                
-                return [delete]
-            }
-            else if rowUser.userStatus == Constants.UserStatusTypes.notFollowing
+            else if rowUser.userStatus == Constants.UserStatusType.standard
             {
                 // NOT FOLLOWING USERS
                 let block = UITableViewRowAction(style: .normal, title: "Block\nUser")
@@ -341,28 +329,40 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
                         }
                     }
                     // Call to change the userStatus to 2 (Blocked) and prepare the view
-                    self.updateUserStatusType(rowUserID, peopleListIndex: (indexPath as NSIndexPath).row, userStatus: Constants.UserStatusTypes.blocked)
+                    self.updateUserStatusType(rowUserID, peopleListIndex: (indexPath as NSIndexPath).row, userStatus: Constants.UserStatusType.blocked)
                 }
                 block.backgroundColor = Constants.Colors.colorGrayLight
                 
                 let add = UITableViewRowAction(style: .normal, title: "Follow")
                 { action, index in
                     // Call to change the userStatus to 0 (Following) and prepare the view
-                    self.updateUserStatusType(rowUserID, peopleListIndex: (indexPath as NSIndexPath).row, userStatus: Constants.UserStatusTypes.following)
+                    self.updateUserStatusType(rowUserID, peopleListIndex: (indexPath as NSIndexPath).row, userStatus: Constants.UserStatusType.following)
                 }
                 add.backgroundColor = Constants.Colors.blobYellowOpaque
                 
                 return [add, block]
             }
-            else if rowUser.userStatus == Constants.UserStatusTypes.blocked
+            else if rowUser.userStatus == Constants.UserStatusType.following
+            {
+                // FOLLOWING USERS
+                let delete = UITableViewRowAction(style: .normal, title: "Unfollow")
+                { action, index in
+                    // Call to change the userStatus to 1 (NotFollowing) and prepare the view
+                    self.updateUserStatusType(rowUserID, peopleListIndex: (indexPath as NSIndexPath).row, userStatus: Constants.UserStatusType.standard)
+                }
+                delete.backgroundColor = Constants.Colors.colorRedOpaque
+                
+                return [delete]
+            }
+            else if rowUser.userStatus == Constants.UserStatusType.blocked
             {
                 // BLOCKED USERS
                 let delete = UITableViewRowAction(style: .normal, title: "Unblock\nUser")
                 { action, index in
                     // Call to change the userStatus to 2 (NotFollowing) and prepare the view
-                    self.updateUserStatusType(rowUserID, peopleListIndex: (indexPath as NSIndexPath).row, userStatus: Constants.UserStatusTypes.notFollowing)
+                    self.updateUserStatusType(rowUserID, peopleListIndex: (indexPath as NSIndexPath).row, userStatus: Constants.UserStatusType.standard)
                 }
-                delete.backgroundColor = Constants.Colors.blobRedOpaque
+                delete.backgroundColor = Constants.Colors.colorRedOpaque
                 
                 return [delete]
             }
@@ -382,14 +382,14 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
                         }
                     }
                     // Call to change the userStatus to 2 (Blocked) and prepare the view
-                    self.updateUserStatusType(rowUserID, peopleListIndex: (indexPath as NSIndexPath).row, userStatus: Constants.UserStatusTypes.blocked)
+                    self.updateUserStatusType(rowUserID, peopleListIndex: (indexPath as NSIndexPath).row, userStatus: Constants.UserStatusType.blocked)
                 }
                 block.backgroundColor = Constants.Colors.colorGrayLight
                 
                 let add = UITableViewRowAction(style: .normal, title: "Follow")
                 { action, index in
                     // Call to change the userStatus to 0 (Following) and prepare the view
-                    self.updateUserStatusType(rowUserID, peopleListIndex: (indexPath as NSIndexPath).row, userStatus: Constants.UserStatusTypes.following)
+                    self.updateUserStatusType(rowUserID, peopleListIndex: (indexPath as NSIndexPath).row, userStatus: Constants.UserStatusType.following)
                 }
                 add.backgroundColor = Constants.Colors.blobYellowOpaque
                 
@@ -494,20 +494,19 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
                     if rowUser.userID != currentUserID
                     {
                         // Set default userStatus settings
-                        var userStatus = Constants.UserStatusTypes.following
+                        var userStatus = Constants.UserStatusType.following
                         
-                        if rowUser.userStatus == Constants.UserStatusTypes.notFollowing
+                        if rowUser.userStatus == Constants.UserStatusType.standard
                         {
                             // NOT FOLLOWING USERS
                             // Change the userStatus to 0 (Following)
-                            userStatus = Constants.UserStatusTypes.following
-                        
+                            userStatus = Constants.UserStatusType.following
                         }
-                        else if rowUser.userStatus == Constants.UserStatusTypes.following || rowUser.userStatus == Constants.UserStatusTypes.blocked
+                        else if rowUser.userStatus == Constants.UserStatusType.following || rowUser.userStatus == Constants.UserStatusType.blocked
                         {
                             // FOLLOWING OR BLOCKED USERS
                             // Change the userStatus to 1 (NotFollowing)
-                            userStatus = Constants.UserStatusTypes.notFollowing
+                            userStatus = Constants.UserStatusType.standard
                         }
                         
                         updateUserStatusType(self.peopleList[(indexPath as NSIndexPath).row].userID!, peopleListIndex: (indexPath as NSIndexPath).row, userStatus: userStatus)
@@ -531,7 +530,7 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
         self.navigationController!.popViewController(animated: true)
     }
     
-    func updateUserStatusType(_ counterpartUserID: String, peopleListIndex: Int, userStatus: Constants.UserStatusTypes)
+    func updateUserStatusType(_ counterpartUserID: String, peopleListIndex: Int, userStatus: Constants.UserStatusType)
     {
         if let currentUserID = Constants.Data.currentUser.userID
         {
@@ -552,11 +551,11 @@ class PeopleViewController: UIViewController, UITableViewDataSource, UITableView
             
             // Set the actionType - the initial type is the default
             var actionType = "connect"
-            if userStatus == Constants.UserStatusTypes.notFollowing
+            if userStatus == Constants.UserStatusType.standard
             {
                 actionType = "delete"
             }
-            else if userStatus == Constants.UserStatusTypes.blocked
+            else if userStatus == Constants.UserStatusType.blocked
             {
                 actionType = "block"
             }

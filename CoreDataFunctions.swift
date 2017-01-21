@@ -238,15 +238,9 @@ class CoreDataFunctions: AWSRequestDelegate
                 blobArray[blobIndex].blobLong = blob.blobLong as NSNumber?
                 blobArray[blobIndex].blobRadius = blob.blobRadius as NSNumber?
                 blobArray[blobIndex].blobType = blob.blobType.rawValue as NSNumber?
-                blobArray[blobIndex].blobUserID = blob.blobUserID
-                blobArray[blobIndex].blobText = blob.blobText
-                blobArray[blobIndex].blobMediaType = blob.blobMediaType as NSNumber?
-                blobArray[blobIndex].blobMediaID = blob.blobMediaID
-                blobArray[blobIndex].blobThumbnailID = blob.blobThumbnailID
-                if let thumbnail = blob.blobThumbnail
-                {
-                    blobArray[blobIndex].blobThumbnail = UIImagePNGRepresentation(thumbnail) as NSData?
-                }
+                blobArray[blobIndex].blobAccount = blob.blobAccount.rawValue as NSNumber?
+                blobArray[blobIndex].blobFeature = blob.blobFeature.rawValue as NSNumber?
+                blobArray[blobIndex].blobAccess = blob.blobAccess.rawValue as NSNumber?
                 
                 break blobLoop
             }
@@ -262,16 +256,9 @@ class CoreDataFunctions: AWSRequestDelegate
             entity.setValue(blob.blobLong, forKey: "blobLong")
             entity.setValue(blob.blobRadius, forKey: "blobRadius")
             entity.setValue(blob.blobType.rawValue, forKey: "blobType")
-            entity.setValue(blob.blobUserID, forKey: "blobUserID")
-            entity.setValue(blob.blobText, forKey: "blobText")
-            entity.setValue(blob.blobMediaType, forKey: "blobMediaType")
-            entity.setValue(blob.blobMediaID, forKey: "blobMediaID")
-            entity.setValue(blob.blobThumbnailID, forKey: "blobThumbnailID")
-            
-            if let bThumbnail = blob.blobThumbnail
-            {
-                entity.setValue(UIImagePNGRepresentation(bThumbnail), forKey: "blobThumbnail")
-            }
+            entity.setValue(blob.blobAccount.rawValue, forKey: "blobAccount")
+            entity.setValue(blob.blobFeature.rawValue, forKey: "blobFeature")
+            entity.setValue(blob.blobAccess.rawValue, forKey: "blobAccess")
         }
         // Save the Entity
         do
@@ -303,6 +290,7 @@ class CoreDataFunctions: AWSRequestDelegate
         }
         
         // Convert the Blobs to a Blob class
+        let constantsInstance = Constants()
         var blobs = [Blob]()
         for (cdIndex, cdBlob) in blobsCD.enumerated()
         {
@@ -315,17 +303,11 @@ class CoreDataFunctions: AWSRequestDelegate
             addBlob.blobLat = cdBlob.blobLat as Double!
             addBlob.blobLong = cdBlob.blobLong as Double!
             addBlob.blobRadius = cdBlob.blobRadius as Double!
-            addBlob.blobType = cdBlob.blobType.map { Constants.BlobType(rawValue: Int($0)) }!
-            addBlob.blobUserID = cdBlob.blobUserID
-            addBlob.blobText = cdBlob.blobText
-            addBlob.blobMediaType = cdBlob.blobMediaType as Int?
-            addBlob.blobMediaID = cdBlob.blobMediaID
-            addBlob.blobThumbnailID = cdBlob.blobThumbnailID
+            addBlob.blobType = constantsInstance.blobType(cdBlob.blobType as Int!)
+            addBlob.blobAccount = constantsInstance.blobAccount(cdBlob.blobAccount as Int!)
+            addBlob.blobFeature = constantsInstance.blobFeature(cdBlob.blobFeature as Int!)
+            addBlob.blobAccess = constantsInstance.blobAccess(cdBlob.blobAccess as Int!)
             
-            if let thumbnailData = cdBlob.blobThumbnail
-            {
-                addBlob.blobThumbnail = UIImage(data: thumbnailData as Data)
-            }
             blobs.append(addBlob)
         }
         
@@ -385,6 +367,183 @@ class CoreDataFunctions: AWSRequestDelegate
         catch
         {
             fatalError("CD-BRD - BLOB SAVE UPDATES - Failure to save context: \(error)")
+        }
+    }
+    
+    
+    // MARK: BLOB CONTENT
+    func blobContentSave(blobContent: BlobContent)
+    {
+        // Retrieve the Blob data from Core Data
+        let moc = DataController().managedObjectContext
+        let blobContentFetch: NSFetchRequest<BlobContentCD> = BlobContentCD.fetchRequest()
+        
+        // Create an empty blobContent list in case the Core Data request fails
+        var blobContentArray = [BlobContentCD]()
+        do
+        {
+            blobContentArray = try moc.fetch(blobContentFetch)
+        }
+        catch
+        {
+            CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: error.localizedDescription)
+            fatalError("CD-BCS - BLOB CONTENT RETRIEVE - Failed to fetch frames: \(error)")
+        }
+        
+        var blobContentExists = false
+        blobContentLoop: for (blobContentIndex, cdBlobContent) in blobContentArray.enumerated()
+        {
+            if cdBlobContent.blobContentID == blobContent.blobContentID
+            {
+                blobContentExists = true
+                
+                // Edit the user with the new data
+                blobContentArray[blobContentIndex].lastUsed = Date() as NSDate?
+                blobContentArray[blobContentIndex].blobID = blobContent.blobID as String?
+                blobContentArray[blobContentIndex].userID = blobContent.userID as String?
+                blobContentArray[blobContentIndex].contentDatetime = blobContent.contentDatetime as NSDate?
+                blobContentArray[blobContentIndex].contentType = blobContent.contentType.rawValue as NSNumber?
+                blobContentArray[blobContentIndex].contentText = blobContent.contentText as String?
+                blobContentArray[blobContentIndex].contentThumbnailID = blobContent.contentThumbnailID as String?
+                blobContentArray[blobContentIndex].contentMediaID = blobContent.contentMediaID as String?
+                blobContentArray[blobContentIndex].response = Int(blobContent.response) as NSNumber?
+                blobContentArray[blobContentIndex].respondingToContentID = blobContent.respondingToContentID as String?
+                if let contentThumbnail = blobContent.contentThumbnail
+                {
+                    blobContentArray[blobContentIndex].contentThumbnail = UIImagePNGRepresentation(contentThumbnail) as NSData?
+                }
+                
+                break blobContentLoop
+            }
+        }
+        // Save a BlobContent in Core Data if it does not already exist
+        if !blobContentExists
+        {
+            let entity = NSEntityDescription.insertNewObject(forEntityName: "BlobContentCD", into: moc) as! BlobContentCD
+            entity.setValue(Date(), forKey: "lastUsed")
+            entity.setValue(blobContent.blobID, forKey: "blobID")
+            entity.setValue(blobContent.userID, forKey: "userID")
+            entity.setValue(blobContent.contentDatetime, forKey: "contentDatetime")
+            entity.setValue(blobContent.contentText, forKey: "contentText")
+            entity.setValue(blobContent.contentThumbnailID, forKey: "contentThumbnailID")
+            entity.setValue(blobContent.contentMediaID, forKey: "contentMediaID")
+            entity.setValue(Int(blobContent.response) as NSNumber?, forKey: "response")
+            entity.setValue(blobContent.respondingToContentID, forKey: "respondingToContentID")
+            if let contentThumbnail = blobContent.contentThumbnail
+            {
+                entity.setValue(UIImagePNGRepresentation(contentThumbnail) as NSData?, forKey: "contentThumbnail")
+            }
+        }
+        // Save the Entity
+        do
+        {
+            try moc.save()
+        }
+        catch
+        {
+            fatalError("CD-BCS - BLOB CONTENT SAVE - Failure to save context: \(error)")
+        }
+    }
+    
+    func blobContentRetrieve() -> [BlobContent]
+    {
+        // Retrieve the Blob data from Core Data
+        let moc = DataController().managedObjectContext
+        let blobContentFetch: NSFetchRequest<BlobContentCD> = BlobContentCD.fetchRequest()
+        
+        // Create an empty blobNotifications list in case the Core Data request fails
+        var blobContentCD = [BlobContentCD]()
+        do
+        {
+            blobContentCD = try moc.fetch(blobContentFetch)
+        }
+        catch
+        {
+            CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: error.localizedDescription)
+            fatalError("CD-BCR - BLOB CONTENT RETRIEVE - Failed to fetch frames: \(error)")
+        }
+        
+        // Convert the Blobs to a Blob class
+        var blobContent = [BlobContent]()
+        for (cdIndex, cdBlobContent) in blobContentCD.enumerated()
+        {
+            // Update the lastUsed record
+            blobContentCD[cdIndex].lastUsed = Date() as NSDate?
+            
+            let addBlobContent = BlobContent()
+            addBlobContent.blobID = cdBlobContent.blobID
+            addBlobContent.userID = cdBlobContent.userID
+            addBlobContent.contentDatetime = cdBlobContent.contentDatetime as Date!
+            addBlobContent.contentType = Constants().contentType(cdBlobContent.contentType as Int!)
+            addBlobContent.contentText = cdBlobContent.contentText
+            addBlobContent.contentThumbnailID = cdBlobContent.contentThumbnailID
+            addBlobContent.contentMediaID = cdBlobContent.contentMediaID
+            if let contentThumbnail = cdBlobContent.contentThumbnail
+            {
+                addBlobContent.contentThumbnail = UIImage(data: contentThumbnail as Data)
+            }
+            addBlobContent.response = Bool(addBlobContent.response)
+            addBlobContent.respondingToContentID = cdBlobContent.respondingToContentID
+            
+            blobContent.append(addBlobContent)
+        }
+        
+        // Save the changes to the lastUsed records
+        do
+        {
+            try moc.save()
+        }
+        catch
+        {
+            fatalError("CD-BCR - BLOB CONTENT SAVE UPDATES - Failure to save context: \(error)")
+        }
+        
+        return blobContent
+    }
+    
+    func blobContentDeleteOld()
+    {
+        // Retrieve the Blob data from Core Data
+        let moc = DataController().managedObjectContext
+        let blobContentFetch: NSFetchRequest<BlobContentCD> = BlobContentCD.fetchRequest()
+        
+        // Create an empty blobContent list in case the Core Data request fails
+        var blobContentCD = [BlobContentCD]()
+        do
+        {
+            blobContentCD = try moc.fetch(blobContentFetch)
+        }
+        catch
+        {
+            CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: error.localizedDescription)
+            fatalError("CD-BCD - BLOB CONTENT DELETE - Failed to fetch frames: \(error)")
+        }
+        
+        // Delete each object one at a time if not used recently
+        for cdBlobContent in blobContentCD
+        {
+            if let lastUsed = cdBlobContent.lastUsed
+            {
+                if Date().timeIntervalSince1970 - lastUsed.timeIntervalSince1970 > Constants.Settings.maxBlobContentObjectSaveWithoutUse
+                {
+                    moc.delete(cdBlobContent)
+                    print("CD-BCD - BLOB CONTENT DELETE: \(cdBlobContent.blobContentID)")
+                }
+            }
+            else
+            {
+                moc.delete(cdBlobContent)
+            }
+        }
+        
+        // Save the changes to the lastUsed records
+        do
+        {
+            try moc.save()
+        }
+        catch
+        {
+            fatalError("CD-BCD - BLOB SAVE UPDATES - Failure to save context: \(error)")
         }
     }
     
@@ -492,7 +651,7 @@ class CoreDataFunctions: AWSRequestDelegate
             addUser.userID = cdUser.userID
             addUser.facebookID = cdUser.facebookID
             addUser.userName = cdUser.userName
-            addUser.userStatus = cdUser.userStatus.map { Constants.UserStatusTypes(rawValue: Int($0)) }!!
+            addUser.userStatus = Constants().userStatusType(Int(cdUser.userStatus!))
             
             if let imageData = cdUser.userImage
             {
@@ -535,6 +694,17 @@ class CoreDataFunctions: AWSRequestDelegate
         // Delete each object one at a time if not used recently
         for cdUser in usersCD
         {
+            // Delete old style users
+            if let userStatus = cdUser.userStatus
+            {
+                if Int(userStatus) > 2
+                {
+                    moc.delete(cdUser)
+                    print("CD-URD - USER DELETE (OLD USER TYPE): \(cdUser.userID)")
+                }
+            }
+            
+            // Delete users that have not been updated recently
             if let lastUsed = cdUser.lastUsed
             {
                 if Date().timeIntervalSince1970 - lastUsed.timeIntervalSince1970 > Constants.Settings.maxUserObjectSaveWithoutUse
@@ -560,19 +730,19 @@ class CoreDataFunctions: AWSRequestDelegate
         }
     }
     
-    // MARK: USER LIKES
-    func likesSave()
+    // MARK: USER INTERESTS
+    func interestsSave()
     {
-        print("CD-LS - SAVING LIKES")
-        // Delete all current likes to ensure that any removed likes on Facebook are removed in Blobjot
-        likesDelete()
+        print("CD-IS - SAVING INTERESTS")
+        // Delete all current interests to ensure that any removed interests on Facebook are removed in Blobjot
+        interestsDelete()
         
-        // Retrieve the Blob data from Core Data
+        // Retrieve the User Interests data from Core Data
         let moc = DataController().managedObjectContext
-        for globalLike in Constants.Data.currentUserLikes
+        for globalInterest in Constants.Data.currentUserInterests
         {
-            let entity = NSEntityDescription.insertNewObject(forEntityName: "UserLike", into: moc) as! UserLike
-            entity.setValue(globalLike, forKey: "like")
+            let entity = NSEntityDescription.insertNewObject(forEntityName: "UserInterest", into: moc) as! UserInterest
+            entity.setValue(globalInterest, forKey: "interest")
         }
         
         // Save the Entity
@@ -582,22 +752,22 @@ class CoreDataFunctions: AWSRequestDelegate
         }
         catch
         {
-            fatalError("CD-LS - USER LIKES SAVE - Failure to save context: \(error)")
+            fatalError("CD-IS - USER INTERESTS SAVE - Failure to save context: \(error)")
         }
     }
     
-    func likesRetrieve() -> [String]
+    func interestsRetrieve() -> [String]
     {
-        print("CD-LR - RETRIEVING LIKES")
-        // Retrieve the UserLikes data from Core Data
+        print("CD-IR - RETRIEVING INTERESTS")
+        // Retrieve the UserInterests data from Core Data
         let moc = DataController().managedObjectContext
-        let likesFetch: NSFetchRequest<UserLike> = UserLike.fetchRequest()
+        let interestsFetch: NSFetchRequest<UserInterest> = UserInterest.fetchRequest()
         
-        // Create an empty likes list in case the Core Data request fails
-        var userLikes = [UserLike]()
+        // Create an empty interests list in case the Core Data request fails
+        var userInterests = [UserInterest]()
         do
         {
-            userLikes = try moc.fetch(likesFetch)
+            userInterests = try moc.fetch(interestsFetch)
         }
         catch
         {
@@ -605,49 +775,49 @@ class CoreDataFunctions: AWSRequestDelegate
             fatalError("Failed to fetch frames: \(error)")
         }
         
-        // Convert the Blobs to a Blob class
-        var likes = [String]()
-        for userLike in userLikes
+        // Convert the Interests to a UserInterest class
+        var interests = [String]()
+        for userInterest in userInterests
         {
-            likes.append(userLike.like!)
+            interests.append(userInterest.interest!)
         }
         
-        return likes
+        return interests
     }
     
-    func likesDelete()
+    func interestsDelete()
     {
-        print("CD-LD - DELETING LIKES")
-        // Retrieve the Blob data from Core Data
+        print("CD-ID - DELETING INTERESTS")
+        // Retrieve the UserInterest data from Core Data
         let moc = DataController().managedObjectContext
-        let likesFetch: NSFetchRequest<UserLike> = UserLike.fetchRequest()
+        let interestsFetch: NSFetchRequest<UserInterest> = UserInterest.fetchRequest()
         
         // Create an empty blobNotifications list in case the Core Data request fails
-        var likes = [UserLike]()
+        var interests = [UserInterest]()
         do
         {
-            likes = try moc.fetch(likesFetch)
+            interests = try moc.fetch(interestsFetch)
         }
         catch
         {
             CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: error.localizedDescription)
-            fatalError("CD-LD - LIKES RETRIEVE DELETE - Failed to fetch frames: \(error)")
+            fatalError("CD-ID - INTERESTS RETRIEVE DELETE - Failed to fetch frames: \(error)")
         }
         
-        // Delete each object one at a time if not used recently
-        for like in likes
+        // Delete each object one at a time
+        for interest in interests
         {
-            moc.delete(like)
+            moc.delete(interest)
         }
         
-        // Save the changes to the likes
+        // Save the changes to the interests
         do
         {
             try moc.save()
         }
         catch
         {
-            fatalError("CD-LD - LIKES SAVE UPDATES - Failure to save context: \(error)")
+            fatalError("CD-ID - INTERESTS SAVE UPDATES - Failure to save context: \(error)")
         }
     }
     

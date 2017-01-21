@@ -14,7 +14,7 @@ class User {
     var userID: String?
     var userName: String?
     var userImage: UIImage?
-    var userStatus: Constants.UserStatusTypes = Constants.UserStatusTypes.notFollowing
+    var userStatus: Constants.UserStatusType = Constants.UserStatusType.standard
     
     convenience init(facebookID: String, userID: String?, userName: String?, userImage: UIImage?)
     {

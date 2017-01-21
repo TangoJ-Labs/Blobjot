@@ -21,39 +21,19 @@ class BlobTableViewController: UIViewController, GMSMapViewDelegate, UITableView
     
     // Add the view components
     var viewContainer: UIView!
-    var blobTableView: UITableView!
+    var blobContentTableView: UITableView!
     lazy var refreshControl: UIRefreshControl = UIRefreshControl()
-    
-    var blobContentButton: UIView!
-    var blobContentButtonIcon: UIImageView!
-    var blobContentContainer: UIView!
-    
-    var blobContentButtonTapGesture: UITapGestureRecognizer!
-    var blobContentAddCancelLabelTapGesture: UITapGestureRecognizer!
-    var blobContentAddSendLabelTapGesture: UITapGestureRecognizer!
     
     // Properties to hold local information
     var viewContainerHeight: CGFloat!
     var blobCellWidth: CGFloat!
-    var blobCellContentHeight: CGFloat!
+//    var blobCellContentHeight: CGFloat!
     var blobMediaSize: CGFloat!
     var blobTextViewWidth: CGFloat!
-    var blobTextViewHeight: CGFloat = 0
+//    var blobTextViewHeight: CGFloat = 0
     var blobTextViewOffsetY: CGFloat = 50
     
-    var tableViewHeightArray = [CGFloat]()
-    
-    // This blob should be initialized when the ViewController is initialized
-    var blob: Blob!
-    var blobImage: UIImage?
-    
-    // A property to indicate whether the Blob being viewed was created by the current user
-    var userBlob: Bool = false
-    
-    // A property to indicate whether the Blob has media (whether the comments should automatically be shown or not)
-    var blobHasMedia: Bool = false
-    
-    // An array to hold the content
+    // This data should be initialized when the ViewController is initialized
     var blobContentArray = [BlobContent]()
     
     // Dimension properties
@@ -62,11 +42,6 @@ class BlobTableViewController: UIViewController, GMSMapViewDelegate, UITableView
     override func viewDidLoad()
     {
         super.viewDidLoad()
-        
-        if blob.blobThumbnailID != nil
-        {
-            self.blobHasMedia = true
-        }
         
         // Device and Status Bar Settings
         UIApplication.shared.isStatusBarHidden = false
@@ -90,110 +65,31 @@ class BlobTableViewController: UIViewController, GMSMapViewDelegate, UITableView
         blobTextViewWidth = viewContainer.frame.width - 15 - Constants.Dim.blobViewUserImageSize
         blobMediaSize = viewContainer.frame.width
         
-        // Calculate the size of the Blob textview
-        if let blobText = self.blob.blobText
-        {
-            self.blobTextViewHeight = textHeightForAttributedText(text: NSAttributedString(string: blobText), width: self.blobTextViewWidth) * 1.3
-        }
-        
-        // Set the blobCellHeight as if a media preview or map is going to be shown
-        blobCellContentHeight = blobTextViewOffsetY + blobTextViewHeight + 5 + blobMediaSize
-        
-        // Correct the blobCellHeight if no media or map will be shown
-        if !self.blobHasMedia && !self.userBlob
-        {
-            blobCellContentHeight = blobTextViewOffsetY + blobTextViewHeight
-        }
-        
         // A tableview will hold all comments
-        blobTableView = UITableView(frame: CGRect(x: 0, y: 0, width: viewContainer.frame.width, height: viewContainer.frame.height))
-        blobTableView.dataSource = self
-        blobTableView.delegate = self
-        blobTableView.register(BlobTableViewCell.self, forCellReuseIdentifier: Constants.Strings.blobTableViewCellReuseIdentifier)
-        blobTableView.separatorStyle = .none
-        blobTableView.backgroundColor = Constants.Colors.standardBackground
-        blobTableView.isScrollEnabled = true
-        blobTableView.bounces = true
-        blobTableView.alwaysBounceVertical = true
-        blobTableView.showsVerticalScrollIndicator = false
-//        blobTableView.isUserInteractionEnabled = true
-//        blobTableView.allowsSelection = true
-        blobTableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 20, right: 0)
-        viewContainer.addSubview(blobTableView)
+        blobContentTableView = UITableView(frame: CGRect(x: 0, y: 0, width: viewContainer.frame.width, height: viewContainer.frame.height))
+        blobContentTableView.dataSource = self
+        blobContentTableView.delegate = self
+        blobContentTableView.register(BlobTableViewCell.self, forCellReuseIdentifier: Constants.Strings.blobTableViewCellReuseIdentifier)
+        blobContentTableView.separatorStyle = .none
+        blobContentTableView.backgroundColor = Constants.Colors.standardBackground
+        blobContentTableView.isScrollEnabled = true
+        blobContentTableView.bounces = true
+        blobContentTableView.alwaysBounceVertical = true
+        blobContentTableView.showsVerticalScrollIndicator = false
+//        blobContentTableView.isUserInteractionEnabled = true
+//        blobContentTableView.allowsSelection = true
+        blobContentTableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 20, right: 0)
+        viewContainer.addSubview(blobContentTableView)
         
         // Create a refresh control for the CollectionView and add a subview to move the refresh control where needed
         refreshControl = UIRefreshControl()
         refreshControl.attributedTitle = NSAttributedString(string: "")
         refreshControl.addTarget(self, action: #selector(BlobTableViewController.refreshDataManually), for: UIControlEvents.valueChanged)
-        blobTableView.addSubview(refreshControl)
+        blobContentTableView.addSubview(refreshControl)
 //        blobTableView.contentOffset = CGPoint(x: 0, y: -self.refreshControl.frame.size.height)
         
-        // Add the Add Button in the bottom right corner (hidden if the Blob has media, unhidden if not)
-        if blobCellContentHeight >= viewContainer.frame.height
-        {
-            blobContentButton = UIView(frame: CGRect(x: viewContainer.frame.width - 5 - Constants.Dim.blobViewButtonSize, y: viewContainer.frame.height + 5, width: Constants.Dim.blobViewButtonSize, height: Constants.Dim.blobViewButtonSize))
-        }
-        else
-        {
-            blobContentButton = UIView(frame: CGRect(x: viewContainer.frame.width - 5 - Constants.Dim.blobViewButtonSize, y: viewContainer.frame.height - 5 - Constants.Dim.blobViewButtonSize, width: Constants.Dim.blobViewButtonSize, height: Constants.Dim.blobViewButtonSize))
-        }
-        blobContentButton.layer.cornerRadius = Constants.Dim.blobViewButtonSize / 2
-        blobContentButton.backgroundColor = Constants.Colors.colorMapViewButton
-        blobContentButton.layer.shadowOffset = Constants.Dim.mapViewShadowOffset
-        blobContentButton.layer.shadowOpacity = Constants.Dim.mapViewShadowOpacity
-        blobContentButton.layer.shadowRadius = Constants.Dim.mapViewShadowRadius
-        viewContainer.addSubview(blobContentButton)
-        
-        blobContentButtonIcon = UIImageView(frame: CGRect(x: 5, y: 5, width: Constants.Dim.mapViewButtonSize - 10, height: Constants.Dim.mapViewButtonSize - 10))
-        blobContentButtonIcon.image = UIImage(named: Constants.Strings.iconStringBlobAdd)
-        blobContentButtonIcon.contentMode = UIViewContentMode.scaleAspectFit
-        blobContentButtonIcon.clipsToBounds = true
-        blobContentButton.addSubview(blobContentButtonIcon)
-        
-        // The Comment Container should start below the screen and not be visible until called
-        blobContentContainer = UIView(frame: CGRect(x: 0, y: viewContainer.frame.height, width: viewContainer.frame.width, height: viewContainer.frame.height))
-        blobContentContainer.backgroundColor = UIColor.white
-        viewContainer.addSubview(blobContentContainer)
-        
-        // Add the Tap Gesture Recognizers for the comment features
-        blobContentButtonTapGesture = UITapGestureRecognizer(target: self, action: #selector(BlobTableViewController.blobContentButtonTap(_:)))
-        blobContentButtonTapGesture.numberOfTapsRequired = 1  // add single tap
-        blobContentButton.addGestureRecognizer(blobContentButtonTapGesture)
-        
-        // Request all needed data
+        // Request all needed data and prep the cells
         self.refreshDataManually()
-        
-        // Indicate the local blob has been viewed
-        self.blob.blobViewed = true
-        
-        // Indicate the global blob(s) has been viewed
-        loopTaggedBlobsCheck: for tBlob in Constants.Data.taggedBlobs
-        {
-            if tBlob.blobID == blob.blobID
-            {
-                tBlob.blobViewed = true
-                
-                break loopTaggedBlobsCheck
-            }
-        }
-        loopMapBlobsCheck: for mBlob in Constants.Data.mapBlobs
-        {
-            if mBlob.blobID == blob.blobID
-            {
-                mBlob.blobViewed = true
-                
-                break loopMapBlobsCheck
-            }
-        }
-        
-        // Save to Core Data
-        CoreDataFunctions().blobSave(blob: blob)
-        
-        if let currentUserID = Constants.Data.currentUser.userID
-        {
-            // Add a Blob view in AWS
-            AWSPrepRequest(requestToCall: AWSAddBlobView(blobID: self.blob.blobID, userID: currentUserID), delegate: self as AWSRequestDelegate).prepRequest()
-        }
     }
 
     override func didReceiveMemoryWarning()
@@ -232,8 +128,11 @@ class BlobTableViewController: UIViewController, GMSMapViewDelegate, UITableView
     {
         let cell = tableView.dequeueReusableCell(withIdentifier: Constants.Strings.blobTableViewCellReuseIdentifier, for: indexPath) as! BlobTableViewCell
         
+        // Store the blobContent for this cell for reference
+        let cellBlobContent = self.blobContentArray[indexPath.row]
+        
         var cellHeight: CGFloat = 0
-        if let height = self.blobContentArray[indexPath.row].contentHeight
+        if let height = cellBlobContent.contentHeight
         {
             cellHeight = height
         }
@@ -271,8 +170,11 @@ class BlobTableViewController: UIViewController, GMSMapViewDelegate, UITableView
         blobTypeIndicatorView = UIView(frame: CGRect(x: 0, y: 0, width: Constants.Dim.blobViewTypeIndicatorWidth, height: cellHeight))
         
         // Assign the Blob Type color to the Blob Indicator
-        blobTypeIndicatorView.backgroundColor = Constants().blobColorOpaque(blob.blobType, blobFeature: blob.blobFeature, blobAccess: blob.blobAccess, mainMap: false)
-        cellContainer.addSubview(blobTypeIndicatorView)
+        if let blobType = cellBlobContent.blobType
+        {
+            blobTypeIndicatorView.backgroundColor = Constants().blobColorOpaque(blobType, blobFeature: cellBlobContent.blobFeature, blobAccess: cellBlobContent.blobAccess, blobAccount: cellBlobContent.blobAccount, mainMap: false)
+            cellContainer.addSubview(blobTypeIndicatorView)
+        }
         
         // The User Image should be in the upper right quadrant
         userImageContainer = UIImageView(frame: CGRect(x: 7, y: 2, width: Constants.Dim.blobViewUserImageSize, height: Constants.Dim.blobViewUserImageSize))
@@ -288,7 +190,7 @@ class BlobTableViewController: UIViewController, GMSMapViewDelegate, UITableView
         // Try to find the globally stored user data
         loopUserCheck: for user in Constants.Data.userObjects
         {
-            if user.userID == self.blobContentArray[indexPath.row].userID
+            if user.userID == cellBlobContent.userID
             {
                 // If the user image has been downloaded, use the image
                 // Otherwise, the image should be downloading currently (requested from the preview box in the Map View)
@@ -297,6 +199,8 @@ class BlobTableViewController: UIViewController, GMSMapViewDelegate, UITableView
                 {
                     userImageView.image = userImage
                 }
+                // Assign the userName
+                userNameLabel.text = user.userName
                 
                 break loopUserCheck
             }
@@ -313,16 +217,6 @@ class BlobTableViewController: UIViewController, GMSMapViewDelegate, UITableView
         userNameLabel.textAlignment = .left
         textContainer.addSubview(userNameLabel)
         
-        // Find the userObject and assign the userName
-        for user in Constants.Data.userObjects
-        {
-            userLoop: if user.userID == self.blobContentArray[indexPath.row].userID
-            {
-                userNameLabel.text = user.userName
-                break userLoop
-            }
-        }
-        
         // The Datetime Label should be in small font just below the Navigation Bar starting at the left of the screen (left aligned text)
         datetimeLabel = UILabel(frame: CGRect(x: textContainer.frame.width / 2, y: 0, width: textContainer.frame.width / 2, height: textContainer.frame.height))
         datetimeLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 10)
@@ -330,7 +224,7 @@ class BlobTableViewController: UIViewController, GMSMapViewDelegate, UITableView
         datetimeLabel.textAlignment = .right
         textContainer.addSubview(datetimeLabel)
         
-        if let datetime = self.blobContentArray[indexPath.row].contentDatetime
+        if let datetime = cellBlobContent.contentDatetime
         {
             // Capture the number of hours it has been since the Blob was created (as a positive integer)
             let dateAgeHrs: Int = -1 * Int(datetime.timeIntervalSinceNow / 3600)
@@ -365,7 +259,7 @@ class BlobTableViewController: UIViewController, GMSMapViewDelegate, UITableView
         }
         
         // Only add the Blob Text View if the Blob has text
-        if let contentText = self.blobContentArray[indexPath.row].contentText
+        if let contentText = cellBlobContent.contentText
         {
             // The Text View should be below the User Image, the width of the cell (minus the indicator on the left side)
             textViewContainer = UIView(frame: CGRect(x: 7, y: 2 + Constants.Dim.blobViewUserImageSize, width: cell.frame.width - 10, height: cellHeight - 2 - (5 + Constants.Dim.blobViewUserImageSize)))
@@ -385,7 +279,7 @@ class BlobTableViewController: UIViewController, GMSMapViewDelegate, UITableView
         
         // The Media Content View should be in the lower portion of the screen
         // Only show the media section if the blob has media
-        if self.blobContentArray[indexPath.row].contentType == 1
+        if cellBlobContent.contentType == Constants.ContentType.image
         {
             imageView = UIImageView(frame: CGRect(x: 5, y: 4 + Constants.Dim.blobViewUserImageSize, width: cell.frame.width - 5, height: cellHeight - (4 + Constants.Dim.blobViewUserImageSize)))
             imageView.contentMode = UIViewContentMode.scaleAspectFill
@@ -400,14 +294,14 @@ class BlobTableViewController: UIViewController, GMSMapViewDelegate, UITableView
             mediaActivityIndicator.startAnimating()
             
             // Assign the blob image to the image if available - if not, assign the thumbnail until the real image downloads
-            if let contentImage = self.blobContentArray[indexPath.row].contentImage
+            if let contentImage = cellBlobContent.contentImage
             {
                 imageView.image = contentImage
                 
                 // Stop animating the activity indicator
                 mediaActivityIndicator.stopAnimating()
             }
-            else if let thumbnailImage = self.blobContentArray[indexPath.row].contentThumbnail
+            else if let thumbnailImage = cellBlobContent.contentThumbnail
             {
                 imageView.image = thumbnailImage
             }
@@ -473,34 +367,7 @@ class BlobTableViewController: UIViewController, GMSMapViewDelegate, UITableView
     
     func scrollViewDidScroll(_ scrollView: UIScrollView)
     {
-        // Ensure the Blob has media - otherwise the comment button is alreay in view
-        if blobCellContentHeight >= viewContainer.frame.height
-        {
-            // Calculate how far the Blob content extends past the bottom of the screen, if any
-            var blobContentExtraSize: CGFloat = 0
-            if self.blobCellContentHeight - viewContainer.frame.height > 0
-            {
-                blobContentExtraSize = self.blobCellContentHeight - viewContainer.frame.height
-            }
-            
-            // Animate the comment button when the comment section is visible
-            if scrollView.contentOffset.y > blobContentExtraSize
-            {
-                // Animate the comment button into view
-                UIView.animate(withDuration: 0.2, animations:
-                    {
-                        self.blobContentButton.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.blobViewButtonSize, y: self.viewContainer.frame.height - 5 - Constants.Dim.blobViewButtonSize, width: Constants.Dim.blobViewButtonSize, height: Constants.Dim.blobViewButtonSize)
-                    }, completion: nil)
-            }
-            else
-            {
-                // Animate the comment button out of view
-                UIView.animate(withDuration: 0.2, animations:
-                    {
-                        self.blobContentButton.frame = CGRect(x: self.viewContainer.frame.width - 5 - Constants.Dim.blobViewButtonSize, y: self.viewContainer.frame.height + 5, width: Constants.Dim.blobViewButtonSize, height: Constants.Dim.blobViewButtonSize)
-                    }, completion: nil)
-            }
-        }
+        
     }
     
     
@@ -532,14 +399,6 @@ class BlobTableViewController: UIViewController, GMSMapViewDelegate, UITableView
     }
     
     
-    // MARK: TAP GESTURE METHODS
-    
-    func blobContentButtonTap(_ gesture: UITapGestureRecognizer)
-    {
-//        bringAddBlobViewControllerTopOfStack(false)
-    }
-    
-    
     // MARK: CUSTOM METHODS
     
     // Dismiss the latest View Controller presented from this VC
@@ -557,18 +416,18 @@ class BlobTableViewController: UIViewController, GMSMapViewDelegate, UITableView
     {
         DispatchQueue.main.async(execute:
             {
-                if self.blobTableView != nil
+                if self.blobContentTableView != nil
                 {
                     // Reload the TableView
-                    self.blobTableView.performSelector(onMainThread: #selector(UITableView.reloadData), with: nil, waitUntilDone: true)
+                    self.blobContentTableView.performSelector(onMainThread: #selector(UITableView.reloadData), with: nil, waitUntilDone: true)
                 }
         })
     }
     
     func refreshDataManually()
     {
-        // Request the Blob comments
-        AWSPrepRequest(requestToCall: AWSGetBlobContent(blobID: self.blob.blobID), delegate: self as AWSRequestDelegate).prepRequest()
+        // Prep the cell content to ensure the images are downloaded and the cell heights are calculated
+        prepCells()
     }
 
 //    func bringAddBlobViewControllerTopOfStack(_ newVC: Bool)
@@ -625,10 +484,11 @@ class BlobTableViewController: UIViewController, GMSMapViewDelegate, UITableView
         // Required for the Blob Add View Delegate
     }
     
-    func tableViewHeight() -> CGFloat {
-        self.blobTableView.layoutIfNeeded()
+    func tableViewHeight() -> CGFloat
+    {
+        self.blobContentTableView.layoutIfNeeded()
         
-        return self.blobTableView.contentSize.height
+        return self.blobContentTableView.contentSize.height
     }
     
     func textHeightForAttributedText(text: NSAttributedString, width: CGFloat) -> CGFloat
@@ -637,6 +497,69 @@ class BlobTableViewController: UIViewController, GMSMapViewDelegate, UITableView
         calculationView.attributedText = text
         let size = calculationView.sizeThatFits(CGSize(width: width, height: CGFloat(FLT_MAX)))
         return size.height
+    }
+    
+    func prepCells()
+    {
+        // Process each downloaded BlobContent
+        for blobContentObject in blobContentArray
+        {
+            // Find the associated Blob Object and store the needed properties in the BlobContent Object
+            blobLoop: for blob in Constants.Data.allBlobs
+            {
+                if blob.blobID == blobContentObject.blobID
+                {
+                    blobContentObject.blobType = blob.blobType
+                    blobContentObject.blobAccount = blob.blobAccount
+                    blobContentObject.blobFeature = blob.blobFeature
+                    blobContentObject.blobAccess = blob.blobAccess
+                    break blobLoop
+                }
+            }
+            
+            // Calculate the needed height for each cell
+            var cellHeight: CGFloat = 4 + Constants.Dim.blobViewUserImageSize
+            if blobContentObject.contentType == Constants.ContentType.image
+            {
+                cellHeight = cellHeight + self.viewContainer.frame.width - Constants.Dim.blobViewTypeIndicatorWidth
+                
+                // Recall the contentImage
+                AWSPrepRequest(requestToCall: AWSGetMediaImage(blobContent: blobContentObject), delegate: self as AWSRequestDelegate).prepRequest()
+            }
+            else if blobContentObject.contentType == Constants.ContentType.text
+            {
+                var contentSize: CGFloat = 0
+                if let text = blobContentObject.contentText
+                {
+                    contentSize = 10 + self.textHeightForAttributedText(text: NSAttributedString(string: text), width: self.viewContainer.frame.width - Constants.Dim.blobViewTypeIndicatorWidth)
+                }
+                cellHeight = cellHeight + contentSize
+            }
+            // Add the calculated cell height to the contentObject
+            blobContentObject.contentHeight = cellHeight
+            
+            // Check to ensure that the user data has been downloaded for each content's user
+            // If not, download the user data (AWSGetUserImage will be called after AWSGetSingleUserData - so listen for AWSGetUserImage's return)
+            userLoop: for user in Constants.Data.userObjects
+            {
+                var userExists = false
+                if user.userID == blobContentObject.userID
+                {
+                    userExists = true
+                    break userLoop
+                }
+                if !userExists
+                {
+                    AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: blobContentObject.userID, forPreviewData: false), delegate: self as AWSRequestDelegate).prepRequest()
+                }
+            }
+// ******** COMPLETE: ADD BLOBCONTENT VIEW
+//            if let currentUserID = Constants.Data.currentUser.userID
+//            {
+//                // Add a BlobContent view in AWS
+//                AWSPrepRequest(requestToCall: AWSAddBlobView(blobID: self.blob.blobID, userID: currentUserID), delegate: self as AWSRequestDelegate).prepRequest()
+//            }
+        }
     }
     
 
@@ -661,15 +584,15 @@ class BlobTableViewController: UIViewController, GMSMapViewDelegate, UITableView
                         let alertController = UtilityFunctions().createAlertOkView("AWSAddBlobView - Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                         self.present(alertController, animated: true, completion: nil)
                     }
-                case let awsGetBlobContentImage as AWSGetBlobContentImage:
+                case let awsGetMediaImage as AWSGetMediaImage:
                     if success
                     {
-                        if let contentImage = awsGetBlobContentImage.contentImage
+                        if let contentImage = awsGetMediaImage.contentImage
                         {
                             // Find the blobContent Object in the local array and add the downloaded image to the object variable
                             findBlobContentLoop: for contentObject in self.blobContentArray
                             {
-                                if contentObject.blobContentID == awsGetBlobContentImage.blobContent.blobContentID
+                                if contentObject.blobContentID == awsGetMediaImage.blobContent.blobContentID
                                 {
                                     // Set the local image property to the downloaded image
                                     contentObject.contentImage = contentImage
@@ -688,66 +611,22 @@ class BlobTableViewController: UIViewController, GMSMapViewDelegate, UITableView
                         let alertController = UtilityFunctions().createAlertOkView("awsGetBlobContentImage - Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                         self.present(alertController, animated: true, completion: nil)
                     }
-                case let awsGetBlobContent as AWSGetBlobContent:
-                    if success
-                    {
-                        // Clear the local array
-                        self.blobContentArray = [BlobContent]()
-                        
-                        // Process each downloaded BlobContent
-                        for blobContentObject in awsGetBlobContent.blobContentArray
-                        {
-                            // Calculate the needed height for each cell
-                            var cellHeight: CGFloat = 4 + Constants.Dim.blobViewUserImageSize
-                            if blobContentObject.contentType == 1
-                            {
-                                cellHeight = cellHeight + self.viewContainer.frame.width - Constants.Dim.blobViewTypeIndicatorWidth
-                                
-                                // Recall the contentImage
-                                AWSPrepRequest(requestToCall: AWSGetBlobContentImage(blobContent: blobContentObject), delegate: self as AWSRequestDelegate).prepRequest()
-                            }
-                            else if blobContentObject.contentType == 0
-                            {
-                                var contentSize: CGFloat = 0
-                                if let text = blobContentObject.contentText
-                                {
-                                    contentSize = 10 + self.textHeightForAttributedText(text: NSAttributedString(string: text), width: self.viewContainer.frame.width - Constants.Dim.blobViewTypeIndicatorWidth)
-                                }
-                                cellHeight = cellHeight + contentSize
-                            }
-                            // Add the calculated cell height to the contentObject
-                            blobContentObject.contentHeight = cellHeight
-                            
-                            // Add the contentObject to the local array
-                            self.blobContentArray.append(blobContentObject)
-                            
-                            // Check to ensure that the user data has been downloaded for each content's user
-                            // If not, download the user data (AWSGetUserImage will be called after AWSGetSingleUserData - so listen for AWSGetUserImage's return)
-                            userLoop: for user in Constants.Data.userObjects
-                            {
-                                var userExists = false
-                                if user.userID == blobContentObject.userID
-                                {
-                                    userExists = true
-                                    break userLoop
-                                }
-                                if !userExists
-                                {
-                                    AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: blobContentObject.userID, forPreviewData: false), delegate: self as AWSRequestDelegate).prepRequest()
-                                }
-                            }
-                        }
-                        
-                        // Stop the refresh controller and reload the table
-                        self.refreshControl.endRefreshing()
-                        self.refreshBlobViewTable()
-                    }
-                    else
-                    {
-                        // Show the error message
-                        let alertController = UtilityFunctions().createAlertOkView("AWSGetBlobComments - Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
-                        self.present(alertController, animated: true, completion: nil)
-                    }
+//                case let awsGetBlobContent as AWSGetBlobContent:
+//                    if success
+//                    {
+//                        // Clear the local array
+//                        self.blobContentArray = [BlobContent]()
+//                        
+//                        // Stop the refresh controller and reload the table
+//                        self.refreshControl.endRefreshing()
+//                        self.refreshBlobViewTable()
+//                    }
+//                    else
+//                    {
+//                        // Show the error message
+//                        let alertController = UtilityFunctions().createAlertOkView("AWSGetBlobComments - Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+//                        self.present(alertController, animated: true, completion: nil)
+//                    }
                 case _ as AWSGetSingleUserData:
                     if success
                     {

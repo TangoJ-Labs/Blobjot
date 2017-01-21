@@ -30,6 +30,12 @@ struct Constants
         case location = 1
     }
     
+    enum BlobAccount: Int
+    {
+        case standard = 0
+        case sponsored = 1
+    }
+    
     enum BlobFeature: Int
     {
         case standard = 0
@@ -40,13 +46,19 @@ struct Constants
     {
         case standard = 0
         case followers = 1
-        case sponsored = 2
     }
     
-    enum UserStatusTypes: Int
+    enum ContentType: Int
     {
-        case following = 0
-        case notFollowing = 1
+        case text = 0
+        case image = 1
+        case video = 2
+    }
+    
+    enum UserStatusType: Int
+    {
+        case standard = 0
+        case following = 1
         case blocked = 2
     }
     
@@ -101,52 +113,132 @@ struct Constants
             return Constants.BlobAccess.standard
         case 1:
             return Constants.BlobAccess.followers
-        case 2:
-            return Constants.BlobAccess.sponsored
         default:
             return Constants.BlobAccess.standard
         }
     }
     
-    func blobColor(_ blobType: Constants.BlobType, blobFeature: Constants.BlobFeature, blobAccess: Constants.BlobAccess, mainMap: Bool) -> UIColor
+    func blobAccount(_ blobAccountInt: Int) -> Constants.BlobAccount
+    {
+        // Evaluate the blobAccount Integer received and convert it to the appropriate BlobAccount
+        switch blobAccountInt
+        {
+        case 0:
+            return Constants.BlobAccount.standard
+        case 1:
+            return Constants.BlobAccount.sponsored
+        default:
+            return Constants.BlobAccount.standard
+        }
+    }
+    
+    func contentType(_ contentTypeInt: Int) -> Constants.ContentType
+    {
+        // Evaluate the contentType Integer received and convert it to the appropriate ContentType
+        switch contentTypeInt
+        {
+        case 0:
+            return Constants.ContentType.text
+        case 1:
+            return Constants.ContentType.image
+        case 2:
+            return Constants.ContentType.video
+        default:
+            return Constants.ContentType.text
+        }
+    }
+    
+    func userStatusType(_ userStatusTypeInt: Int) -> Constants.UserStatusType
+    {
+        // Evaluate the userStatusType Integer received and convert it to the appropriate UserStatusType
+        switch userStatusTypeInt
+        {
+        case 0:
+            return Constants.UserStatusType.standard
+        case 1:
+            return Constants.UserStatusType.following
+        case 2:
+            return Constants.UserStatusType.blocked
+        default:
+            return Constants.UserStatusType.standard
+        }
+    }
+    
+    // Color switches on blobType, not blobAccount due to possibility of adding a different color for different types of sponsored Blobs
+    func blobColor(_ blobType: Constants.BlobType, blobFeature: Constants.BlobFeature, blobAccess: Constants.BlobAccess, blobAccount: Constants.BlobAccount, mainMap: Bool) -> UIColor
     {
         switch blobType
         {
         case .origin:
-            if blobAccess == Constants.BlobAccess.sponsored
+            if blobAccount == Constants.BlobAccount.sponsored
             {
-                return Constants.Colors.blobBlue
+                if blobAccess == Constants.BlobAccess.followers
+                {
+                    return Constants.Colors.blobBlue
+                }
+                else
+                {
+                    return Constants.Colors.blobBlueLight
+                }
             }
             else
             {
-                return Constants.Colors.blobPurple
+                if blobAccess == Constants.BlobAccess.followers
+                {
+                    return Constants.Colors.blobPurple
+                }
+                else
+                {
+                    return Constants.Colors.blobPurpleLight
+                }
             }
         case .location:
-            if blobFeature == Constants.BlobFeature.invisible && mainMap
+            if blobAccount == Constants.BlobAccount.sponsored
+            {
+                if blobAccess == Constants.BlobAccess.followers
+                {
+                    return Constants.Colors.blobBlue
+                }
+                else
+                {
+                    return Constants.Colors.blobBlueLight
+                }
+            }
+            else if blobFeature == Constants.BlobFeature.invisible && mainMap
             {
                 return Constants.Colors.blobInvisible
             }
             else if blobFeature == Constants.BlobFeature.invisible
             {
-                return Constants.Colors.blobGray
-            }
-            else if blobAccess == Constants.BlobAccess.sponsored
-            {
-                return Constants.Colors.blobBlue
+                if blobAccess == Constants.BlobAccess.followers
+                {
+                    return Constants.Colors.blobGray
+                }
+                else
+                {
+                    return Constants.Colors.blobGrayLight
+                }
             }
             else
             {
-                return Constants.Colors.blobYellow
+                if blobAccess == Constants.BlobAccess.followers
+                {
+                    return Constants.Colors.blobYellow
+                }
+                else
+                {
+                    return Constants.Colors.blobYellowLight
+                }
             }
         }
     }
     
-    func blobColorOpaque(_ blobType: Constants.BlobType, blobFeature: Constants.BlobFeature, blobAccess: Constants.BlobAccess, mainMap: Bool) -> UIColor
+    func blobColorOpaque(_ blobType: Constants.BlobType, blobFeature: Constants.BlobFeature, blobAccess: Constants.BlobAccess, blobAccount: Constants.BlobAccount, mainMap: Bool) -> UIColor
     {
         switch blobType
         {
         case .origin:
-            if blobAccess == Constants.BlobAccess.sponsored
+            if blobAccount == Constants.BlobAccount.sponsored
             {
                 return Constants.Colors.blobBlueOpaque
             }
@@ -155,17 +247,17 @@ struct Constants
                 return Constants.Colors.blobPurpleOpaque
             }
         case .location:
-            if blobFeature == Constants.BlobFeature.invisible && mainMap
+            if blobAccount == Constants.BlobAccount.sponsored
+            {
+                return Constants.Colors.blobBlueOpaque
+            }
+            else if blobFeature == Constants.BlobFeature.invisible && mainMap
             {
                 return Constants.Colors.blobInvisible
             }
             else if blobFeature == Constants.BlobFeature.invisible
             {
                 return Constants.Colors.blobGrayOpaque
-            }
-            else if blobAccess == Constants.BlobAccess.sponsored
-            {
-                return Constants.Colors.blobBlueOpaque
             }
             else
             {
@@ -176,7 +268,6 @@ struct Constants
     
     struct Colors
     {
-        
         static let standardBackground = UIColor.white
         static let standardBackgroundTransparent = UIColor(red: 255/255, green: 255/255, blue: 255/255, alpha: 0.8) //#FFF
         static let standardBackgroundGray = UIColor(red: 104/255, green: 104/255, blue: 104/255, alpha: 1.0) //#686868
@@ -210,19 +301,21 @@ struct Constants
         static let colorUsernameNotAvailable = UIColor(red: 242/255, green: 105/255, blue: 99/255, alpha: 1.0) //#F26963
         
         static let blobInvisible = UIColor.clear
-        static let blobGray = UIColor(red: 0/255, green: 0/255, blue: 0/255, alpha: 0.3) //#000000
+        static let blobGrayLight = UIColor(red: 0/255, green: 0/255, blue: 0/255, alpha: 0.2) //#000000
+        static let blobGray = UIColor(red: 0/255, green: 0/255, blue: 0/255, alpha: 0.4) //#000000
         static let blobGrayOpaque = UIColor(red: 154/255, green: 154/255, blue: 154/255, alpha: 1.0) //#999999
-        static let blobRed = UIColor(red: 242/255, green: 105/255, blue: 99/255, alpha: 0.3) //#F26963
-        static let blobRedOpaque = UIColor(red: 242/255, green: 105/255, blue: 99/255, alpha: 1.0) //#F26963
-        static let blobYellow = UIColor(red: 252/255, green: 178/255, blue: 73/255, alpha: 0.3) //#FCB249
+        static let blobYellowLight = UIColor(red: 252/255, green: 178/255, blue: 73/255, alpha: 0.2) //#FCB249
+        static let blobYellow = UIColor(red: 252/255, green: 178/255, blue: 73/255, alpha: 0.4) //#FCB249
         static let blobYellowMinorTransparent = UIColor(red: 252/255, green: 178/255, blue: 73/255, alpha: 0.7) //#FCB249
         static let blobYellowOpaque = UIColor(red: 252/255, green: 178/255, blue: 73/255, alpha: 1.0) //#FCB249
         static let blobYellowDark = UIColor(red: 201/255, green: 118/255, blue: 3/255, alpha: 1.0) //#C97603
-        static let blobPurple = UIColor(red: 138/255, green: 112/255, blue: 178/255, alpha: 0.3) //#8A70B2
+        static let blobPurpleLight = UIColor(red: 138/255, green: 112/255, blue: 178/255, alpha: 0.2) //#8A70B2
+        static let blobPurple = UIColor(red: 138/255, green: 112/255, blue: 178/255, alpha: 0.4) //#8A70B2
         static let blobPurpleMinorTransparent = UIColor(red: 138/255, green: 112/255, blue: 178/255, alpha: 0.7) //#8A70B2
         static let blobPurpleOpaque = UIColor(red: 138/255, green: 112/255, blue: 178/255, alpha: 1.0) //#8A70B2
         static let blobPurpleDark = UIColor(red: 96/255, green: 71/255, blue: 133/255, alpha: 1.0) //#604785
-        static let blobBlue = UIColor(red: 0/255, green: 153/255, blue: 255/255, alpha: 0.3) //#0099FF
+        static let blobBlueLight = UIColor(red: 0/255, green: 153/255, blue: 255/255, alpha: 0.2) //#0099FF
+        static let blobBlue = UIColor(red: 0/255, green: 153/255, blue: 255/255, alpha: 0.4) //#0099FF
         static let blobBlueOpaque = UIColor(red: 0/255, green: 153/255, blue: 255/255, alpha: 1.0) //#0099FF
         static let blobHighlight = UIColor(red: 104/255, green: 104/255, blue: 104/255, alpha: 1.0) //#686868
         
@@ -234,6 +327,9 @@ struct Constants
         static let colorBlue = UIColor(red: 0/255, green: 153/255, blue: 255/255, alpha: 1.0) //#0099FF
         static let colorBlueLight = UIColor(red: 102/255, green: 194/255, blue: 255/255, alpha: 1.0) //#66C2FF
         static let colorBlueExtraLight = UIColor(red: 153/255, green: 214/255, blue: 255/255, alpha: 1.0) //#99D6FF
+        
+        static let colorRed = UIColor(red: 242/255, green: 105/255, blue: 99/255, alpha: 0.4) //#F26963
+        static let colorRedOpaque = UIColor(red: 242/255, green: 105/255, blue: 99/255, alpha: 1.0) //#F26963
         
         static let colorPink = UIColor(red: 255/255, green: 0/255, blue: 102/255, alpha: 1.0) //#FF0066
         
@@ -247,11 +343,10 @@ struct Constants
         static let colorPreviewTextError = UIColor.red
         
         static let colorMapViewButton = UIColor(red: 138/255, green: 112/255, blue: 178/255, alpha: 1.0) //#8A70B2
-        
     }
     
-    struct Data {
-        
+    struct Data
+    {
         static var badgeNumber = 0
         static var attemptedLogin: Bool = false
         static var serverTries: Int = 0 // Used to prevent looping through failed requests
@@ -260,30 +355,33 @@ struct Constants
         static var stillSendingBlob: Bool = false
         
         static var currentUser = User()
-        static var currentUserLikes = [String]()
+//        static var currentUserLikes = [String]()
         static var currentUserInterests = [String]()
 //        static var currentUserName: String?
 //        static var currentUserImage: UIImage?
         
-        static var taggedBlobs = [Blob]()
-        static var blobjotBlobs = [Blob]()
-        static var mapBlobs = [Blob]()
-        static var userBlobs = [Blob]()
-        static var defaultBlob = Blob(blobID: "default", blobUserID: "default", blobLat: 0.0, blobLong: 0.0, blobRadius: 0.0, blobType: Constants.BlobType.origin, blobFeature: Constants.BlobFeature.standard, blobAccess: Constants.BlobAccess.standard, blobMediaType: 1, blobText: "Check out Blobjot.com!")
+        // Long-term global storage lists
+        static var allBlobs = [Blob]()
+        static var mapBlobIDs = [String]()
+        static var blobContent = [BlobContent]()
+        static var userBlobContentIDs = [String]()
         
-        static var previewBlobs = [Blob]()
+        // Short-term global storage lists
+        static var locationBlobContent = [BlobContent]()
+        static var previewBlobContent = [BlobContent]()
         static var previewCurrentIndex: Int?
         
+        static var defaultBlob = Blob(blobID: "default", blobDatetime: Date(), blobLat: 0.0, blobLong: 0.0, blobRadius: 0.0, blobType: Constants.BlobType.origin, blobAccount: Constants.BlobAccount.standard, blobFeature: Constants.BlobFeature.standard, blobAccess: Constants.BlobAccess.standard)
+        static var defaultBlobContent = BlobContent(blobContentID: "default", blobID: defaultBlob.blobID, userID: "default", contentDatetime: Date(), contentType: Constants.ContentType.text, response: false, contentText: "Check out Blobjot.com!", contentMediaID: nil, contentThumbnailID: nil, respondingToContentID: nil)
+        
         static var mapCircles = [GMSCircle]()
-        static var locationBlobs = [Blob]()
-        static var blobThumbnailObjects = [BlobThumbnailObject]()
+        static var thumbnailObjects = [ThumbnailObject]()
         static var userObjects = [User]()
         static var userPublicArea = User(facebookID: "blobjotBlob", userID: "blobjotBlob", userName: "Public Area", userImage: UIImage(named: Constants.Strings.iconStringBlobjotLogo))
-        
     }
     
-    struct Dim {
-        
+    struct Dim
+    {
         static let statusBarStandardHeight: CGFloat = 20
         
         static let mapViewButtonSize: CGFloat = 40
@@ -353,11 +451,10 @@ struct Constants
         static let accountConnectStarSize: CGFloat = 40
         
         static let tabBarHeight: CGFloat = 49
-        
     }
     
-    struct Strings {
-        
+    struct Strings
+    {
         static let fontRegular = "Helvetica-Light"
 //        static let fontRegular = "Rajdhani-Regular"
 //        static let fontLight = "Rajdhani-Light"
@@ -418,17 +515,17 @@ struct Constants
         static let stringLMAlways = "Constant Tracking\n(High Accuracy)"
         static let stringLMSignificant = "Battery Saver\n(Low Accuracy)"
         static let stringLMOff = "Background Location\nTracking OFF"
-        
     }
     
-    struct Settings {
-        
+    struct Settings
+    {
         static let gKey = "AIzaSyBdwjW6jYuPjZP7oW8NsqHkZQyMxFq_j0w"
         static let mapStyleUrl = URL(string: "mapbox://styles/tangojlabs/ciqwaddsl0005b7m0xwctftow")
         static let maxServerTries: Int = 5
         static let maxServerTryRefreshTime: Double = 5000 // In milliseconds
         static let maxUserObjectSaveWithoutUse: Double = 43200000 // 12 Hours // In milliseconds
         static let maxBlobObjectSaveWithoutUse: Double = 0 // 43200000 // 12 Hours // In milliseconds
+        static let maxBlobContentObjectSaveWithoutUse: Double = 0 // 43200000 // 12 Hours // In milliseconds
         
         static let mapViewDefaultLat: CLLocationDegrees = 29.758624
         static let mapViewDefaultLong: CLLocationDegrees = -95.366795
@@ -445,7 +542,7 @@ struct Constants
         
         static let imageSizeUser: CGFloat = 200
         static let imageSizeThumbnail: CGFloat = 200
-        static let imageSizeBlob: CGFloat = 1080
+        static let imageSizeBlob: CGFloat = 720 // 1080
         
         static let locationDistanceFilter: Double = 100 // In meters
         static let locationAccuracyMax: Double = 100 // In meters
@@ -459,7 +556,6 @@ struct Constants
         
         static var locationManagerSetting: LocationManagerSettingType = Constants.LocationManagerSettingType.significant
         static var statusBarStyle: UIStatusBarStyle = UIStatusBarStyle.lightContent
-        
     }
     
     enum LocationManagerSettingType: String

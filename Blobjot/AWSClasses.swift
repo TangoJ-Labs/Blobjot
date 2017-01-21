@@ -425,76 +425,170 @@ class AWSGetMapData : AWSRequestObject
                 else if (response != nil)
                 {
                     // Convert the response to an array of AnyObjects
-                    if let newMapBlobs = response as? [AnyObject]
+                    // The first item will be an array of JSON Blobs; the second item will be an array of JSON ContentBlobs
+                    if let responseData = response as? [String: Any]
                     {
-                        print("AC-GMD - BLOB COUNT: \(newMapBlobs.count)")
-                        // Always clear the mapCircles before clearing the mapBlobs data otherwise the circles will be unresponsive
-                        // Each circle must individually have their map nullified, otherwise the mapView will still display the circle
-                        for circle in Constants.Data.mapCircles
+                        // The first item will be an array of JSON Blobs
+                        if let newMapBlobs = responseData["blobs"] as? [Any]
                         {
-                            circle.map = nil
-                        }
-                        Constants.Data.mapCircles = [GMSCircle]()
-                        
-                        // Clear global mapBlobs other than place Blobs
-                        Constants.Data.mapBlobs = [Blob]()
-                        Constants.Data.taggedBlobs = [Blob]()
-                        
-                        // Loop through each AnyObject (Blob) in the array
-                        for newBlob in newMapBlobs
-                        {
-                            // Convert the AnyObject to JSON with keys and AnyObject values
-                            // Then convert the AnyObject values to Strings or Numbers depending on their key
-                            if let checkBlob = newBlob as? [String: AnyObject]
+                            print("AC-GMD - BLOB COUNT: \(newMapBlobs.count)")
+                            // Always clear the mapCircles before clearing the mapBlobs data otherwise the circles will be unresponsive
+                            // Each circle must individually have their map nullified, otherwise the mapView will still display the circle
+                            for circle in Constants.Data.mapCircles
                             {
-                                // Finish converting the JSON AnyObjects and assign the data to a new Blob Object
-                                let addBlob = Blob()
-                                addBlob.blobID = checkBlob["blobID"] as! String
-                                addBlob.blobDatetime = Date(timeIntervalSince1970: checkBlob["blobTimestamp"] as! Double)
-                                addBlob.blobLat = checkBlob["blobLat"] as! Double
-                                addBlob.blobLong = checkBlob["blobLong"] as! Double
-                                addBlob.blobRadius = checkBlob["blobRadius"] as! Double
-                                addBlob.blobType = Constants().blobType(checkBlob["blobType"] as! Int)
-                                if let blobFeature = checkBlob["blobFeature"]
+                                circle.map = nil
+                            }
+                            Constants.Data.mapCircles = [GMSCircle]()
+                            
+                            // Create a local mapBlobs array to remember which Blobs should be shown on the map
+                            var rememberMapBlobIDs = [String]()
+                            
+                            // Loop through each AnyObject (Blob) in the array
+                            for newBlob in newMapBlobs
+                            {
+                                // Convert the AnyObject to JSON with keys and AnyObject values
+                                // Then convert the AnyObject values to Strings or Numbers depending on their key
+                                if let checkBlob = newBlob as? [String: Any]
                                 {
-                                    addBlob.blobFeature = Constants().blobFeature(blobFeature as! Int)
+                                    // Finish converting the JSON AnyObjects and assign the data to a new Blob Object
+                                    let addBlob = Blob()
+                                    addBlob.blobID = checkBlob["blobID"] as! String
+                                    addBlob.blobDatetime = Date(timeIntervalSince1970: checkBlob["blobTimestamp"] as! Double)
+                                    addBlob.blobLat = checkBlob["blobLat"] as! Double
+                                    addBlob.blobLong = checkBlob["blobLong"] as! Double
+                                    addBlob.blobRadius = checkBlob["blobRadius"] as! Double
+                                    addBlob.blobType = Constants().blobType(checkBlob["blobType"] as! Int)
+                                    if let blobAccount = checkBlob["blobAccount"]
+                                    {
+                                        addBlob.blobAccount = Constants().blobAccount(blobAccount as! Int)
+                                    }
+                                    if let blobFeature = checkBlob["blobFeature"]
+                                    {
+                                        addBlob.blobFeature = Constants().blobFeature(blobFeature as! Int)
+                                    }
+                                    if let blobAccess = checkBlob["blobAccess"]
+                                    {
+                                        addBlob.blobAccess = Constants().blobAccess(blobAccess as! Int)
+                                    }
+                                    
+                                    // Loop through the global Blobs list and add the Blob if it does not exist (modify the data if it does exist)
+                                    var blobExists = false
+                                    blobLoop: for blob in Constants.Data.allBlobs
+                                    {
+                                        if blob.blobID == addBlob.blobID
+                                        {
+                                            blobExists = true
+                                            blob.blobID = addBlob.blobID
+                                            blob.blobDatetime = addBlob.blobDatetime
+                                            blob.blobLat = addBlob.blobLat
+                                            blob.blobLong = addBlob.blobLong
+                                            blob.blobRadius = addBlob.blobRadius
+                                            blob.blobType = addBlob.blobType
+                                            blob.blobAccount = addBlob.blobAccount
+                                            blob.blobFeature = addBlob.blobFeature
+                                            blob.blobAccess = addBlob.blobAccess
+                                            break blobLoop
+                                        }
+                                    }
+                                    if !blobExists
+                                    {
+                                        Constants.Data.allBlobs.append(addBlob)
+                                    }
+                                    
+                                    // Append the new Blob Object to the local Map BlobIDs Array (it was cleared earlier)
+                                    // To remember which ones to add to the global array
+                                    rememberMapBlobIDs.append(addBlob.blobID)
+                                    print("AC-GMD - ADDED BLOB: \(addBlob.blobID)")
                                 }
-                                else
+                            }
+                            
+                            // Clear global mapBlobs other than place Blobs
+                            Constants.Data.mapBlobIDs = [String]()
+                            
+                            // Sort all Blobs, then using the local mapBlobs array to remember which ones to
+                            // include on the map, create a sorted mapBlobIDs array
+                            _ = UtilityFunctions().sortBlobs(blobs: Constants.Data.allBlobs)
+                            for aBlob in Constants.Data.allBlobs
+                            {
+                                // Determine if the Blob is in the local mapBlobs array to remember if it should be included
+                                rememberBlobLoop: for rBlobID in rememberMapBlobIDs
                                 {
-                                    addBlob.blobFeature = Constants.BlobFeature.standard
+                                    if rBlobID == aBlob.blobID
+                                    {
+                                        // The Blob should be included, so add it to the global MapBlobs array since it will now be in the correct order
+                                        Constants.Data.mapBlobIDs.append(rBlobID)
+                                        break rememberBlobLoop
+                                    }
                                 }
-                                if let blobAccess = checkBlob["blobAccess"]
-                                {
-                                    addBlob.blobAccess = Constants().blobAccess(blobAccess as! Int)
-                                }
-                                else
-                                {
-                                    addBlob.blobAccess = Constants.BlobAccess.followers
-                                }
-                                addBlob.blobUserID = checkBlob["blobUserID"] as! String
-                                
-                                // Append the new Blob Object to the global Tagged Blobs Array
-                                Constants.Data.taggedBlobs.append(addBlob)
-                                print("AC-GMD - ADDED BLOB: \(addBlob.blobID)")
+                            }
+                            
+                            // Notify the parent view that the AWS call completed successfully
+                            if let parentVC = self.awsRequestDelegate
+                            {
+                                print("AC-GMD - CALLED PARENT")
+                                parentVC.processAwsReturn(self, success: true)
                             }
                         }
                         
-                        Constants.Data.mapBlobs = Constants.Data.taggedBlobs
-                        
-                        // Recall and add BlobjotBlobs
-                        for bBlob in Constants.Data.blobjotBlobs
+                        // The second item will be an array of JSON ContentBlobs
+                        if let newContentBlobs = responseData["blob_content"] as? [Any]
                         {
-                            Constants.Data.mapBlobs.append(bBlob)
-                        }
-                        
-                        // Sort the mapBlobs
-                        UtilityFunctions().sortMapBlobs()
-                        
-                        // Notify the parent view that the AWS call completed successfully
-                        if let parentVC = self.awsRequestDelegate
-                        {
-                            print("AC-GMD - CALLED PARENT")
-                            parentVC.processAwsReturn(self, success: true)
+                            print("AC-GMD - BLOB CONTENT COUNT: \(newContentBlobs.count)")
+                            
+                            // Clear global contentBlobs
+                            Constants.Data.blobContent = [BlobContent]()
+                            
+                            // Loop through each AnyObject (Content) in the array
+                            for newContent in newContentBlobs
+                            {
+                                // Convert the AnyObject to JSON with keys and AnyObject values
+                                // Then convert the AnyObject values to Strings or Numbers depending on their key
+                                if let checkContent = newContent as? [String: Any]
+                                {
+                                    // Finish converting the JSON AnyObjects and assign the data to a new BlobContent Object
+                                    let addContent = BlobContent()
+                                    addContent.blobContentID    = checkContent["blobContentID"] as! String
+                                    addContent.blobID           = checkContent["blobID"] as! String
+                                    addContent.userID           = checkContent["contentUserID"] as! String
+                                    addContent.contentDatetime  = Date(timeIntervalSince1970: checkContent["contentTimestamp"] as! Double)
+                                    addContent.contentType      = Constants().contentType(checkContent["contentType"] as! Int)
+                                    addContent.response                 = checkContent["response"] as! Bool
+                                    addContent.respondingToContentID    = checkContent["respondingToContentID"] as? String
+                                    
+                                    // The text and media data will not be included in the mapData download
+                                    
+                                    // Loop through the global blobContent list and add the BlobContent if it does not exist (modify the data if it does exist)
+                                    var blobContentExists = false
+                                    blobContentLoop: for blobContent in Constants.Data.blobContent
+                                    {
+                                        if blobContent.blobContentID == addContent.blobContentID
+                                        {
+                                            blobContentExists = true
+                                            blobContent.blobContentID = addContent.blobContentID
+                                            blobContent.blobID = addContent.blobID
+                                            blobContent.userID = addContent.userID
+                                            blobContent.contentDatetime = addContent.contentDatetime
+                                            blobContent.contentType = addContent.contentType
+                                            blobContent.response = addContent.response
+                                            blobContent.respondingToContentID = addContent.respondingToContentID
+                                            break blobContentLoop
+                                        }
+                                    }
+                                    if !blobContentExists
+                                    {
+                                        // Append the new BlobContent Object to the global blobContent Array
+                                        Constants.Data.blobContent.append(addContent)
+                                    }
+                                    print("AC-GMD - ADDED BLOB CONTENT: \(addContent.blobContentID)")
+                                }
+                            }
+                            
+                            // Notify the parent view that the AWS call completed successfully
+                            if let parentVC = self.awsRequestDelegate
+                            {
+                                print("AC-GMD - CALLED PARENT")
+                                parentVC.processAwsReturn(self, success: true)
+                            }
                         }
                     }
                 }
@@ -502,15 +596,18 @@ class AWSGetMapData : AWSRequestObject
     }
 }
 
-class AWSGetBlobMinimumData : AWSRequestObject
+class AWSGetBlobData : AWSRequestObject
 {
     var blobID: String!
-    var notifyUser: Bool!
+    var notifyUser: Bool = false
     
-    required init(blobID: String, notifyUser: Bool)
+    required init(blobID: String, notifyUser: Bool?)
     {
         self.blobID = blobID
-        self.notifyUser = notifyUser
+        if let notify = notifyUser
+        {
+            self.notifyUser = notify
+        }
     }
     
     // Use this request function when a Blob is within range of the user's location and the extra Blob data is needed
@@ -545,70 +642,54 @@ class AWSGetBlobMinimumData : AWSRequestObject
                     // Then convert the AnyObject values to Strings or Numbers depending on their key
                     if let checkBlob = response as? [String: AnyObject]
                     {
-                        let minBlob = Blob()
-                        minBlob.blobID = self.blobID
-                        minBlob.blobDatetime = Date(timeIntervalSince1970: checkBlob["blobTimestamp"] as! Double)
-                        minBlob.blobLat = checkBlob["blobLat"] as? Double
-                        minBlob.blobLong = checkBlob["blobLong"] as? Double
-                        minBlob.blobRadius = checkBlob["blobRadius"] as? Double
-                        minBlob.blobType = Constants().blobType(checkBlob["blobType"] as! Int)
-                        minBlob.blobUserID = checkBlob["blobUserID"] as? String
-                        
-                        Constants.Data.taggedBlobs.append(minBlob)
-                        Constants.Data.mapBlobs.append(minBlob)
-                        
-                        // A new Blob was added, so sort the global mapBlobs array
-                        UtilityFunctions().sortMapBlobs()
-                        
-                        // Check if the user has already been downloaded
-                        var userExists = false
-                        loopUserCheck: for user in Constants.Data.userObjects
+                        let addBlob = Blob()
+                        addBlob.blobID = checkBlob["blobID"] as! String
+                        addBlob.blobDatetime = Date(timeIntervalSince1970: checkBlob["blobTimestamp"] as! Double)
+                        addBlob.blobLat = checkBlob["blobLat"] as! Double
+                        addBlob.blobLong = checkBlob["blobLong"] as! Double
+                        addBlob.blobRadius = checkBlob["blobRadius"] as! Double
+                        addBlob.blobType = Constants().blobType(checkBlob["blobType"] as! Int)
+                        if let blobAccount = checkBlob["blobAccount"]
                         {
-                            if user.userID == minBlob.blobUserID
-                            {
-                                userExists = true
-                                
-                                // Notify the parent view that the AWS call completed successfully
-                                if let parentVC = self.awsRequestDelegate
-                                {
-                                    parentVC.processAwsReturn(self, success: true)
-                                }
-                                
-                                break loopUserCheck
-                            }
+                            addBlob.blobAccount = Constants().blobAccount(blobAccount as! Int)
                         }
-                        // If the user has not been downloaded, request the user and the userImage
-                        if !userExists
+                        if let blobFeature = checkBlob["blobFeature"]
                         {
-                            let awsGetSingleUserData = AWSGetSingleUserData(userID: minBlob.blobUserID, forPreviewData: false)
-                            awsGetSingleUserData.targetBlob = minBlob
-                            AWSPrepRequest(requestToCall: awsGetSingleUserData, delegate: self.awsRequestDelegate!).prepRequest()
+                            addBlob.blobFeature = Constants().blobFeature(blobFeature as! Int)
                         }
+                        if let blobAccess = checkBlob["blobAccess"]
+                        {
+                            addBlob.blobAccess = Constants().blobAccess(blobAccess as! Int)
+                        }
+                        
+                        Constants.Data.allBlobs.append(addBlob)
                     }
                 }
         })
     }
 }
 
-class AWSGetBlobExtraData : AWSRequestObject
+class AWSGetBlobContentData : AWSRequestObject
 {
-    var blob: Blob!
+    var blobContentID: String!
+    var minimalOnly: Bool!
     
-    required init(blob: Blob)
+    required init(blobContentID: String, minimalOnly: Bool)
     {
-        self.blob = blob
+        self.blobContentID = blobContentID
+        self.minimalOnly = minimalOnly
     }
     
-    // Use this request function when a Blob is within range of the user's location and the extra Blob data is needed
+    // Use this request function when a Blob is within range of the user's location and the extra BlobContent data is needed
     override func makeRequest()
     {
-        print("AWSM-GBD: REQUESTING GBD FOR BLOB: \(self.blob.blobID)")
+        print("AWSM-GBD: REQUESTING GBD FOR BLOB CONTENT: \(self.blobContentID)")
         
-        // Create a JSON object with the passed Blob ID
-        let json: NSDictionary = ["blob_id" : self.blob.blobID, "filter" : 0]
+        // Create a JSON object with the passed BlobContent ID
+        let json: NSDictionary = ["blob_content_id" : self.blobContentID, "minimal_only" : Int(self.minimalOnly)]
         
         let lambdaInvoker = AWSLambdaInvoker.default()
-        lambdaInvoker.invokeFunction("Blobjot-GetBlobData", jsonObject: json, completionHandler:
+        lambdaInvoker.invokeFunction("Blobjot-GetBlobContentData", jsonObject: json, completionHandler:
             { (response, err) -> Void in
                 
                 if (err != nil)
@@ -629,191 +710,82 @@ class AWSGetBlobExtraData : AWSRequestObject
                 {
                     // Convert the response to JSON with keys and AnyObject values
                     // Then convert the AnyObject values to Strings or Numbers depending on their key
-                    // Start with converting the Blob ID to a String
-                    if let checkBlob = response as? [String: AnyObject]
+                    // Start with converting the BlobContent ID to a String
+                    if let newBlobContent = response as? [String: AnyObject]
                     {
-                        let extraBlobID = checkBlob["blobID"] as! String
+                        let addBlobContent = BlobContent()
+                        addBlobContent.blobContentID = newBlobContent["blobContentID"] as! String
+                        addBlobContent.blobID = newBlobContent["blobID"] as! String
+                        addBlobContent.userID = newBlobContent["contentUserID"] as! String
+                        addBlobContent.contentDatetime = Date(timeIntervalSince1970: newBlobContent["timestamp"] as! Double)
+                        addBlobContent.contentType = Constants.ContentType(rawValue: newBlobContent["contentType"] as! Int)
+                        addBlobContent.response = Bool(newBlobContent["response"] as! NSNumber)
+                        
+                        addBlobContent.respondingToContentID = newBlobContent["respondingToContentID"] as? String
+                        addBlobContent.contentMediaID = newBlobContent["contentMediaID"] as? String
+                        addBlobContent.contentThumbnailID = newBlobContent["contentThumbnailID"] as? String
+                        addBlobContent.contentText = newBlobContent["contentText"] as? String
                         
                         // Find the Blob in the global Map Blobs array and add the extra data to the Blob
-                        loopMapBlobCheck: for mBlob in Constants.Data.mapBlobs
+                        var blobContentExists = false
+                        loopBlobContentCheck: for bContent in Constants.Data.blobContent
                         {
-                            if mBlob.blobID == extraBlobID
+                            if bContent.blobContentID == addBlobContent.blobContentID
                             {
-                                mBlob.blobMediaType = checkBlob["blobMediaType"] as? Int
-                                mBlob.blobMediaID = checkBlob["blobMediaID"] as? String
-                                mBlob.blobThumbnailID = checkBlob["blobThumbnailID"] as? String
-                                mBlob.blobText = checkBlob["blobText"] as? String
+                                blobContentExists = true
                                 
-                                // ...and request the Thumbnail image data if the Thumbnail ID is not null
-                                if let thumbnailID = mBlob.blobThumbnailID
-                                {
-                                    // Ensure the thumbnail does not already exist
-                                    var thumbnailExists = false
-                                    loopThumbnailCheck: for tObject in Constants.Data.blobThumbnailObjects
-                                    {
-                                        // Check to see if the thumbnail Object ID matches
-                                        if tObject.blobThumbnailID == thumbnailID
-                                        {
-                                            thumbnailExists = true
-                                            
-                                            break loopThumbnailCheck
-                                        }
-                                    }
-                                    // If the thumbnail does not exist, download it and append it to the global Thumbnail array
-                                    if !thumbnailExists
-                                    {
-                                        let awsGetThumbnail = AWSGetThumbnailImage(blob: mBlob)
-                                        awsGetThumbnail.awsRequestDelegate = self.awsRequestDelegate
-                                        awsGetThumbnail.makeRequest()
-                                    }
-                                }
+                                bContent.blobID = addBlobContent.blobID
+                                bContent.userID = addBlobContent.userID
+                                bContent.contentDatetime = addBlobContent.contentDatetime
+                                bContent.contentType = addBlobContent.contentType
+                                bContent.response = addBlobContent.response
                                 
-                                // Check the global Location Blobs array for the Blob and assign the extra data if the Blob exists
-                                var blobExistsInLocationBlobs = false
-                                loopLocationBlobCheck: for lBlob in Constants.Data.locationBlobs
-                                {
-                                    if lBlob.blobID == extraBlobID
-                                    {
-                                        blobExistsInLocationBlobs = true
-                                        
-                                        lBlob.blobMediaType = checkBlob["blobMediaType"] as? Int
-                                        lBlob.blobMediaID = checkBlob["blobMediaID"] as? String
-                                        lBlob.blobThumbnailID = checkBlob["blobThumbnailID"] as? String
-                                        lBlob.blobText = checkBlob["blobText"] as? String
-                                        
-                                        break loopLocationBlobCheck
-                                    }
-                                }
+                                bContent.respondingToContentID = addBlobContent.respondingToContentID
+                                bContent.contentMediaID = addBlobContent.contentMediaID
+                                bContent.contentThumbnailID = addBlobContent.contentThumbnailID
+                                bContent.contentText = addBlobContent.contentText
                                 
-                                // If the Blob does not exist, append it to the Location Blobs array
-                                if !blobExistsInLocationBlobs
-                                {
-                                    Constants.Data.locationBlobs.append(mBlob)
-                                }
-                                
-                                // Notify the parent view that the AWS call completed successfully
-                                if let parentVC = self.awsRequestDelegate
-                                {
-                                    parentVC.processAwsReturn(self, success: true)
-                                }
-                                
-                                break loopMapBlobCheck
+                                break loopBlobContentCheck
                             }
+                        }
+                        // If the blobContent does not exist, append it to the global array
+                        if !blobContentExists
+                        {
+                            Constants.Data.blobContent.append(addBlobContent)
+                        }
+                        
+                        // ...and request the Thumbnail image data if the Thumbnail ID is not null
+                        if let thumbnailID = addBlobContent.contentThumbnailID
+                        {
+                            // Ensure the thumbnail does not already exist
+                            var thumbnailExists = false
+                            loopThumbnailCheck: for tObject in Constants.Data.thumbnailObjects
+                            {
+                                // Check to see if the thumbnail Object ID matches
+                                if tObject.thumbnailID == thumbnailID
+                                {
+                                    thumbnailExists = true
+                                    
+                                    break loopThumbnailCheck
+                                }
+                            }
+                            // If the thumbnail does not exist, download it and append it to the global Thumbnail array
+                            if !thumbnailExists
+                            {
+                                let awsGetThumbnail = AWSGetThumbnailImage(contentThumbnailID: thumbnailID)
+                                awsGetThumbnail.awsRequestDelegate = self.awsRequestDelegate
+                                awsGetThumbnail.makeRequest()
+                            }
+                        }
+                        
+                        // Notify the parent view that the AWS call completed successfully
+                        if let parentVC = self.awsRequestDelegate
+                        {
+                            parentVC.processAwsReturn(self, success: true)
                         }
                     }
                 }
         })
-    }
-}
-
-class AWSGetThumbnailImage : AWSRequestObject
-{
-    var blob: Blob!
-    
-    required init(blob: Blob)
-    {
-        self.blob = blob
-    }
-    
-    // Download Thumbnail Image
-    override func makeRequest()
-    {
-        if let thumbnailID = blob.blobThumbnailID
-        {
-            let downloadingFilePath = NSTemporaryDirectory() + thumbnailID // + Constants.Settings.frameImageFileType)
-            let downloadingFileURL = URL(fileURLWithPath: downloadingFilePath)
-            let transferManager = AWSS3TransferManager.default()
-            
-            // Download the Frame
-            let downloadRequest : AWSS3TransferManagerDownloadRequest = AWSS3TransferManagerDownloadRequest()
-            downloadRequest.bucket = Constants.Strings.S3BucketThumbnails
-            downloadRequest.key =  thumbnailID
-            downloadRequest.downloadingFileURL = downloadingFileURL
-            
-            transferManager?.download(downloadRequest).continue(
-                { (task) -> AnyObject! in
-                    
-                    if let error = task.error
-                    {
-                        if error._domain == AWSS3TransferManagerErrorDomain as String
-                            && AWSS3TransferManagerErrorType(rawValue: error._code) == AWSS3TransferManagerErrorType.paused
-                        {
-                            print("GTFT: DOWNLOAD PAUSED")
-                        }
-                        else
-                        {
-                            print("GTFT: DOWNLOAD FAILED: [\(error)]")
-                            CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: error.localizedDescription)
-                            
-                            // Record the server request attempt
-                            Constants.Data.serverTries += 1
-                        }
-                        
-                        // Notify the parent view that the AWS call completed with an error
-                        if let parentVC = self.awsRequestDelegate
-                        {
-                            parentVC.processAwsReturn(self, success: false)
-                        }
-                    }
-                    else if let exception = task.exception
-                    {
-                        print("GTFT: DOWNLOAD FAILED: [\(exception)]")
-                        CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: exception.debugDescription)
-                        
-                        // Record the server request attempt
-                        Constants.Data.serverTries += 1
-                        
-                        // Notify the parent view that the AWS call completed with an error
-                        if let parentVC = self.awsRequestDelegate
-                        {
-                            parentVC.processAwsReturn(self, success: false)
-                        }
-                    }
-                    else
-                    {
-                        DispatchQueue.main.async(execute:
-                            { () -> Void in
-                                // Assign the image to the Preview Image View
-                                if FileManager().fileExists(atPath: downloadingFilePath)
-                                {
-                                    let thumbnailData = try? Data(contentsOf: URL(fileURLWithPath: downloadingFilePath))
-                                    
-                                    // Ensure the Thumbnail Data is not null
-                                    if let tData = thumbnailData
-                                    {
-                                        // Create a Blob Thumbnail Object, assign the Thumbnail ID and newly downloaded Image
-                                        let addThumbnailObject = BlobThumbnailObject()
-                                        addThumbnailObject.blobThumbnailID = thumbnailID
-                                        addThumbnailObject.blobThumbnail = UIImage(data: tData)
-                                        Constants.Data.blobThumbnailObjects.append(addThumbnailObject)
-                                        
-                                        // Add the image to the blob for access by the return function
-                                        self.blob.blobThumbnail = UIImage(data: tData)
-                                        
-                                        // Notify the parent view that the AWS call completed successfully
-                                        if let parentVC = self.awsRequestDelegate
-                                        {
-                                            parentVC.processAwsReturn(self, success: true)
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    print("FRAME FILE NOT AVAILABLE")
-                                    // Record the server request attempt
-                                    Constants.Data.serverTries += 1
-                                    
-                                    // Notify the parent view that the AWS call completed with an error
-                                    if let parentVC = self.awsRequestDelegate
-                                    {
-                                        parentVC.processAwsReturn(self, success: false)
-                                    }
-                                }
-                        })
-                    }
-                    return nil
-            })
-        }
     }
 }
 
@@ -869,7 +841,7 @@ class AWSGetSingleUserData : AWSRequestObject
                         
                         // Add other properties to the User object
                         self.user.facebookID = facebookID
-                        self.user.userStatus = Constants.UserStatusTypes(rawValue: userStatus)!
+                        self.user.userStatus = Constants().userStatusType(userStatus)
                         
                         // NOTE: No need to update the Current User Object here - the FB ID and userID will not change, update in FBGetUserProfileData
                         // Check to ensure the user does not already exist in the global User array
@@ -956,7 +928,7 @@ class AWSGetUserConnections : AWSRequestObject
                                     {
                                         let userID = checkUser["user_id"] as! String
                                         let facebookID = checkUser["facebook_id"] as! String
-                                        let userStatus = Constants.UserStatusTypes(rawValue: arrayIndex)
+                                        let userStatus = Constants.UserStatusType(rawValue: arrayIndex)
                                         
                                         // Create a User Object and add it to the global User array
                                         let addUser = User()
@@ -976,7 +948,7 @@ class AWSGetUserConnections : AWSRequestObject
                                                 // If the user is the currently logged in user, ensure that the user is connected to themselves
                                                 if userObject.userID! == currentUserID
                                                 {
-                                                    userObject.userStatus = Constants.UserStatusTypes.following
+                                                    userObject.userStatus = Constants.UserStatusType.following
                                                 }
                                                 else
                                                 {
@@ -1174,37 +1146,13 @@ class AWSUploadMediaToBucket : AWSRequestObject
 
 class AWSUploadBlobData : AWSRequestObject
 {
-    var blobID: String!
-    var blobLat: Double!
-    var blobLong: Double!
-    var blobMediaID: String!
-    var blobMediaType: Int!
-    var blobRadius: Double!
-    var blobText: String!
-    var blobThumbnailID: String!
-    var blobTimestamp: Double!
-    var blobType: Int!
-    var blobFeature: Int!
-    var blobAccess: Int!
-    var blobUserID: String!
-    var blobUserName: String!
+    var blob: Blob!
+    var blobContent: BlobContent!
     
-    required init(blobID: String, blobLat: Double, blobLong: Double, blobMediaID: String!, blobMediaType: Int, blobRadius: Double, blobText: String, blobThumbnailID: String!, blobTimestamp: Double, blobType: Int, blobFeature: Int, blobAccess: Int, blobUserID: String, blobUserName: String)
+    required init(blob: Blob, blobContent: BlobContent)
     {
-        self.blobID = blobID
-        self.blobLat = blobLat
-        self.blobLong = blobLong
-        self.blobMediaID = blobMediaID
-        self.blobMediaType = blobMediaType
-        self.blobRadius = blobRadius
-        self.blobText = blobText
-        self.blobThumbnailID = blobThumbnailID
-        self.blobTimestamp = blobTimestamp
-        self.blobType = blobType
-        self.blobFeature = blobFeature
-        self.blobAccess = blobAccess
-        self.blobUserID = blobUserID
-        self.blobUserName = blobUserName
+        self.blob = blob
+        self.blobContent = blobContent
     }
     
     // Upload data to Lambda for transfer to DynamoDB
@@ -1214,20 +1162,23 @@ class AWSUploadBlobData : AWSRequestObject
         
         // Create some JSON to send the Blob data
         var json = [String: Any]()
-        json["blobID"]          = self.blobID
-        json["blobLat"]         = String(self.blobLat)
-        json["blobLong"]        = String(self.blobLong)
-        json["blobMediaID"]     = self.blobMediaID
-        json["blobMediaType"]   = String(self.blobMediaType)
-        json["blobRadius"]      = String(self.blobRadius)
-        json["blobText"]        = self.blobText
-        json["blobThumbnailID"] = self.blobThumbnailID
-        json["blobTimestamp"]   = String(self.blobTimestamp)
-        json["blobType"]        = String(self.blobType)
-        json["blobFeature"]     = String(self.blobFeature)
-        json["blobAccess"]      = String(self.blobAccess)
-        json["blobUserID"]      = self.blobUserID
-        json["blobUserName"]    = self.blobUserName
+        json["blobID"]          = blob.blobID
+        json["blobLat"]         = String(blob.blobLat)
+        json["blobLong"]        = String(blob.blobLong)
+        json["blobRadius"]      = String(blob.blobRadius)
+        json["blobType"]        = String(blob.blobType.rawValue)
+        json["blobAccount"]     = String(blob.blobAccount.rawValue)
+        json["blobFeature"]     = String(blob.blobFeature.rawValue)
+        json["blobAccess"]      = String(blob.blobAccess.rawValue)
+        json["response"]            = blobContent.response
+        json["contentID"]           = blobContent.blobContentID
+        json["contentUserID"]       = blobContent.userID
+        json["contentTimestamp"]    = String(blobContent.contentDatetime.timeIntervalSince1970)
+        json["contentType"]         = String(blobContent.contentType.rawValue)
+        json["contentText"]         = blobContent.contentText
+        json["contentThumbnailID"]  = blobContent.contentThumbnailID
+        json["contentMediaID"]      = blobContent.contentMediaID
+        json["uploaderUserName"]    = Constants.Data.currentUser.userName
         
         print("LAMBDA JSON: \(json)")
         let lambdaInvoker = AWSLambdaInvoker.default()
@@ -1250,6 +1201,70 @@ class AWSUploadBlobData : AWSRequestObject
                 }
                 else if (response != nil)
                 {
+                    if let responsesArray = response as? [Any]
+                    {
+                        if let blobID = responsesArray[0] as? String
+                        {
+                            if blobID == self.blob.blobID
+                            {
+                                // The first String in the response indicated that the new BlobID was used,
+                                // which means that a new Blob was created
+                                // Add the new Blob to the Blob list using the Blob data
+                                let addBlob = Blob()
+                                addBlob.blobID = self.blob.blobID
+                                addBlob.blobDatetime = self.blob.blobDatetime
+                                addBlob.blobLat = self.blob.blobLat
+                                addBlob.blobLong = self.blob.blobLong
+                                addBlob.blobRadius = self.blob.blobRadius
+                                addBlob.blobType = self.blob.blobType
+                                addBlob.blobAccount = self.blob.blobAccount
+                                addBlob.blobFeature = self.blob.blobFeature
+                                addBlob.blobAccess = self.blob.blobAccess
+                                
+                                Constants.Data.allBlobs.append(addBlob)
+                            }
+                            else
+                            {
+                                // The response is a different BlobID, which means a new Blob was not created, but a similar one was used
+                                // Look up this Blob in the global Blob list and add the new content, if it exists
+                                // Otherwise just recall the Blob and add the new content
+                                var blobExists = false
+                                blobLoop: for blob in Constants.Data.allBlobs
+                                {
+                                    if blob.blobID == blobID
+                                    {
+                                        blobExists = true
+                                        // DO NOT REPLACE THE EXISTING BLOB CONTENT - THE SYSTEM WILL USE THIS BLOB CONTENT, NOT NEW DATA
+                                        break blobLoop
+                                    }
+                                }
+                                
+                                // The blob is not already downloaded, so request the Blob data and add to the map
+                                if !blobExists
+                                {
+                                    AWSPrepRequest(requestToCall: AWSGetBlobData(blobID: blobID, notifyUser: false), delegate: self.awsRequestDelegate!).prepRequest()
+                                }
+                            }
+                            
+                            // Now that the Blob has been added, add the BlobContent to the global array
+                            let addContent = BlobContent()
+                            addContent.blobContentID    = self.blobContent.blobContentID
+                            addContent.blobID           = self.blobContent.blobID
+                            addContent.userID           = self.blobContent.userID
+                            addContent.contentDatetime  = self.blobContent.contentDatetime
+                            addContent.contentType      = self.blobContent.contentType
+                            addContent.response                 = self.blobContent.response
+                            addContent.respondingToContentID    = self.blobContent.respondingToContentID
+                            
+                            addContent.contentText          = self.blobContent.contentText
+                            addContent.contentMediaID       = self.blobContent.contentMediaID
+                            addContent.contentThumbnailID   = self.blobContent.contentThumbnailID
+                            addContent.contentThumbnail     = self.blobContent.contentThumbnail
+                            
+                            Constants.Data.blobContent.append(addContent)
+                        }
+                    }
+                    
                     // Notify the parent view that the AWS call completed successfully
                     if let parentVC = self.awsRequestDelegate
                     {
@@ -1354,12 +1369,12 @@ class AWSDeleteBlob : AWSRequestObject
     }
 }
 
-class AWSGetUserBlobs : AWSRequestObject
+class AWSGetUserBlobContent : AWSRequestObject
 {
     // The initial request for User's Blob data - called when the View Controller is instantiated
     override func makeRequest()
     {
-        print("AC - GUB - REQUESTING GUB")
+        print("AC - GUBC - REQUESTING GUB")
         
         // Create some JSON to send the logged in userID
         let json: NSDictionary = ["user_id" : Constants.Data.currentUser.userID!]
@@ -1370,7 +1385,7 @@ class AWSGetUserBlobs : AWSRequestObject
                 
                 if (err != nil)
                 {
-                    print("AC - GUB - GET USER BLOBS DATA ERROR: \(err)")
+                    print("AC - GUBC - GET USER BLOBS DATA ERROR: \(err)")
                     CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: err.debugDescription)
                     
                     // Record the server request attempt
@@ -1385,46 +1400,85 @@ class AWSGetUserBlobs : AWSRequestObject
                 else if (response != nil)
                 {
                     // Convert the response to an array of AnyObjects
-                    if let rawUserBlobs = response as? [AnyObject]
+                    if let rawUserBlobContent = response as? [AnyObject]
                     {
-                        print("AC - GUB - BLOB COUNT: \(rawUserBlobs.count)")
+                        print("AC - GUBC - BLOB CONTENT COUNT: \(rawUserBlobContent.count)")
                         
-                        Constants.Data.userBlobs = [Blob]()
+                        // Reset the IDs array
+                        Constants.Data.userBlobContentIDs = [String]()
                         
                         // Loop through each AnyObject (Blob) in the array
                         // Save them to the global userBlob array
                         // Save them to Core Data
-                        for newBlob in rawUserBlobs
+                        for rawBlobContentObject in rawUserBlobContent
                         {
                             // Convert the AnyObject to JSON with keys and AnyObject values
                             // Then convert the AnyObject values to Strings or Numbers depending on their key
-                            if let checkBlob = newBlob as? [String: AnyObject]
+                            if let newBlobContent = rawBlobContentObject as? [String: AnyObject]
                             {
-                                // Finish converting the JSON AnyObjects and assign the data to a new Blob Object
-                                let addBlob = Blob()
-                                addBlob.blobID = checkBlob["blobID"] as! String
-                                addBlob.blobDatetime = Date(timeIntervalSince1970: checkBlob["blobTimestamp"] as! Double)
-                                addBlob.blobLat = checkBlob["blobLat"] as! Double
-                                addBlob.blobLong = checkBlob["blobLong"] as! Double
-                                addBlob.blobRadius = checkBlob["blobRadius"] as! Double
-                                addBlob.blobType = Constants().blobType(checkBlob["blobType"] as! Int)
-                                addBlob.blobUserID = checkBlob["blobUserID"] as! String
-                                addBlob.blobText = checkBlob["blobText"] as? String
-                                addBlob.blobThumbnailID = checkBlob["blobThumbnailID"] as? String
-                                addBlob.blobMediaType = checkBlob["blobMediaType"] as? Int
-                                addBlob.blobMediaID = checkBlob["blobMediaID"] as? String
+                                let addBlobContent = BlobContent()
+                                addBlobContent.blobContentID = newBlobContent["blobContentID"] as! String
+                                addBlobContent.blobID = newBlobContent["blobID"] as! String
+                                addBlobContent.userID = newBlobContent["contentUserID"] as! String
+                                addBlobContent.contentDatetime = Date(timeIntervalSince1970: newBlobContent["timestamp"] as! Double)
+                                addBlobContent.contentType = Constants.ContentType(rawValue: newBlobContent["contentType"] as! Int)
+                                addBlobContent.response = Bool(newBlobContent["response"] as! NSNumber)
                                 
-                                addBlob.blobExtraRequested = true
+                                addBlobContent.respondingToContentID = newBlobContent["respondingToContentID"] as? String
+                                addBlobContent.contentMediaID = newBlobContent["contentMediaID"] as? String
+                                addBlobContent.contentThumbnailID = newBlobContent["contentThumbnailID"] as? String
+                                addBlobContent.contentText = newBlobContent["contentText"] as? String
                                 
-                                // Append the new Blob Object to the local User Blobs Array
-                                Constants.Data.userBlobs.append(addBlob)
+                                // Find the Blob in the global Map Blobs array and add the extra data to the Blob
+                                var blobContentExists = false
+                                loopBlobContentCheck: for bContent in Constants.Data.blobContent
+                                {
+                                    if bContent.blobContentID == addBlobContent.blobContentID
+                                    {
+                                        blobContentExists = true
+                                        
+                                        bContent.blobID = addBlobContent.blobID
+                                        bContent.userID = addBlobContent.userID
+                                        bContent.contentDatetime = addBlobContent.contentDatetime
+                                        bContent.contentType = addBlobContent.contentType
+                                        bContent.response = addBlobContent.response
+                                        
+                                        bContent.respondingToContentID = addBlobContent.respondingToContentID
+                                        bContent.contentMediaID = addBlobContent.contentMediaID
+                                        bContent.contentThumbnailID = addBlobContent.contentThumbnailID
+                                        bContent.contentText = addBlobContent.contentText
+                                        
+                                        break loopBlobContentCheck
+                                    }
+                                }
+                                // If the blobContent does not exist, append it to the global array
+                                if !blobContentExists
+                                {
+                                    Constants.Data.blobContent.append(addBlobContent)
+                                }
+                                
+                                // Check whether the Blob for this BlobContent already exists - if not, download it
+                                var blobExists = false
+                                blobLoop: for blob in Constants.Data.allBlobs
+                                {
+                                    if blob.blobID == addBlobContent.blobID
+                                    {
+                                        blobExists = true
+                                        // DO NOT REPLACE THE EXISTING BLOB CONTENT - THE SYSTEM WILL USE THIS BLOB CONTENT, NOT NEW DATA
+                                        break blobLoop
+                                    }
+                                }
+                                
+                                // The blob is not already downloaded, so request the Blob data and add to the map
+                                if !blobExists
+                                {
+                                    AWSPrepRequest(requestToCall: AWSGetBlobData(blobID: addBlobContent.blobID, notifyUser: false), delegate: self.awsRequestDelegate!).prepRequest()
+                                }
                                 
                                 // Save to Core Data
-                                CoreDataFunctions().blobSave(blob: addBlob)
+                                CoreDataFunctions().blobContentSave(blobContent: addBlobContent)
                             }
                         }
-                        // Sort the User Blobs
-                        UtilityFunctions().sortUserBlobs()
                         
                         // Notify the parent view that the AWS call completed successfully
                         if let parentVC = self.awsRequestDelegate
@@ -1489,7 +1543,132 @@ class AWSAddBlobView : AWSRequestObject
     }
 }
 
-class AWSGetBlobContentImage : AWSRequestObject
+class AWSGetThumbnailImage : AWSRequestObject
+{
+    var contentThumbnailID: String!
+    
+    required init(contentThumbnailID: String)
+    {
+        self.contentThumbnailID = contentThumbnailID
+    }
+    
+    // Download Thumbnail Image
+    override func makeRequest()
+    {
+        if let thumbnailID = contentThumbnailID
+        {
+            let downloadingFilePath = NSTemporaryDirectory() + thumbnailID // + Constants.Settings.frameImageFileType)
+            let downloadingFileURL = URL(fileURLWithPath: downloadingFilePath)
+            let transferManager = AWSS3TransferManager.default()
+            
+            // Download the Frame
+            let downloadRequest : AWSS3TransferManagerDownloadRequest = AWSS3TransferManagerDownloadRequest()
+            downloadRequest.bucket = Constants.Strings.S3BucketThumbnails
+            downloadRequest.key =  thumbnailID
+            downloadRequest.downloadingFileURL = downloadingFileURL
+            
+            transferManager?.download(downloadRequest).continue(
+                { (task) -> AnyObject! in
+                    
+                    if let error = task.error
+                    {
+                        if error._domain == AWSS3TransferManagerErrorDomain as String
+                            && AWSS3TransferManagerErrorType(rawValue: error._code) == AWSS3TransferManagerErrorType.paused
+                        {
+                            print("GTFT: DOWNLOAD PAUSED")
+                        }
+                        else
+                        {
+                            print("GTFT: DOWNLOAD FAILED: [\(error)]")
+                            CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: error.localizedDescription)
+                            
+                            // Record the server request attempt
+                            Constants.Data.serverTries += 1
+                        }
+                        
+                        // Notify the parent view that the AWS call completed with an error
+                        if let parentVC = self.awsRequestDelegate
+                        {
+                            parentVC.processAwsReturn(self, success: false)
+                        }
+                    }
+                    else if let exception = task.exception
+                    {
+                        print("GTFT: DOWNLOAD FAILED: [\(exception)]")
+                        CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: exception.debugDescription)
+                        
+                        // Record the server request attempt
+                        Constants.Data.serverTries += 1
+                        
+                        // Notify the parent view that the AWS call completed with an error
+                        if let parentVC = self.awsRequestDelegate
+                        {
+                            parentVC.processAwsReturn(self, success: false)
+                        }
+                    }
+                    else
+                    {
+                        DispatchQueue.main.async(execute:
+                            { () -> Void in
+                                // Assign the image to the Preview Image View
+                                if FileManager().fileExists(atPath: downloadingFilePath)
+                                {
+                                    let thumbnailData = try? Data(contentsOf: URL(fileURLWithPath: downloadingFilePath))
+                                    
+                                    // Ensure the Thumbnail Data is not null
+                                    if let tData = thumbnailData
+                                    {
+                                        // Ensure the thumbnail does not already exist
+                                        var thumbnailExists = false
+                                        loopThumbnailCheck: for tObject in Constants.Data.thumbnailObjects
+                                        {
+                                            // Check to see if the thumbnail Object ID matches
+                                            if tObject.thumbnailID == thumbnailID
+                                            {
+                                                thumbnailExists = true
+                                                break loopThumbnailCheck
+                                            }
+                                        }
+                                        // If the thumbnail does not exist, download it and append it to the global Thumbnail array
+                                        if !thumbnailExists
+                                        {
+                                            // Create a Blob Thumbnail Object, assign the Thumbnail ID and newly downloaded Image
+                                            let addThumbnailObject = ThumbnailObject()
+                                            addThumbnailObject.thumbnailID = thumbnailID
+                                            addThumbnailObject.thumbnail = UIImage(data: tData)
+                                            
+                                            // Add the thumbnail to the global Thumbnail array
+                                            Constants.Data.thumbnailObjects.append(addThumbnailObject)
+                                        }
+                                        
+                                        // Notify the parent view that the AWS call completed successfully
+                                        if let parentVC = self.awsRequestDelegate
+                                        {
+                                            parentVC.processAwsReturn(self, success: true)
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    print("FRAME FILE NOT AVAILABLE")
+                                    // Record the server request attempt
+                                    Constants.Data.serverTries += 1
+                                    
+                                    // Notify the parent view that the AWS call completed with an error
+                                    if let parentVC = self.awsRequestDelegate
+                                    {
+                                        parentVC.processAwsReturn(self, success: false)
+                                    }
+                                }
+                        })
+                    }
+                    return nil
+            })
+        }
+    }
+}
+
+class AWSGetMediaImage : AWSRequestObject
 {
     var blobContent: BlobContent!
     var contentImage: UIImage?
@@ -1504,8 +1683,8 @@ class AWSGetBlobContentImage : AWSRequestObject
     {
         print("ATTEMPT TO DOWNLOAD IMAGE: \(self.blobContent.contentMediaID)")
         
-        // Verify the type of Blob (image or video)
-        if self.blobContent.contentType == 1
+        // Verify the type of Blob (image)
+        if self.blobContent.contentType == Constants.ContentType.image
         {
             if let contentMediaID = self.blobContent.contentMediaID
             {
@@ -1772,7 +1951,7 @@ class AWSAddCommentForBlob : AWSRequestObject
     }
 }
 
-class AWSGetBlobContent : AWSRequestObject
+class AWSGetBlobContentForBlob : AWSRequestObject
 {
     var blobID: String!
     var blobContentArray = [BlobContent]()
@@ -1816,21 +1995,48 @@ class AWSGetBlobContent : AWSRequestObject
                     {
                         for rawBlobContentObject in rawBlobContent
                         {
-                            if let jsonBlobContent = rawBlobContentObject as? [String: AnyObject]
+                            if let newBlobContent = rawBlobContentObject as? [String: AnyObject]
                             {
-                                // Finish converting the JSON AnyObjects and assign the data to a new Blob Object
                                 let addBlobContent = BlobContent()
-                                addBlobContent.blobContentID    = jsonBlobContent["blobContentID"] as! String
-                                addBlobContent.blobID           = jsonBlobContent["blobID"] as! String
-                                addBlobContent.userID           = jsonBlobContent["contentUserID"] as! String
-                                addBlobContent.contentDatetime  = Date(timeIntervalSince1970: jsonBlobContent["timestamp"] as! Double)
-                                addBlobContent.contentType      = jsonBlobContent["contentMediaType"] as? Int
-                                addBlobContent.contentText      = jsonBlobContent["contentText"] as? String
-                                addBlobContent.contentMediaID   = jsonBlobContent["contentMediaID"] as? String
-                                addBlobContent.contentThumbnailID = jsonBlobContent["contentThumbnailID"] as? String
+                                addBlobContent.blobContentID = newBlobContent["blobContentID"] as! String
+                                addBlobContent.blobID = newBlobContent["blobID"] as! String
+                                addBlobContent.userID = newBlobContent["contentUserID"] as! String
+                                addBlobContent.contentDatetime = Date(timeIntervalSince1970: newBlobContent["timestamp"] as! Double)
+                                addBlobContent.contentType = Constants.ContentType(rawValue: newBlobContent["contentType"] as! Int)
+                                addBlobContent.response = Bool(newBlobContent["response"] as! NSNumber)
                                 
-                                // Append the new Blob Object to the local User Blobs Array
-                                self.blobContentArray.append(addBlobContent)
+                                addBlobContent.respondingToContentID = newBlobContent["respondingToContentID"] as? String
+                                addBlobContent.contentMediaID = newBlobContent["contentMediaID"] as? String
+                                addBlobContent.contentThumbnailID = newBlobContent["contentThumbnailID"] as? String
+                                addBlobContent.contentText = newBlobContent["contentText"] as? String
+                                
+                                // Find the Blob in the global Map Blobs array and add the extra data to the Blob
+                                var blobContentExists = false
+                                loopBlobContentCheck: for bContent in Constants.Data.blobContent
+                                {
+                                    if bContent.blobContentID == addBlobContent.blobContentID
+                                    {
+                                        blobContentExists = true
+                                        
+                                        bContent.blobID = addBlobContent.blobID
+                                        bContent.userID = addBlobContent.userID
+                                        bContent.contentDatetime = addBlobContent.contentDatetime
+                                        bContent.contentType = addBlobContent.contentType
+                                        bContent.response = addBlobContent.response
+                                        
+                                        bContent.respondingToContentID = addBlobContent.respondingToContentID
+                                        bContent.contentMediaID = addBlobContent.contentMediaID
+                                        bContent.contentThumbnailID = addBlobContent.contentThumbnailID
+                                        bContent.contentText = addBlobContent.contentText
+                                        
+                                        break loopBlobContentCheck
+                                    }
+                                }
+                                // If the blobContent does not exist, append it to the global array
+                                if !blobContentExists
+                                {
+                                    Constants.Data.blobContent.append(addBlobContent)
+                                }
                             }
                         }
                         
@@ -2161,7 +2367,7 @@ class FBGetUserLikes : AWSRequestObject
                 else
                 {
                     // Reset the userLikes list
-                    Constants.Data.currentUserLikes = [String]()
+                    Constants.Data.currentUserInterests = [String]()
                     
                     print("AC-FBSDK - GUD - LIKES: \(result)")
                     
@@ -2184,7 +2390,7 @@ class FBGetUserLikes : AWSRequestObject
                                                     if let like = likeObjectParsed["name"] as? String
                                                     {
                                                         print("AC-FBSDK - GUD - like : \(like)")
-                                                        Constants.Data.currentUserLikes.append(like)
+                                                        Constants.Data.currentUserInterests.append(like)
                                                     }
                                                 }
                                             }
@@ -2196,7 +2402,7 @@ class FBGetUserLikes : AWSRequestObject
                     }
                     
                     // Save all downloaded data to Core Data
-                    CoreDataFunctions().likesSave()
+                    CoreDataFunctions().interestsSave()
                 }
         }
     }

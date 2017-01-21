@@ -79,7 +79,7 @@ class UtilityFunctions
     // Reset the preview Blobs list and set the current preview index to nil
     func resetPreviewData()
     {
-        Constants.Data.previewBlobs = [Blob]()
+        Constants.Data.previewBlobContent = [BlobContent]()
         Constants.Data.previewCurrentIndex = nil
     }
     
@@ -129,13 +129,26 @@ class UtilityFunctions
 //        }
 //    }
     
-    // Sort the global mapBlobs array
-    func sortMapBlobs()
+    // Sort the passed Blobs array
+    func sortBlobs(blobs: [Blob]) -> [Blob]
     {
-//        print("UF - SORTING MAP BLOBS")
-        // Sort the Map Blobs first by blobType, then from newest to oldest
-        Constants.Data.mapBlobs.sort(by: {
-            if $0.blobType !=  $1.blobType
+        print("UF - SORTING BLOBS")
+        // Sort the Blobs first by blobAccount (standard on top), then blobFeature (invisible on top), 
+        // then blobAccess (followed on top), then blobType (origin on top), then from newest to oldest
+        let sortedBlobs = blobs.sorted {
+            if $0.blobAccount !=  $1.blobAccount
+            {
+                return $0.blobAccount.rawValue <  $1.blobAccount.rawValue
+            }
+            else if $0.blobFeature !=  $1.blobFeature
+            {
+                return $0.blobFeature.rawValue >  $1.blobFeature.rawValue
+            }
+            else if $0.blobAccess !=  $1.blobAccess
+            {
+                return $0.blobAccess.rawValue >  $1.blobAccess.rawValue
+            }
+            else if $0.blobType !=  $1.blobType
             {
                 return $0.blobType.rawValue <  $1.blobType.rawValue
             }
@@ -143,14 +156,9 @@ class UtilityFunctions
             {
                 return $0.blobDatetime.timeIntervalSince1970 > $1.blobDatetime.timeIntervalSince1970
             }
-        })
-    }
-    
-    // Sort the global userBlobs array
-    func sortUserBlobs()
-    {
-        // Sort the User Blobs from newest to oldest
-        Constants.Data.userBlobs.sort(by: {$0.blobDatetime.timeIntervalSince1970 > $1.blobDatetime.timeIntervalSince1970})
+        }
+        
+        return sortedBlobs
     }
     
     // Calculate the needed textview height for text - need to use font size 10
@@ -219,32 +227,32 @@ class UtilityFunctions
         alertController.show()
     }
     
-    func displayLocalBlobNotification(_ blob: Blob)
+    func displayLocalBlobNotification(_ blobContent: BlobContent)
     {
         // Find the user for the Blob
         loopUserObjectCheck: for userObject in Constants.Data.userObjects
         {
-            if userObject.userID == blob.blobUserID
+            if userObject.userID == blobContent.userID
             {
                 // Create a notification of the new Blob at the current location
                 let notification = UILocalNotification()
                 
                 // Ensure that the Blob Text is not nil
                 // If it is nil, just show the Blob userName
-                if let blobUserName = userObject.userName
+                if let blobContentUserName = userObject.userName
                 {
-                    if let blobText = blob.blobText
+                    if let blobContentText = blobContent.contentText
                     {
-                        notification.alertBody = "\(blobUserName): \(blobText)"
+                        notification.alertBody = "\(blobContentUserName): \(blobContentText)"
                     }
                     else
                     {
-                        notification.alertBody = "\(blobUserName)"
+                        notification.alertBody = "\(blobContentUserName)"
                     }
                     notification.alertAction = "open"
                     notification.hasAction = false
 //                    notification.alertTitle = "\(userObject.userName)"
-                    notification.userInfo = ["blobID" : blob.blobID]
+                    notification.userInfo = ["blobContentID" : blobContent.blobContentID]
                     notification.fireDate = Date().addingTimeInterval(0) //Show the notification now
                     
                     UIApplication.shared.scheduleLocalNotification(notification)
@@ -263,8 +271,8 @@ class UtilityFunctions
             }
         }
         
-        // Save the Blob notification in Core Data (so that the user is not notified again)
-        CoreDataFunctions().blobNotificationSave(blobID: blob.blobID)
+//        // Save the Blob notification in Core Data (so that the user is not notified again)
+//        CoreDataFunctions().blobNotificationSave(blobID: blob.blobID)
     }
     
     func displayNewBlobNotification(blob: Blob, userName: String)
@@ -285,20 +293,20 @@ class UtilityFunctions
     }
     
     // Process a notification for a new blob
-    func displayNewBlobNotificationOLD(newBlobID: String)
+    func displayNewBlobNotificationOLD(newBlobContentID: String)
     {
         // Recall the Blob data
-        loopBlobCheck: for blob in Constants.Data.mapBlobs
+        loopBlobCheck: for blobContent in Constants.Data.blobContent
         {
-            if blob.blobID == newBlobID
+            if blobContent.blobContentID == newBlobContentID
             {
                 // Ensure that the passed Blob was not created by the current user
-                if blob.blobUserID != Constants.Data.currentUser.userID
+                if blobContent.userID != Constants.Data.currentUser.userID
                 {
                     // Recall the userObject needed based on recalled Blob data
                     loopUserCheck: for user in Constants.Data.userObjects
                     {
-                        if user.userID == blob.blobUserID
+                        if user.userID == blobContent.userID
                         {
                             if let userName = user.userName
                             {
@@ -309,7 +317,7 @@ class UtilityFunctions
                                 notification.alertAction = "open"
                                 notification.hasAction = false
 //                            notification.alertTitle = "\(userObject.userName)"
-                                notification.userInfo = ["blobID" : blob.blobID]
+                                notification.userInfo = ["blobContentID" : blobContent.blobContentID]
                                 notification.fireDate = Date().addingTimeInterval(0) //Show the notification now
                                 
                                 UIApplication.shared.scheduleLocalNotification(notification)

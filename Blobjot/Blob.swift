@@ -17,35 +17,25 @@ class Blob
     var blobLong: Double!
     var blobRadius: Double!
     var blobType: Constants.BlobType!
-    var blobFeature: Constants.BlobFeature!
-    var blobAccess: Constants.BlobAccess!
-    var blobUserID: String!
-    var blobText: String?
-    var blobMediaType: Int?
-    var blobMediaID: String?
-    var blobThumbnailID: String?
-    var blobThumbnail: UIImage?
+    var blobAccount = Constants.BlobAccount.standard
+    var blobFeature = Constants.BlobFeature.standard
+    var blobAccess = Constants.BlobAccess.followers
     
-    var blobExtraRequested = false
     var blobSelected = false
-    var blobViewed = false
     
-    var blobPublicInterest = false // Indicates whether the Blobjot (Public) Blob has content that might be of interest to the user, based on the user's Facebook likes
-    
-    convenience init(blobID: String, blobUserID: String, blobLat: Double, blobLong: Double, blobRadius: Double, blobType: Constants.BlobType, blobFeature: Constants.BlobFeature, blobAccess: Constants.BlobAccess, blobMediaType: Int, blobText: String)
+    convenience init(blobID: String, blobDatetime: Date, blobLat: Double, blobLong: Double, blobRadius: Double, blobType: Constants.BlobType, blobAccount: Constants.BlobAccount, blobFeature: Constants.BlobFeature, blobAccess: Constants.BlobAccess)
     {
         self.init()
         
         self.blobID = blobID
-        self.blobUserID = blobUserID
+        self.blobDatetime = blobDatetime
         self.blobLat = blobLat
         self.blobLong = blobLong
         self.blobRadius = blobRadius
         self.blobType = blobType
+        self.blobAccount = blobAccount
         self.blobFeature = blobFeature
         self.blobAccess = blobAccess
-        self.blobMediaType = blobMediaType
-        self.blobText = blobText
     }
     
 }
