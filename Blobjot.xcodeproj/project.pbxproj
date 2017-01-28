@@ -57,6 +57,8 @@
 		B86407081D7B13EB0084D6EF /* DataModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = B86407061D7B13EB0084D6EF /* DataModel.xcdatamodeld */; };
 		B864070D1D7B14A40084D6EF /* BlobNotifications+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B86407091D7B14A40084D6EF /* BlobNotifications+CoreDataProperties.swift */; };
 		B864070E1D7B14A40084D6EF /* BlobNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B864070A1D7B14A40084D6EF /* BlobNotification.swift */; };
+		B86A06061E3B792D006086EF /* InterestsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B86A06051E3B792D006086EF /* InterestsViewController.swift */; };
+		B86A06081E3B7B02006086EF /* InterestsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B86A06071E3B7B02006086EF /* InterestsTableViewCell.swift */; };
 		B877708A1E17FD620041ECD6 /* MapViewPreviewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B87770891E17FD620041ECD6 /* MapViewPreviewCell.swift */; };
 		B877B5811E30E431007151EE /* BlobContentCD+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = B877B57E1E30E431007151EE /* BlobContentCD+CoreDataClass.swift */; };
 		B877B5821E30E431007151EE /* BlobContentCD+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B877B57F1E30E431007151EE /* BlobContentCD+CoreDataProperties.swift */; };
@@ -200,6 +202,8 @@
 		B86407071D7B13EB0084D6EF /* DataModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = DataModel.xcdatamodel; sourceTree = "<group>"; };
 		B86407091D7B14A40084D6EF /* BlobNotifications+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "BlobNotifications+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		B864070A1D7B14A40084D6EF /* BlobNotification.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlobNotification.swift; sourceTree = "<group>"; };
+		B86A06051E3B792D006086EF /* InterestsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InterestsViewController.swift; sourceTree = "<group>"; };
+		B86A06071E3B7B02006086EF /* InterestsTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InterestsTableViewCell.swift; sourceTree = "<group>"; };
 		B87770891E17FD620041ECD6 /* MapViewPreviewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapViewPreviewCell.swift; sourceTree = "<group>"; };
 		B877B57C1E30E2CF007151EE /* Blobjot_DataModel_2.0.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Blobjot_DataModel_2.0.xcdatamodel; sourceTree = "<group>"; };
 		B877B57E1E30E431007151EE /* BlobContentCD+CoreDataClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "BlobContentCD+CoreDataClass.swift"; path = "../BlobContentCD+CoreDataClass.swift"; sourceTree = "<group>"; };
@@ -407,6 +411,7 @@
 			isa = PBXGroup;
 			children = (
 				B80C56571D5116CD00C4E683 /* Assets */,
+				B8C187E71E33FD5100CBAA12 /* CoreData */,
 				B88131911D510EEE00021C4B /* Blobjot */,
 				B88131A91D510EEF00021C4B /* BlobjotTests */,
 				B88131B41D510EEF00021C4B /* BlobjotUITests */,
@@ -434,7 +439,6 @@
 		B88131911D510EEE00021C4B /* Blobjot */ = {
 			isa = PBXGroup;
 			children = (
-				B8C187E71E33FD5100CBAA12 /* CoreData */,
 				B88131921D510EEE00021C4B /* AppDelegate.swift */,
 				B80D17761D922FF20032B0D8 /* AWSClasses.swift */,
 				B80C56301D51126800C4E683 /* Blob.swift */,
@@ -450,6 +454,8 @@
 				B85FDE881D7DC2BA002A8FC7 /* CustomIdentityProvider.swift */,
 				B8C8C59C1D57544C004D773E /* Extensions.swift */,
 				B8B533A41DC9A50200B9ACC1 /* HoleView.swift */,
+				B86A06071E3B7B02006086EF /* InterestsTableViewCell.swift */,
+				B86A06051E3B792D006086EF /* InterestsViewController.swift */,
 				B80D17741D90E1C90032B0D8 /* LoginViewController.swift */,
 				B80C56351D5113B900C4E683 /* MapViewController.swift */,
 				B80C56441D51158000C4E683 /* MapViewLocationBlobsCell.swift */,
@@ -507,6 +513,7 @@
 				B877B58C1E33F400007151EE /* UserInterest+CoreDataProperties.swift */,
 			);
 			name = CoreData;
+			path = Blobjot;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -840,6 +847,7 @@
 				B80C56341D5112F100C4E683 /* Constants.swift in Sources */,
 				B877B5811E30E431007151EE /* BlobContentCD+CoreDataClass.swift in Sources */,
 				B85FDE891D7DC2BA002A8FC7 /* CustomIdentityProvider.swift in Sources */,
+				B86A06061E3B792D006086EF /* InterestsViewController.swift in Sources */,
 				B86407051D7B0E720084D6EF /* DataController.swift in Sources */,
 				B877708A1E17FD620041ECD6 /* MapViewPreviewCell.swift in Sources */,
 				B80C56361D5113B900C4E683 /* MapViewController.swift in Sources */,
@@ -853,6 +861,7 @@
 				B80C56611D5183B100C4E683 /* User.swift in Sources */,
 				B8B108F81DCB718200EA3B41 /* LogError+CoreDataProperties.swift in Sources */,
 				B8B109031DCFE52300EA3B41 /* UserCD+CoreDataClass.swift in Sources */,
+				B86A06081E3B7B02006086EF /* InterestsTableViewCell.swift in Sources */,
 				B80C56541D51158000C4E683 /* MapViewLocationBlobsCell.swift in Sources */,
 				B877B5861E30E471007151EE /* BlobCD+CoreDataProperties.swift in Sources */,
 				B80D17751D90E1C90032B0D8 /* LoginViewController.swift in Sources */,

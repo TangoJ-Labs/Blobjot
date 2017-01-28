@@ -37,10 +37,10 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     var locationButton: UIView!
     var locationButtonLabel: UILabel!
     
-    var menuInterestsTableButton: UIView!
-    var menuInterestsTableButtonLabel: UILabel!
     var menuPeopleTableButton: UIView!
     var menuPeopleTableButtonLabel: UILabel!
+    var menuInterestsTableButton: UIView!
+    var menuInterestsTableButtonLabel: UILabel!
     var menuFilterUserBlobsButton: UIView!
     var menuFilterUserBlobsButtonLabel: UILabel!
     
@@ -109,8 +109,8 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // The tap gestures for menu buttons
     var logoutButtonTapGesture: UITapGestureRecognizer!
     var locationButtonTapGesture: UITapGestureRecognizer!
-    var menuInterestsTableTapGesture: UITapGestureRecognizer!
     var menuPeopleTableTapGesture: UITapGestureRecognizer!
+    var menuInterestsTableTapGesture: UITapGestureRecognizer!
     var menuFilterUserBlobsTapGesture: UITapGestureRecognizer!
     
     // The tap gestures for buttons and other interactive components
@@ -195,6 +195,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
 //    var defaultBlobUser: User!
     
     // Store the local class variables so that information can be passed from background processes if needed
+    var interestsVC: InterestsViewController?
     var peopleVC: PeopleViewController?
     var tabBarControllerCustom: UITabBarController?
     
@@ -392,6 +393,8 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         menuPeopleTableButtonBorder.frame = CGRect(x: 0, y: menuPeopleTableButton.frame.height - 1, width: menuPeopleTableButton.frame.width, height: 1)
         menuPeopleTableButtonBorder.backgroundColor = Constants.Colors.colorPurple.cgColor
         menuPeopleTableButton.layer.addSublayer(menuPeopleTableButtonBorder)
+        
+        
         
         menuFilterUserBlobsButton = UIView(frame: CGRect(x: menuContainer.frame.width - Constants.Dim.mapViewMenuWidth, y: menuContainer.frame.height - 50, width: Constants.Dim.mapViewMenuWidth, height: 50))
         menuFilterUserBlobsButton.backgroundColor = Constants.Colors.standardBackground
@@ -803,6 +806,10 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         menuPeopleTableTapGesture = UITapGestureRecognizer(target: self, action: #selector(MapViewController.tapMenuPeopleButton(_:)))
         menuPeopleTableTapGesture.numberOfTapsRequired = 1  // add single tap
         menuPeopleTableButton.addGestureRecognizer(menuPeopleTableTapGesture)
+        
+        menuInterestsTableTapGesture = UITapGestureRecognizer(target: self, action: #selector(MapViewController.tapMenuInterestsButton(_:)))
+        menuInterestsTableTapGesture.numberOfTapsRequired = 1  // add single tap
+        menuInterestsTableButton.addGestureRecognizer(menuInterestsTableTapGesture)
         
         menuFilterUserBlobsTapGesture = UITapGestureRecognizer(target: self, action: #selector(MapViewController.tapMenuFilterUserBlobs(_:)))
         menuFilterUserBlobsTapGesture.numberOfTapsRequired = 1  // add single tap
@@ -1233,6 +1240,41 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
+    func tapMenuInterestsButton(_ gesture: UITapGestureRecognizer)
+    {
+        // Prepare both of the Table View Controllers and add Tab Bar Items to them
+        interestsVC = InterestsViewController()
+        //interestsVC!.peopleViewDelegate = self
+        
+        // Create the Back Button Item and Title View for the Tab View
+        // These settings will be passed up to the assigned Navigation Controller for the Tab View Controller
+        let backButtonItem = UIBarButtonItem(title: "\u{2190}",
+                                             style: UIBarButtonItemStyle.plain,
+                                             target: self,
+                                             action: #selector(MapViewController.popViewController(_:)))
+        backButtonItem.tintColor = Constants.Colors.colorTextNavBar
+        
+        // Assign the created Nav Bar settings to the Tab Bar Controller
+        interestsVC!.navigationItem.setLeftBarButton(backButtonItem, animated: true)
+        
+        let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
+        let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
+        ncTitleText.text = "Interests"
+        ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 14)
+        ncTitleText.textColor = Constants.Colors.colorTextNavBar
+        ncTitleText.textAlignment = .center
+        ncTitle.addSubview(ncTitleText)
+        interestsVC!.navigationItem.titleView = ncTitle
+        
+        if let navController = self.navigationController
+        {
+            navController.pushViewController(interestsVC!, animated: true)
+        }
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
+    }
+    
     
     // If the Add Button is tapped, check to see if the addingBlob indicator has already been activated (true)
     // If not, hide the normal buttons and just show the buttons needed for the Add Blob action (gray circle, slider, etc.)
@@ -1646,13 +1688,14 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                             {
                                 if blobContent.blobID == blob.blobID
                                 {
+                                    print("MVC - RB - REQUESTING BLOB CONTENT FOR BLOBCONTENT: \(blobContent.blobContentID)")
                                     // Ensure that the BlobContent data has not already been requested
                                     // If so, append the BlobContent to the Location BlobContent Array
                                     if !blobContent.contentExtraRequested
                                     {
                                         blobContent.contentExtraRequested = true
                                         
-                                        AWSPrepRequest(requestToCall: AWSGetBlobContentData(blobContentID: blobContent.blobContentID, minimalOnly: false), delegate: self as AWSRequestDelegate).prepRequest()
+                                        AWSPrepRequest(requestToCall: AWSGetBlobContent(blobContentID: blobContent.blobContentID, minimalOnly: false), delegate: self as AWSRequestDelegate).prepRequest()
                                         
                                         // When downloading BlobContent data, always request the user data if it does not already exist
                                         // Find the correct User Object in the global list
@@ -1835,6 +1878,8 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                     {
                         // Add the BlobContent to the list of preview BlobContent
                         Constants.Data.previewBlobContent.append(blobContent)
+                        
+                        print("MVC - TB - APPENDED TO PREVIEW CONTENT: \(blobContent.blobID), \(blobContent.blobType), \(blobContent.contentType), \(blobContent.contentText)")
                     }
                 }
                 
@@ -2338,24 +2383,25 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 {
                     print("MVC - BLOB CONTENT PREVIEW THUMBNAIL - CHECK 1")
                     // Check whether the BlobContent has media - if not, do not show the Thumbnail box
-                    if contentType.rawValue > 0
+                    if contentType == Constants.ContentType.image
                     {
-                        print("MVC - BLOB CONTENT PREVIEW THUMBNAIL - CHECK 2")
+                        print("MVC - BLOB CONTENT PREVIEW THUMBNAIL - CHECK 2: \(blobContent.blobContentID)")
+                        print("MVC - BLOB CONTENT PREVIEW THUMBNAIL - CHECK 2: \(blobContent.contentDatetime)")
+                        print("MVC - BLOB CONTENT PREVIEW THUMBNAIL - CHECK 2: \(blobContent.contentText)")
+                        print("MVC - BLOB CONTENT PREVIEW THUMBNAIL - CHECK 2: \(blobContent.blobSelected)")
+                        print("MVC - BLOB CONTENT PREVIEW THUMBNAIL - CHECK 2: \(blobContent.contentThumbnailID)")
                         // Check to see if the thumbnail was already downloaded
                         // If not, the return function from AWS will apply the thumbnail to the preview box
                         // Loop through the BlobThumbnailObjects array
                         var thumbnailExists = false
                         loopThumbnail: for tObject in Constants.Data.thumbnailObjects
                         {
-                            print("MVC - BLOB CONTENT PREVIEW THUMBNAIL - CHECK 3")
                             // Check each thumbnail object to see if matches
                             if tObject.thumbnailID == blobContent.contentThumbnailID
                             {
-                                print("MVC - BLOB CONTENT PREVIEW THUMBNAIL - CHECK 4")
                                 // Check to make sure the thumbnail has already been downloaded
                                 if let thumbnailImage = tObject.thumbnail
                                 {
-                                    print("MVC - BLOB CONTENT PREVIEW THUMBNAIL - CHECK 5")
                                     // Set the Preview Thumbnail image
                                     cell.previewThumbnailView.image = thumbnailImage
                                     
@@ -2411,8 +2457,8 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // Cell Selection Blob
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath)
     {
-        // Clear the Preview Box for new Blob data
-        self.clearPreview()
+//        // Clear the Preview Box for new Blob data
+//        self.clearPreview()
         
         if collectionView == locationBlobContentCollectionView
         {
@@ -2489,9 +2535,9 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                                                      action: #selector(MapViewController.popViewController(_:)))
                 backButtonItem.tintColor = Constants.Colors.colorTextNavBar
                 
-                let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
-                let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
-                ncTitleText.text = "All selected content"
+                let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 75, y: 10, width: 150, height: 40))
+                let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 150, height: 40))
+                ncTitleText.text = "Selected Blobs"
                 
                 ncTitleText.textColor = Constants.Colors.colorTextNavBar
                 ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 14)
@@ -2624,7 +2670,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 }, completion:
                 {
                     (value: Bool) in
-                    self.clearPreview()
+//                    self.clearPreview()
             })
         }
     }
@@ -2867,7 +2913,8 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         {
             nearestCellInt = Constants.Data.previewBlobContent.count - 1
         }
-        else if nearestCellInt < 0
+        // Ensure that nearestCellInt will not be less than 0
+        if nearestCellInt < 0
         {
             nearestCellInt = 0
         }
@@ -2878,33 +2925,37 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         // Create an indexPath and animate the scroll to the proper cell
         let indexPath = NSIndexPath(item: nearestCellInt, section: 0)
         print("MVC - PV - SCROLLING TO CELL: \(indexPath.row)")
-        previewCollectionView.scrollToItem(at: indexPath as IndexPath, at: .centeredHorizontally, animated: true)
-        
-        // Save the current scroll position for the next scroll calculation
-        previewStartingScrollPosition = nearestCell * cellWidth
-        print("MVC - PV - NEW STARTING SCROLL POSITION: \(previewStartingScrollPosition)")
-        
-        // Set the new preview count label text but leave blank if equal to "0"
-        if nearestCellInt > 0
+        print("MVC - PV - numberOfItems: \(previewCollectionView.numberOfItems(inSection: 0))")
+        if previewCollectionView.numberOfItems(inSection: 0) - 1 >= nearestCellInt
         {
-            previewCountLabelLeft.text = String(nearestCellInt)
+            previewCollectionView.scrollToItem(at: indexPath as IndexPath, at: .centeredHorizontally, animated: true)
+            
+            // Save the current scroll position for the next scroll calculation
+            previewStartingScrollPosition = nearestCell * cellWidth
+            print("MVC - PV - NEW STARTING SCROLL POSITION: \(previewStartingScrollPosition)")
+            
+            // Set the new preview count label text but leave blank if equal to "0"
+            if nearestCellInt > 0
+            {
+                previewCountLabelLeft.text = String(nearestCellInt)
+            }
+            else
+            {
+                previewCountLabelLeft.text = ""
+            }
+            
+            if Constants.Data.previewBlobContent.count - nearestCellInt - 1 > 0
+            {
+                previewCountLabelRight.text = String(Constants.Data.previewBlobContent.count - nearestCellInt - 1)
+            }
+            else
+            {
+                previewCountLabelRight.text = ""
+            }
+            
+            // Process the preview Circle and adjust the map camera
+            processPreviewCircleForCell(cell: nearestCellInt)
         }
-        else
-        {
-            previewCountLabelLeft.text = ""
-        }
-        
-        if Constants.Data.previewBlobContent.count - nearestCellInt - 1 > 0
-        {
-            previewCountLabelRight.text = String(Constants.Data.previewBlobContent.count - nearestCellInt - 1)
-        }
-        else
-        {
-            previewCountLabelRight.text = ""
-        }
-        
-        // Process the preview Circle and adjust the map camera
-        processPreviewCircleForCell(cell: nearestCellInt)
     }
     
     func processPreviewCircleForCell(cell: Int)
@@ -2920,68 +2971,71 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             previewBlobCircle.map = nil
         }
         
-        // Recall the currently viewed Blob in the preview
-        let pBlobContent = Constants.Data.previewBlobContent[cell]
-        
-        // Add the current Blob to the map, if it does not already exist
-        var mBlobExists = false
-        mapBlobLoop: for mBlobID in Constants.Data.mapBlobIDs
+        if cell <= Constants.Data.previewBlobContent.count - 1 && cell >= 0
         {
-            if mBlobID == pBlobContent.blobID
+            // Recall the currently viewed Blob in the preview
+            let pBlobContent = Constants.Data.previewBlobContent[cell]
+            
+            // Add the current Blob to the map, if it does not already exist
+            var mBlobExists = false
+            mapBlobLoop: for mBlobID in Constants.Data.mapBlobIDs
             {
-                mBlobExists = true
-                
-                // Highlight the edge of the Blob
-                loopMapCircles: for circle in Constants.Data.mapCircles
+                if mBlobID == pBlobContent.blobID
                 {
-                    if circle.title == mBlobID
+                    mBlobExists = true
+                    
+                    // Highlight the edge of the Blob
+                    loopMapCircles: for circle in Constants.Data.mapCircles
                     {
-                        circle.strokeColor = Constants.Colors.blobHighlight
-                        circle.strokeWidth = 3
-                        
-                        break loopMapCircles
+                        if circle.title == mBlobID
+                        {
+                            circle.strokeColor = Constants.Colors.blobHighlight
+                            circle.strokeWidth = 3
+                            
+                            break loopMapCircles
+                        }
                     }
+                    
+                    print("MVC - PV - MAP ANIMATE TO PREVIEW CIRCLE 1")
+                    // Find the actual Blob object
+                    blobLoop: for blob in Constants.Data.allBlobs
+                    {
+                        if blob.blobID == mBlobID
+                        {
+                            // Move the map to the Blob
+                            mapCameraMoveToBlob(blob)
+                            break blobLoop
+                        }
+                    }
+                    
+                    break mapBlobLoop
                 }
-                
-                print("MVC - PV - MAP ANIMATE TO PREVIEW CIRCLE 1")
+            }
+            
+            // If the Blob doesn't already exist on the map, add the circle and move the map to it
+            if !mBlobExists
+            {
                 // Find the actual Blob object
                 blobLoop: for blob in Constants.Data.allBlobs
                 {
-                    if blob.blobID == mBlobID
+                    if blob.blobID == pBlobContent.blobID
                     {
+                        // Add the Blob to the map
+                        previewBlobCircle = GMSCircle()
+                        previewBlobCircle.position = CLLocationCoordinate2DMake(blob.blobLat, blob.blobLong)
+                        previewBlobCircle.radius = blob.blobRadius
+                        previewBlobCircle.title = blob.blobID
+                        previewBlobCircle.fillColor = Constants().blobColor(blob.blobType, blobFeature: blob.blobFeature, blobAccess: blob.blobAccess, blobAccount: blob.blobAccount, mainMap: true)
+                        previewBlobCircle.strokeColor = Constants.Colors.blobHighlight
+                        previewBlobCircle.strokeWidth = 3
+                        previewBlobCircle.map = self.mapView
+                        
+                        print("MVC - PV - MAP ANIMATE TO PREVIEW CIRCLE 2")
                         // Move the map to the Blob
                         mapCameraMoveToBlob(blob)
+                        
                         break blobLoop
                     }
-                }
-                
-                break mapBlobLoop
-            }
-        }
-        
-        // If the Blob doesn't already exist on the map, add the circle and move the map to it
-        if !mBlobExists
-        {
-            // Find the actual Blob object
-            blobLoop: for blob in Constants.Data.allBlobs
-            {
-                if blob.blobID == pBlobContent.blobID
-                {
-                    // Add the Blob to the map
-                    previewBlobCircle = GMSCircle()
-                    previewBlobCircle.position = CLLocationCoordinate2DMake(blob.blobLat, blob.blobLong)
-                    previewBlobCircle.radius = blob.blobRadius
-                    previewBlobCircle.title = blob.blobID
-                    previewBlobCircle.fillColor = Constants().blobColor(blob.blobType, blobFeature: blob.blobFeature, blobAccess: blob.blobAccess, blobAccount: blob.blobAccount, mainMap: true)
-                    previewBlobCircle.strokeColor = Constants.Colors.blobHighlight
-                    previewBlobCircle.strokeWidth = 3
-                    previewBlobCircle.map = self.mapView
-                    
-                    print("MVC - PV - MAP ANIMATE TO PREVIEW CIRCLE 2")
-                    // Move the map to the Blob
-                    mapCameraMoveToBlob(blob)
-                    
-                    break blobLoop
                 }
             }
         }
@@ -3128,8 +3182,11 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
             processPreviewCircleForCell(cell: previewCurrentCell)
         }
         
+//        // Reload the Collection View
+//        self.previewCollectionView.reloadData()
+        
         // Reload the Collection View
-        self.previewCollectionView.reloadData()
+        self.previewCollectionView.performSelector(onMainThread: #selector(UICollectionView.reloadData), with: nil, waitUntilDone: true)
     }
     
     
@@ -3212,23 +3269,26 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                         // Show the error message
                         self.createAlertOkView("AWSGetMapData Network Error", message: "I'm sorry, you appear to be having network issues.  Please refresh the map to try again.")
                     }
-                case let awsGetBlobContentData as AWSGetBlobContentData:
+                case _ as AWSGetBlobContent:
                     if success
                     {
-                        // Refresh the collection view and show the blob notification if needed
+                        // Refresh the location collection view and show the blob notification if needed
                         self.refreshLocationBlobsCollectionView()
-                        self.displayNotification(awsGetBlobContentData.blobContentID)
+//                        self.displayNotification(awsGetBlobContent.blobContentID)
+                        
+                        // Update the previewData array for any new thumbnails
+                        self.refreshPreviewCollectionView()
                         
                         // Refresh child VCs
                         if self.blobVC != nil
                         {
-                            self.blobVC.refreshBlobViewTable()
+                            self.blobVC.refreshDataManually()
                         }
                     }
                     else
                     {
                         // Show the error message
-                        self.createAlertOkView("AWSGetBlobExtraData Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                        self.createAlertOkView("AWSGetBlobContent Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                     }
                 case _ as AWSGetThumbnailImage:
                     if success

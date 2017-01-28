@@ -550,12 +550,46 @@ class AWSGetMapData : AWSRequestObject
                                     addContent.blobContentID    = checkContent["blobContentID"] as! String
                                     addContent.blobID           = checkContent["blobID"] as! String
                                     addContent.userID           = checkContent["contentUserID"] as! String
-                                    addContent.contentDatetime  = Date(timeIntervalSince1970: checkContent["contentTimestamp"] as! Double)
+                                    addContent.contentDatetime  = Date(timeIntervalSince1970: checkContent["timestamp"] as! Double)
                                     addContent.contentType      = Constants().contentType(checkContent["contentType"] as! Int)
                                     addContent.response                 = checkContent["response"] as! Bool
                                     addContent.respondingToContentID    = checkContent["respondingToContentID"] as? String
+                                    addContent.contentText              = checkContent["contentText"] as? String
+                                    addContent.contentThumbnailID       = checkContent["contentThumbnailID"] as? String
+                                    addContent.contentMediaID           = checkContent["contentMediaID"] as? String
                                     
-                                    // The text and media data will not be included in the mapData download
+                                    // The text and media data will not be included in the mapData download for location Blobs
+                                    // Use the contentText or contentThumbnailID to determine if this is a location or origin Blob (origin will have one of the two)
+                                    if addContent.contentText != nil || addContent.contentThumbnailID != nil
+                                    {
+                                        // The data exists, or will be requested
+                                        addContent.contentExtraRequested = true
+                                        
+                                        print("AC-GMD: GET BLOB DATA - tID: \(addContent.contentThumbnailID)")
+                                        // ...and request the Thumbnail image data if the Thumbnail ID is not null
+                                        if let thumbnailID = addContent.contentThumbnailID
+                                        {
+                                            // Ensure the thumbnail does not already exist
+                                            var thumbnailExists = false
+                                            loopThumbnailCheck: for tObject in Constants.Data.thumbnailObjects
+                                            {
+                                                // Check to see if the thumbnail Object ID matches
+                                                if tObject.thumbnailID == thumbnailID
+                                                {
+                                                    thumbnailExists = true
+                                                    
+                                                    break loopThumbnailCheck
+                                                }
+                                            }
+                                            // If the thumbnail does not exist, download it and append it to the global Thumbnail array
+                                            if !thumbnailExists
+                                            {
+                                                let awsGetThumbnail = AWSGetThumbnailImage(contentThumbnailID: thumbnailID)
+                                                awsGetThumbnail.awsRequestDelegate = self.awsRequestDelegate
+                                                awsGetThumbnail.makeRequest()
+                                            }
+                                        }
+                                    }
                                     
                                     // Loop through the global blobContent list and add the BlobContent if it does not exist (modify the data if it does exist)
                                     var blobContentExists = false
@@ -564,13 +598,18 @@ class AWSGetMapData : AWSRequestObject
                                         if blobContent.blobContentID == addContent.blobContentID
                                         {
                                             blobContentExists = true
-                                            blobContent.blobContentID = addContent.blobContentID
-                                            blobContent.blobID = addContent.blobID
-                                            blobContent.userID = addContent.userID
+                                            blobContent.blobContentID   = addContent.blobContentID
+                                            blobContent.blobID          = addContent.blobID
+                                            blobContent.userID          = addContent.userID
                                             blobContent.contentDatetime = addContent.contentDatetime
-                                            blobContent.contentType = addContent.contentType
-                                            blobContent.response = addContent.response
+                                            blobContent.contentType     = addContent.contentType
+                                            blobContent.response        = addContent.response
                                             blobContent.respondingToContentID = addContent.respondingToContentID
+                                            blobContent.contentText           = addContent.contentText
+                                            blobContent.contentThumbnailID    = addContent.contentThumbnailID
+                                            blobContent.contentMediaID        = addContent.contentMediaID
+                                            
+                                            blobContent.contentExtraRequested = addContent.contentExtraRequested
                                             break blobContentLoop
                                         }
                                     }
@@ -669,7 +708,7 @@ class AWSGetBlobData : AWSRequestObject
     }
 }
 
-class AWSGetBlobContentData : AWSRequestObject
+class AWSGetBlobContent : AWSRequestObject
 {
     var blobContentID: String!
     var minimalOnly: Bool!
@@ -683,18 +722,18 @@ class AWSGetBlobContentData : AWSRequestObject
     // Use this request function when a Blob is within range of the user's location and the extra BlobContent data is needed
     override func makeRequest()
     {
-        print("AWSM-GBD: REQUESTING GBD FOR BLOB CONTENT: \(self.blobContentID)")
+        print("AC-GBC: REQUESTING GBD FOR BLOB CONTENT: \(self.blobContentID)")
         
         // Create a JSON object with the passed BlobContent ID
         let json: NSDictionary = ["blob_content_id" : self.blobContentID, "minimal_only" : Int(self.minimalOnly)]
         
         let lambdaInvoker = AWSLambdaInvoker.default()
-        lambdaInvoker.invokeFunction("Blobjot-GetBlobContentData", jsonObject: json, completionHandler:
+        lambdaInvoker.invokeFunction("Blobjot-GetBlobContent", jsonObject: json, completionHandler:
             { (response, err) -> Void in
                 
                 if (err != nil)
                 {
-                    print("AWSM-GBD: GET BLOB DATA ERROR: \(err)")
+                    print("AC-GBC: GET BLOB CONTENT ERROR: \(err)")
                     CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: err.debugDescription)
                     
                     // Record the server request attempt
@@ -708,6 +747,7 @@ class AWSGetBlobContentData : AWSRequestObject
                 }
                 else if (response != nil)
                 {
+                    print("AC-GBC: GET BLOB CONTENT - RESPONSE: \(response)")
                     // Convert the response to JSON with keys and AnyObject values
                     // Then convert the AnyObject values to Strings or Numbers depending on their key
                     // Start with converting the BlobContent ID to a String
@@ -726,7 +766,7 @@ class AWSGetBlobContentData : AWSRequestObject
                         addBlobContent.contentThumbnailID = newBlobContent["contentThumbnailID"] as? String
                         addBlobContent.contentText = newBlobContent["contentText"] as? String
                         
-                        // Find the Blob in the global Map Blobs array and add the extra data to the Blob
+                        // Find the Blob in the global BlobContent array and add the extra data to the BlobContent
                         var blobContentExists = false
                         loopBlobContentCheck: for bContent in Constants.Data.blobContent
                         {
@@ -745,6 +785,8 @@ class AWSGetBlobContentData : AWSRequestObject
                                 bContent.contentThumbnailID = addBlobContent.contentThumbnailID
                                 bContent.contentText = addBlobContent.contentText
                                 
+                                print("AC-GBC: UPDATED BLOBCONTENT: \(bContent.blobContentID)")
+                                
                                 break loopBlobContentCheck
                             }
                         }
@@ -754,6 +796,53 @@ class AWSGetBlobContentData : AWSRequestObject
                             Constants.Data.blobContent.append(addBlobContent)
                         }
                         
+                        // Find the Blob in the global Location BlobContent array and add the extra data to the BlobContent
+                        loopLocationBlobContentCheck: for lContent in Constants.Data.locationBlobContent
+                        {
+                            if lContent.blobContentID == addBlobContent.blobContentID
+                            {
+                                lContent.blobID = addBlobContent.blobID
+                                lContent.userID = addBlobContent.userID
+                                lContent.contentDatetime = addBlobContent.contentDatetime
+                                lContent.contentType = addBlobContent.contentType
+                                lContent.response = addBlobContent.response
+                                
+                                lContent.respondingToContentID = addBlobContent.respondingToContentID
+                                lContent.contentMediaID = addBlobContent.contentMediaID
+                                lContent.contentThumbnailID = addBlobContent.contentThumbnailID
+                                lContent.contentText = addBlobContent.contentText
+                                
+                                print("AC-GBC: UPDATED LOCATION BLOBCONTENT: \(lContent.blobContentID)")
+                                
+                                break loopLocationBlobContentCheck
+                            }
+                        }
+                        // DO NOT ADD THE BLOBCONTENT DATA IF THE BLOBCONTENT IS NOT ALREADY IN THE LIST (user might have moved from location)
+                        
+                        // Find the Blob in the global Preview BlobContent array and add the extra data to the BlobContent
+                        loopPreviewBlobContentCheck: for pContent in Constants.Data.previewBlobContent
+                        {
+                            if pContent.blobContentID == addBlobContent.blobContentID
+                            {
+                                pContent.blobID = addBlobContent.blobID
+                                pContent.userID = addBlobContent.userID
+                                pContent.contentDatetime = addBlobContent.contentDatetime
+                                pContent.contentType = addBlobContent.contentType
+                                pContent.response = addBlobContent.response
+                                
+                                pContent.respondingToContentID = addBlobContent.respondingToContentID
+                                pContent.contentMediaID = addBlobContent.contentMediaID
+                                pContent.contentThumbnailID = addBlobContent.contentThumbnailID
+                                pContent.contentText = addBlobContent.contentText
+                                
+                                print("AC-GBC: UPDATED PREVIEW BLOBCONTENT: \(pContent.blobContentID)")
+                                
+                                break loopPreviewBlobContentCheck
+                            }
+                        }
+                        // DO NOT ADD THE BLOBCONTENT DATA IF THE BLOBCONTENT IS NOT ALREADY IN THE LIST (user might have selected new Blobs)
+                        
+                        print("AWSM-GBD: GET BLOB DATA - tID: \(addBlobContent.contentThumbnailID)")
                         // ...and request the Thumbnail image data if the Thumbnail ID is not null
                         if let thumbnailID = addBlobContent.contentThumbnailID
                         {
@@ -1964,7 +2053,7 @@ class AWSGetBlobContentForBlob : AWSRequestObject
     // The initial request for User's Blob data - called when the View Controller is instantiated
     override func makeRequest()
     {
-        print("AC-GBC - REQUESTING BLOB COMMENTS FOR BLOB: \(self.blobID)")
+        print("AC-GBCB - REQUESTING BLOB CONTENT FOR BLOB: \(self.blobID)")
         
         // Create some JSON to send the logged in userID
         let json: NSDictionary = ["blob_id" : self.blobID]
@@ -1975,7 +2064,7 @@ class AWSGetBlobContentForBlob : AWSRequestObject
                 
                 if (err != nil)
                 {
-                    print("AC-GBC - GET BLOB CONTENT ERROR: \(err)")
+                    print("AC-GBCB - GET BLOB CONTENT FOR BLOB ERROR: \(err)")
                     CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: err.debugDescription)
                     
                     // Record the server request attempt
@@ -1989,7 +2078,7 @@ class AWSGetBlobContentForBlob : AWSRequestObject
                 }
                 else if (response != nil)
                 {
-                    print("AC - GBC: CONTENT RESPONSE: \(response)")
+                    print("AC-GBCB: CONTENT RESPONSE: \(response)")
                     // Convert the response to an array of AnyObjects
                     if let rawBlobContent = response as? [AnyObject]
                     {

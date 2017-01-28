@@ -78,7 +78,7 @@ class BlobTableViewController: UIViewController, GMSMapViewDelegate, UITableView
         blobContentTableView.showsVerticalScrollIndicator = false
 //        blobContentTableView.isUserInteractionEnabled = true
 //        blobContentTableView.allowsSelection = true
-        blobContentTableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 20, right: 0)
+        blobContentTableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
         viewContainer.addSubview(blobContentTableView)
         
         // Create a refresh control for the CollectionView and add a subview to move the refresh control where needed
@@ -187,25 +187,6 @@ class BlobTableViewController: UIViewController, GMSMapViewDelegate, UITableView
         userImageView.clipsToBounds = true
         userImageContainer.addSubview(userImageView)
         
-        // Try to find the globally stored user data
-        loopUserCheck: for user in Constants.Data.userObjects
-        {
-            if user.userID == cellBlobContent.userID
-            {
-                // If the user image has been downloaded, use the image
-                // Otherwise, the image should be downloading currently (requested from the preview box in the Map View)
-                // and should be passed to this controller when downloaded
-                if let userImage = user.userImage
-                {
-                    userImageView.image = userImage
-                }
-                // Assign the userName
-                userNameLabel.text = user.userName
-                
-                break loopUserCheck
-            }
-        }
-        
         // Add a container to hold the date labels - should be to the right of the user image at the top of the cell
         textContainer = UIView(frame: CGRect(x: 10 + Constants.Dim.blobViewUserImageSize, y: 2, width: cell.frame.width - 2 - (10 + Constants.Dim.blobViewUserImageSize), height: Constants.Dim.blobViewUserImageSize))
         cellContainer.addSubview(textContainer)
@@ -223,6 +204,28 @@ class BlobTableViewController: UIViewController, GMSMapViewDelegate, UITableView
         datetimeLabel.textColor = Constants.Colors.colorTextGray
         datetimeLabel.textAlignment = .right
         textContainer.addSubview(datetimeLabel)
+        
+        // Try to find the globally stored user data
+        loopUserCheck: for user in Constants.Data.userObjects
+        {
+            if user.userID == cellBlobContent.userID
+            {
+                // If the user image has been downloaded, use the image
+                // Otherwise, the image should be downloading currently (requested from the preview box in the Map View)
+                // and should be passed to this controller when downloaded
+                if let userImage = user.userImage
+                {
+                    userImageView.image = userImage
+                }
+                if let userName = user.userName
+                {
+                    // Assign the userName
+                    userNameLabel.text = userName
+                }
+                
+                break loopUserCheck
+            }
+        }
         
         if let datetime = cellBlobContent.contentDatetime
         {
@@ -259,54 +262,89 @@ class BlobTableViewController: UIViewController, GMSMapViewDelegate, UITableView
         }
         
         // Only add the Blob Text View if the Blob has text
-        if let contentText = cellBlobContent.contentText
+        if cellBlobContent.contentType == Constants.ContentType.text
         {
-            // The Text View should be below the User Image, the width of the cell (minus the indicator on the left side)
-            textViewContainer = UIView(frame: CGRect(x: 7, y: 2 + Constants.Dim.blobViewUserImageSize, width: cell.frame.width - 10, height: cellHeight - 2 - (5 + Constants.Dim.blobViewUserImageSize)))
-            textViewContainer.backgroundColor = UIColor.clear
-            cellContainer.addSubview(textViewContainer)
-            
-            textView = UITextView(frame: CGRect(x: 0, y: 0, width: textViewContainer.frame.width, height: textViewContainer.frame.height))
-            textView.backgroundColor = UIColor.clear
-            textView.font = UIFont(name: Constants.Strings.fontRegular, size: 16)
-            textView.isScrollEnabled = true
-            textView.isEditable = false
-            textView.isSelectable = false
-            textView.isUserInteractionEnabled = false
-            textView.text = contentText
-            textViewContainer.addSubview(textView)
+            if cellBlobContent.contentExtraRequested
+            {
+                // The Text View should be below the User Image, the width of the cell (minus the indicator on the left side)
+                textViewContainer = UIView(frame: CGRect(x: 7, y: 2 + Constants.Dim.blobViewUserImageSize, width: cell.frame.width - 10, height: cellHeight - 2 - (5 + Constants.Dim.blobViewUserImageSize)))
+                textViewContainer.backgroundColor = UIColor.clear
+                cellContainer.addSubview(textViewContainer)
+                
+                textView = UITextView(frame: CGRect(x: 0, y: 0, width: textViewContainer.frame.width, height: textViewContainer.frame.height))
+                textView.backgroundColor = UIColor.clear
+                textView.font = UIFont(name: Constants.Strings.fontRegular, size: 16)
+                textView.isScrollEnabled = false
+                textView.isEditable = false
+                textView.isSelectable = false
+                textView.isUserInteractionEnabled = false
+                if let contentText = cellBlobContent.contentText
+                {
+                    textView.text = contentText
+                }
+                textViewContainer.addSubview(textView)
+            }
+            else
+            {
+                // The Blob is out of range of the user's current location, so change the username to text indicating that the Blob is out of range
+                userNameLabel.textColor = Constants.Colors.colorRedOpaque
+                if cellBlobContent.blobType == Constants.BlobType.location
+                {
+                    userNameLabel.text = "Blob is out of range"
+                }
+                else
+                {
+                    userNameLabel.text = "Blob still downloading..."
+                }
+            }
         }
         
         // The Media Content View should be in the lower portion of the screen
         // Only show the media section if the blob has media
         if cellBlobContent.contentType == Constants.ContentType.image
         {
-            imageView = UIImageView(frame: CGRect(x: 5, y: 4 + Constants.Dim.blobViewUserImageSize, width: cell.frame.width - 5, height: cellHeight - (4 + Constants.Dim.blobViewUserImageSize)))
-            imageView.contentMode = UIViewContentMode.scaleAspectFill
-            imageView.clipsToBounds = true
-            
-            // Add a loading indicator until the Media has downloaded
-            // Give it the same size and location as the blobImageView
-            mediaActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: 0, y: 0, width: imageView.frame.width, height: imageView.frame.height))
-            mediaActivityIndicator.color = UIColor.black
-            
-            // Start animating the activity indicator
-            mediaActivityIndicator.startAnimating()
-            
-            // Assign the blob image to the image if available - if not, assign the thumbnail until the real image downloads
-            if let contentImage = cellBlobContent.contentImage
+            if cellBlobContent.contentExtraRequested
             {
-                imageView.image = contentImage
+                imageView = UIImageView(frame: CGRect(x: 5, y: 4 + Constants.Dim.blobViewUserImageSize, width: cell.frame.width - 5, height: cellHeight - (4 + Constants.Dim.blobViewUserImageSize)))
+                imageView.contentMode = UIViewContentMode.scaleAspectFill
+                imageView.clipsToBounds = true
                 
-                // Stop animating the activity indicator
-                mediaActivityIndicator.stopAnimating()
+                // Add a loading indicator until the Media has downloaded
+                // Give it the same size and location as the blobImageView
+                mediaActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: 0, y: 0, width: imageView.frame.width, height: imageView.frame.height))
+                mediaActivityIndicator.color = UIColor.black
+                
+                // Start animating the activity indicator
+                mediaActivityIndicator.startAnimating()
+                
+                // Assign the blob image to the image if available - if not, assign the thumbnail until the real image downloads
+                if let contentImage = cellBlobContent.contentImage
+                {
+                    imageView.image = contentImage
+                    
+                    // Stop animating the activity indicator
+                    mediaActivityIndicator.stopAnimating()
+                }
+                else if let thumbnailImage = cellBlobContent.contentThumbnail
+                {
+                    imageView.image = thumbnailImage
+                }
+                cellContainer.addSubview(imageView)
+                cellContainer.addSubview(mediaActivityIndicator)
             }
-            else if let thumbnailImage = cellBlobContent.contentThumbnail
+            else
             {
-                imageView.image = thumbnailImage
+                // The Blob is out of range of the user's current location, so change the username to text indicating that the Blob is out of range
+                userNameLabel.textColor = Constants.Colors.colorRedOpaque
+                if cellBlobContent.blobType == Constants.BlobType.location
+                {
+                    userNameLabel.text = "Blob is out of range"
+                }
+                else
+                {
+                    userNameLabel.text = "Blob still downloading..."
+                }
             }
-            cellContainer.addSubview(imageView)
-            cellContainer.addSubview(mediaActivityIndicator)
         }
         
         return cell
@@ -426,6 +464,9 @@ class BlobTableViewController: UIViewController, GMSMapViewDelegate, UITableView
     
     func refreshDataManually()
     {
+        // The global PreviewBlobContent array might be updated
+        blobContentArray = Constants.Data.previewBlobContent
+        
         // Prep the cell content to ensure the images are downloaded and the cell heights are calculated
         prepCells()
     }
@@ -516,17 +557,18 @@ class BlobTableViewController: UIViewController, GMSMapViewDelegate, UITableView
                     break blobLoop
                 }
             }
+            print("BVC-PC - BC ARRAY: \(blobContentObject.blobContentID), \(blobContentObject.blobType), \(blobContentObject.contentType), \(blobContentObject.contentText)")
             
             // Calculate the needed height for each cell
             var cellHeight: CGFloat = 4 + Constants.Dim.blobViewUserImageSize
-            if blobContentObject.contentType == Constants.ContentType.image
+            if blobContentObject.contentType == Constants.ContentType.image && blobContentObject.contentMediaID != nil
             {
                 cellHeight = cellHeight + self.viewContainer.frame.width - Constants.Dim.blobViewTypeIndicatorWidth
                 
                 // Recall the contentImage
                 AWSPrepRequest(requestToCall: AWSGetMediaImage(blobContent: blobContentObject), delegate: self as AWSRequestDelegate).prepRequest()
             }
-            else if blobContentObject.contentType == Constants.ContentType.text
+            else if blobContentObject.contentType == Constants.ContentType.text && blobContentObject.contentText != nil
             {
                 var contentSize: CGFloat = 0
                 if let text = blobContentObject.contentText
@@ -553,6 +595,10 @@ class BlobTableViewController: UIViewController, GMSMapViewDelegate, UITableView
                     AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: blobContentObject.userID, forPreviewData: false), delegate: self as AWSRequestDelegate).prepRequest()
                 }
             }
+            
+            // Stop the refresher spinner
+            self.refreshControl.endRefreshing()
+            
 // ******** COMPLETE: ADD BLOBCONTENT VIEW
 //            if let currentUserID = Constants.Data.currentUser.userID
 //            {

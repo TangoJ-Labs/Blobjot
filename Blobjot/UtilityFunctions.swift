@@ -13,7 +13,7 @@ import GoogleMaps
 import GooglePlaces
 import UIKit
 
-class UtilityFunctions
+class UtilityFunctions: AWSRequestDelegate
 {
     
     // Reset the global User Array with content from Core Data
@@ -53,6 +53,10 @@ class UtilityFunctions
                 
                 // Add the current user object to the global user object array
                 Constants.Data.userObjects.append(currentUser)
+                
+                // Request the Facebook Info (Name and Image)
+                // Always request the FB data to ensure the latest is used
+                AWSPrepRequest(requestToCall: FBGetUserProfileData(user: currentUser, downloadImage: true), delegate: self as AWSRequestDelegate).prepRequest()
             }
             
             let savedUsers = CoreDataFunctions().userRetrieve()
@@ -72,6 +76,10 @@ class UtilityFunctions
                 {
                     Constants.Data.userObjects.append(sUser)
                 }
+                
+                // Request the Facebook Info (Name and Image)
+                // Always request the FB data to ensure the latest is used
+                AWSPrepRequest(requestToCall: FBGetUserProfileData(user: sUser, downloadImage: true), delegate: self as AWSRequestDelegate).prepRequest()
             }
         }
     }
@@ -369,4 +377,27 @@ class UtilityFunctions
         return result
     }
     
+    
+    // MARK: AWS DELEGATE METHODS
+    
+    func showLoginScreen()
+    {
+        print("BAVC - SHOW LOGIN SCREEN")
+    }
+    
+    func processAwsReturn(_ objectType: AWSRequestObject, success: Bool)
+    {
+        DispatchQueue.main.async(execute:
+            {
+                // Process the return data based on the method used
+                switch objectType
+                {
+                case _ as FBGetUserProfileData:
+                    // Updates to the UserData are commanded from FBGetUserProfileData, so no action is needed
+                    print("UF-FBGUPD RETURN")
+                default:
+                    print("UF-DEFAULT: THERE WAS AN ISSUE WITH THE DATA RETURNED FROM AWS")
+                }
+        })
+    }
 }

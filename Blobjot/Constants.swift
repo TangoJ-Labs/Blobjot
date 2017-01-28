@@ -86,7 +86,8 @@ struct Constants
         case 1:
             return Constants.BlobType.location
         default:
-            return Constants.BlobType.origin
+            // Return location as default because the original BlobTypes (1-6) were all location-restricted
+            return Constants.BlobType.location
         }
     }
     

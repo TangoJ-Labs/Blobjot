@@ -378,7 +378,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
                                 blobContent.contentExtraRequested = true
                                 
                                 // Only request the extra BlobContent data if it has not already been requested
-                                AWSPrepRequest(requestToCall: AWSGetBlobContentData(blobContentID: blobContent.blobContentID, minimalOnly: false), delegate: self as AWSRequestDelegate).prepRequest()
+                                AWSPrepRequest(requestToCall: AWSGetBlobContent(blobContentID: blobContent.blobContentID, minimalOnly: false), delegate: self as AWSRequestDelegate).prepRequest()
                                 
                                 // When downloading BlobContent data, always request the user data if it does not already exist
                                 // Find the correct User Object in the global list
@@ -436,7 +436,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
                 // Process the return data based on the method used
                 switch objectType
                 {
-                case let _ as AWSGetBlobContentData:
+                case let awsGetBlobContent as AWSGetBlobContent:
                     if success
                     {
 //                        // Show the blob notification if needed
