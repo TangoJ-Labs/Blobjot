@@ -301,8 +301,10 @@ class BlobTableViewController: UIViewController, GMSMapViewDelegate, UITableView
         
         // The Media Content View should be in the lower portion of the screen
         // Only show the media section if the blob has media
+        print("BVC - CONTENT TYPE: \(cellBlobContent.contentType)")
         if cellBlobContent.contentType == Constants.ContentType.image
         {
+            print("BVC - CONTENT TYPE IMAGE")
             if cellBlobContent.contentExtraRequested
             {
                 imageView = UIImageView(frame: CGRect(x: 5, y: 4 + Constants.Dim.blobViewUserImageSize, width: cell.frame.width - 5, height: cellHeight - (4 + Constants.Dim.blobViewUserImageSize)))
@@ -316,7 +318,7 @@ class BlobTableViewController: UIViewController, GMSMapViewDelegate, UITableView
                 
                 // Start animating the activity indicator
                 mediaActivityIndicator.startAnimating()
-                
+                print("BVC - IMAGE ID: \(cellBlobContent.contentMediaID)")
                 // Assign the blob image to the image if available - if not, assign the thumbnail until the real image downloads
                 if let contentImage = cellBlobContent.contentImage
                 {
@@ -328,6 +330,14 @@ class BlobTableViewController: UIViewController, GMSMapViewDelegate, UITableView
                 else if let thumbnailImage = cellBlobContent.contentThumbnail
                 {
                     imageView.image = thumbnailImage
+                    print("BVC - IMAGE CONTENT VIEWED: \(cellBlobContent.contentViewed)")
+                    // If the content has not already been viewed, recall the contentImage (otherwise it has already been requested)
+                    if !cellBlobContent.contentViewed
+                    {
+                        AWSPrepRequest(requestToCall: AWSGetMediaImage(blobContent: cellBlobContent), delegate: self as AWSRequestDelegate).prepRequest()
+                        
+                        cellBlobContent.contentViewed = true
+                    }
                 }
                 cellContainer.addSubview(imageView)
                 cellContainer.addSubview(mediaActivityIndicator)
@@ -565,8 +575,7 @@ class BlobTableViewController: UIViewController, GMSMapViewDelegate, UITableView
             {
                 cellHeight = cellHeight + self.viewContainer.frame.width - Constants.Dim.blobViewTypeIndicatorWidth
                 
-                // Recall the contentImage
-                AWSPrepRequest(requestToCall: AWSGetMediaImage(blobContent: blobContentObject), delegate: self as AWSRequestDelegate).prepRequest()
+                // DON'T RECALL THE CONTENT IMAGE UNTIL IT IS LOADED IN VIEW
             }
             else if blobContentObject.contentType == Constants.ContentType.text && blobContentObject.contentText != nil
             {
@@ -623,7 +632,7 @@ class BlobTableViewController: UIViewController, GMSMapViewDelegate, UITableView
                 // Process the return data based on the method used
                 switch objectType
                 {
-                case _ as AWSAddBlobView:
+                case _ as AWSBlobContentAction:
                     if !success
                     {
                         // Show the error message

@@ -6,7 +6,6 @@
 //  Copyright © 2016 blobjot. All rights reserved.
 //
 
-import CoreData
 import UIKit
 
 class Blob

@@ -569,25 +569,9 @@ class AWSGetMapData : AWSRequestObject
                                         // ...and request the Thumbnail image data if the Thumbnail ID is not null
                                         if let thumbnailID = addContent.contentThumbnailID
                                         {
-                                            // Ensure the thumbnail does not already exist
-                                            var thumbnailExists = false
-                                            loopThumbnailCheck: for tObject in Constants.Data.thumbnailObjects
-                                            {
-                                                // Check to see if the thumbnail Object ID matches
-                                                if tObject.thumbnailID == thumbnailID
-                                                {
-                                                    thumbnailExists = true
-                                                    
-                                                    break loopThumbnailCheck
-                                                }
-                                            }
-                                            // If the thumbnail does not exist, download it and append it to the global Thumbnail array
-                                            if !thumbnailExists
-                                            {
-                                                let awsGetThumbnail = AWSGetThumbnailImage(contentThumbnailID: thumbnailID)
-                                                awsGetThumbnail.awsRequestDelegate = self.awsRequestDelegate
-                                                awsGetThumbnail.makeRequest()
-                                            }
+                                            let awsGetThumbnail = AWSGetThumbnailImage(contentThumbnailID: thumbnailID)
+                                            awsGetThumbnail.awsRequestDelegate = self.awsRequestDelegate
+                                            awsGetThumbnail.makeRequest()
                                         }
                                     }
                                     
@@ -846,25 +830,9 @@ class AWSGetBlobContent : AWSRequestObject
                         // ...and request the Thumbnail image data if the Thumbnail ID is not null
                         if let thumbnailID = addBlobContent.contentThumbnailID
                         {
-                            // Ensure the thumbnail does not already exist
-                            var thumbnailExists = false
-                            loopThumbnailCheck: for tObject in Constants.Data.thumbnailObjects
-                            {
-                                // Check to see if the thumbnail Object ID matches
-                                if tObject.thumbnailID == thumbnailID
-                                {
-                                    thumbnailExists = true
-                                    
-                                    break loopThumbnailCheck
-                                }
-                            }
-                            // If the thumbnail does not exist, download it and append it to the global Thumbnail array
-                            if !thumbnailExists
-                            {
-                                let awsGetThumbnail = AWSGetThumbnailImage(contentThumbnailID: thumbnailID)
-                                awsGetThumbnail.awsRequestDelegate = self.awsRequestDelegate
-                                awsGetThumbnail.makeRequest()
-                            }
+                            let awsGetThumbnail = AWSGetThumbnailImage(contentThumbnailID: thumbnailID)
+                            awsGetThumbnail.awsRequestDelegate = self.awsRequestDelegate
+                            awsGetThumbnail.makeRequest()
                         }
                         
                         // Notify the parent view that the AWS call completed successfully
@@ -1364,34 +1332,34 @@ class AWSUploadBlobData : AWSRequestObject
     }
 }
 
-class AWSHideBlob : AWSRequestObject
+class AWSBlobContentAction : AWSRequestObject
 {
     var blobID: String!
-    var userID: String!
+    var actionType: Constants.ContentActionType!
     
-    required init(blobID: String, userID: String)
+    required init(blobID: String, actionType: Constants.ContentActionType)
     {
         self.blobID = blobID
-        self.userID = userID
+        self.actionType = actionType
     }
     
     // Add a record that this Blob was viewed by the logged in user
     override func makeRequest()
     {
-        print("ADDING BLOB VIEW: \(self.blobID), \(self.userID), \(Date().timeIntervalSince1970)")
+        print("AC-ABCA: ADDING BLOB CONTENT ACTION: \(self.blobID), \(Constants.Data.currentUser.userID), \(Date().timeIntervalSince1970)")
         var json = [String: Any]()
         json["blob_id"]     = self.blobID
-        json["user_id"]     = self.userID
+        json["user_id"]     = Constants.Data.currentUser.userID
         json["timestamp"]   = String(Date().timeIntervalSince1970)
-        json["action_type"] = "hide"
+        json["action_type"] = actionType.rawValue
         
         let lambdaInvoker = AWSLambdaInvoker.default()
-        lambdaInvoker.invokeFunction("Blobjot-AddBlobAction", jsonObject: json, completionHandler:
+        lambdaInvoker.invokeFunction("Blobjot-AddBlobContentAction", jsonObject: json, completionHandler:
             { (response, err) -> Void in
                 
                 if (err != nil)
                 {
-                    print("ADD BLOB VIEW ERROR: \(err)")
+                    print("AC-ABCA: ADD BLOB CONTENT ACTION ERROR: \(err)")
                     CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: err.debugDescription)
                     
                     // Record the server request attempt
@@ -1405,54 +1373,7 @@ class AWSHideBlob : AWSRequestObject
                 }
                 else if (response != nil)
                 {
-                    print("AC-ABV: response: \(response)")
-                }
-        })
-    }
-}
-
-class AWSDeleteBlob : AWSRequestObject
-{
-    var blobID: String!
-    var userID: String!
-    
-    required init(blobID: String, userID: String)
-    {
-        self.blobID = blobID
-        self.userID = userID
-    }
-    
-    // Add a record that this Blob was viewed by the logged in user
-    override func makeRequest()
-    {
-        print("ADDING BLOB DELETE: \(self.blobID), \(self.userID), \(Date().timeIntervalSince1970)")
-        var json = [String: Any]()
-        json["blob_id"]     = self.blobID
-        json["user_id"]     = self.userID
-        json["timestamp"]   = String(Date().timeIntervalSince1970)
-        json["action_type"] = "delete"
-        
-        let lambdaInvoker = AWSLambdaInvoker.default()
-        lambdaInvoker.invokeFunction("Blobjot-AddBlobAction", jsonObject: json, completionHandler:
-            { (response, err) -> Void in
-                
-                if (err != nil)
-                {
-                    print("ADD BLOB DELETE ERROR: \(err)")
-                    CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: err.debugDescription)
-                    
-                    // Record the server request attempt
-                    Constants.Data.serverTries += 1
-                    
-                    // Notify the parent view that the AWS call completed with an error
-                    if let parentVC = self.awsRequestDelegate
-                    {
-                        parentVC.processAwsReturn(self, success: false)
-                    }
-                }
-                else if (response != nil)
-                {
-                    print("AC-DB: response: \(response)")
+                    print("AC-ABCA: response: \(response)")
                 }
         })
     }
@@ -1463,18 +1384,18 @@ class AWSGetUserBlobContent : AWSRequestObject
     // The initial request for User's Blob data - called when the View Controller is instantiated
     override func makeRequest()
     {
-        print("AC - GUBC - REQUESTING GUB")
+        print("AC-GUBC - REQUESTING GUB")
         
         // Create some JSON to send the logged in userID
         let json: NSDictionary = ["user_id" : Constants.Data.currentUser.userID!]
         
         let lambdaInvoker = AWSLambdaInvoker.default()
-        lambdaInvoker.invokeFunction("Blobjot-GetUserBlobs", jsonObject: json, completionHandler:
+        lambdaInvoker.invokeFunction("Blobjot-GetUserBlobContent", jsonObject: json, completionHandler:
             { (response, err) -> Void in
                 
                 if (err != nil)
                 {
-                    print("AC - GUBC - GET USER BLOBS DATA ERROR: \(err)")
+                    print("AC-GUBC - GET USER BLOBS DATA ERROR: \(err)")
                     CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: err.debugDescription)
                     
                     // Record the server request attempt
@@ -1491,9 +1412,9 @@ class AWSGetUserBlobContent : AWSRequestObject
                     // Convert the response to an array of AnyObjects
                     if let rawUserBlobContent = response as? [AnyObject]
                     {
-                        print("AC - GUBC - BLOB CONTENT COUNT: \(rawUserBlobContent.count)")
+                        print("AC-GUBC - BLOB CONTENT COUNT: \(rawUserBlobContent.count)")
                         
-                        // Reset the IDs array
+                        // Reset the user's BlobContentIDs array
                         Constants.Data.userBlobContentIDs = [String]()
                         
                         // Loop through each AnyObject (Blob) in the array
@@ -1518,6 +1439,11 @@ class AWSGetUserBlobContent : AWSRequestObject
                                 addBlobContent.contentThumbnailID = newBlobContent["contentThumbnailID"] as? String
                                 addBlobContent.contentText = newBlobContent["contentText"] as? String
                                 
+                                addBlobContent.contentExtraRequested = true
+                                
+                                // Add the blobContentID to the global list of this user's blobContentIDs
+                                Constants.Data.userBlobContentIDs.append(addBlobContent.blobContentID)
+                                
                                 // Find the Blob in the global Map Blobs array and add the extra data to the Blob
                                 var blobContentExists = false
                                 loopBlobContentCheck: for bContent in Constants.Data.blobContent
@@ -1536,6 +1462,8 @@ class AWSGetUserBlobContent : AWSRequestObject
                                         bContent.contentMediaID = addBlobContent.contentMediaID
                                         bContent.contentThumbnailID = addBlobContent.contentThumbnailID
                                         bContent.contentText = addBlobContent.contentText
+                                        
+                                        bContent.contentExtraRequested = true
                                         
                                         break loopBlobContentCheck
                                     }
@@ -1575,58 +1503,6 @@ class AWSGetUserBlobContent : AWSRequestObject
                             parentVC.processAwsReturn(self, success: true)
                         }
                     }
-                }
-        })
-    }
-}
-
-class AWSAddBlobView : AWSRequestObject
-{
-    var blobID: String!
-    var userID: String!
-    
-    required init(blobID: String, userID: String)
-    {
-        self.blobID = blobID
-        self.userID = userID
-    }
-    
-    // Add a record that this Blob was viewed by the logged in user
-    override func makeRequest()
-    {
-        // Save a Blob notification in Core Data (so that the user is not notified of the viewed Blob)
-        // Because the Blob notification is not checked for already existing, multiple entries with the same blobID may exist
-        CoreDataFunctions().blobNotificationSave(blobID: blobID)
-        
-        print("ADDING BLOB VIEW: \(blobID), \(userID), \(Date().timeIntervalSince1970)")
-        var json = [String: Any]()
-        json["blob_id"]     = self.blobID
-        json["user_id"]     = self.userID
-        json["timestamp"]   = String(Date().timeIntervalSince1970)
-        json["action_type"] = "view"
-        
-        let lambdaInvoker = AWSLambdaInvoker.default()
-        lambdaInvoker.invokeFunction("Blobjot-AddBlobAction", jsonObject: json, completionHandler:
-            { (response, err) -> Void in
-                
-                if (err != nil)
-                {
-                    print("ADD BLOB VIEW ERROR: \(err)")
-                    CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: err.debugDescription)
-                    
-                    // Record the server request attempt
-                    Constants.Data.serverTries += 1
-                    
-                    // Notify the parent view that the AWS call completed with an error
-                    if let parentVC = self.awsRequestDelegate
-                    {
-                        parentVC.processAwsReturn(self, success: false)
-                    }
-                    
-                }
-                else if (response != nil)
-                {
-                    print("AC-ABV: response: \(response)")
                 }
         })
     }
@@ -1707,27 +1583,15 @@ class AWSGetThumbnailImage : AWSRequestObject
                                     // Ensure the Thumbnail Data is not null
                                     if let tData = thumbnailData
                                     {
-                                        // Ensure the thumbnail does not already exist
-                                        var thumbnailExists = false
-                                        loopThumbnailCheck: for tObject in Constants.Data.thumbnailObjects
+                                        // Find the blobContent and attach the thumbnail to the object
+                                        loopContent: for cObject in Constants.Data.blobContent
                                         {
-                                            // Check to see if the thumbnail Object ID matches
-                                            if tObject.thumbnailID == thumbnailID
+                                            // Check to see if the contentID matches
+                                            if cObject.contentThumbnailID == thumbnailID
                                             {
-                                                thumbnailExists = true
-                                                break loopThumbnailCheck
+                                                cObject.contentThumbnail = UIImage(data: tData)
+                                                break loopContent
                                             }
-                                        }
-                                        // If the thumbnail does not exist, download it and append it to the global Thumbnail array
-                                        if !thumbnailExists
-                                        {
-                                            // Create a Blob Thumbnail Object, assign the Thumbnail ID and newly downloaded Image
-                                            let addThumbnailObject = ThumbnailObject()
-                                            addThumbnailObject.thumbnailID = thumbnailID
-                                            addThumbnailObject.thumbnail = UIImage(data: tData)
-                                            
-                                            // Add the thumbnail to the global Thumbnail array
-                                            Constants.Data.thumbnailObjects.append(addThumbnailObject)
                                         }
                                         
                                         // Notify the parent view that the AWS call completed successfully
@@ -1992,54 +1856,6 @@ class AWSRegisterForPushNotifications : AWSRequestObject
     }
 }
 
-class AWSAddCommentForBlob : AWSRequestObject
-{
-    var blobID: String!
-    var comment: String!
-    
-    required init(blobID: String, comment: String)
-    {
-        self.blobID = blobID
-        self.comment = comment
-    }
-    
-    // Add a record for an action between user connections
-    override func makeRequest()
-    {
-        print("AC-ACFB - ADDING COMMENT FOR BLOB: \(self.blobID)")
-        var json = [String: Any]()
-        json["blob_id"]   = self.blobID
-        json["user_id"]   = Constants.Data.currentUser.userID!
-        json["timestamp"] = String(Date().timeIntervalSince1970)
-        json["comment"]   = self.comment
-        
-        let lambdaInvoker = AWSLambdaInvoker.default()
-        lambdaInvoker.invokeFunction("Blobjot-AddComment", jsonObject: json, completionHandler:
-            { (response, err) -> Void in
-                
-                if (err != nil)
-                {
-                    print("AC-ACFB - ADD COMMENT ERROR: \(err)")
-                    CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: err.debugDescription)
-                    
-                    // Record the server request attempt
-                    Constants.Data.serverTries += 1
-                    
-                    // Notify the parent view that the AWS call completed with an error
-                    if let parentVC = self.awsRequestDelegate
-                    {
-                        parentVC.processAwsReturn(self, success: false)
-                    }
-                    
-                }
-                else if (response != nil)
-                {
-                    print("AC-ACFB - response: \(response)")
-                }
-        })
-    }
-}
-
 class AWSGetBlobContentForBlob : AWSRequestObject
 {
     var blobID: String!
@@ -2140,34 +1956,26 @@ class AWSGetBlobContentForBlob : AWSRequestObject
     }
 }
 
-class AWSCheckUsername : AWSRequestObject
+class AWSGetUserInterests : AWSRequestObject
 {
-    var userName: String!
-    var usernameCheckTimestamp: TimeInterval!
-    var response: String?
-    
-    required init(userName: String, usernameCheckTimestamp: TimeInterval)
-    {
-        self.userName = userName
-        self.usernameCheckTimestamp = usernameCheckTimestamp
-    }
+    var userInterests: [Interest]?
     
     // The initial request for User's Blob data - called when the View Controller is instantiated
     override func makeRequest()
     {
-        print("AC-CU - USERNAME: \(self.userName)")
+        print("AC-GUI")
         
         // Create some JSON to send the logged in userID
         var json = [String: Any]()
-        json["user_name"] = self.userName
+        json["user_id"] = Constants.Data.currentUser.userID
         
         let lambdaInvoker = AWSLambdaInvoker.default()
-        lambdaInvoker.invokeFunction("Blobjot-CheckUsername", jsonObject: json, completionHandler:
+        lambdaInvoker.invokeFunction("Blobjot-GetUserInterests", jsonObject: json, completionHandler:
             { (response, err) -> Void in
                 
                 if (err != nil)
                 {
-                    print("AC-CU - UNABLE TO CHECK USERNAME: \(err)")
+                    print("AC-GUI - FAILURE")
                     CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: err.debugDescription)
                     
                     // Notify the parent view that the AWS call completed with an error
@@ -2178,46 +1986,64 @@ class AWSCheckUsername : AWSRequestObject
                 }
                 else if (response != nil)
                 {
-                    self.response = response as? String
-                    
-                    // Notify the parent view that the AWS call completed successfully
-                    if let parentVC = self.awsRequestDelegate
+                    print("AC-GUI - USER INTERESTS RESPONSE: \(response)")
+                    if let rawInterestContent = response as? [AnyObject]
                     {
-                        parentVC.processAwsReturn(self, success: true)
+                        // Initialize the local interest array
+                        var interests = [Interest]()
+                        
+                        for rawInterestContentObject in rawInterestContent
+                        {
+                            if let newInterest = rawInterestContentObject as? [String: AnyObject]
+                            {
+                                let addInterest = Interest()
+                                addInterest.interest = newInterest["interest"] as! String
+                                addInterest.use = newInterest["use"] as! Int == 1 ? true : false
+                                addInterest.use = newInterest["delete"] as! Int == 1 ? true : false
+                                interests.append(addInterest)
+                                print("AC-GUI - USER INTEREST: \(addInterest.interest)")
+                            }
+                        }
+                        // Assign the populated array to the one that is accessible through the delegate
+                        self.userInterests = interests
+                        
+                        // Notify the parent view that the AWS call completed successfully
+                        if let parentVC = self.awsRequestDelegate
+                        {
+                            parentVC.processAwsReturn(self, success: true)
+                        }
                     }
                 }
         })
     }
 }
 
-class AWSAddPoints : AWSRequestObject
+class AWSUpdateUserInterest : AWSRequestObject
 {
-    var function: String!
-    var points: Float!
+    var interestObject : Interest!
     
-    required init(function: String, points: Float)
+    required init(interest: Interest)
     {
-        self.function = function
-        self.points = points
+        self.interestObject = interest
     }
     
     // Add a record that this Blob was viewed by the logged in user
     override func makeRequest()
     {
-        print("AC-AP: ADDING USER POINTS: \(self.points)")
+        print("AC-UUI: UPDATING INTEREST: \(self.interestObject.interest)")
         var json = [String: Any]()
-        json["user_id"]   = Constants.Data.currentUser
-        json["function"]  = self.function
-        json["points"]    = self.points
-        json["timestamp"] = Date().timeIntervalSince1970
+        json["user_id"]  = Constants.Data.currentUser.userID
+        json["interest"] = self.interestObject.interest
+        json["use"]     = self.interestObject.use ? "1" : "0"
+        json["delete"]  = self.interestObject.delete ? "1" : "0"
         
         let lambdaInvoker = AWSLambdaInvoker.default()
-        lambdaInvoker.invokeFunction("Blobjot-AddUserPoints", jsonObject: json, completionHandler:
+        lambdaInvoker.invokeFunction("Blobjot-UpdateUserInterest", jsonObject: json, completionHandler:
             { (response, err) -> Void in
                 
                 if (err != nil)
                 {
-                    print("ADD USER POINTS ERROR: \(err)")
+                    print("AC-UUI: ADD USER POINTS ERROR: \(err)")
                     CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: err.debugDescription)
                     
                     // Record the server request attempt
@@ -2231,9 +2057,8 @@ class AWSAddPoints : AWSRequestObject
                 }
                 else if (response != nil)
                 {
-                    print("AC-AP: response: \(response)")
+                    print("AC-UUI: response: \(response)")
                     
-// *COMPLETE***** IF FAILED, SEND POINTS TO CORE DATA, UPLOAD WHEN ABLE
                 }
         })
     }
@@ -2455,9 +2280,6 @@ class FBGetUserLikes : AWSRequestObject
                 }
                 else
                 {
-                    // Reset the userLikes list
-                    Constants.Data.currentUserInterests = [String]()
-                    
                     print("AC-FBSDK - GUD - LIKES: \(result)")
                     
                     if let resultDict = result as? [String: Any]
@@ -2479,7 +2301,21 @@ class FBGetUserLikes : AWSRequestObject
                                                     if let like = likeObjectParsed["name"] as? String
                                                     {
                                                         print("AC-FBSDK - GUD - like : \(like)")
-                                                        Constants.Data.currentUserInterests.append(like)
+                                                        // Check if the interest already exists - if it does, do nothing, otherwise add it to the global list
+                                                        var interestExists = false
+                                                        loopInterests: for interest in Constants.Data.currentUserInterests
+                                                        {
+                                                            if interest.interest == like
+                                                            {
+                                                                interestExists = true
+                                                                break loopInterests
+                                                            }
+                                                        }
+                                                        if !interestExists
+                                                        {
+                                                            let addInterest = Interest(interest: like)
+                                                            Constants.Data.currentUserInterests.append(addInterest)
+                                                        }
                                                     }
                                                 }
                                             }
@@ -2490,7 +2326,7 @@ class FBGetUserLikes : AWSRequestObject
                         }
                     }
                     
-                    // Save all downloaded data to Core Data
+                    // Save the interest list changes to Core Data
                     CoreDataFunctions().interestsSave()
                 }
         }

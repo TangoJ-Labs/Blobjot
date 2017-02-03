@@ -55,6 +55,13 @@ struct Constants
         case video = 2
     }
     
+    enum ContentActionType: Int
+    {
+        case view = 0
+        case hide = 1
+        case delete = 2
+    }
+    
     enum UserStatusType: Int
     {
         case standard = 0
@@ -146,6 +153,22 @@ struct Constants
             return Constants.ContentType.video
         default:
             return Constants.ContentType.text
+        }
+    }
+    
+    func contentActionType(_ contentActionTypeInt: Int) -> Constants.ContentActionType
+    {
+        // Evaluate the contentActionType Integer received and convert it to the appropriate ContentActionType
+        switch contentActionTypeInt
+        {
+        case 0:
+            return Constants.ContentActionType.view
+        case 1:
+            return Constants.ContentActionType.hide
+        case 2:
+            return Constants.ContentActionType.delete
+        default:
+            return Constants.ContentActionType.view
         }
     }
     
@@ -357,7 +380,7 @@ struct Constants
         
         static var currentUser = User()
 //        static var currentUserLikes = [String]()
-        static var currentUserInterests = [String]()
+        static var currentUserInterests = [Interest]()
 //        static var currentUserName: String?
 //        static var currentUserImage: UIImage?
         
@@ -376,7 +399,7 @@ struct Constants
         static var defaultBlobContent = BlobContent(blobContentID: "default", blobID: defaultBlob.blobID, userID: "default", contentDatetime: Date(), contentType: Constants.ContentType.text, response: false, contentText: "Check out Blobjot.com!", contentMediaID: nil, contentThumbnailID: nil, respondingToContentID: nil)
         
         static var mapCircles = [GMSCircle]()
-        static var thumbnailObjects = [ThumbnailObject]()
+//        static var thumbnailObjects = [ThumbnailObject]()
         static var userObjects = [User]()
         static var userPublicArea = User(facebookID: "blobjotBlob", userID: "blobjotBlob", userName: "Public Area", userImage: UIImage(named: Constants.Strings.iconStringBlobjotLogo))
     }

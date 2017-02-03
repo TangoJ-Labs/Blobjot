@@ -741,8 +741,10 @@ class CoreDataFunctions: AWSRequestDelegate
         let moc = DataController().managedObjectContext
         for globalInterest in Constants.Data.currentUserInterests
         {
-            let entity = NSEntityDescription.insertNewObject(forEntityName: "UserInterest", into: moc) as! UserInterest
-            entity.setValue(globalInterest, forKey: "interest")
+            let entity = NSEntityDescription.insertNewObject(forEntityName: "InterestCD", into: moc) as! InterestCD
+            entity.setValue(globalInterest.interest, forKey: "interest")
+            entity.setValue(Int(globalInterest.use) as NSNumber?, forKey: "use")
+            entity.setValue(Int(globalInterest.delete) as NSNumber?, forKey: "delete")
         }
         
         // Save the Entity
@@ -756,15 +758,15 @@ class CoreDataFunctions: AWSRequestDelegate
         }
     }
     
-    func interestsRetrieve() -> [String]
+    func interestsRetrieve() -> [Interest]
     {
         print("CD-IR - RETRIEVING INTERESTS")
         // Retrieve the UserInterests data from Core Data
         let moc = DataController().managedObjectContext
-        let interestsFetch: NSFetchRequest<UserInterest> = UserInterest.fetchRequest()
+        let interestsFetch: NSFetchRequest<InterestCD> = InterestCD.fetchRequest()
         
         // Create an empty interests list in case the Core Data request fails
-        var userInterests = [UserInterest]()
+        var userInterests = [InterestCD]()
         do
         {
             userInterests = try moc.fetch(interestsFetch)
@@ -776,10 +778,21 @@ class CoreDataFunctions: AWSRequestDelegate
         }
         
         // Convert the Interests to a UserInterest class
-        var interests = [String]()
+        var interests = [Interest]()
         for userInterest in userInterests
         {
-            interests.append(userInterest.interest!)
+            let addInterest = Interest()
+            addInterest.interest = userInterest.interest
+            if let use = userInterest.use
+            {
+                addInterest.use = Bool(use)
+            }
+            if let delete = userInterest.delete
+            {
+                addInterest.use = Bool(delete)
+            }
+            
+            interests.append(addInterest)
         }
         
         return interests
@@ -790,10 +803,10 @@ class CoreDataFunctions: AWSRequestDelegate
         print("CD-ID - DELETING INTERESTS")
         // Retrieve the UserInterest data from Core Data
         let moc = DataController().managedObjectContext
-        let interestsFetch: NSFetchRequest<UserInterest> = UserInterest.fetchRequest()
+        let interestsFetch: NSFetchRequest<InterestCD> = InterestCD.fetchRequest()
         
         // Create an empty blobNotifications list in case the Core Data request fails
-        var interests = [UserInterest]()
+        var interests = [InterestCD]()
         do
         {
             interests = try moc.fetch(interestsFetch)

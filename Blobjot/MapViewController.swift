@@ -1088,7 +1088,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         Constants.Data.previewBlobContent = [BlobContent]()
         Constants.Data.previewCurrentIndex = nil
         
-        Constants.Data.thumbnailObjects = [ThumbnailObject]()
+//        Constants.Data.thumbnailObjects = [ThumbnailObject]()
         Constants.Data.userObjects = [User]()
         
         // Remove the userBlobs from the local array
@@ -2392,42 +2392,28 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                         print("MVC - BLOB CONTENT PREVIEW THUMBNAIL - CHECK 2: \(blobContent.contentThumbnailID)")
                         // Check to see if the thumbnail was already downloaded
                         // If not, the return function from AWS will apply the thumbnail to the preview box
-                        // Loop through the BlobThumbnailObjects array
-                        var thumbnailExists = false
-                        loopThumbnail: for tObject in Constants.Data.thumbnailObjects
+                        if let thumbnailImage = blobContent.contentThumbnail
                         {
-                            // Check each thumbnail object to see if matches
-                            if tObject.thumbnailID == blobContent.contentThumbnailID
-                            {
-                                // Check to make sure the thumbnail has already been downloaded
-                                if let thumbnailImage = tObject.thumbnail
-                                {
-                                    // Set the Preview Thumbnail image
-                                    cell.previewThumbnailView.image = thumbnailImage
-                                    
-                                    // Stop animating the activity indicator
-                                    cell.previewThumbnailActivityIndicator.stopAnimating()
-                                    
+                            // Set the Preview Thumbnail image
+                            cell.previewThumbnailView.image = thumbnailImage
+                            
+                            // Stop animating the activity indicator
+                            cell.previewThumbnailActivityIndicator.stopAnimating()
+                            
 //                                    // Assign the thumbnail image to the previewBlob
 //                                    self.previewBlob?.blobThumbnail = thumbnailImage
-                                    
-                                    // Add the thumbnail subview to the cell
-                                    cell.previewContainer.addSubview(cell.previewThumbnailView)
-                                    
-                                    // Move the time label to the left of the thumbnail, since it exists
-                                    cell.previewTimeLabel.frame = CGRect(x: cell.previewContainer.frame.width - 10 - cell.previewContainer.frame.height / 2 - cell.previewTimeLabelWidth - cell.previewThumbnailView.frame.width, y: 5, width: cell.previewTimeLabelWidth, height: 15)
-                                    
-                                    // Adjust the other preview features to not overlap with the moved time label
-                                    cell.previewUserNameLabel.frame = CGRect(x: cell.postUserImageOffset, y: 5, width: cell.previewContainer.frame.width - 15 - cell.postUserImageOffset - cell.previewTimeLabelWidth - cell.previewThumbnailView.frame.width, height: 15)
-                                    cell.previewTextBox.frame = CGRect(x: cell.postUserImageOffset, y: 10 + cell.previewUserNameLabel.frame.height, width: cell.previewContainer.frame.width - 15 - cell.postUserImageOffset - cell.previewTimeLabelWidth - cell.previewThumbnailView.frame.width, height: CGFloat(15))
-                                    
-                                    thumbnailExists = true
-                                    
-                                    break loopThumbnail
-                                }
-                            }
+                            
+                            // Add the thumbnail subview to the cell
+                            cell.previewContainer.addSubview(cell.previewThumbnailView)
+                            
+                            // Move the time label to the left of the thumbnail, since it exists
+                            cell.previewTimeLabel.frame = CGRect(x: cell.previewContainer.frame.width - 10 - cell.previewContainer.frame.height / 2 - cell.previewTimeLabelWidth - cell.previewThumbnailView.frame.width, y: 5, width: cell.previewTimeLabelWidth, height: 15)
+                            
+                            // Adjust the other preview features to not overlap with the moved time label
+                            cell.previewUserNameLabel.frame = CGRect(x: cell.postUserImageOffset, y: 5, width: cell.previewContainer.frame.width - 15 - cell.postUserImageOffset - cell.previewTimeLabelWidth - cell.previewThumbnailView.frame.width, height: 15)
+                            cell.previewTextBox.frame = CGRect(x: cell.postUserImageOffset, y: 10 + cell.previewUserNameLabel.frame.height, width: cell.previewContainer.frame.width - 15 - cell.postUserImageOffset - cell.previewTimeLabelWidth - cell.previewThumbnailView.frame.width, height: CGFloat(15))
                         }
-                        if !thumbnailExists
+                        else
                         {
                             print("MVC - BLOB CONTENT PREVIEW THUMBNAIL - CHECK 6")
                             // Request the thumbnail image if the thumbnailID exists
@@ -3269,6 +3255,22 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                         // Show the error message
                         self.createAlertOkView("AWSGetMapData Network Error", message: "I'm sorry, you appear to be having network issues.  Please refresh the map to try again.")
                     }
+                case _ as AWSGetBlobData:
+                    if success
+                    {
+                        print("MVC - AWSGetBlobData - RETURN")
+                        // Refresh child VCs
+                        if self.blobVC != nil
+                        {
+                            print("MVC - AWSGetBlobData - return - refresh")
+                            self.blobVC.refreshDataManually()
+                        }
+                    }
+                    else
+                    {
+                        // Show the error message
+                        self.createAlertOkView("AWSGetBlobData Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
+                    }
                 case _ as AWSGetBlobContent:
                     if success
                     {
@@ -3295,6 +3297,14 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                     {
                         // Update the previewData array for any new thumbnails
                         self.refreshPreviewCollectionView()
+                        
+                        print("MVC - AWSGetThumbnailImage - RETURN")
+                        // Refresh child VCs
+                        if self.blobVC != nil
+                        {
+                            print("MVC - AWSGetThumbnailImage - return - refresh")
+                            self.blobVC.refreshDataManually()
+                        }
                     }
                     else
                     {
@@ -3370,6 +3380,14 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                                 // Refresh the Preview Collection View
                                 self.refreshPreviewCollectionView()
                             }
+                        }
+                        
+                        print("MVC - AWSGetUserBlobContent - RETURN")
+                        // Refresh child VCs
+                        if self.blobVC != nil
+                        {
+                            print("MVC - AWSGetUserBlobContent - return - refresh")
+                            self.blobVC.refreshDataManually()
                         }
                     }
                     else
