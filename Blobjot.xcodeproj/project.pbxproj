@@ -62,6 +62,9 @@
 		B86A060A1E3D09BB006086EF /* Interest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B86A06091E3D09BB006086EF /* Interest.swift */; };
 		B86A06121E403695006086EF /* InterestCD+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = B86A06101E403695006086EF /* InterestCD+CoreDataClass.swift */; };
 		B86A06131E403695006086EF /* InterestCD+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B86A06111E403695006086EF /* InterestCD+CoreDataProperties.swift */; };
+		B86A06151E4604CE006086EF /* CameraViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B86A06141E4604CE006086EF /* CameraViewController.swift */; };
+		B87273011E5C6C2400679E78 /* CameraCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B87273001E5C6C2400679E78 /* CameraCollectionViewCell.swift */; };
+		B87273051E635EEF00679E78 /* ImageRingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B87273041E635EEF00679E78 /* ImageRingView.swift */; };
 		B877708A1E17FD620041ECD6 /* MapViewPreviewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B87770891E17FD620041ECD6 /* MapViewPreviewCell.swift */; };
 		B877B5811E30E431007151EE /* BlobContentCD+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = B877B57E1E30E431007151EE /* BlobContentCD+CoreDataClass.swift */; };
 		B877B5821E30E431007151EE /* BlobContentCD+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B877B57F1E30E431007151EE /* BlobContentCD+CoreDataProperties.swift */; };
@@ -113,6 +116,15 @@
 		B8B1096F1DEE920500EA3B41 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = B8B1096E1DEE920500EA3B41 /* Default-568h@2x.png */; };
 		B8B533A51DC9A50200B9ACC1 /* HoleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B533A41DC9A50200B9ACC1 /* HoleView.swift */; };
 		B8C8C59D1D57544C004D773E /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C8C59C1D57544C004D773E /* Extensions.swift */; };
+		B8DD48691E684A7300A1AC0F /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8DD48681E684A7300A1AC0F /* MainViewController.swift */; };
+		B8E88EFC1E46405F00F3AAEE /* VT323-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B8E88EF41E46405F00F3AAEE /* VT323-Regular.ttf */; };
+		B8E88EFD1E46405F00F3AAEE /* Homenaje-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B8E88EF51E46405F00F3AAEE /* Homenaje-Regular.ttf */; };
+		B8E88EFE1E46405F00F3AAEE /* Rajdhani-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B8E88EF61E46405F00F3AAEE /* Rajdhani-Bold.ttf */; };
+		B8E88EFF1E46405F00F3AAEE /* Rajdhani-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B8E88EF71E46405F00F3AAEE /* Rajdhani-Light.ttf */; };
+		B8E88F001E46405F00F3AAEE /* Rajdhani-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B8E88EF81E46405F00F3AAEE /* Rajdhani-Medium.ttf */; };
+		B8E88F011E46405F00F3AAEE /* Rajdhani-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B8E88EF91E46405F00F3AAEE /* Rajdhani-Regular.ttf */; };
+		B8E88F021E46405F00F3AAEE /* Rajdhani-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B8E88EFA1E46405F00F3AAEE /* Rajdhani-SemiBold.ttf */; };
+		B8E88F031E46405F00F3AAEE /* WireOne.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B8E88EFB1E46405F00F3AAEE /* WireOne.ttf */; };
 		B8F32B791E00C876001F333B /* FB.png in Resources */ = {isa = PBXBuildFile; fileRef = B8F32B781E00C875001F333B /* FB.png */; };
 		F0218AC95EF86C2A827CA39C /* Pods_Blobjot.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BCF8CA5237DDB608651A853C /* Pods_Blobjot.framework */; };
 /* End PBXBuildFile section */
@@ -209,6 +221,9 @@
 		B86A060B1E3D61B9006086EF /* Blobjot_DataModel_2.1.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Blobjot_DataModel_2.1.xcdatamodel; sourceTree = "<group>"; };
 		B86A06101E403695006086EF /* InterestCD+CoreDataClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "InterestCD+CoreDataClass.swift"; path = "../InterestCD+CoreDataClass.swift"; sourceTree = "<group>"; };
 		B86A06111E403695006086EF /* InterestCD+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "InterestCD+CoreDataProperties.swift"; path = "../InterestCD+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		B86A06141E4604CE006086EF /* CameraViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraViewController.swift; sourceTree = "<group>"; };
+		B87273001E5C6C2400679E78 /* CameraCollectionViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraCollectionViewCell.swift; sourceTree = "<group>"; };
+		B87273041E635EEF00679E78 /* ImageRingView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageRingView.swift; sourceTree = "<group>"; };
 		B87770891E17FD620041ECD6 /* MapViewPreviewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapViewPreviewCell.swift; sourceTree = "<group>"; };
 		B877B57C1E30E2CF007151EE /* Blobjot_DataModel_2.0.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Blobjot_DataModel_2.0.xcdatamodel; sourceTree = "<group>"; };
 		B877B57E1E30E431007151EE /* BlobContentCD+CoreDataClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "BlobContentCD+CoreDataClass.swift"; path = "../BlobContentCD+CoreDataClass.swift"; sourceTree = "<group>"; };
@@ -272,6 +287,15 @@
 		B8B1096E1DEE920500EA3B41 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		B8B533A41DC9A50200B9ACC1 /* HoleView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HoleView.swift; sourceTree = "<group>"; };
 		B8C8C59C1D57544C004D773E /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		B8DD48681E684A7300A1AC0F /* MainViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
+		B8E88EF41E46405F00F3AAEE /* VT323-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "VT323-Regular.ttf"; sourceTree = "<group>"; };
+		B8E88EF51E46405F00F3AAEE /* Homenaje-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Homenaje-Regular.ttf"; sourceTree = "<group>"; };
+		B8E88EF61E46405F00F3AAEE /* Rajdhani-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Rajdhani-Bold.ttf"; sourceTree = "<group>"; };
+		B8E88EF71E46405F00F3AAEE /* Rajdhani-Light.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Rajdhani-Light.ttf"; sourceTree = "<group>"; };
+		B8E88EF81E46405F00F3AAEE /* Rajdhani-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Rajdhani-Medium.ttf"; sourceTree = "<group>"; };
+		B8E88EF91E46405F00F3AAEE /* Rajdhani-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Rajdhani-Regular.ttf"; sourceTree = "<group>"; };
+		B8E88EFA1E46405F00F3AAEE /* Rajdhani-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Rajdhani-SemiBold.ttf"; sourceTree = "<group>"; };
+		B8E88EFB1E46405F00F3AAEE /* WireOne.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = WireOne.ttf; sourceTree = "<group>"; };
 		B8F32B781E00C875001F333B /* FB.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = FB.png; sourceTree = "<group>"; };
 		BCF8CA5237DDB608651A853C /* Pods_Blobjot.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Blobjot.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF3D7EAE5506D94FE1CC92A9 /* Pods-BlobjotUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BlobjotUITests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-BlobjotUITests/Pods-BlobjotUITests.debug.xcconfig"; sourceTree = "<group>"; };
@@ -396,6 +420,14 @@
 				B83C79841DF5AED300ACA52F /* Sugar_Land-Trailbrook_Back.gpx */,
 				B80A84441D5AD2E1003943C3 /* Sugar_Land-Trailbrook_Front.gpx */,
 				B80D17781D9712C50032B0D8 /* style.json */,
+				B8E88EF51E46405F00F3AAEE /* Homenaje-Regular.ttf */,
+				B8E88EF61E46405F00F3AAEE /* Rajdhani-Bold.ttf */,
+				B8E88EF71E46405F00F3AAEE /* Rajdhani-Light.ttf */,
+				B8E88EF81E46405F00F3AAEE /* Rajdhani-Medium.ttf */,
+				B8E88EF91E46405F00F3AAEE /* Rajdhani-Regular.ttf */,
+				B8E88EFA1E46405F00F3AAEE /* Rajdhani-SemiBold.ttf */,
+				B8E88EF41E46405F00F3AAEE /* VT323-Regular.ttf */,
+				B8E88EFB1E46405F00F3AAEE /* WireOne.ttf */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -451,21 +483,25 @@
 				B8541B741DBBD0B500867D82 /* BlobContent.swift */,
 				B88DFD871DBD50DF00255BA5 /* BlobTableViewCell.swift */,
 				B80C56431D51158000C4E683 /* BlobTableViewController.swift */,
-				B81822061D5B98F300B3A2BB /* ThumbnailObject.swift */,
+				B87273001E5C6C2400679E78 /* CameraCollectionViewCell.swift */,
+				B86A06141E4604CE006086EF /* CameraViewController.swift */,
 				B80C56331D5112F100C4E683 /* Constants.swift */,
 				B8541B721DB7D48D00867D82 /* CustomClasses.swift */,
 				B85FDE881D7DC2BA002A8FC7 /* CustomIdentityProvider.swift */,
 				B8C8C59C1D57544C004D773E /* Extensions.swift */,
 				B8B533A41DC9A50200B9ACC1 /* HoleView.swift */,
+				B87273041E635EEF00679E78 /* ImageRingView.swift */,
 				B86A06091E3D09BB006086EF /* Interest.swift */,
 				B86A06071E3B7B02006086EF /* InterestsTableViewCell.swift */,
 				B86A06051E3B792D006086EF /* InterestsViewController.swift */,
 				B80D17741D90E1C90032B0D8 /* LoginViewController.swift */,
+				B8DD48681E684A7300A1AC0F /* MainViewController.swift */,
 				B80C56351D5113B900C4E683 /* MapViewController.swift */,
 				B80C56441D51158000C4E683 /* MapViewLocationBlobsCell.swift */,
 				B87770891E17FD620041ECD6 /* MapViewPreviewCell.swift */,
 				B80C56451D51158000C4E683 /* PeopleTableViewCell.swift */,
 				B80C56461D51158000C4E683 /* PeopleViewController.swift */,
+				B81822061D5B98F300B3A2BB /* ThumbnailObject.swift */,
 				B80C56601D5183B100C4E683 /* User.swift */,
 				B80D177A1D98A5760032B0D8 /* UtilityFunctions.swift */,
 			);
@@ -645,13 +681,17 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B8E88F021E46405F00F3AAEE /* Rajdhani-SemiBold.ttf in Resources */,
 				B8B1093C1DEE5B6100EA3B41 /* HOME.png in Resources */,
 				B84DD7C41DC67E4F0076B9DD /* BLOBJOT_purple.png in Resources */,
 				B84DD7B51DC67E4F0076B9DD /* BV_add_comment_icon.png in Resources */,
+				B8E88F031E46405F00F3AAEE /* WireOne.ttf in Resources */,
 				B8B1095D1DEE86B600EA3B41 /* TAB_ICON_connections_gray.png in Resources */,
+				B8E88EFE1E46405F00F3AAEE /* Rajdhani-Bold.ttf in Resources */,
 				B8B1095E1DEE86B600EA3B41 /* TAB_ICON_connections_gray@2x.png in Resources */,
 				B8F32B791E00C876001F333B /* FB.png in Resources */,
 				B8B1096F1DEE920500EA3B41 /* Default-568h@2x.png in Resources */,
+				B8E88F011E46405F00F3AAEE /* Rajdhani-Regular.ttf in Resources */,
 				B8B109671DEE886400EA3B41 /* TAB_ICON_active_blobs_gray@2x.png in Resources */,
 				B8B109561DEE866500EA3B41 /* TAB_ICON_account_white@3x.png in Resources */,
 				B8B1094A1DEE84A700EA3B41 /* TAB_ICON_account_gray@3x.png in Resources */,
@@ -667,8 +707,11 @@
 				B8B109591DEE866500EA3B41 /* TAB_ICON_connections_white@3x.png in Resources */,
 				B8B109331DEDAB3200EA3B41 /* Anywhere2.gpx in Resources */,
 				B8B1096D1DEE90AF00EA3B41 /* PROFILE_DEFAULT.png in Resources */,
+				B8E88EFD1E46405F00F3AAEE /* Homenaje-Regular.ttf in Resources */,
 				B8B109481DEE84A700EA3B41 /* TAB_ICON_account_gray.png in Resources */,
 				B8B109661DEE886400EA3B41 /* TAB_ICON_active_blobs_gray.png in Resources */,
+				B8E88F001E46405F00F3AAEE /* Rajdhani-Medium.ttf in Resources */,
+				B8E88EFF1E46405F00F3AAEE /* Rajdhani-Light.ttf in Resources */,
 				B80D17791D9712C60032B0D8 /* style.json in Resources */,
 				B82880271E0AD10A00B62676 /* MV_list_icon.png in Resources */,
 				B82880281E0AD10A00B62676 /* MV_list_icon@3x.png in Resources */,
@@ -680,6 +723,7 @@
 				B84DD7B91DC67E4F0076B9DD /* MV_add_combo_icon.png in Resources */,
 				B83C79851DF5AED500ACA52F /* Sugar_Land-Trailbrook_Back.gpx in Resources */,
 				B84DD7BE1DC67E4F0076B9DD /* MV_location_icon.png in Resources */,
+				B8E88EFC1E46405F00F3AAEE /* VT323-Regular.ttf in Resources */,
 				B84DD7B71DC67E4F0076B9DD /* CV_check_icon.png in Resources */,
 				B8B1096B1DEE886400EA3B41 /* TAB_ICON_active_blobs_white@3x.png in Resources */,
 				B8B109311DED47B500EA3B41 /* Anywhere.gpx in Resources */,
@@ -855,6 +899,7 @@
 				B86407051D7B0E720084D6EF /* DataController.swift in Sources */,
 				B877708A1E17FD620041ECD6 /* MapViewPreviewCell.swift in Sources */,
 				B80C56361D5113B900C4E683 /* MapViewController.swift in Sources */,
+				B87273051E635EEF00679E78 /* ImageRingView.swift in Sources */,
 				B80C56531D51158000C4E683 /* BlobTableViewController.swift in Sources */,
 				B86A06121E403695006086EF /* InterestCD+CoreDataClass.swift in Sources */,
 				B80D177B1D98A5760032B0D8 /* UtilityFunctions.swift in Sources */,
@@ -865,6 +910,7 @@
 				B8B1090B1DDB46D100EA3B41 /* CurrentUser+CoreDataProperties.swift in Sources */,
 				B80C56611D5183B100C4E683 /* User.swift in Sources */,
 				B8B108F81DCB718200EA3B41 /* LogError+CoreDataProperties.swift in Sources */,
+				B87273011E5C6C2400679E78 /* CameraCollectionViewCell.swift in Sources */,
 				B8B109031DCFE52300EA3B41 /* UserCD+CoreDataClass.swift in Sources */,
 				B86A06081E3B7B02006086EF /* InterestsTableViewCell.swift in Sources */,
 				B80C56541D51158000C4E683 /* MapViewLocationBlobsCell.swift in Sources */,
@@ -879,8 +925,10 @@
 				B88131931D510EEE00021C4B /* AppDelegate.swift in Sources */,
 				B88DFD881DBD50DF00255BA5 /* BlobTableViewCell.swift in Sources */,
 				B8312FDA1DB3DA8700CFC715 /* LocationManagerSetting.swift in Sources */,
+				B86A06151E4604CE006086EF /* CameraViewController.swift in Sources */,
 				B877B5821E30E431007151EE /* BlobContentCD+CoreDataProperties.swift in Sources */,
 				B86A06131E403695006086EF /* InterestCD+CoreDataProperties.swift in Sources */,
+				B8DD48691E684A7300A1AC0F /* MainViewController.swift in Sources */,
 				B8B109261DE0B06F00EA3B41 /* UserCD+CoreDataProperties.swift in Sources */,
 				B8B108F11DCB673700EA3B41 /* CoreDataFunctions.swift in Sources */,
 				B86407081D7B13EB0084D6EF /* DataModel.xcdatamodeld in Sources */,

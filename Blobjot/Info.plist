@@ -59,6 +59,8 @@
 	<string>Blobjot monitors your location and detects nearby features.  Check your Account page for location monitoring options to optimize your battery life.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Blobjot needs to access your photos to attach media to Blobs.  We will not post any content without your approval.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>To ensure the original location of content, photos must be taken within the Blobjot app.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
@@ -82,5 +84,16 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Homenaje-Regular.ttf</string>
+		<string>Rajdhani-Bold.ttf</string>
+		<string>Rajdhani-Light.ttf</string>
+		<string>Rajdhani-Medium.ttf</string>
+		<string>Rajdhani-Regular.ttf</string>
+		<string>Rajdhani-SemiBold.ttf</string>
+		<string>VT323-Regular.ttf</string>
+		<string>WireOne.ttf</string>
+	</array>
 </dict>
 </plist>

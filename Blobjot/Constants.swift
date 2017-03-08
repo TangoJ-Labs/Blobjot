@@ -366,6 +366,15 @@ struct Constants
         static let colorPreviewTextNormal = UIColor.black
         static let colorPreviewTextError = UIColor.red
         
+        static let recordButtonEdgeColor = UIColor(red: 96.0/255, green: 137.0/255, blue: 41.0/255, alpha: 1.0).cgColor //#608929
+        static let recordButtonBorderColor = UIColor(red: 96.0/255, green: 137.0/255, blue: 41.0/255, alpha: 1.0).cgColor //#608929
+        static let recordButtonColor = UIColor(red: 140.0/255, green: 197.0/255, blue: 63.0/255, alpha: 1.0) //#8CC53F
+        static let recordButtonEdgeColorRecord = UIColor(red: 179/255, green: 0/255, blue: 0/255, alpha: 1.0).cgColor //# alpha: 0.3
+        static let recordButtonBorderColorRecord = UIColor(red: 255/255, green: 0/255, blue: 0/255, alpha: 1.0).cgColor //# alpha: 1.0
+        static let recordButtonColorRecord = UIColor(red: 255/255, green: 0/255, blue: 0/255, alpha: 1.0) //# alpha: 0.5
+        
+        static let colorCameraImageCellBackground = UIColor(red: 255/255, green: 255/255, blue: 255/255, alpha: 0.3) //#FFF
+        
         static let colorMapViewButton = UIColor(red: 138/255, green: 112/255, blue: 178/255, alpha: 1.0) //#8A70B2
     }
     
@@ -379,8 +388,6 @@ struct Constants
         static var stillSendingBlob: Bool = false
         
         static var currentUser = User()
-//        static var currentUserLikes = [String]()
-        static var currentUserInterests = [Interest]()
 //        static var currentUserName: String?
 //        static var currentUserImage: UIImage?
         
@@ -401,12 +408,13 @@ struct Constants
         static var mapCircles = [GMSCircle]()
 //        static var thumbnailObjects = [ThumbnailObject]()
         static var userObjects = [User]()
-        static var userPublicArea = User(facebookID: "blobjotBlob", userID: "blobjotBlob", userName: "Public Area", userImage: UIImage(named: Constants.Strings.iconStringBlobjotLogo))
     }
     
     struct Dim
     {
         static let statusBarStandardHeight: CGFloat = 20
+        
+        static let mapViewPreviewDiameter: CGFloat = 250
         
         static let mapViewButtonSize: CGFloat = 40
         static let mapViewButtonAddSize: CGFloat = 40
@@ -432,9 +440,15 @@ struct Constants
         static let mapViewShadowOpacity: Float = 0.2
         static let mapViewShadowRadius: CGFloat = 1.0
         
+        static let cameraViewImageSize: CGFloat = 50
+        static let cameraViewImageCellSize: CGFloat = 60
+        
         static let cardShadowOffset = CGSize(width: 0, height: 0.1) // CGSize(width: 0, height: 0.2)
         static let cardShadowOpacity: Float = 0.5 // 0.5
         static let cardShadowRadius: CGFloat = 1.0 // 2.0
+        
+        static let confirmExitWidth: CGFloat = 260
+        static let confirmExitHeight: CGFloat = 200
         
         static let blobsActiveTableViewCellHeight: CGFloat = 100
         static let blobsActiveTableViewUserImageSize: CGFloat = 60
@@ -474,18 +488,23 @@ struct Constants
         static let accountSearchBarHeight: CGFloat = 40
         static let accountConnectStarSize: CGFloat = 40
         
+        static let recordResponseEdgeSize: CGFloat = 100
+        static let recordResponseMiddleSpacing: CGFloat = 6
+        static let recordResponseEdgeSizeSmall: CGFloat = 56
+        static let recordResponseMiddleSpacingSmall: CGFloat = 2
+        
         static let tabBarHeight: CGFloat = 49
     }
     
     struct Strings
     {
-        static let fontRegular = "Helvetica-Light"
-//        static let fontRegular = "Rajdhani-Regular"
-//        static let fontLight = "Rajdhani-Light"
-//        static let fontBold = "Rajdhani-Bold"
-//        static let fontThinRegular = "AmericanTypewriter-Condensed"
-//        static let fontThinLight = "WireOne"
-//        static let fontThinBold = "AmericanTypewriter-CondensedBold"
+//        static let fontRegular = "Helvetica-Light"
+        static let fontRegular = "Rajdhani-Regular"
+        static let fontLight = "Rajdhani-Light"
+        static let fontBold = "Rajdhani-Bold"
+        static let fontThinRegular = "AmericanTypewriter-Condensed"
+        static let fontThinLight = "WireOne"
+        static let fontThinBold = "AmericanTypewriter-CondensedBold"
         
         static let S3BucketUserImages = "blobjot-userimages"
         static let S3BucketThumbnails = "blobjot-thumbnails"
@@ -498,6 +517,7 @@ struct Constants
         static let addBlobSelectorTypeBoxOrigin = "Blob is viewable from anywhere."
         static let addBlobSelectorTypeBoxLocation = "Blob is viewable at Blob location."
         
+        static let cameraCellReuseIdentifier = "cameraViewCell"
         static let previewBlobsCellReuseIdentifier = "selectionBlobsCell"
         static let peopleTableViewCellReuseIdentifier = "peopleTableViewCell"
         static let locationBlobsCellReuseIdentifier = "locationBlobsCell"

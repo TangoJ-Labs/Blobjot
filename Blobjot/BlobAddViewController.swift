@@ -45,7 +45,7 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
     var navBarHeight: CGFloat!
     var viewFrameY: CGFloat!
     
-    // Declar the view components
+    // Declare the view components
     var viewContainer: UIView!
     var pageViewContainer: UIView!
     var pageViewController: UIPageViewController!
@@ -450,7 +450,7 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
             {
                 // Store the picked image to access when uploading AND RESIZE IMAGE
 //                blobImage = pickedImage
-                self.blobImage = pickedImage.resizeWithSquareSize(Constants.Settings.imageSizeBlob)
+                self.blobImage = pickedImage.cropToBounds(Constants.Settings.imageSizeBlob, height: Constants.Settings.imageSizeBlob)
                 
                 // Save the thumbnail locally
                 if let randomMediaID = self.randomMediaID
@@ -474,7 +474,7 @@ class BlobAddViewController: UIViewController, UIPageViewControllerDataSource, U
         // If the blobImage was successfully saved, create a low-quality thumbnail and save it locally
         if let blobImage = self.blobImage
         {
-            blobThumbnail = blobImage.resizeWithSquareSize(Constants.Settings.imageSizeThumbnail)
+            blobThumbnail = blobImage.cropToBounds(Constants.Settings.imageSizeThumbnail, height: Constants.Settings.imageSizeThumbnail)
             
             // Save the thumbnail locally
             if let randomMediaID = self.randomMediaID
