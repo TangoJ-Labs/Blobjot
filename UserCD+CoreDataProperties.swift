@@ -16,11 +16,10 @@ extension UserCD {
         return NSFetchRequest<UserCD>(entityName: "UserCD");
     }
 
-    @NSManaged public var facebookID: String?
+    @NSManaged public var digitsID: String?
     @NSManaged public var userID: String?
     @NSManaged public var userImage: NSData?
     @NSManaged public var userName: String?
-    @NSManaged public var userStatus: NSNumber?
     @NSManaged public var lastUsed: NSDate?
 
 }

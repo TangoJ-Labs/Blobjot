@@ -10,19 +10,20 @@ import UIKit
 
 class User {
     
-    var facebookID: String!
-    var userID: String?
+    var digitsID: String!
+    var userID: String!
     var userName: String?
+    var userImageID: String?
     var userImage: UIImage?
-    var userStatus: Constants.UserStatusType = Constants.UserStatusType.standard
     
-    convenience init(facebookID: String, userID: String?, userName: String?, userImage: UIImage?)
+    convenience init(digitsID: String!, userID: String!, userName: String?, userImageID: String?, userImage: UIImage?)
     {
         self.init()
         
+        self.digitsID = digitsID
         self.userID = userID
-        self.facebookID = facebookID
         self.userName = userName
+        self.userImageID = userImageID
         self.userImage = userImage
     }
 }

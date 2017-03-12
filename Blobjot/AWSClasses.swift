@@ -9,7 +9,6 @@
 import AWSCognito
 import AWSLambda
 import AWSS3
-import FBSDKLoginKit
 import Foundation
 import GoogleMaps
 
@@ -67,18 +66,18 @@ class AWSPrepRequest
         // Ensure that the app is not continuously failing to access the server
         if Constants.Data.serverTries <= Constants.Settings.maxServerTries
         {
-            // Check to see if the facebook user id is already in the FBSDK
-            if let facebookToken = FBSDKAccessToken.current()
+            // Check to see if the digitsID has already been assigned
+            if Constants.Data.currentUser.digitsID != nil
             {
                 // Assign the Facebook Token to the AWSRequestObject
-                self.requestToCall.facebookToken = facebookToken
+                self.requestToCall.digitsID = Constants.Data.currentUser.digitsID
                 
                 print("AC - COGNITO ID: \(Constants.credentialsProvider.identityId)")
                 // Ensure that the Cognito ID is still valid and is not older than an hour (AWS will invalidate if older)
                 if Constants.credentialsProvider.identityId != nil && Constants.Data.lastCredentials - NSDate().timeIntervalSinceNow < 3600
                 {
                     // The Cognito ID is valid, so check for a Blobjot ID and then make the request
-                    self.getBlobjotID(facebookToken: facebookToken)
+                    self.getBlobjotID(digitsID: Constants.Data.currentUser.digitsID)
                 }
                 else
                 {
@@ -122,13 +121,13 @@ class AWSPrepRequest
     // Once the Facebook token is gained, request a Cognito Identity ID
     func getCognitoID()
     {
-        print("AC - IN GET COGNITO ID: \(requestToCall.facebookToken)")
-        if let token = requestToCall.facebookToken
+        print("AC - IN GET COGNITO ID: \(requestToCall.digitsID)")
+        if let token = requestToCall.digitsID
         {
             print("AC - GETTING COGNITO ID: \(Constants.credentialsProvider.identityId)")
-            print("AC - TOKEN: \(AWSIdentityProviderFacebook), \(token.tokenString)")
+//            print("AC - TOKEN: \(AWSIdentityProviderFacebook), \(token.tokenString)")
             // Authenticate the user in AWS Cognito
-            Constants.credentialsProvider.logins = [AWSIdentityProviderFacebook: token.tokenString]
+//            Constants.credentialsProvider.logins = ["www.digits.com": token.tokenString]
             
 //            let identityProviderManager = MyProvider(tokens: [AWSIdentityProviderFacebook as NSString : token.tokenString as NSString])
 //            let customProviderManager = CustomIdentityProvider(tokens: [AWSIdentityProviderFacebook as NSString: token.tokenString as NSString])
@@ -151,7 +150,7 @@ class AWSPrepRequest
                         Constants.Data.serverTries += 1
                         
                         // Go ahead and move to the next login step
-                        self.getBlobjotID(facebookToken: token)
+                        self.getBlobjotID(digitsID: token)
                     }
                     else
                     {
@@ -163,11 +162,11 @@ class AWSPrepRequest
                         // Save the current time to mark when the last CognitoID was saved
                         Constants.Data.lastCredentials = NSDate().timeIntervalSinceNow
                         
-                        // Request extra facebook data for the user ON THE MAIN THREAD
+                        // Request extra user data ON THE MAIN THREAD
                         DispatchQueue.main.async(execute:
                             {
                                 print("AC - GOT COGNITO ID - GETTING NEW AWS ID")
-                                self.getBlobjotID(facebookToken: token)
+                                self.getBlobjotID(digitsID: token)
                         });
                     }
                     return nil
@@ -176,7 +175,7 @@ class AWSPrepRequest
     }
     
     // After ensuring that the Cognito ID is valid, so check for a Blobjot ID and then make the request
-    func getBlobjotID(facebookToken: FBSDKAccessToken!)
+    func getBlobjotID(digitsID: String)
     {
         // If the Identity ID is still valid, ensure that the current userID is not nil
         if Constants.Data.currentUser.userID != nil
@@ -186,7 +185,6 @@ class AWSPrepRequest
             
             // FIRING REQUEST
             // All login info is current; go ahead and fire the needed method
-            self.requestToCall.facebookToken = facebookToken
             self.requestToCall.makeRequest()
         }
         else
@@ -194,7 +192,6 @@ class AWSPrepRequest
             // The current ID is nil, so request it from AWS, but store the previous request and call it when the
             let awsLoginUser = AWSLoginUser(secondaryAwsRequestObject: self.requestToCall)
             awsLoginUser.awsRequestDelegate = self.awsRequestDelegate
-            awsLoginUser.facebookToken = facebookToken
             awsLoginUser.makeRequest()
         }
     }
@@ -208,7 +205,7 @@ class AWSRequestObject
     // (and have its own functions called that are listed in the protocol)
     var awsRequestDelegate: AWSRequestDelegate?
     
-    var facebookToken: FBSDKAccessToken?
+    var digitsID: String?
     
     func makeRequest() {}
 }
@@ -230,88 +227,27 @@ class AWSLoginUser : AWSRequestObject
     // FBSDK METHOD - Get user data from FB before attempting to log in via AWS
     override func makeRequest()
     {
-        print("AC - FBSDK - COGNITO ID: \(Constants.credentialsProvider.identityId)")
-        let fbRequest = FBSDKGraphRequest(graphPath: "me", parameters: ["fields": "id, email, name, picture"]) //parameters: ["fields": "id,email,name,picture"])
-        print("FBSDK - MAKING GRAPH CALL")
-        fbRequest?.start
-            {(connection: FBSDKGraphRequestConnection?, result: Any?, error: Error?) in
-                
-                if error != nil
-                {
-                    print("FBSDK - Error Getting Info \(error)")
-                    CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: "FBSDK - Error Getting Info" + error!.localizedDescription)
-                    
-                    // Record the server request attempt
-                    Constants.Data.serverTries += 1
-                    
-                    // Try again
-                    AWSPrepRequest(requestToCall: AWSLoginUser(secondaryAwsRequestObject: nil), delegate: self.awsRequestDelegate!).prepRequest()
-                }
-                else
-                {
-                    if let resultDict = result as? [String:AnyObject]
-                    {
-//                        if let resultPicture = resultDict["picture"] as? [String:AnyObject]
-//                        {
-//                            if let resultPictureData = resultPicture["data"] as? [String:AnyObject]
-//                            {
-//                                print("FBSDK - IMAGE URL : \(resultPictureData["url"])")
-//                            }
-//                        }
-                        
-                        if let facebookName = resultDict["name"]
-                        {
-                            var facebookImageUrl = "none"
-                            if let resultPicture = resultDict["picture"] as? [String:AnyObject]
-                            {
-                                if let resultPictureData = resultPicture["data"] as? [String:AnyObject]
-                                {
-                                    facebookImageUrl = resultPictureData["url"]! as! String
-                                }
-                            }
-                            self.loginUser((facebookName as! String), facebookThumbnailUrl: facebookImageUrl)
-                        }
-                        else
-                        {
-                            print("FBSDK - Error Processing Facebook Name")
-                            CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: "FBSDK - Error Processing Facebook Name" + error!.localizedDescription)
-                            
-                            // Record the server request attempt
-                            Constants.Data.serverTries += 1
-                            
-                            // Try again
-                            AWSPrepRequest(requestToCall: AWSLoginUser(secondaryAwsRequestObject: nil), delegate: self.awsRequestDelegate!).prepRequest()
-                        }
-                    }
-                    else
-                    {
-                        print("FBSDK - Error Processing Result")
-                        CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: "FBSDK - Error Processing Result" + error!.localizedDescription)
-                        
-                        // Record the server request attempt
-                        Constants.Data.serverTries += 1
-                        
-                        // Try again
-                        AWSPrepRequest(requestToCall: AWSLoginUser(secondaryAwsRequestObject: nil), delegate: self.awsRequestDelegate!).prepRequest()
-                    }
-                }
-        }
+        print("AC - LOGIN MAKE REQUEST - COGNITO ID: \(Constants.credentialsProvider.identityId)")
+//        self.loginUser(digitsID)
+        
+//        // Try again
+//        AWSPrepRequest(requestToCall: AWSLoginUser(secondaryAwsRequestObject: nil), delegate: self.awsRequestDelegate!).prepRequest()
     }
     
     // Log in the user or create a new user
-    func loginUser(_ facebookName: String, facebookThumbnailUrl: String)
+    func loginUser(_ digitsID: String)
     {
-        print("AC - LU - FACEBOOK TOKEN: \(self.facebookToken)")
+        print("AC - LU - DIGITS ID: \(digitsID)")
         print("AC - LU - COGNITO ID: \(Constants.credentialsProvider.identityId)")
-        let json: NSDictionary = ["facebook_id" : self.facebookToken!.userID]
+        let json: NSDictionary = ["digits_id" : digitsID]
         
         let lambdaInvoker = AWSLambdaInvoker.default()
         lambdaInvoker.invokeFunction("Blobjot-LoginUser", jsonObject: json, completionHandler:
-            { (responseData, err) -> Void in
+            { (response, err) -> Void in
                 
                 if (err != nil)
                 {
-                    print("AC - FBSDK LOGIN - ERROR: \(err)")
+                    print("AC - LOGIN - ERROR: \(err)")
                     CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: err.debugDescription)
                     
                     // Record the login attempt
@@ -342,41 +278,39 @@ class AWSLoginUser : AWSRequestObject
                     })
                     
                 }
-                else if (responseData != nil)
+                else if (response != nil)
                 {
-                    // Create a user object to save the data
-                    let currentUser = User()
-                    currentUser.userID = responseData as? String
-                    currentUser.facebookID = self.facebookToken!.userID
-                    currentUser.userName = facebookName
-                    currentUser.userImage = UIImage(named: "PROFILE_DEFAULT.png")
-                    
-                    // The response will be the userID associated with the facebookID used, save the current user globally
-                    Constants.Data.currentUser = currentUser
-                    
-                    // Save the new login data to Core Data
-                    CoreDataFunctions().currentUserSave(user: currentUser)
-                    
-                    // Reset the global User list with Core Data
-                    UtilityFunctions().resetUserListWithCoreData()
-                    
-//                    UtilityFunctions().registerPushNotifications()
-                    
-                    // Recall the user's Facebook likes to match with Public Blobs (Blobjot Blobs)
-                    AWSPrepRequest(requestToCall: FBGetUserLikes(), delegate: self.awsRequestDelegate!).prepRequest()
-                    
-                    // If the secondary request object is not nil, process the carried (second) request; no need to
-                    // pass the login response to the parent view controller since it did not explicitly call the login request
-                    if let secondaryAwsRequestObject = self.secondaryAwsRequestObject
+                    if let responseData = response as? [String: Any]
                     {
-                        AWSPrepRequest(requestToCall: secondaryAwsRequestObject, delegate: self.awsRequestDelegate!).prepRequest()
-                    }
-                    else
-                    {
-                        // Notify the parent view that the AWS Login call completed successfully
-                        if let parentVC = self.awsRequestDelegate
+                        if let userID = responseData["user_id"] as? String
                         {
-                            parentVC.processAwsReturn(self, success: true)
+                            // Create a user object to save the data
+                            let currentUser = User(digitsID: digitsID, userID: userID, userName: responseData["user_name"] as? String, userImageID: responseData["user_image_id"] as? String, userImage: UIImage(named: "PROFILE_DEFAULT.png"))
+                            // The response will be the userID associated with the digitsID used, save the current user globally
+                            Constants.Data.currentUser = currentUser
+                            
+                            // Save the new login data to Core Data
+                            CoreDataFunctions().currentUserSave(user: currentUser)
+                            
+                            // Reset the global User list with Core Data
+                            UtilityFunctions().resetUserListWithCoreData()
+                            
+//                            UtilityFunctions().registerPushNotifications()
+                            
+                            // If the secondary request object is not nil, process the carried (second) request; no need to
+                            // pass the login response to the parent view controller since it did not explicitly call the login request
+                            if let secondaryAwsRequestObject = self.secondaryAwsRequestObject
+                            {
+                                AWSPrepRequest(requestToCall: secondaryAwsRequestObject, delegate: self.awsRequestDelegate!).prepRequest()
+                            }
+                            else
+                            {
+                                // Notify the parent view that the AWS Login call completed successfully
+                                if let parentVC = self.awsRequestDelegate
+                                {
+                                    parentVC.processAwsReturn(self, success: true)
+                                }
+                            }
                         }
                     }
                 }
@@ -1709,6 +1643,113 @@ class AWSGetBlobContentForBlob : AWSRequestObject
                     }
                 }
         })
+    }
+}
+
+class AWSGetSingleUserData : AWSRequestObject
+{
+    var user: User!
+    var forPreviewData: Bool!
+//    var targetBlob: Blob?
+    
+    required init(userID: String, forPreviewData: Bool)
+    {
+        self.user = User()
+        self.user.userID = userID
+        
+        self.forPreviewData = forPreviewData
+    }
+    
+    // The initial request for User data
+    override func makeRequest()
+    {
+        print("AC-AGSUD - REQUESTING GSUD FOR USER: \(user.userID), USERNAME: \(user.userName)")
+        
+        // Create some JSON to send the logged in userID
+        let json: NSDictionary = ["user_id" : self.user.userID!, "requesting_user_id" : Constants.Data.currentUser.userID!]
+        
+        let lambdaInvoker = AWSLambdaInvoker.default()
+        lambdaInvoker.invokeFunction("Blobjot-GetSingleUserData", jsonObject: json, completionHandler:
+            { (response, err) -> Void in
+                
+                if (err != nil)
+                {
+                    print("AC-AGSUD - GET USER CONNECTIONS DATA ERROR: \(err)")
+                    CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: err.debugDescription)
+                    
+                    // Record the server request attempt
+                    Constants.Data.serverTries += 1
+                    
+                    // Notify the parent view that the AWS call completed with an error
+                    if let parentVC = self.awsRequestDelegate
+                    {
+                        parentVC.processAwsReturn(self, success: false)
+                    }
+                }
+                else if (response != nil)
+                {
+                    // Convert the response to an array of arrays
+                    if let userJson = response as? [String: AnyObject]
+                    {
+                        let userName = userJson["user_name"] as! String
+                        let userImageID = userJson["user_image_id"] as! String
+                        
+                        // Update the local user object
+                        self.user.userName = userName
+                        self.user.userImageID = userImageID
+                        
+                        // Go ahead and request the user's image
+//                        AWSPrepRequest(requestToCall: , delegate: self.awsRequestDelegate!).prepRequest()
+// COMPLETE /////// REQUEST USER IMAGE
+                        
+                        // Update the global user and save to Core Data
+                        self.updateUserGlobally(user: self.user)
+                        
+                        // Notify the parent view that the AWS call completed successfully
+                        if let parentVC = self.awsRequestDelegate
+                        {
+                            parentVC.processAwsReturn(self, success: true)
+                        }
+                    }
+                }
+        })
+    }
+    
+    // Update the user in the global userList with the new data
+    func updateUserGlobally(user: User)
+    {
+        if let userID = user.userID, let currentUserID = Constants.Data.currentUser.userID
+        {
+            // Update the Current User object, if needed
+            if userID == currentUserID
+            {
+                Constants.Data.currentUser.userName = user.userName
+                Constants.Data.currentUser.userImage = user.userImage
+                
+                // Save to Core Data
+                CoreDataFunctions().currentUserSave(user: Constants.Data.currentUser)
+            }
+            
+            var userObjectExists = false
+            loopUserObjectCheck: for userObject in Constants.Data.userObjects
+            {
+                if userObject.userID == userID
+                {
+                    userObject.userName = user.userName
+                    userObject.userImage = user.userImage
+                    
+                    // Save to Core Data
+                    CoreDataFunctions().userSave(user: userObject)
+                    
+                    userObjectExists = true
+                    break loopUserObjectCheck
+                }
+            }
+            if !userObjectExists
+            {
+                Constants.Data.userObjects.append(self.user)
+            }
+        }
     }
 }
 

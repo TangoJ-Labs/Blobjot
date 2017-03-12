@@ -380,18 +380,18 @@ class BlobTableViewController: UIViewController, GMSMapViewDelegate, UITableView
             ncTitleText.textAlignment = .center
             ncTitle.addSubview(ncTitleText)
             
-            // Instantiate the PeopleViewController and pass the Preview Blob UserID to the VC
-            let peopleVC = PeopleViewController()
-            peopleVC.peopleListTopPerson = self.blobContentArray[indexPath.row].userID
-            
-            // Assign the created Nav Bar settings to the Tab Bar Controller
-            peopleVC.navigationItem.setLeftBarButton(backButtonItem, animated: true)
-            peopleVC.navigationItem.titleView = ncTitle
-            
-            if let navController = self.navigationController
-            {
-                navController.pushViewController(peopleVC, animated: true)
-            }
+//            // Instantiate the PeopleViewController and pass the Preview Blob UserID to the VC
+//            let peopleVC = PeopleViewController()
+//            peopleVC.peopleListTopPerson = self.blobContentArray[indexPath.row].userID
+//            
+//            // Assign the created Nav Bar settings to the Tab Bar Controller
+//            peopleVC.navigationItem.setLeftBarButton(backButtonItem, animated: true)
+//            peopleVC.navigationItem.titleView = ncTitle
+//            
+//            if let navController = self.navigationController
+//            {
+//                navController.pushViewController(peopleVC, animated: true)
+//            }
             
             // Save an action in Core Data
             CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
@@ -694,11 +694,6 @@ class BlobTableViewController: UIViewController, GMSMapViewDelegate, UITableView
                         let alertController = UtilityFunctions().createAlertOkView("AWSGetUserImage - Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                         self.present(alertController, animated: true, completion: nil)
                     }
-                case _ as FBGetUserProfileData:
-                    // Do not distinguish between success and failure for this class - both need to have the userList updated
-                    // A new user image was just downloaded for a user in the blob comment list
-                    // Reload the TableView
-                    self.refreshBlobViewTable()
                 default:
                     print("BVC-DEFAULT: THERE WAS AN ISSUE WITH THE DATA RETURNED FROM AWS")
                     // Show the error message

@@ -35,7 +35,7 @@ class CoreDataFunctions: AWSRequestDelegate
             // Save the current user data in Core Data
             let entity = NSEntityDescription.insertNewObject(forEntityName: "CurrentUser", into: moc) as! CurrentUser
             entity.setValue(user.userID, forKey: "userID")
-            entity.setValue(user.facebookID, forKey: "facebookID")
+//            entity.setValue(user.digitsID, forKey: "digitsID")
             entity.setValue(user.userName, forKey: "userName")
             if let userImage = user.userImage
             {
@@ -46,7 +46,7 @@ class CoreDataFunctions: AWSRequestDelegate
         {
             // Replace the current user data to ensure that the latest data is used
             currentUserArray[0].userID = user.userID
-            currentUserArray[0].userID = user.facebookID
+//            currentUserArray[0].userID = user.digitsID
             currentUserArray[0].userName = user.userName
             if let userImage = user.userImage
             {
@@ -579,9 +579,8 @@ class CoreDataFunctions: AWSRequestDelegate
                 
                 // Edit the user with the new data
                 userArray[userIndex].lastUsed = Date() as NSDate?
-                userArray[userIndex].facebookID = user.facebookID
+                userArray[userIndex].digitsID = user.digitsID
                 userArray[userIndex].userName = user.userName
-                userArray[userIndex].userStatus = user.userStatus.rawValue as NSNumber?
                 if let image = user.userImage
                 {
                     userArray[userIndex].userImage = UIImagePNGRepresentation(image) as NSData?
@@ -597,9 +596,8 @@ class CoreDataFunctions: AWSRequestDelegate
             let entity = NSEntityDescription.insertNewObject(forEntityName: "UserCD", into: moc) as! UserCD
             entity.setValue(Date(), forKey: "lastUsed")
             entity.setValue(user.userID, forKey: "userID")
-            entity.setValue(user.facebookID, forKey: "facebookID")
+            entity.setValue(user.digitsID, forKey: "digitsID")
             entity.setValue(user.userName, forKey: "userName")
-            entity.setValue(user.userStatus.rawValue, forKey: "userStatus")
         }
         
         // Save the Entity
@@ -649,9 +647,8 @@ class CoreDataFunctions: AWSRequestDelegate
             
             let addUser = User()
             addUser.userID = cdUser.userID
-            addUser.facebookID = cdUser.facebookID
+            addUser.digitsID = cdUser.digitsID
             addUser.userName = cdUser.userName
-            addUser.userStatus = Constants().userStatusType(Int(cdUser.userStatus!))
             
             if let imageData = cdUser.userImage
             {
@@ -694,16 +691,6 @@ class CoreDataFunctions: AWSRequestDelegate
         // Delete each object one at a time if not used recently
         for cdUser in usersCD
         {
-            // Delete old style users
-            if let userStatus = cdUser.userStatus
-            {
-                if Int(userStatus) > 2
-                {
-                    moc.delete(cdUser)
-                    print("CD-URD - USER DELETE (OLD USER TYPE): \(cdUser.userID)")
-                }
-            }
-            
             // Delete users that have not been updated recently
             if let lastUsed = cdUser.lastUsed
             {
@@ -727,110 +714,6 @@ class CoreDataFunctions: AWSRequestDelegate
         catch
         {
             fatalError("CD-URD - USER SAVE UPDATES - Failure to save context: \(error)")
-        }
-    }
-    
-    // MARK: USER INTERESTS
-    func interestsSave()
-    {
-        print("CD-IS - SAVING INTERESTS")
-        // Delete all current interests to ensure that any removed interests on Facebook are removed in Blobjot
-        interestsDelete()
-        
-        // Retrieve the User Interests data from Core Data
-        let moc = DataController().managedObjectContext
-        for globalInterest in Constants.Data.currentUserInterests
-        {
-            let entity = NSEntityDescription.insertNewObject(forEntityName: "InterestCD", into: moc) as! InterestCD
-            entity.setValue(globalInterest.interest, forKey: "interest")
-            entity.setValue(Int(globalInterest.use) as NSNumber?, forKey: "use")
-            entity.setValue(Int(globalInterest.delete) as NSNumber?, forKey: "delete")
-        }
-        
-        // Save the Entity
-        do
-        {
-            try moc.save()
-        }
-        catch
-        {
-            fatalError("CD-IS - USER INTERESTS SAVE - Failure to save context: \(error)")
-        }
-    }
-    
-    func interestsRetrieve() -> [Interest]
-    {
-        print("CD-IR - RETRIEVING INTERESTS")
-        // Retrieve the UserInterests data from Core Data
-        let moc = DataController().managedObjectContext
-        let interestsFetch: NSFetchRequest<InterestCD> = InterestCD.fetchRequest()
-        
-        // Create an empty interests list in case the Core Data request fails
-        var userInterests = [InterestCD]()
-        do
-        {
-            userInterests = try moc.fetch(interestsFetch)
-        }
-        catch
-        {
-            CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: error.localizedDescription)
-            fatalError("Failed to fetch frames: \(error)")
-        }
-        
-        // Convert the Interests to a UserInterest class
-        var interests = [Interest]()
-        for userInterest in userInterests
-        {
-            let addInterest = Interest()
-            addInterest.interest = userInterest.interest
-            if let use = userInterest.use
-            {
-                addInterest.use = Bool(use)
-            }
-            if let delete = userInterest.delete
-            {
-                addInterest.use = Bool(delete)
-            }
-            
-            interests.append(addInterest)
-        }
-        
-        return interests
-    }
-    
-    func interestsDelete()
-    {
-        print("CD-ID - DELETING INTERESTS")
-        // Retrieve the UserInterest data from Core Data
-        let moc = DataController().managedObjectContext
-        let interestsFetch: NSFetchRequest<InterestCD> = InterestCD.fetchRequest()
-        
-        // Create an empty blobNotifications list in case the Core Data request fails
-        var interests = [InterestCD]()
-        do
-        {
-            interests = try moc.fetch(interestsFetch)
-        }
-        catch
-        {
-            CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: error.localizedDescription)
-            fatalError("CD-ID - INTERESTS RETRIEVE DELETE - Failed to fetch frames: \(error)")
-        }
-        
-        // Delete each object one at a time
-        for interest in interests
-        {
-            moc.delete(interest)
-        }
-        
-        // Save the changes to the interests
-        do
-        {
-            try moc.save()
-        }
-        catch
-        {
-            fatalError("CD-ID - INTERESTS SAVE UPDATES - Failure to save context: \(error)")
         }
     }
     

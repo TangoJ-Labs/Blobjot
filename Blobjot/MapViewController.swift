@@ -8,7 +8,6 @@
 
 import AWSLambda
 import AWSS3
-import FBSDKLoginKit
 import GoogleMaps
 import MobileCoreServices
 import GooglePlacePicker
@@ -21,7 +20,7 @@ protocol MapViewControllerDelegate
     func goToCamera()
 }
 
-class MapViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, UIScrollViewDelegate, GMSMapViewDelegate, GMSAutocompleteResultsViewControllerDelegate, FBSDKLoginButtonDelegate, AWSRequestDelegate, PeopleViewControllerDelegate, BlobAddViewControllerDelegate, HoleViewDelegate
+class MapViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, UIScrollViewDelegate, GMSMapViewDelegate, GMSAutocompleteResultsViewControllerDelegate, AWSRequestDelegate, HoleViewDelegate
 {
     // Add a delegate variable which the parent view controller can pass its own delegate instance to and have access to the protocol
     // (and have its own functions called that are listed in the protocol)
@@ -114,7 +113,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     var loginScreen: UIView!
     var loginBox: UIView!
     var loginButtonContainer: UIView!
-    var fbLoginButton: FBSDKLoginButton!
     var loginActivityIndicator: UIActivityIndicatorView!
     var loginProcessLabel: UILabel!
     
@@ -146,9 +144,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     let selectorBoxHeight: CGFloat = 40
     let selectorTypeBoxWidth: CGFloat = 210
     let selectorTypeBoxHeight: CGFloat = 30
-    
-    // VC for adding content to a new Blob
-    var addBlobVC: BlobAddViewController!
     
     // View controller variables for temporary user settings and view controls
     var previewStartingScrollPosition: CGFloat = 0
@@ -208,8 +203,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
 //    var defaultBlobUser: User!
     
     // Store the local class variables so that information can be passed from background processes if needed
-    var interestsVC: InterestsViewController?
-    var peopleVC: PeopleViewController?
     var tabBarControllerCustom: UITabBarController?
     
     // If the user is manually logging in, set the indicator for certain settings
@@ -686,8 +679,7 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
 //        previewCountCircleRight.addSubview(previewCountLabelRight)
 //        
 //        
-//        // Create the login screen, login box, and facebook login button
-//        // Create the login screen and facebook login button
+//        // Create the login screen, login box, and digits login button
 //        loginScreen = UIView(frame: CGRect(x: 0, y: 0, width: viewContainer.frame.width, height: viewContainer.frame.height))
 //        loginScreen.backgroundColor = Constants.Colors.standardBackgroundGrayTransparent
 //        
@@ -1164,14 +1156,10 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
-    // Log out the user from the app and facebook
+    // Log out the user from the app and digits
     func tapLogoutButton(_ sender: UITapGestureRecognizer)
     {
         print("TRYING TO LOG OUT THE USER")
-        
-        // Log out the user from Facebook
-        let loginManager = FBSDKLoginManager()
-        loginManager.logOut()
         
         // Log out the user from the app
         Constants.Data.currentUser = User()
@@ -1303,209 +1291,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
         CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
-    func tapMenuPeopleButton(_ gesture: UITapGestureRecognizer)
-    {
-        // Prepare both of the Table View Controllers and add Tab Bar Items to them
-        peopleVC = PeopleViewController()
-        peopleVC!.peopleViewDelegate = self
-        
-        // Create the Back Button Item and Title View for the Tab View
-        // These settings will be passed up to the assigned Navigation Controller for the Tab View Controller
-        let backButtonItem = UIBarButtonItem(title: "\u{2190}",
-                                             style: UIBarButtonItemStyle.plain,
-                                             target: self,
-                                             action: #selector(MapViewController.popViewController(_:)))
-        backButtonItem.tintColor = Constants.Colors.colorTextNavBar
-        
-        // Assign the created Nav Bar settings to the Tab Bar Controller
-        peopleVC!.navigationItem.setLeftBarButton(backButtonItem, animated: true)
-        
-        let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
-        let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
-        ncTitleText.text = "People"
-        ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 14)
-        ncTitleText.textColor = Constants.Colors.colorTextNavBar
-        ncTitleText.textAlignment = .center
-        ncTitle.addSubview(ncTitleText)
-        peopleVC!.navigationItem.titleView = ncTitle
-        
-        if let navController = self.navigationController
-        {
-            navController.pushViewController(peopleVC!, animated: true)
-        }
-        
-        // Save an action in Core Data
-        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
-    }
-    
-    func tapMenuInterestsButton(_ gesture: UITapGestureRecognizer)
-    {
-        // Prepare both of the Table View Controllers and add Tab Bar Items to them
-        interestsVC = InterestsViewController()
-        //interestsVC!.peopleViewDelegate = self
-        
-        // Create the Back Button Item and Title View for the Tab View
-        // These settings will be passed up to the assigned Navigation Controller for the Tab View Controller
-        let backButtonItem = UIBarButtonItem(title: "\u{2190}",
-                                             style: UIBarButtonItemStyle.plain,
-                                             target: self,
-                                             action: #selector(MapViewController.popViewController(_:)))
-        backButtonItem.tintColor = Constants.Colors.colorTextNavBar
-        
-        // Assign the created Nav Bar settings to the Tab Bar Controller
-        interestsVC!.navigationItem.setLeftBarButton(backButtonItem, animated: true)
-        
-        let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
-        let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
-        ncTitleText.text = "Interests"
-        ncTitleText.font = UIFont(name: Constants.Strings.fontRegular, size: 14)
-        ncTitleText.textColor = Constants.Colors.colorTextNavBar
-        ncTitleText.textAlignment = .center
-        ncTitle.addSubview(ncTitleText)
-        interestsVC!.navigationItem.titleView = ncTitle
-        
-        if let navController = self.navigationController
-        {
-            navController.pushViewController(interestsVC!, animated: true)
-        }
-        
-        // Save an action in Core Data
-        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
-    }
-    
-    
-    // If the Add Button is tapped, check to see if the addingBlob indicator has already been activated (true)
-    // If not, hide the normal buttons and just show the buttons needed for the Add Blob action (gray circle, slider, etc.)
-    // If so, create a Nav Controller and a new BlobAddViewController and load the Nav Controller and pass the new Blob data
-    func tapAddView(_ gesture: UITapGestureRecognizer)
-    {
-        if addingBlob
-        {
-            // If the addingBlob indicator is true, the user has already started the Add Blob process and has chosen a location and radius for the Blob
-            // Instantiate the BlobAddViewController and a Nav Controller and present the View Controller
-            
-            self.bringAddBlobViewControllerTopOfStack(true)
-        }
-        else
-        {
-            // If the addingBlob indicator is false, the user is just starting the Add Blob process, so
-            // hide the buttons not needed and show the Cancel Add Button
-            
-            // Change the add blob indicator to true before calling adjustMapViewCamera
-            addingBlob = true
-            
-            buttonAddImage.image = UIImage(named: Constants.Strings.iconStringMapViewCheck)
-            
-            buttonCancelAdd.isHidden = false
-            buttonAddToggleType.isHidden = false
-            selectorCircle.isHidden = false
-            selectorSlider.isHidden = false
-            
-            // Adjust the Map Camera so that the map cannot be viewed at an angle while adding a new Blob
-            // The circle remains a circle when the map is angled, which is not a true representation of the Blob
-            // that will be added, so the mapView is kept unangled while a Blob is being added
-            adjustMapViewCamera()
-            
-            // If the user's location is within camera view, default to Origin Blob
-            if let userLocation = mapView.myLocation
-            {
-                let mapViewableArea = GMSCoordinateBounds(coordinate: mapView.projection.visibleRegion().farRight, coordinate: mapView.projection.visibleRegion().nearLeft)
-                if mapViewableArea.contains(userLocation.coordinate)
-                {
-                    // The user's location is within view, so change the Blob type to Origin
-                    selectorCircle.backgroundColor = Constants.Colors.blobPurpleMinorTransparent
-                    selectorSlider.tintColor = Constants.Colors.blobPurpleDark
-                    selectorSlider.thumbTintColor = Constants.Colors.blobPurpleDark
-                    addBlobType = Constants.BlobType.origin
-                    
-                    // Move to the user's location and set the zoom to the minimum add Blob zoom level
-                    mapView.animate(toLocation: userLocation.coordinate)
-                    mapView.animate(toZoom: Constants.Settings.mapViewAddBlobMinZoom)
-                    
-                    self.showSelectorTypeMessageBox(Constants.Strings.addBlobSelectorTypeBoxOrigin)
-                }
-                else
-                {
-                    // The user's location is NOT within view, so ensure the Blob type is Location
-                    selectorCircle.backgroundColor = Constants.Colors.blobYellowMinorTransparent
-                    selectorSlider.tintColor = Constants.Colors.blobYellowDark
-                    selectorSlider.thumbTintColor = Constants.Colors.blobYellowDark
-                    addBlobType = Constants.BlobType.location
-                    
-                    self.showSelectorTypeMessageBox(Constants.Strings.addBlobSelectorTypeBoxLocation)
-                }
-            }
-            else
-            {
-                // The user's location is NOT within view, so ensure the Blob type is Location
-                selectorCircle.backgroundColor = Constants.Colors.blobYellowMinorTransparent
-                selectorSlider.tintColor = Constants.Colors.blobYellowDark
-                selectorSlider.thumbTintColor = Constants.Colors.blobYellowDark
-                addBlobType = Constants.BlobType.location
-                
-                self.showSelectorTypeMessageBox(Constants.Strings.addBlobSelectorTypeBoxLocation)
-            }
-        }
-        
-        // Save an action in Core Data
-        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
-    }
-    
-    // If the Cancel Add Blob button is tapped, show the buttons that were hidden and hide the elements used in the add blob process
-    func tapCancelAddView(_ gesture: UITapGestureRecognizer)
-    {
-        self.hideSelectorMessageBox()
-        self.hideSelectorTypeMessageBox()
-        
-        buttonAddImage.image = UIImage(named: Constants.Strings.iconStringBlobAdd)
-        
-        buttonCancelAdd.isHidden = true
-        buttonAddToggleType.isHidden = true
-        selectorCircle.isHidden = true
-        selectorSlider.isHidden = true
-        
-        // Change the add blob indicator back to false efore calling adjustMapViewCamera
-        addingBlob = false
-        
-        // Adjust the Map Camera back to allow the map can be viewed at an angle
-        adjustMapViewCamera()
-        
-        // Save an action in Core Data
-        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
-    }
-    
-    // If the Toggle Type button is tapped, change the Blob Type of the added Blob
-    func tapAddToggleTypeView(_ gesture: UITapGestureRecognizer)
-    {
-        // Toggle the BlobType and change the toggle button image
-        if addBlobType == Constants.BlobType.origin
-        {
-            selectorCircle.backgroundColor = Constants.Colors.blobYellowMinorTransparent
-            selectorSlider.tintColor = Constants.Colors.blobYellowDark
-            selectorSlider.thumbTintColor = Constants.Colors.blobYellowDark
-            addBlobType = Constants.BlobType.location
-            
-            self.showSelectorTypeMessageBox(Constants.Strings.addBlobSelectorTypeBoxLocation)
-        }
-        else
-        {
-            // Move the mapView to the user's location
-            if let userLocation = mapView.myLocation
-            {
-                // Change the Blob type to Origin
-                selectorCircle.backgroundColor = Constants.Colors.blobPurpleMinorTransparent
-                selectorSlider.tintColor = Constants.Colors.blobPurpleDark
-                selectorSlider.thumbTintColor = Constants.Colors.blobPurpleDark
-                addBlobType = Constants.BlobType.origin
-                
-                self.showSelectorTypeMessageBox(Constants.Strings.addBlobSelectorTypeBoxOrigin)
-                
-                // Move to the user's location and set the zoom to the minimum add Blob zoom level
-                mapView.animate(toLocation: userLocation.coordinate)
-                mapView.animate(toZoom: Constants.Settings.mapViewAddBlobMinZoom)
-            }
-        }
-    }
     
 // *COMPLETE****** Decide how the user should be tracked without making the interface annoying
     // If the Track User button is tapped, the track functionality is toggled
@@ -2438,12 +2223,12 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                         }
                         else
                         {
-                            AWSPrepRequest(requestToCall: FBGetUserProfileData(user: user, downloadImage: true), delegate: self as AWSRequestDelegate).prepRequest()
+                            AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: user.userID, forPreviewData: true), delegate: self as AWSRequestDelegate).prepRequest()
                         }
                     }
                     else
                     {
-                        AWSPrepRequest(requestToCall: FBGetUserProfileData(user: user, downloadImage: true), delegate: self as AWSRequestDelegate).prepRequest()
+                        AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: user.userID, forPreviewData: true), delegate: self as AWSRequestDelegate).prepRequest()
                     }
                     
                     break loopUserCheck
@@ -2702,61 +2487,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     }
     
     
-    // MARK: FBSDK METHODS
-    
-    func loginButton(_ loginButton: FBSDKLoginButton!, didCompleteWith result: FBSDKLoginManagerLoginResult!, error: Error!)
-    {
-        if ((error) != nil)
-        {
-            print("MVC - FBSDK ERROR: \(error)")
-            CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: error.localizedDescription)
-        }
-        else if result.isCancelled
-        {
-            print("MVC - FBSDK IS CANCELLED: \(result.description)")
-            CoreDataFunctions().logErrorSave(function: NSStringFromClass(type(of: self)), errorString: result.debugDescription)
-        }
-        else
-        {
-            // Show the logging in indicator and label
-            loginActivityIndicator.startAnimating()
-            loginBox.addSubview(loginProcessLabel)
-            
-            // Set the new login indicator for certain settings
-            self.newLogin = true
-            
-            // Now that the Facebook token has been retrieved, get the Cognito IdentityID
-            print("MVC - FBSDK TOKEN: \(FBSDKAccessToken.current())")
-            AWSPrepRequest(requestToCall: AWSLoginUser(secondaryAwsRequestObject: nil), delegate: self as AWSRequestDelegate).prepRequest()
-            
-            // Call APNS registration again (need to also log in to AWS SNS, but do this first)
-            let notificationTypes: UIUserNotificationType = [UIUserNotificationType.alert, UIUserNotificationType.badge, UIUserNotificationType.sound]
-            let pushNotificationSettings = UIUserNotificationSettings(types: notificationTypes, categories: nil)
-            UIApplication.shared.registerUserNotificationSettings(pushNotificationSettings)
-            UIApplication.shared.registerForRemoteNotifications()
-        }
-    }
-    
-    func loginButtonWillLogin(_ loginButton: FBSDKLoginButton!) -> Bool
-    {
-        // Save an action in Core Data
-        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
-        
-        return true
-    }
-    
-    func loginButtonDidLogOut(_ loginButton: FBSDKLoginButton!)
-    {
-        print("MVC - FBSDK DID LOG OUT: \(loginButton)")
-        
-        Constants.credentialsProvider.clearCredentials()
-        Constants.credentialsProvider.clearKeychain()
-        
-        // Save an action in Core Data
-        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
-    }
-    
-    
     // MARK: CUSTOM FUNCTIONS
     
     // Check to see if the Preview Box is low enough to be visible
@@ -2799,71 +2529,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                 self.refreshBlobs(currentLocation)
             }
         }
-    }
-    
-    func bringAddBlobViewControllerTopOfStack(_ newVC: Bool)
-    {
-        if newVC || addBlobVC == nil
-        {
-            addBlobVC = BlobAddViewController()
-            addBlobVC!.blobAddViewDelegate = self
-            addBlobVC!.blobCoords = mapView.camera.target
-            addBlobVC!.blobType = self.addBlobType
-//            addBlobVC!.mapZoom = mapView.camera.zoom
-            
-            // Create a Nav Bar Back Button and Title
-            let backButtonItem = UIBarButtonItem(title: "CANCEL",
-                                                 style: UIBarButtonItemStyle.plain,
-                                                 target: self,
-                                                 action: #selector(self.popViewController(_:)))
-            backButtonItem.tintColor = Constants.Colors.colorTextNavBar
-            
-            let ncTitle = UIView(frame: CGRect(x: screenSize.width / 2 - 50, y: 10, width: 100, height: 40))
-            let ncTitleText = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
-            ncTitleText.text = "Create Blob"
-            ncTitleText.textColor = Constants.Colors.colorTextNavBar
-            ncTitleText.textAlignment = .center
-            ncTitle.addSubview(ncTitleText)
-            
-            // Calculate the slider point location and extrapolate the Blob radius based on the map zoom
-            let sliderPoint = CGPoint(x: (mapView.frame.width / 2) + (selectorCircle.frame.width / 2), y: mapView.frame.height / 2)
-            let point = self.mapView.projection.coordinate(for: sliderPoint)
-            
-            let mapCenterLocation = CLLocation(latitude: mapView.camera.target.latitude, longitude: mapView.camera.target.longitude)
-            let sliderLocation = CLLocation(latitude: point.latitude, longitude: point.longitude)
-            
-            // Pass the Blob Radius to the View Controller
-            let blobRadius = mapCenterLocation.distance(from: sliderLocation)
-            addBlobVC!.blobRadius = blobRadius
-            addBlobVC.mapZoom = UtilityFunctions().mapZoomForBlobSize(Float(blobRadius))
-            addBlobVC!.navigationItem.setLeftBarButton(backButtonItem, animated: true)
-            addBlobVC!.navigationItem.titleView = ncTitle
-        }
-        
-        if let navController = self.navigationController
-        {
-            navController.pushViewController(addBlobVC!, animated: true)
-        }
-        
-        // Reset the button settings and remove the elements used in the Add Blob Process
-        buttonAddImage.image = UIImage(named: Constants.Strings.iconStringBlobAdd)
-        
-        hideSelectorMessageBox()
-        hideSelectorTypeMessageBox()
-        
-        buttonCancelAdd.isHidden = true
-        buttonAddToggleType.isHidden = true
-        selectorCircle.isHidden = true
-        selectorSlider.isHidden = true
-        
-        // Change the add blob indicator back to false efore calling adjustMapViewCamera
-        addingBlob = false
-        
-        // Adjust the Map Camera back to allow the map can be viewed at an angle
-        adjustMapViewCamera()
-        
-        // Save an action in Core Data
-        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
     }
     
     // The function to lower the previewBox
@@ -3224,6 +2889,35 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
     // MARK: OTHER DELEGATE METHODS
     func logoutUser()
     {
+        // Show the logging in indicator and label
+        loginActivityIndicator.startAnimating()
+        loginBox.addSubview(loginProcessLabel)
+        
+        // Set the new login indicator for certain settings
+        self.newLogin = true
+        
+        // Now that the Facebook token has been retrieved, get the Cognito IdentityID
+//        print("MVC - DIGITS ID: \()")
+        AWSPrepRequest(requestToCall: AWSLoginUser(secondaryAwsRequestObject: nil), delegate: self as AWSRequestDelegate).prepRequest()
+        
+        // Call APNS registration again (need to also log in to AWS SNS, but do this first)
+        let notificationTypes: UIUserNotificationType = [UIUserNotificationType.alert, UIUserNotificationType.badge, UIUserNotificationType.sound]
+        let pushNotificationSettings = UIUserNotificationSettings(types: notificationTypes, categories: nil)
+        UIApplication.shared.registerUserNotificationSettings(pushNotificationSettings)
+        UIApplication.shared.registerForRemoteNotifications()
+        
+        // Clear the cognito credentials provider
+        Constants.credentialsProvider.clearCredentials()
+        Constants.credentialsProvider.clearKeychain()
+        
+        // Check the login again to show the login screen
+        refreshLogin()
+        
+        // Save an action in Core Data
+        CoreDataFunctions().logUserflowSave(viewController: NSStringFromClass(type(of: self)), action: #function.description)
+    }
+    func refreshLogin()
+    {
         // The logged in username has been cleared, so run the login process again to show the login screen
         AWSPrepRequest(requestToCall: AWSLoginUser(secondaryAwsRequestObject: nil), delegate: self as AWSRequestDelegate).prepRequest()
     }
@@ -3478,23 +3172,6 @@ class MapViewController: UIViewController, UICollectionViewDataSource, UICollect
                         // Show the error message
                         let alertController = UtilityFunctions().createAlertOkView("Network Error", message: "I'm sorry, you appear to be having network issues.  Please try again.")
                         self.present(alertController, animated: true, completion: nil)
-                    }
-                case _ as FBGetUserProfileData:
-                    // Do not distinguish between success and failure for this class - both need to have the userList updated
-                    // Refresh the collection view
-                    self.refreshLocationBlobsCollectionView()
-                    
-                    // This method is called from within AWSGetSingleUserData
-                    // Refresh the user elements
-                    self.refreshCurrentUserElements()
-                    
-                    // Update the preview data
-                    self.refreshPreviewCollectionView()
-                    
-                    // Refresh child VCs
-                    if self.blobVC != nil
-                    {
-                        self.blobVC.refreshBlobViewTable()
                     }
                 default:
                     print("MVC-DEFAULT: THERE WAS AN ISSUE WITH THE DATA RETURNED FROM AWS")

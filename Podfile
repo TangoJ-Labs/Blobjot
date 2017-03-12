@@ -21,9 +21,9 @@ target 'Blobjot' do
   pod 'GooglePlaces'
   pod 'GooglePlacePicker'
 
-  pod 'FBSDKCoreKit'
-  pod 'FBSDKLoginKit'
-  pod 'FBSDKShareKit'
+  #pod 'FBSDKCoreKit'
+  #pod 'FBSDKLoginKit'
+  #pod 'FBSDKShareKit'
 
   target 'BlobjotTests' do
     inherit! :search_paths

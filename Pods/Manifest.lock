@@ -12,12 +12,6 @@ PODS:
   - Bolts/AppLinks (1.8.4):
     - Bolts/Tasks
   - Bolts/Tasks (1.8.4)
-  - FBSDKCoreKit (4.17.0):
-    - Bolts (~> 1.7)
-  - FBSDKLoginKit (4.17.0):
-    - FBSDKCoreKit
-  - FBSDKShareKit (4.17.0):
-    - FBSDKCoreKit
   - GoogleMaps (2.1.1):
     - GoogleMaps/Maps (= 2.1.1)
   - GoogleMaps/Base (2.1.1)
@@ -34,9 +28,6 @@ DEPENDENCIES:
   - AWSLambda (= 2.4.7)
   - AWSS3 (= 2.4.7)
   - Bolts
-  - FBSDKCoreKit
-  - FBSDKLoginKit
-  - FBSDKShareKit
   - GoogleMaps
   - GooglePlacePicker
   - GooglePlaces
@@ -47,13 +38,10 @@ SPEC CHECKSUMS:
   AWSLambda: 10800dea35f48dc51164730b1c3d6b1a92a17487
   AWSS3: 0f3c8ed11e04cd78cf86ed396c06330ab142db7a
   Bolts: 8a7995239dbe724f9cba2248b766d48b7ebdd322
-  FBSDKCoreKit: 30a21d2d7b92984b3d80497113433c00824c35e9
-  FBSDKLoginKit: 42b7129ac0373ca99eaf4cbebf4d07bd42371f59
-  FBSDKShareKit: 9b573d03fbee36cbaf42d5bb1f2bc019e0d72347
   GoogleMaps: a5b5bbe47734e2443bde781a6aa64e69fdb6d785
   GooglePlacePicker: 665f39f931f2df32f9dd3fcc45f7e8abf71e535c
   GooglePlaces: 35636d86e5020cba3856eb988c09a5491de0a65a
 
-PODFILE CHECKSUM: f6e0d63aa61b7cc332d8ae1c05e4bd0cdb7be0ca
+PODFILE CHECKSUM: 8e90f38cd98ec3c18bca7a171ed01a211a8b7eae
 
 COCOAPODS: 1.0.1

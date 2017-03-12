@@ -16,7 +16,7 @@ extension CurrentUser {
         return NSFetchRequest<CurrentUser>(entityName: "CurrentUser");
     }
 
-    @NSManaged public var facebookID: String?
+    @NSManaged public var digitsID: String?
     @NSManaged public var userID: String?
     @NSManaged public var userImage: NSData?
     @NSManaged public var userName: String?

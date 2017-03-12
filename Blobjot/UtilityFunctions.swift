@@ -8,7 +8,6 @@
 
 import AWSCognito
 import Darwin
-import FBSDKLoginKit
 import GoogleMaps
 import GooglePlaces
 import UIKit
@@ -38,9 +37,9 @@ class UtilityFunctions: AWSRequestDelegate
                 {
                     currentUser.userID  = userID
                 }
-                if let facebookID = currentUserArray[0].facebookID
+                if let digitsID = currentUserArray[0].digitsID
                 {
-                    currentUser.userName  = facebookID
+                    currentUser.digitsID  = digitsID
                 }
                 if let userName = currentUserArray[0].userName
                 {
@@ -56,7 +55,7 @@ class UtilityFunctions: AWSRequestDelegate
                 
                 // Request the Facebook Info (Name and Image)
                 // Always request the FB data to ensure the latest is used
-                AWSPrepRequest(requestToCall: FBGetUserProfileData(user: currentUser, downloadImage: true), delegate: self as AWSRequestDelegate).prepRequest()
+                AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: currentUser.userID, forPreviewData: false), delegate: self as AWSRequestDelegate).prepRequest()
             }
             
             let savedUsers = CoreDataFunctions().userRetrieve()
@@ -66,7 +65,7 @@ class UtilityFunctions: AWSRequestDelegate
                 var userObjectExists = false
                 loopUserObjectCheck: for userObject in Constants.Data.userObjects
                 {
-                    if userObject.userID == sUser.userID || userObject.facebookID == sUser.facebookID
+                    if userObject.userID == sUser.userID || userObject.digitsID == sUser.digitsID
                     {
                         userObjectExists = true
                         break loopUserObjectCheck
@@ -79,7 +78,7 @@ class UtilityFunctions: AWSRequestDelegate
                 
                 // Request the Facebook Info (Name and Image)
                 // Always request the FB data to ensure the latest is used
-                AWSPrepRequest(requestToCall: FBGetUserProfileData(user: sUser, downloadImage: true), delegate: self as AWSRequestDelegate).prepRequest()
+                AWSPrepRequest(requestToCall: AWSGetSingleUserData(userID: sUser.userID, forPreviewData: false), delegate: self as AWSRequestDelegate).prepRequest()
             }
         }
     }
@@ -392,7 +391,7 @@ class UtilityFunctions: AWSRequestDelegate
                 // Process the return data based on the method used
                 switch objectType
                 {
-                case _ as FBGetUserProfileData:
+                case _ as AWSGetSingleUserData:
                     // Updates to the UserData are commanded from FBGetUserProfileData, so no action is needed
                     print("UF-FBGUPD RETURN")
                 default:

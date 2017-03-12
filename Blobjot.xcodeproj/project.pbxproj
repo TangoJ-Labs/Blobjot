@@ -13,13 +13,8 @@
 		B80C56311D51126800C4E683 /* Blob.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56301D51126800C4E683 /* Blob.swift */; };
 		B80C56341D5112F100C4E683 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56331D5112F100C4E683 /* Constants.swift */; };
 		B80C56361D5113B900C4E683 /* MapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56351D5113B900C4E683 /* MapViewController.swift */; };
-		B80C56491D51158000C4E683 /* BlobAddMediaViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56391D51158000C4E683 /* BlobAddMediaViewController.swift */; };
-		B80C564C1D51158000C4E683 /* BlobAddTextViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C563C1D51158000C4E683 /* BlobAddTextViewController.swift */; };
-		B80C564E1D51158000C4E683 /* BlobAddViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C563E1D51158000C4E683 /* BlobAddViewController.swift */; };
 		B80C56531D51158000C4E683 /* BlobTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56431D51158000C4E683 /* BlobTableViewController.swift */; };
 		B80C56541D51158000C4E683 /* MapViewLocationBlobsCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56441D51158000C4E683 /* MapViewLocationBlobsCell.swift */; };
-		B80C56551D51158000C4E683 /* PeopleTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56451D51158000C4E683 /* PeopleTableViewCell.swift */; };
-		B80C56561D51158000C4E683 /* PeopleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56461D51158000C4E683 /* PeopleViewController.swift */; };
 		B80C565A1D5116E000C4E683 /* defaultMedia.png in Resources */ = {isa = PBXBuildFile; fileRef = B80C56581D5116E000C4E683 /* defaultMedia.png */; };
 		B80C56611D5183B100C4E683 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80C56601D5183B100C4E683 /* User.swift */; };
 		B80D17751D90E1C90032B0D8 /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80D17741D90E1C90032B0D8 /* LoginViewController.swift */; };
@@ -50,20 +45,15 @@
 		B84DD7C01DC67E4F0076B9DD /* MV_search_combo_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = B84DD7B01DC67E4F0076B9DD /* MV_search_combo_icon.png */; };
 		B84DD7C11DC67E4F0076B9DD /* MV_search_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = B84DD7B11DC67E4F0076B9DD /* MV_search_icon.png */; };
 		B84DD7C41DC67E4F0076B9DD /* BLOBJOT_purple.png in Resources */ = {isa = PBXBuildFile; fileRef = B84DD7B41DC67E4F0076B9DD /* BLOBJOT_purple.png */; };
-		B8541B731DB7D49000867D82 /* CustomClasses.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8541B721DB7D48D00867D82 /* CustomClasses.swift */; };
 		B8541B751DBBD0B900867D82 /* BlobContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8541B741DBBD0B500867D82 /* BlobContent.swift */; };
 		B85FDE891D7DC2BA002A8FC7 /* CustomIdentityProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B85FDE881D7DC2BA002A8FC7 /* CustomIdentityProvider.swift */; };
 		B86407051D7B0E720084D6EF /* DataController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B86407041D7B0E710084D6EF /* DataController.swift */; };
-		B86407081D7B13EB0084D6EF /* DataModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = B86407061D7B13EB0084D6EF /* DataModel.xcdatamodeld */; };
 		B864070D1D7B14A40084D6EF /* BlobNotifications+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B86407091D7B14A40084D6EF /* BlobNotifications+CoreDataProperties.swift */; };
 		B864070E1D7B14A40084D6EF /* BlobNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = B864070A1D7B14A40084D6EF /* BlobNotification.swift */; };
 		B86A06061E3B792D006086EF /* InterestsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B86A06051E3B792D006086EF /* InterestsViewController.swift */; };
 		B86A06081E3B7B02006086EF /* InterestsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B86A06071E3B7B02006086EF /* InterestsTableViewCell.swift */; };
 		B86A060A1E3D09BB006086EF /* Interest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B86A06091E3D09BB006086EF /* Interest.swift */; };
-		B86A06121E403695006086EF /* InterestCD+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = B86A06101E403695006086EF /* InterestCD+CoreDataClass.swift */; };
-		B86A06131E403695006086EF /* InterestCD+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = B86A06111E403695006086EF /* InterestCD+CoreDataProperties.swift */; };
 		B86A06151E4604CE006086EF /* CameraViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B86A06141E4604CE006086EF /* CameraViewController.swift */; };
-		B87273011E5C6C2400679E78 /* CameraCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B87273001E5C6C2400679E78 /* CameraCollectionViewCell.swift */; };
 		B87273051E635EEF00679E78 /* ImageRingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B87273041E635EEF00679E78 /* ImageRingView.swift */; };
 		B877708A1E17FD620041ECD6 /* MapViewPreviewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B87770891E17FD620041ECD6 /* MapViewPreviewCell.swift */; };
 		B877B5811E30E431007151EE /* BlobContentCD+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = B877B57E1E30E431007151EE /* BlobContentCD+CoreDataClass.swift */; };
@@ -74,9 +64,6 @@
 		B881319D1D510EEE00021C4B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B881319C1D510EEE00021C4B /* Assets.xcassets */; };
 		B88131AB1D510EEF00021C4B /* BlobjotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88131AA1D510EEF00021C4B /* BlobjotTests.swift */; };
 		B88131B61D510EEF00021C4B /* BlobjotUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88131B51D510EEF00021C4B /* BlobjotUITests.swift */; };
-		B88884021D52D824001EE249 /* FBSDKLoginKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B88883FF1D52D824001EE249 /* FBSDKLoginKit.framework */; };
-		B88884031D52D824001EE249 /* FBSDKShareKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B88884001D52D824001EE249 /* FBSDKShareKit.framework */; };
-		B88884041D52D824001EE249 /* FBSDKCoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B88884011D52D824001EE249 /* FBSDKCoreKit.framework */; };
 		B88884081D52DFD7001EE249 /* Bolts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B88884071D52DFD7001EE249 /* Bolts.framework */; };
 		B88DFD881DBD50DF00255BA5 /* BlobTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88DFD871DBD50DF00255BA5 /* BlobTableViewCell.swift */; };
 		B88DFD8A1DBE9F9200255BA5 /* Houston-Downtown2.gpx in Resources */ = {isa = PBXBuildFile; fileRef = B88DFD891DBE9F9200255BA5 /* Houston-Downtown2.gpx */; };
@@ -115,6 +102,7 @@
 		B8B1096D1DEE90AF00EA3B41 /* PROFILE_DEFAULT.png in Resources */ = {isa = PBXBuildFile; fileRef = B8B1096C1DEE90AF00EA3B41 /* PROFILE_DEFAULT.png */; };
 		B8B1096F1DEE920500EA3B41 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = B8B1096E1DEE920500EA3B41 /* Default-568h@2x.png */; };
 		B8B533A51DC9A50200B9ACC1 /* HoleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B533A41DC9A50200B9ACC1 /* HoleView.swift */; };
+		B8C0470A1E75721A0070EF43 /* DataModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = B8C046FF1E75721A0070EF43 /* DataModel.xcdatamodeld */; };
 		B8C8C59D1D57544C004D773E /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C8C59C1D57544C004D773E /* Extensions.swift */; };
 		B8DD48691E684A7300A1AC0F /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8DD48681E684A7300A1AC0F /* MainViewController.swift */; };
 		B8E88EFC1E46405F00F3AAEE /* VT323-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B8E88EF41E46405F00F3AAEE /* VT323-Regular.ttf */; };
@@ -170,13 +158,8 @@
 		B80C56321D5112C100C4E683 /* Houston-Downtown.gpx */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = "Houston-Downtown.gpx"; path = "Blobjot/Houston-Downtown.gpx"; sourceTree = "<group>"; };
 		B80C56331D5112F100C4E683 /* Constants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = Constants.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		B80C56351D5113B900C4E683 /* MapViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapViewController.swift; sourceTree = "<group>"; };
-		B80C56391D51158000C4E683 /* BlobAddMediaViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlobAddMediaViewController.swift; sourceTree = "<group>"; };
-		B80C563C1D51158000C4E683 /* BlobAddTextViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlobAddTextViewController.swift; sourceTree = "<group>"; };
-		B80C563E1D51158000C4E683 /* BlobAddViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlobAddViewController.swift; sourceTree = "<group>"; };
 		B80C56431D51158000C4E683 /* BlobTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlobTableViewController.swift; sourceTree = "<group>"; };
 		B80C56441D51158000C4E683 /* MapViewLocationBlobsCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapViewLocationBlobsCell.swift; sourceTree = "<group>"; };
-		B80C56451D51158000C4E683 /* PeopleTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PeopleTableViewCell.swift; sourceTree = "<group>"; };
-		B80C56461D51158000C4E683 /* PeopleViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PeopleViewController.swift; sourceTree = "<group>"; };
 		B80C56581D5116E000C4E683 /* defaultMedia.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = defaultMedia.png; sourceTree = "<group>"; };
 		B80C56601D5183B100C4E683 /* User.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		B80D17731D8DE21A0032B0D8 /* Blobjot.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = Blobjot.entitlements; path = Blobjot/Blobjot.entitlements; sourceTree = "<group>"; };
@@ -188,7 +171,6 @@
 		B82880251E0AD10A00B62676 /* MV_list_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MV_list_icon.png; sourceTree = "<group>"; };
 		B82880261E0AD10A00B62676 /* MV_list_icon@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "MV_list_icon@3x.png"; sourceTree = "<group>"; };
 		B82880291E0AD11800B62676 /* MV_list_icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "MV_list_icon@2x.png"; sourceTree = "<group>"; };
-		B828802B1E0C8C7000B62676 /* Blobjot_DataModel_1.5.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Blobjot_DataModel_1.5.xcdatamodel; sourceTree = "<group>"; };
 		B8312FCC1DB3D9AE00CFC715 /* Blobjot-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Blobjot-Bridging-Header.h"; sourceTree = "<group>"; };
 		B8312FCD1DB3D9AF00CFC715 /* BlobjotTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "BlobjotTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		B8312FCE1DB3D9AF00CFC715 /* BlobjotUITests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "BlobjotUITests-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -208,24 +190,17 @@
 		B84DD7B01DC67E4F0076B9DD /* MV_search_combo_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MV_search_combo_icon.png; sourceTree = "<group>"; };
 		B84DD7B11DC67E4F0076B9DD /* MV_search_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MV_search_icon.png; sourceTree = "<group>"; };
 		B84DD7B41DC67E4F0076B9DD /* BLOBJOT_purple.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = BLOBJOT_purple.png; sourceTree = "<group>"; };
-		B8541B721DB7D48D00867D82 /* CustomClasses.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomClasses.swift; sourceTree = "<group>"; };
 		B8541B741DBBD0B500867D82 /* BlobContent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlobContent.swift; sourceTree = "<group>"; };
 		B85FDE881D7DC2BA002A8FC7 /* CustomIdentityProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomIdentityProvider.swift; sourceTree = "<group>"; };
 		B86407041D7B0E710084D6EF /* DataController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataController.swift; sourceTree = "<group>"; };
-		B86407071D7B13EB0084D6EF /* DataModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = DataModel.xcdatamodel; sourceTree = "<group>"; };
 		B86407091D7B14A40084D6EF /* BlobNotifications+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "BlobNotifications+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		B864070A1D7B14A40084D6EF /* BlobNotification.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlobNotification.swift; sourceTree = "<group>"; };
 		B86A06051E3B792D006086EF /* InterestsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InterestsViewController.swift; sourceTree = "<group>"; };
 		B86A06071E3B7B02006086EF /* InterestsTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InterestsTableViewCell.swift; sourceTree = "<group>"; };
 		B86A06091E3D09BB006086EF /* Interest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Interest.swift; sourceTree = "<group>"; };
-		B86A060B1E3D61B9006086EF /* Blobjot_DataModel_2.1.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Blobjot_DataModel_2.1.xcdatamodel; sourceTree = "<group>"; };
-		B86A06101E403695006086EF /* InterestCD+CoreDataClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "InterestCD+CoreDataClass.swift"; path = "../InterestCD+CoreDataClass.swift"; sourceTree = "<group>"; };
-		B86A06111E403695006086EF /* InterestCD+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "InterestCD+CoreDataProperties.swift"; path = "../InterestCD+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		B86A06141E4604CE006086EF /* CameraViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraViewController.swift; sourceTree = "<group>"; };
-		B87273001E5C6C2400679E78 /* CameraCollectionViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraCollectionViewCell.swift; sourceTree = "<group>"; };
 		B87273041E635EEF00679E78 /* ImageRingView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageRingView.swift; sourceTree = "<group>"; };
 		B87770891E17FD620041ECD6 /* MapViewPreviewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapViewPreviewCell.swift; sourceTree = "<group>"; };
-		B877B57C1E30E2CF007151EE /* Blobjot_DataModel_2.0.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Blobjot_DataModel_2.0.xcdatamodel; sourceTree = "<group>"; };
 		B877B57E1E30E431007151EE /* BlobContentCD+CoreDataClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "BlobContentCD+CoreDataClass.swift"; path = "../BlobContentCD+CoreDataClass.swift"; sourceTree = "<group>"; };
 		B877B57F1E30E431007151EE /* BlobContentCD+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "BlobContentCD+CoreDataProperties.swift"; path = "../BlobContentCD+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		B877B5831E30E471007151EE /* BlobCD+CoreDataClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "BlobCD+CoreDataClass.swift"; sourceTree = "<group>"; };
@@ -240,26 +215,18 @@
 		B88131B11D510EEF00021C4B /* Blobjot.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Blobjot.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B88131B51D510EEF00021C4B /* BlobjotUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlobjotUITests.swift; sourceTree = "<group>"; };
 		B88131B71D510EEF00021C4B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		B88883FF1D52D824001EE249 /* FBSDKLoginKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = FBSDKLoginKit.framework; sourceTree = "<group>"; };
-		B88884001D52D824001EE249 /* FBSDKShareKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = FBSDKShareKit.framework; sourceTree = "<group>"; };
-		B88884011D52D824001EE249 /* FBSDKCoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = FBSDKCoreKit.framework; sourceTree = "<group>"; };
 		B88884071D52DFD7001EE249 /* Bolts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Bolts.framework; path = "../../../Downloads/FacebookSDKs-iOS-4.14.0/Bolts.framework"; sourceTree = "<group>"; };
 		B88DFD871DBD50DF00255BA5 /* BlobTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlobTableViewCell.swift; sourceTree = "<group>"; };
 		B88DFD891DBE9F9200255BA5 /* Houston-Downtown2.gpx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = "Houston-Downtown2.gpx"; sourceTree = "<group>"; };
 		B8B108F01DCB673700EA3B41 /* CoreDataFunctions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CoreDataFunctions.swift; path = ../CoreDataFunctions.swift; sourceTree = "<group>"; };
-		B8B108F21DCB6FDC00EA3B41 /* Blobjot_DataModel_1.0.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Blobjot_DataModel_1.0.xcdatamodel; sourceTree = "<group>"; };
 		B8B108F31DCB718200EA3B41 /* LogError+CoreDataClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "LogError+CoreDataClass.swift"; path = "../LogError+CoreDataClass.swift"; sourceTree = "<group>"; };
 		B8B108F41DCB718200EA3B41 /* LogError+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "LogError+CoreDataProperties.swift"; path = "../LogError+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		B8B108F51DCB718200EA3B41 /* LogUserflow+CoreDataClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "LogUserflow+CoreDataClass.swift"; path = "../LogUserflow+CoreDataClass.swift"; sourceTree = "<group>"; };
 		B8B108F61DCB718200EA3B41 /* LogUserflow+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "LogUserflow+CoreDataProperties.swift"; path = "../LogUserflow+CoreDataProperties.swift"; sourceTree = "<group>"; };
-		B8B108FC1DCFE29600EA3B41 /* Blobjot_DataModel_1.1.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Blobjot_DataModel_1.1.xcdatamodel; sourceTree = "<group>"; };
 		B8B108FF1DCFE52200EA3B41 /* UserCD+CoreDataClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "UserCD+CoreDataClass.swift"; path = "../UserCD+CoreDataClass.swift"; sourceTree = "<group>"; };
-		B8B109051DDB469500EA3B41 /* Blobjot_DataModel_1.2.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Blobjot_DataModel_1.2.xcdatamodel; sourceTree = "<group>"; };
 		B8B109071DDB46D100EA3B41 /* CurrentUser+CoreDataClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "CurrentUser+CoreDataClass.swift"; path = "../CurrentUser+CoreDataClass.swift"; sourceTree = "<group>"; };
 		B8B109081DDB46D100EA3B41 /* CurrentUser+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "CurrentUser+CoreDataProperties.swift"; path = "../CurrentUser+CoreDataProperties.swift"; sourceTree = "<group>"; };
-		B8B1090E1DE0AD7900EA3B41 /* Blobjot_DataModel_1.3.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Blobjot_DataModel_1.3.xcdatamodel; sourceTree = "<group>"; };
 		B8B109241DE0B06F00EA3B41 /* UserCD+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "UserCD+CoreDataProperties.swift"; path = "../UserCD+CoreDataProperties.swift"; sourceTree = "<group>"; };
-		B8B109271DE3D70600EA3B41 /* Blobjot_DataModel_1.4.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Blobjot_DataModel_1.4.xcdatamodel; sourceTree = "<group>"; };
 		B8B109281DE3D72600EA3B41 /* TutorialViews+CoreDataClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "TutorialViews+CoreDataClass.swift"; sourceTree = "<group>"; };
 		B8B109291DE3D72600EA3B41 /* TutorialViews+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "TutorialViews+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		B8B109301DED47B400EA3B41 /* Anywhere.gpx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = Anywhere.gpx; path = Blobjot/Anywhere.gpx; sourceTree = "<group>"; };
@@ -286,6 +253,16 @@
 		B8B1096C1DEE90AF00EA3B41 /* PROFILE_DEFAULT.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = PROFILE_DEFAULT.png; sourceTree = "<group>"; };
 		B8B1096E1DEE920500EA3B41 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		B8B533A41DC9A50200B9ACC1 /* HoleView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HoleView.swift; sourceTree = "<group>"; };
+		B8C047001E75721A0070EF43 /* Blobjot_DataModel_1.0.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Blobjot_DataModel_1.0.xcdatamodel; sourceTree = "<group>"; };
+		B8C047011E75721A0070EF43 /* Blobjot_DataModel_1.1.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Blobjot_DataModel_1.1.xcdatamodel; sourceTree = "<group>"; };
+		B8C047021E75721A0070EF43 /* Blobjot_DataModel_1.2.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Blobjot_DataModel_1.2.xcdatamodel; sourceTree = "<group>"; };
+		B8C047031E75721A0070EF43 /* Blobjot_DataModel_1.3.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Blobjot_DataModel_1.3.xcdatamodel; sourceTree = "<group>"; };
+		B8C047041E75721A0070EF43 /* Blobjot_DataModel_1.4.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Blobjot_DataModel_1.4.xcdatamodel; sourceTree = "<group>"; };
+		B8C047051E75721A0070EF43 /* Blobjot_DataModel_1.5.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Blobjot_DataModel_1.5.xcdatamodel; sourceTree = "<group>"; };
+		B8C047061E75721A0070EF43 /* Blobjot_DataModel_2.0.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Blobjot_DataModel_2.0.xcdatamodel; sourceTree = "<group>"; };
+		B8C047071E75721A0070EF43 /* Blobjot_DataModel_2.1.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Blobjot_DataModel_2.1.xcdatamodel; sourceTree = "<group>"; };
+		B8C047081E75721A0070EF43 /* Blobjot_DataModel_2.2.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Blobjot_DataModel_2.2.xcdatamodel; sourceTree = "<group>"; };
+		B8C047091E75721A0070EF43 /* DataModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = DataModel.xcdatamodel; sourceTree = "<group>"; };
 		B8C8C59C1D57544C004D773E /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		B8DD48681E684A7300A1AC0F /* MainViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
 		B8E88EF41E46405F00F3AAEE /* VT323-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "VT323-Regular.ttf"; sourceTree = "<group>"; };
@@ -309,9 +286,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				B88884081D52DFD7001EE249 /* Bolts.framework in Frameworks */,
-				B88884041D52D824001EE249 /* FBSDKCoreKit.framework in Frameworks */,
-				B88884021D52D824001EE249 /* FBSDKLoginKit.framework in Frameworks */,
-				B88884031D52D824001EE249 /* FBSDKShareKit.framework in Frameworks */,
 				F0218AC95EF86C2A827CA39C /* Pods_Blobjot.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -355,9 +329,6 @@
 				A65710BDE54CC40AE1E01696 /* Pods_BlobjotTests.framework */,
 				7AF6995A3720833401AD08F9 /* Pods_BlobjotUITests.framework */,
 				B88884071D52DFD7001EE249 /* Bolts.framework */,
-				B88884011D52D824001EE249 /* FBSDKCoreKit.framework */,
-				B88883FF1D52D824001EE249 /* FBSDKLoginKit.framework */,
-				B88884001D52D824001EE249 /* FBSDKShareKit.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -436,7 +407,7 @@
 			isa = PBXGroup;
 			children = (
 				B80D17731D8DE21A0032B0D8 /* Blobjot.entitlements */,
-				B86407061D7B13EB0084D6EF /* DataModel.xcdatamodeld */,
+				B8C046FF1E75721A0070EF43 /* DataModel.xcdatamodeld */,
 				B88131A11D510EEE00021C4B /* Info.plist */,
 			);
 			name = Settings;
@@ -477,16 +448,11 @@
 				B88131921D510EEE00021C4B /* AppDelegate.swift */,
 				B80D17761D922FF20032B0D8 /* AWSClasses.swift */,
 				B80C56301D51126800C4E683 /* Blob.swift */,
-				B80C56391D51158000C4E683 /* BlobAddMediaViewController.swift */,
-				B80C563C1D51158000C4E683 /* BlobAddTextViewController.swift */,
-				B80C563E1D51158000C4E683 /* BlobAddViewController.swift */,
 				B8541B741DBBD0B500867D82 /* BlobContent.swift */,
 				B88DFD871DBD50DF00255BA5 /* BlobTableViewCell.swift */,
 				B80C56431D51158000C4E683 /* BlobTableViewController.swift */,
-				B87273001E5C6C2400679E78 /* CameraCollectionViewCell.swift */,
 				B86A06141E4604CE006086EF /* CameraViewController.swift */,
 				B80C56331D5112F100C4E683 /* Constants.swift */,
-				B8541B721DB7D48D00867D82 /* CustomClasses.swift */,
 				B85FDE881D7DC2BA002A8FC7 /* CustomIdentityProvider.swift */,
 				B8C8C59C1D57544C004D773E /* Extensions.swift */,
 				B8B533A41DC9A50200B9ACC1 /* HoleView.swift */,
@@ -499,8 +465,6 @@
 				B80C56351D5113B900C4E683 /* MapViewController.swift */,
 				B80C56441D51158000C4E683 /* MapViewLocationBlobsCell.swift */,
 				B87770891E17FD620041ECD6 /* MapViewPreviewCell.swift */,
-				B80C56451D51158000C4E683 /* PeopleTableViewCell.swift */,
-				B80C56461D51158000C4E683 /* PeopleViewController.swift */,
 				B81822061D5B98F300B3A2BB /* ThumbnailObject.swift */,
 				B80C56601D5183B100C4E683 /* User.swift */,
 				B80D177A1D98A5760032B0D8 /* UtilityFunctions.swift */,
@@ -549,8 +513,6 @@
 				B8B109291DE3D72600EA3B41 /* TutorialViews+CoreDataProperties.swift */,
 				B8B108FF1DCFE52200EA3B41 /* UserCD+CoreDataClass.swift */,
 				B8B109241DE0B06F00EA3B41 /* UserCD+CoreDataProperties.swift */,
-				B86A06101E403695006086EF /* InterestCD+CoreDataClass.swift */,
-				B86A06111E403695006086EF /* InterestCD+CoreDataProperties.swift */,
 			);
 			name = CoreData;
 			path = Blobjot;
@@ -884,7 +846,6 @@
 			files = (
 				B8541B751DBBD0B900867D82 /* BlobContent.swift in Sources */,
 				B8C8C59D1D57544C004D773E /* Extensions.swift in Sources */,
-				B80C56551D51158000C4E683 /* PeopleTableViewCell.swift in Sources */,
 				B8B108FA1DCB718200EA3B41 /* LogUserflow+CoreDataProperties.swift in Sources */,
 				B8312FDE1DB3DACB00CFC715 /* LocationManagerSetting+CoreDataProperties.swift in Sources */,
 				B8B533A51DC9A50200B9ACC1 /* HoleView.swift in Sources */,
@@ -892,6 +853,7 @@
 				B80D17771D922FF20032B0D8 /* AWSClasses.swift in Sources */,
 				B8B1090A1DDB46D100EA3B41 /* CurrentUser+CoreDataClass.swift in Sources */,
 				B864070E1D7B14A40084D6EF /* BlobNotification.swift in Sources */,
+				B8C0470A1E75721A0070EF43 /* DataModel.xcdatamodeld in Sources */,
 				B80C56341D5112F100C4E683 /* Constants.swift in Sources */,
 				B877B5811E30E431007151EE /* BlobContentCD+CoreDataClass.swift in Sources */,
 				B85FDE891D7DC2BA002A8FC7 /* CustomIdentityProvider.swift in Sources */,
@@ -901,16 +863,12 @@
 				B80C56361D5113B900C4E683 /* MapViewController.swift in Sources */,
 				B87273051E635EEF00679E78 /* ImageRingView.swift in Sources */,
 				B80C56531D51158000C4E683 /* BlobTableViewController.swift in Sources */,
-				B86A06121E403695006086EF /* InterestCD+CoreDataClass.swift in Sources */,
 				B80D177B1D98A5760032B0D8 /* UtilityFunctions.swift in Sources */,
 				B80C56311D51126800C4E683 /* Blob.swift in Sources */,
-				B80C56491D51158000C4E683 /* BlobAddMediaViewController.swift in Sources */,
-				B80C56561D51158000C4E683 /* PeopleViewController.swift in Sources */,
 				B8B1092A1DE3D72600EA3B41 /* TutorialViews+CoreDataClass.swift in Sources */,
 				B8B1090B1DDB46D100EA3B41 /* CurrentUser+CoreDataProperties.swift in Sources */,
 				B80C56611D5183B100C4E683 /* User.swift in Sources */,
 				B8B108F81DCB718200EA3B41 /* LogError+CoreDataProperties.swift in Sources */,
-				B87273011E5C6C2400679E78 /* CameraCollectionViewCell.swift in Sources */,
 				B8B109031DCFE52300EA3B41 /* UserCD+CoreDataClass.swift in Sources */,
 				B86A06081E3B7B02006086EF /* InterestsTableViewCell.swift in Sources */,
 				B80C56541D51158000C4E683 /* MapViewLocationBlobsCell.swift in Sources */,
@@ -919,7 +877,6 @@
 				B8B108F71DCB718200EA3B41 /* LogError+CoreDataClass.swift in Sources */,
 				B8B108F91DCB718200EA3B41 /* LogUserflow+CoreDataClass.swift in Sources */,
 				B86A060A1E3D09BB006086EF /* Interest.swift in Sources */,
-				B80C564C1D51158000C4E683 /* BlobAddTextViewController.swift in Sources */,
 				B864070D1D7B14A40084D6EF /* BlobNotifications+CoreDataProperties.swift in Sources */,
 				B877B5851E30E471007151EE /* BlobCD+CoreDataClass.swift in Sources */,
 				B88131931D510EEE00021C4B /* AppDelegate.swift in Sources */,
@@ -927,14 +884,10 @@
 				B8312FDA1DB3DA8700CFC715 /* LocationManagerSetting.swift in Sources */,
 				B86A06151E4604CE006086EF /* CameraViewController.swift in Sources */,
 				B877B5821E30E431007151EE /* BlobContentCD+CoreDataProperties.swift in Sources */,
-				B86A06131E403695006086EF /* InterestCD+CoreDataProperties.swift in Sources */,
 				B8DD48691E684A7300A1AC0F /* MainViewController.swift in Sources */,
 				B8B109261DE0B06F00EA3B41 /* UserCD+CoreDataProperties.swift in Sources */,
 				B8B108F11DCB673700EA3B41 /* CoreDataFunctions.swift in Sources */,
-				B86407081D7B13EB0084D6EF /* DataModel.xcdatamodeld in Sources */,
 				B81822071D5B98F300B3A2BB /* ThumbnailObject.swift in Sources */,
-				B80C564E1D51158000C4E683 /* BlobAddViewController.swift in Sources */,
-				B8541B731DB7D49000867D82 /* CustomClasses.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1233,20 +1186,21 @@
 /* End XCConfigurationList section */
 
 /* Begin XCVersionGroup section */
-		B86407061D7B13EB0084D6EF /* DataModel.xcdatamodeld */ = {
+		B8C046FF1E75721A0070EF43 /* DataModel.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
-				B86A060B1E3D61B9006086EF /* Blobjot_DataModel_2.1.xcdatamodel */,
-				B877B57C1E30E2CF007151EE /* Blobjot_DataModel_2.0.xcdatamodel */,
-				B828802B1E0C8C7000B62676 /* Blobjot_DataModel_1.5.xcdatamodel */,
-				B8B109271DE3D70600EA3B41 /* Blobjot_DataModel_1.4.xcdatamodel */,
-				B8B1090E1DE0AD7900EA3B41 /* Blobjot_DataModel_1.3.xcdatamodel */,
-				B8B109051DDB469500EA3B41 /* Blobjot_DataModel_1.2.xcdatamodel */,
-				B8B108FC1DCFE29600EA3B41 /* Blobjot_DataModel_1.1.xcdatamodel */,
-				B8B108F21DCB6FDC00EA3B41 /* Blobjot_DataModel_1.0.xcdatamodel */,
-				B86407071D7B13EB0084D6EF /* DataModel.xcdatamodel */,
+				B8C047001E75721A0070EF43 /* Blobjot_DataModel_1.0.xcdatamodel */,
+				B8C047011E75721A0070EF43 /* Blobjot_DataModel_1.1.xcdatamodel */,
+				B8C047021E75721A0070EF43 /* Blobjot_DataModel_1.2.xcdatamodel */,
+				B8C047031E75721A0070EF43 /* Blobjot_DataModel_1.3.xcdatamodel */,
+				B8C047041E75721A0070EF43 /* Blobjot_DataModel_1.4.xcdatamodel */,
+				B8C047051E75721A0070EF43 /* Blobjot_DataModel_1.5.xcdatamodel */,
+				B8C047061E75721A0070EF43 /* Blobjot_DataModel_2.0.xcdatamodel */,
+				B8C047071E75721A0070EF43 /* Blobjot_DataModel_2.1.xcdatamodel */,
+				B8C047081E75721A0070EF43 /* Blobjot_DataModel_2.2.xcdatamodel */,
+				B8C047091E75721A0070EF43 /* DataModel.xcdatamodel */,
 			);
-			currentVersion = B86A060B1E3D61B9006086EF /* Blobjot_DataModel_2.1.xcdatamodel */;
+			currentVersion = B8C047081E75721A0070EF43 /* Blobjot_DataModel_2.2.xcdatamodel */;
 			path = DataModel.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;

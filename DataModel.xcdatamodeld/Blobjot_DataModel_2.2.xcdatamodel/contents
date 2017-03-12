@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="11759" systemVersion="15G1217" minimumToolsVersion="Xcode 7.0" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="BlobCD" representedClassName=".BlobCD" syncable="YES">
+        <attribute name="blobAccess" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="blobAccount" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="blobDatetime" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="blobFeature" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="blobID" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="blobLat" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="blobLong" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="blobRadius" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="blobType" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="lastUsed" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
+    </entity>
+    <entity name="BlobContentCD" representedClassName=".BlobContentCD" syncable="YES">
+        <attribute name="blobContentID" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="blobID" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="contentDatetime" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="contentMediaID" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="contentText" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="contentThumbnail" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="contentThumbnailID" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="contentType" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="lastUsed" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="respondingToContentID" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="response" optional="YES" attributeType="Boolean" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="userID" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
+    <entity name="BlobNotification" representedClassName=".BlobNotification" syncable="YES">
+        <attribute name="blobID" attributeType="String" syncable="YES"/>
+    </entity>
+    <entity name="CurrentUser" representedClassName=".CurrentUser" syncable="YES">
+        <attribute name="digitsID" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="userID" attributeType="String" syncable="YES"/>
+        <attribute name="userImage" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="userName" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
+    <entity name="LocationManagerSetting" representedClassName=".LocationManagerSetting" syncable="YES">
+        <attribute name="locationManagerSetting" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
+    <entity name="LogError" representedClassName="LogError" syncable="YES">
+        <attribute name="errorString" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="function" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="timestamp" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="NO" syncable="YES"/>
+    </entity>
+    <entity name="LogUserflow" representedClassName="LogUserflow" syncable="YES">
+        <attribute name="action" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="timestamp" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="viewController" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
+    <entity name="TutorialViews" representedClassName=".TutorialViews" syncable="YES">
+        <attribute name="tutorialAccountViewDatetime" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="tutorialBlobAddViewDatetime" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="tutorialMapViewDatetime" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
+    </entity>
+    <entity name="UserCD" representedClassName=".UserCD" syncable="YES">
+        <attribute name="digitsID" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="lastUsed" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="userID" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="userImage" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="userName" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
+    <elements>
+        <element name="BlobCD" positionX="0" positionY="81" width="128" height="195"/>
+        <element name="BlobContentCD" positionX="0" positionY="135" width="128" height="225"/>
+        <element name="BlobNotification" positionX="0" positionY="81" width="128" height="60"/>
+        <element name="CurrentUser" positionX="-36" positionY="9" width="128" height="105"/>
+        <element name="LocationManagerSetting" positionX="-18" positionY="54" width="128" height="60"/>
+        <element name="LogError" positionX="-18" positionY="54" width="128" height="90"/>
+        <element name="LogUserflow" positionX="-9" positionY="63" width="128" height="90"/>
+        <element name="TutorialViews" positionX="27" positionY="180" width="128" height="90"/>
+        <element name="UserCD" positionX="9" positionY="162" width="128" height="120"/>
+    </elements>
+</model>

@@ -196,63 +196,20 @@ struct Constants
         case .origin:
             if blobAccount == Constants.BlobAccount.sponsored
             {
-                if blobAccess == Constants.BlobAccess.followers
-                {
-                    return Constants.Colors.blobBlue
-                }
-                else
-                {
-                    return Constants.Colors.blobBlueLight
-                }
+                return Constants.Colors.blobBlue
             }
             else
             {
-                if blobAccess == Constants.BlobAccess.followers
-                {
-                    return Constants.Colors.blobPurple
-                }
-                else
-                {
-                    return Constants.Colors.blobPurpleLight
-                }
+                return Constants.Colors.blobPurple
             }
         case .location:
             if blobAccount == Constants.BlobAccount.sponsored
             {
-                if blobAccess == Constants.BlobAccess.followers
-                {
-                    return Constants.Colors.blobBlue
-                }
-                else
-                {
-                    return Constants.Colors.blobBlueLight
-                }
-            }
-            else if blobFeature == Constants.BlobFeature.invisible && mainMap
-            {
-                return Constants.Colors.blobInvisible
-            }
-            else if blobFeature == Constants.BlobFeature.invisible
-            {
-                if blobAccess == Constants.BlobAccess.followers
-                {
-                    return Constants.Colors.blobGray
-                }
-                else
-                {
-                    return Constants.Colors.blobGrayLight
-                }
+                return Constants.Colors.blobBlue
             }
             else
             {
-                if blobAccess == Constants.BlobAccess.followers
-                {
-                    return Constants.Colors.blobYellow
-                }
-                else
-                {
-                    return Constants.Colors.blobYellowLight
-                }
+                return Constants.Colors.blobPurple
             }
         }
     }
@@ -275,17 +232,9 @@ struct Constants
             {
                 return Constants.Colors.blobBlueOpaque
             }
-            else if blobFeature == Constants.BlobFeature.invisible && mainMap
-            {
-                return Constants.Colors.blobInvisible
-            }
-            else if blobFeature == Constants.BlobFeature.invisible
-            {
-                return Constants.Colors.blobGrayOpaque
-            }
             else
             {
-                return Constants.Colors.blobYellowOpaque
+                return Constants.Colors.blobPurpleOpaque
             }
         }
     }
@@ -298,15 +247,12 @@ struct Constants
         static let standardBackgroundGrayTransparent = UIColor(red: 104/255, green: 104/255, blue: 104/255, alpha: 0.3) //#686868
         static let standardBackgroundGrayUltraLight = UIColor(red: 242/255, green: 242/255, blue: 242/255, alpha: 1.0) //#F2F2F2
         static let standardBackgroundGrayUltraLightTransparent = UIColor(red: 242/255, green: 242/255, blue: 242/255, alpha: 0.3) //#F2F2F2
-//        static let colorStatusBar = UIColor(red: 38/255, green: 38/255, blue: 38/255, alpha: 1.0) //#262626
-//        static let colorTopBar = UIColor(red: 64/255, green: 64/255, blue: 64/255, alpha: 1.0) //#404040
-//        static let colorStatusBar = UIColor(red: 242/255, green: 242/255, blue: 242/255, alpha: 1.0) //#F2F2F2
-//        static let colorTopBar = UIColor(red: 242/255, green: 242/255, blue: 242/255, alpha: 1.0) //#F2F2F2
+        
         static let colorStatusBar = UIColor(red: 138/255, green: 112/255, blue: 178/255, alpha: 1.0) //#8A70B2
         static let colorStatusBarLight = UIColor(red: 187/255, green: 172/255, blue: 210/255, alpha: 1.0) //#BBACD2
         static let colorTopBar = UIColor(red: 138/255, green: 112/255, blue: 178/255, alpha: 1.0) //#8A70B2
         static let colorBorderGrayLight = UIColor(red: 204/255, green: 204/255, blue: 204/255, alpha: 1.0) //#CCC
-//        static let colorTextNavBar = UIColor(red: 51/255, green: 51/255, blue: 51/255, alpha: 1.0) //#333333
+        
         static let colorTextNavBar = UIColor.white
         static let colorGrayLight = UIColor(red: 204/255, green: 204/255, blue: 204/255, alpha: 1.0) //#CCC
         static let colorGrayDark = UIColor(red: 38/255, green: 38/255, blue: 38/255, alpha: 1.0) //#262626
