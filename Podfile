@@ -17,6 +17,10 @@ target 'Blobjot' do
 
   pod 'Bolts'
 
+  pod 'Fabric'
+  pod 'Digits'
+  pod 'TwitterCore'
+
   pod 'GoogleMaps'
   pod 'GooglePlaces'
   pod 'GooglePlacePicker'

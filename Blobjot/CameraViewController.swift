@@ -213,6 +213,8 @@ class CameraViewController: UIViewController, AVCaptureFileOutputRecordingDelega
         imageRingView.layer.mask = maskLayer
         imageRingView.clipsToBounds = true
         
+        adjustMapAttributionLabel()
+        
         print("CAMERA VIEW: HIDE LOADING SCREEN")
         self.view.sendSubview(toBack: self.loadingScreen)
 //        clearTmpDirectory()
@@ -229,9 +231,7 @@ class CameraViewController: UIViewController, AVCaptureFileOutputRecordingDelega
     // These will occur after viewDidLoad
     override func viewDidAppear(_ animated: Bool)
     {
-        let attributionLabel: UIView = mapView.subviews[1]
-        let labelWidth = attributionLabel.frame.width
-        attributionLabel.frame = CGRect(x: (mapViewContainer.frame.width / 2) - (labelWidth / 2), y: attributionLabel.frame.minY, width: labelWidth, height: attributionLabel.frame.height)
+        adjustMapAttributionLabel()
         
         prepareSessionUseBackCamera(useBackCamera: true)
     }
@@ -240,6 +240,13 @@ class CameraViewController: UIViewController, AVCaptureFileOutputRecordingDelega
     {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+    
+    func adjustMapAttributionLabel()
+    {
+        let attributionLabel: UIView = mapView.subviews[1]
+        let labelWidth = attributionLabel.frame.width
+        attributionLabel.frame = CGRect(x: (mapViewContainer.frame.width / 2) - (labelWidth / 2), y: attributionLabel.frame.minY, width: labelWidth, height: attributionLabel.frame.height)
     }
     
     

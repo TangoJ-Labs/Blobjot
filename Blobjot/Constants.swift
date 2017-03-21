@@ -464,7 +464,8 @@ struct Constants
         static let addBlobSelectorTypeBoxLocation = "Blob is viewable at Blob location."
         
         static let cameraCellReuseIdentifier = "cameraViewCell"
-        static let previewBlobsCellReuseIdentifier = "selectionBlobsCell"
+        static let previewBlobsCellReuseIdentifier = "previewBlobsCell"
+        static let previewBlobsSubCellReuseIdentifier = "previewBlobsSubCell"
         static let peopleTableViewCellReuseIdentifier = "peopleTableViewCell"
         static let locationBlobsCellReuseIdentifier = "locationBlobsCell"
         static let blobsActiveTableViewCellReuseIdentifier = "blobsActiveTableViewCell"

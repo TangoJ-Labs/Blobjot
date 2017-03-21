@@ -31,6 +31,25 @@
 	</array>
 	<key>CFBundleVersion</key>
 	<string>3</string>
+	<key>Fabric</key>
+	<dict>
+		<key>APIKey</key>
+		<string>aafcaf22df4ddb3a534840a20d87554f72de58e8</string>
+		<key>Kits</key>
+		<array>
+			<dict>
+				<key>KitInfo</key>
+				<dict>
+					<key>consumerKey</key>
+					<string>B0OmPfSDSLAT8PczkUTFRsn0g</string>
+					<key>consumerSecret</key>
+					<string>xVeitbB50Dzbdkr0FUadwou3jYlNlPdK6T77lhXP7lUi0rcd29</string>
+				</dict>
+				<key>KitName</key>
+				<string>Digits</string>
+			</dict>
+		</array>
+	</dict>
 	<key>FacebookAppID</key>
 	<string>835497963248438</string>
 	<key>FacebookDisplayName</key>
@@ -55,12 +74,23 @@
 			<string></string>
 		</dict>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>To ensure the original location of content, photos must be taken within the Blobjot app.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>Blobjot monitors your location and detects nearby features.  Check your Account page for location monitoring options to optimize your battery life.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Blobjot needs to access your photos to attach media to Blobs.  We will not post any content without your approval.</string>
-	<key>NSCameraUsageDescription</key>
-	<string>To ensure the original location of content, photos must be taken within the Blobjot app.</string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Homenaje-Regular.ttf</string>
+		<string>Rajdhani-Bold.ttf</string>
+		<string>Rajdhani-Light.ttf</string>
+		<string>Rajdhani-Medium.ttf</string>
+		<string>Rajdhani-Regular.ttf</string>
+		<string>Rajdhani-SemiBold.ttf</string>
+		<string>VT323-Regular.ttf</string>
+		<string>WireOne.ttf</string>
+	</array>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
@@ -84,16 +114,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-	<key>UIAppFonts</key>
-	<array>
-		<string>Homenaje-Regular.ttf</string>
-		<string>Rajdhani-Bold.ttf</string>
-		<string>Rajdhani-Light.ttf</string>
-		<string>Rajdhani-Medium.ttf</string>
-		<string>Rajdhani-Regular.ttf</string>
-		<string>Rajdhani-SemiBold.ttf</string>
-		<string>VT323-Regular.ttf</string>
-		<string>WireOne.ttf</string>
-	</array>
 </dict>
 </plist>

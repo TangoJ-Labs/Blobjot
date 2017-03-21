@@ -12,6 +12,9 @@ PODS:
   - Bolts/AppLinks (1.8.4):
     - Bolts/Tasks
   - Bolts/Tasks (1.8.4)
+  - Digits (2.5.0):
+    - TwitterCore (= 2.5.0)
+  - Fabric (1.6.11)
   - GoogleMaps (2.1.1):
     - GoogleMaps/Maps (= 2.1.1)
   - GoogleMaps/Base (2.1.1)
@@ -22,15 +25,20 @@ PODS:
     - GooglePlaces (= 2.1.1)
   - GooglePlaces (2.1.1):
     - GoogleMaps/Base (= 2.1.1)
+  - TwitterCore (2.5.0):
+    - Fabric
 
 DEPENDENCIES:
   - AWSCognito (= 2.4.7)
   - AWSLambda (= 2.4.7)
   - AWSS3 (= 2.4.7)
   - Bolts
+  - Digits
+  - Fabric
   - GoogleMaps
   - GooglePlacePicker
   - GooglePlaces
+  - TwitterCore
 
 SPEC CHECKSUMS:
   AWSCognito: 6aa404f15d1eb2b4b51f45322a409257b3248e79
@@ -38,10 +46,13 @@ SPEC CHECKSUMS:
   AWSLambda: 10800dea35f48dc51164730b1c3d6b1a92a17487
   AWSS3: 0f3c8ed11e04cd78cf86ed396c06330ab142db7a
   Bolts: 8a7995239dbe724f9cba2248b766d48b7ebdd322
+  Digits: c69ee2d1a6acf728c5d159f1bd335e4882bd3225
+  Fabric: 5911403591946b8228ab1c51d98f1d7137e863c6
   GoogleMaps: a5b5bbe47734e2443bde781a6aa64e69fdb6d785
   GooglePlacePicker: 665f39f931f2df32f9dd3fcc45f7e8abf71e535c
   GooglePlaces: 35636d86e5020cba3856eb988c09a5491de0a65a
+  TwitterCore: 95c46af93112768a7983bd370d66023553601d01
 
-PODFILE CHECKSUM: 8e90f38cd98ec3c18bca7a171ed01a211a8b7eae
+PODFILE CHECKSUM: 3bba629c459adc78e8183fb86ea0f8120ffdca83
 
 COCOAPODS: 1.0.1

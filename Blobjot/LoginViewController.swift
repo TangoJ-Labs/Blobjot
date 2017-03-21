@@ -7,103 +7,99 @@
 //
 
 import UIKit
+import DigitsKit
+import ImageIO
+import MobileCoreServices
 
-class LoginViewController: UIViewController {
-    
+
+class LoginViewController: UIViewController
+{
     // Save device settings to adjust view if needed
     var screenSize: CGRect!
-    var statusBarHeight: CGFloat!
-    var viewFrameY: CGFloat!
     
-    // The views to hold major components of the view controller
+    // Declare the view components
     var viewContainer: UIView!
-    var statusBarView: UIView!
+    var loginButton: UILabel!
     
-    var loginScreen: UIView!
-    var loginBox: UIView!
-    var loginActivityIndicator: UIActivityIndicatorView!
-    var loginProcessLabel: UILabel!
-
-    override func viewDidLoad() {
+    // Declare the variables
+    var userID: String!
+    var userPhoneNumber: String!
+    
+    override func viewDidLoad()
+    {
         super.viewDidLoad()
         
-        self.edgesForExtendedLayout = UIRectEdge.all
+        UIApplication.shared.statusBarStyle = .lightContent
         
-        // Hide the navigation controller
-        if let navController = navigationController {
-            navController.isNavigationBarHidden = true
-        }
-        
-        // Record the status bar settings to adjust the view if needed
-        UIApplication.shared.isStatusBarHidden = false
-        UIApplication.shared.statusBarStyle = Constants.Settings.statusBarStyle
-        statusBarHeight = UIApplication.shared.statusBarFrame.size.height
-        viewFrameY = self.view.frame.minY
+        addgradient()
+        addViews()
+    }
+    
+    override func didReceiveMemoryWarning()
+    {
+        super.didReceiveMemoryWarning()
+    }
+    
+    func addViews()
+    {
         screenSize = UIScreen.main.bounds
         
-        let vcHeight = screenSize.height - statusBarHeight
-        
         // Add the view container to hold all other views (allows for shadows on all subviews)
-        viewContainer = UIView(frame: CGRect(x: screenSize.width / 4, y: vcHeight / 4, width: screenSize.width / 2, height: vcHeight / 2))
-        viewContainer.backgroundColor = UIColor.white
+        viewContainer = UIView(frame: CGRect(x: 0, y: 0, width: screenSize.width, height: screenSize.height))
+        viewContainer.backgroundColor = UIColor.black
         self.view.addSubview(viewContainer)
         
-        // Create the login screen, login box, and digits login button
-        loginScreen = UIView(frame: CGRect(x: 0, y: 0, width: viewContainer.frame.width, height: viewContainer.frame.height))
-        loginScreen.backgroundColor = Constants.Colors.standardBackgroundGrayTransparent
+        let loginButtonHeight: CGFloat = 80
+        loginButton = UILabel(frame: CGRect(x: 0, y: viewContainer.frame.height - loginButtonHeight, width: viewContainer.frame.width, height: loginButtonHeight))
+        loginButton.backgroundColor = UIColor(red: 14.0/255.0, green: 179.0/255.0, blue: 201.0/255.0, alpha: 1.0)
+        loginButton.textColor = UIColor.white
+        loginButton.font = UIFont(name: "AvenirNext-Bold", size: 16)
+        loginButton.clipsToBounds = true
+        loginButton.textAlignment = .center
+        loginButton.text = "SIGN UP WITH PHONE NUMBER"
+        loginButton.isUserInteractionEnabled = true
+        viewContainer.addSubview(loginButton)
         
-        loginBox = UIView(frame: CGRect(x: (loginScreen.frame.width / 2) - 140, y: (loginScreen.frame.height / 2) - 40, width: 280, height: 120))
-        loginBox.layer.cornerRadius = 5
-        loginBox.backgroundColor = Constants.Colors.standardBackground
-        viewContainer.addSubview(loginBox)
-        
-        // Add a loading indicator for the pause showing the "Log out" button after the FBSDK is logged in and before the Account VC loads
-        loginActivityIndicator = UIActivityIndicatorView(frame: CGRect(x: 0, y: loginBox.frame.height / 2 + 15, width: loginBox.frame.width, height: 30))
-        loginActivityIndicator.color = UIColor.black
-        loginBox.addSubview(loginActivityIndicator)
-        
-        loginProcessLabel = UILabel(frame: CGRect(x: 0, y: loginBox.frame.height - 15, width: loginBox.frame.width, height: 14))
-        loginProcessLabel.font = UIFont(name: Constants.Strings.fontRegular, size: 12)
-        loginProcessLabel.text = "Logging you in..."
-        loginProcessLabel.textColor = UIColor.black
-        loginProcessLabel.textAlignment = .center
-    }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
+        loginButton.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(self.auth)))
     }
     
+    func addgradient()
+    {
+        self.view.backgroundColor = UIColor.clear
+        
+        let gradient: CAGradientLayer = CAGradientLayer()
+        let colorTop = UIColor(red: 235.0/255.0, green: 66.0/255.0, blue: 148.0/255.0, alpha: 1.0)
+        let colorBottom = UIColor(red: 14.0/255.0, green: 179.0/255.0, blue: 201.0/255.0, alpha: 1.0)
+        
+        gradient.frame = self.view.bounds
+        gradient.colors = [colorBottom.cgColor, colorTop.cgColor]
+        gradient.locations = [0.2, 0.9]
+        
+        self.view.layer.insertSublayer(gradient, at: 0)
+    }
     
-//    // MARK: FBSDK METHODS
-//    
-//    func loginButton(_ loginButton: FBSDKLoginButton!, didCompleteWith result: FBSDKLoginManagerLoginResult!, error: Error!) {
-//        if ((error) != nil) {
-//            print("LVC - FBSDK ERROR: \(error)")
-//        }
-//        else if result.isCancelled {
-//            print("LVC - FBSDK IS CANCELLED: \(result.description)")
-//        }
-//        else {
-//            // Show the logging in indicator and label
-//            loginActivityIndicator.startAnimating()
-//            loginBox.addSubview(loginProcessLabel)
-//            
-//            // Set the new login indicator for certain settings
-////            self.newLogin = true
-//        }
-//    }
-//    
-//    func loginButtonWillLogin(_ loginButton: FBSDKLoginButton!) -> Bool {
-//        print("LVC - FBSDK WILL LOG IN: \(loginButton)")
-//        return true
-//    }
-//    
-//    func loginButtonDidLogOut(_ loginButton: FBSDKLoginButton!) {
-//        print("LVC - FBSDK DID LOG OUT: \(loginButton)")
-//        
-//        Constants.credentialsProvider.clearCredentials()
-//        Constants.credentialsProvider.clearKeychain()
-//    }
-
+    func auth()
+    {
+        UIApplication.shared.statusBarStyle = .default
+        
+        let digits = Digits.sharedInstance()
+        digits.authenticate { (session, error) in
+            
+            // Inspect session/error objects
+            if let thisSession = session
+            {
+                self.userPhoneNumber = thisSession.phoneNumber
+                
+                UIApplication.shared.statusBarStyle = .lightContent
+                
+                print("LVC - USER ID: \(thisSession.userID)")
+                print("LVC - USER PHONE NUMBER: \(thisSession.phoneNumber)")
+//                digits.logOut()
+            }
+            else
+            {
+                NSLog("Authentication error: %@", error!.localizedDescription)
+            }
+        }
+    }
 }

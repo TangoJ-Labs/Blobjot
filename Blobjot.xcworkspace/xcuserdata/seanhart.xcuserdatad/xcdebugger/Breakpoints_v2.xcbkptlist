@@ -24,11 +24,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Blobjot/MapViewController.swift"
-            timestampString = "510632712.14121"
+            timestampString = "511099176.540659"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "993"
-            endingLineNumber = "993"
+            startingLineNumber = "877"
+            endingLineNumber = "877"
             landmarkName = "holeViewRemoved(removingViewAtPosition:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -40,11 +40,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Blobjot/MapViewController.swift"
-            timestampString = "510632712.14121"
+            timestampString = "511099176.540659"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1082"
-            endingLineNumber = "1082"
+            startingLineNumber = "966"
+            endingLineNumber = "966"
             landmarkName = "resultsController(_:didAutocompleteWith:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -88,11 +88,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "CoreDataFunctions.swift"
-            timestampString = "507524374.844036"
+            timestampString = "511045629.835034"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "893"
-            endingLineNumber = "893"
+            startingLineNumber = "883"
+            endingLineNumber = "883"
             landmarkName = "logErrorRetrieve(andDelete:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -104,11 +104,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Blobjot/MapViewController.swift"
-            timestampString = "510632712.14121"
+            timestampString = "511099176.540659"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1061"
-            endingLineNumber = "1061"
+            startingLineNumber = "945"
+            endingLineNumber = "945"
             landmarkName = "holeViewRemoved(removingViewAtPosition:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -120,11 +120,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Blobjot/MapViewController.swift"
-            timestampString = "510632712.14121"
+            timestampString = "511667975.598187"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "2871"
-            endingLineNumber = "2871"
+            startingLineNumber = "2645"
+            endingLineNumber = "2645"
             landmarkName = "unhighlightMapCircleForBlob(_:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -152,11 +152,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Blobjot/MapViewController.swift"
-            timestampString = "510632712.14121"
+            timestampString = "511099176.540659"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1189"
-            endingLineNumber = "1189"
+            startingLineNumber = "1073"
+            endingLineNumber = "1073"
             landmarkName = "tapLogoutButton(_:)"
             landmarkType = "7">
          </BreakpointContent>

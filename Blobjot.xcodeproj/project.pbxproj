@@ -103,6 +103,7 @@
 		B8B1096F1DEE920500EA3B41 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = B8B1096E1DEE920500EA3B41 /* Default-568h@2x.png */; };
 		B8B533A51DC9A50200B9ACC1 /* HoleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B533A41DC9A50200B9ACC1 /* HoleView.swift */; };
 		B8C0470A1E75721A0070EF43 /* DataModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = B8C046FF1E75721A0070EF43 /* DataModel.xcdatamodeld */; };
+		B8C0470C1E76C5680070EF43 /* MapViewPreviewSubCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C0470B1E76C5680070EF43 /* MapViewPreviewSubCell.swift */; };
 		B8C8C59D1D57544C004D773E /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C8C59C1D57544C004D773E /* Extensions.swift */; };
 		B8DD48691E684A7300A1AC0F /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8DD48681E684A7300A1AC0F /* MainViewController.swift */; };
 		B8E88EFC1E46405F00F3AAEE /* VT323-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B8E88EF41E46405F00F3AAEE /* VT323-Regular.ttf */; };
@@ -263,6 +264,7 @@
 		B8C047071E75721A0070EF43 /* Blobjot_DataModel_2.1.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Blobjot_DataModel_2.1.xcdatamodel; sourceTree = "<group>"; };
 		B8C047081E75721A0070EF43 /* Blobjot_DataModel_2.2.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Blobjot_DataModel_2.2.xcdatamodel; sourceTree = "<group>"; };
 		B8C047091E75721A0070EF43 /* DataModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = DataModel.xcdatamodel; sourceTree = "<group>"; };
+		B8C0470B1E76C5680070EF43 /* MapViewPreviewSubCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapViewPreviewSubCell.swift; sourceTree = "<group>"; };
 		B8C8C59C1D57544C004D773E /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		B8DD48681E684A7300A1AC0F /* MainViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
 		B8E88EF41E46405F00F3AAEE /* VT323-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "VT323-Regular.ttf"; sourceTree = "<group>"; };
@@ -465,6 +467,7 @@
 				B80C56351D5113B900C4E683 /* MapViewController.swift */,
 				B80C56441D51158000C4E683 /* MapViewLocationBlobsCell.swift */,
 				B87770891E17FD620041ECD6 /* MapViewPreviewCell.swift */,
+				B8C0470B1E76C5680070EF43 /* MapViewPreviewSubCell.swift */,
 				B81822061D5B98F300B3A2BB /* ThumbnailObject.swift */,
 				B80C56601D5183B100C4E683 /* User.swift */,
 				B80D177A1D98A5760032B0D8 /* UtilityFunctions.swift */,
@@ -532,6 +535,7 @@
 				219D0201CBA3A776DF6FC221 /* [CP] Embed Pods Frameworks */,
 				2B651EFB15F8B990E4E437D6 /* [CP] Copy Pods Resources */,
 				B88884161D535DE6001EE249 /* Embed Frameworks */,
+				B8C0470D1E80E66B0070EF43 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -807,6 +811,19 @@
 			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
+		B8C0470D1E80E66B0070EF43 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Fabric/run\" aafcaf22df4ddb3a534840a20d87554f72de58e8 f30b86bc46ab2932c34842ec6eea1b3535e7f017b1d759acc26ac343af5b597a";
+		};
 		C2F4E75117944F37AB7111BF /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -857,6 +874,7 @@
 				B80C56341D5112F100C4E683 /* Constants.swift in Sources */,
 				B877B5811E30E431007151EE /* BlobContentCD+CoreDataClass.swift in Sources */,
 				B85FDE891D7DC2BA002A8FC7 /* CustomIdentityProvider.swift in Sources */,
+				B8C0470C1E76C5680070EF43 /* MapViewPreviewSubCell.swift in Sources */,
 				B86A06061E3B792D006086EF /* InterestsViewController.swift in Sources */,
 				B86407051D7B0E720084D6EF /* DataController.swift in Sources */,
 				B877708A1E17FD620041ECD6 /* MapViewPreviewCell.swift in Sources */,

@@ -10,6 +10,8 @@ import AWSCore
 import AWSCognito
 import CoreData
 import CoreLocation
+import DigitsKit
+import Fabric
 import GoogleMaps
 import GooglePlaces
 import UIKit
@@ -24,6 +26,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AWSRequestDelegate
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool
     {
 //        let thisClass: String = NSStringFromClass(type(of: self))
+        
+        // Register with Digits (Fabric)
+        Fabric.with([AWSCognito.self, Digits.self])
         
         // Register the device with Apple's Push Notification Service
         let notificationTypes: UIUserNotificationType = [UIUserNotificationType.alert, UIUserNotificationType.badge, UIUserNotificationType.sound]
@@ -40,7 +45,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AWSRequestDelegate
 //        AWSServiceManager.default().defaultServiceConfiguration = configuration
         
         // Prepare the root View Controller and make visible
-        let mainViewController = MainViewController()
+//        let mainViewController = MainViewController()
+        let loginViewController = LoginViewController()
 //        self.navController.pushViewController(mainViewController, animated: false)
 //        self.mapViewController = MapViewController()
 //        self.navController.pushViewController(mapViewController, animated: false)
@@ -57,7 +63,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AWSRequestDelegate
 //        self.navController.navigationBar.barTintColor = Constants.Colors.colorStatusBar
 //        self.navController.navigationBar.tintColor = Constants.Colors.colorTextNavBar
 //        self.navController.viewControllers = [mainViewController] // [cameraViewController] //
-        self.window!.rootViewController = mainViewController
+        self.window!.rootViewController = loginViewController
         self.window!.makeKeyAndVisible()
         
         // Change the color of the default background (try to change the color of the background seen when using a flip transition)
